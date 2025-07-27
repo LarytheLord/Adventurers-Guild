@@ -1,25 +1,18 @@
 'use client'
 
+'use client'
+
 import { useState } from 'react'
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Code, Zap, Target, Users, Trophy, Compass, Shield, Sword, ChevronRight, CheckCircle, Github, Linkedin, Twitter, ArrowRight, Star, Sparkles, Menu, X } from 'lucide-react'
 import Image from "next/image"
 import Link from "next/link"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import WaitlistForm from '@/components/waitlist-form'
 
 export default function AdventurersGuildLanding() {
-  const [email, setEmail] = useState('')
-  const [name, setName] = useState('')
-  const [isSubmitted, setIsSubmitted] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitted(true)
-    setTimeout(() => setIsSubmitted(false), 5000)
-  }
 
   return (
     <div className="min-h-screen bg-white text-gray-900 overflow-x-hidden">
@@ -45,12 +38,21 @@ export default function AdventurersGuildLanding() {
             <Link href="#benefits" className="text-gray-600 hover:text-gray-900 transition-colors font-medium">
               Benefits
             </Link>
-            <Button 
-              className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 font-semibold transition-all duration-300 ease-out"
-              onClick={() => document.getElementById('waitlist')?.scrollIntoView({ behavior: 'smooth' })}
-            >
-              Join Waitlist
-            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button 
+                  className="bg-red-600 hover:bg-red-700 text-white px-6 py-2 font-semibold transition-all duration-300 ease-out"
+                >
+                  Join Waitlist
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Join the Waitlist</DialogTitle>
+                </DialogHeader>
+                <WaitlistForm />
+              </DialogContent>
+            </Dialog>
           </div>
 
           {/* Mobile Menu Button */}
@@ -72,9 +74,19 @@ export default function AdventurersGuildLanding() {
               <Link href="#benefits" className="block text-gray-600 hover:text-gray-900 font-medium">
                 Benefits
               </Link>
-              <Button className="w-full bg-red-600 hover:bg-red-700 text-white transition-all duration-300 ease-out">
-                Join Waitlist
-              </Button>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button className="w-full bg-red-600 hover:bg-red-700 text-white transition-all duration-300 ease-out">
+                    Join Waitlist
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Join the Waitlist</DialogTitle>
+                  </DialogHeader>
+                  <WaitlistForm />
+                </DialogContent>
+              </Dialog>
             </div>
           </div>
         )}
@@ -177,13 +189,22 @@ export default function AdventurersGuildLanding() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-            <Button 
-              size="lg" 
-              className="bg-red-600 hover:bg-red-700 text-white px-12 py-4 text-xl font-bold transition-all duration-300 ease-out"
-              onClick={() => document.getElementById('waitlist')?.scrollIntoView({ behavior: 'smooth' })}
-            >
-              JOIN THE GUILD
-            </Button>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button 
+                  size="lg" 
+                  className="bg-red-600 hover:bg-red-700 text-white px-12 py-4 text-xl font-bold transition-all duration-300 ease-out"
+                >
+                  JOIN THE GUILD
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Join the Waitlist</DialogTitle>
+                </DialogHeader>
+                <WaitlistForm />
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </section>
@@ -348,59 +369,6 @@ export default function AdventurersGuildLanding() {
               </div>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Waitlist Section */}
-      <section id="waitlist" className="py-24 px-6 bg-red-600">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-5xl md:text-7xl font-black mb-8 text-white">
-            READY TO BEGIN?
-          </h2>
-          <p className="text-xl md:text-2xl text-white/90 mb-16 font-medium">
-            Join the waitlist and be among the first to embark on your adventure
-          </p>
-          
-          <Card className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 hover:scale-105 border-0">
-            <CardContent className="p-12">
-              {!isSubmitted ? (
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="space-y-4">
-                    <Input
-                      type="text"
-                      placeholder="Your Name (Optional)"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="text-lg py-4 border-2 border-gray-200 focus:border-red-600"
-                    />
-                    <Input
-                      type="email"
-                      placeholder="Your Email Address"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      className="text-lg py-4 border-2 border-gray-200 focus:border-red-600"
-                    />
-                  </div>
-                  <Button 
-                    type="submit" 
-                    size="lg" 
-                    className="w-full bg-red-600 hover:bg-red-700 text-white py-4 text-xl font-bold transition-all duration-300 ease-out"
-                  >
-                    ENLIST NOW
-                  </Button>
-                </form>
-              ) : (
-                <div className="text-center py-8">
-                  <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
-                  <h3 className="text-2xl font-bold text-gray-900 mb-2">Welcome to the Guild!</h3>
-                  <p className="text-gray-600">
-                    Your adventure begins soon. Check your email for updates.
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
         </div>
       </section>
 
