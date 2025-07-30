@@ -436,40 +436,41 @@ export default function AdventurersGuildLanding() {
       </section>
 
       {/* Waitlist Section */}
-      <section id="waitlist" className="py-24 px-6 bg-primary">
-        <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-5xl md:text-7xl font-black mb-8 text-primary-foreground">
-            READY TO BEGIN?
+      <section
+        id="waitlist"
+        className="py-24 px-6 bg-gradient-to-b from-[#e11d48] to-[#b91c1c] dark:from-[#0f0f0f] dark:to-[#1a1a1a] transition-colors duration-500"
+      >
+        <div className="container mx-auto max-w-3xl text-center">
+          <h2 className="text-5xl md:text-7xl font-extrabold text-white mb-6 drop-shadow-md">
+            Ready to Begin?
           </h2>
-          <p className="text-xl md:text-2xl text-primary-foreground/90 mb-16 font-medium">
+          <p className="text-xl md:text-2xl text-white/80 font-medium mb-12">
             Join the waitlist and be among the first to embark on your adventure
           </p>
 
-          <Card className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-[#2a2f3a] rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] max-w-xl mx-auto">
-            <CardContent className="p-10 sm:p-12">
+          <Card className="bg-white dark:bg-[#0e1117] border border-transparent dark:border-[#262a31] rounded-3xl shadow-2xl transition-all duration-500 hover:scale-[1.02] max-w-xl mx-auto">
+            <CardContent className="p-8 md:p-10 space-y-8">
               {!isSubmitted ? (
-                <form onSubmit={handleSubmit} className="space-y-8">
-                  <div className="space-y-6">
-                    <Input
-                      type="text"
-                      placeholder="Your Name (Optional)"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="bg-white dark:bg-[#1a1f27] border border-gray-300 dark:border-[#3a3f4b] text-gray-800 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 px-5 py-4 rounded-xl text-base transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    />
-                    <Input
-                      type="email"
-                      placeholder="Your Email Address"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      className="bg-white dark:bg-[#1a1f27] border border-gray-300 dark:border-[#3a3f4b] text-gray-800 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 px-5 py-4 rounded-xl text-base transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                    />
-                  </div>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  <Input
+                    type="text"
+                    placeholder="Your Name (Optional)"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full px-5 py-4 text-base rounded-xl bg-gray-50 dark:bg-[#1a1f27] text-gray-900 dark:text-white border border-gray-200 dark:border-[#3a3f4b] placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all"
+                  />
+                  <Input
+                    type="email"
+                    placeholder="Your Email Address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="w-full px-5 py-4 text-base rounded-xl bg-gray-50 dark:bg-[#1a1f27] text-gray-900 dark:text-white border border-gray-200 dark:border-[#3a3f4b] placeholder:text-gray-500 dark:placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-pink-500 transition-all"
+                  />
                   <Button
                     type="submit"
                     size="lg"
-                    className="w-full bg-gradient-to-r from-red-500 to-red-700 text-white font-semibold py-4 text-lg rounded-xl shadow hover:shadow-md hover:brightness-110 transition-all duration-300"
+                    className="w-full py-4 text-lg font-semibold rounded-xl bg-gradient-to-r from-pink-500 to-red-600 text-white shadow-md hover:shadow-lg hover:brightness-110 transition-all"
                   >
                     ENLIST NOW
                   </Button>
