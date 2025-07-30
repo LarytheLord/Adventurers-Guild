@@ -445,7 +445,7 @@ export default function AdventurersGuildLanding() {
             Join the waitlist and be among the first to embark on your adventure
           </p>
 
-          <Card className="bg-[#0d1117] border border-[#2a2f3a] rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] max-w-xl mx-auto">
+          <Card className="bg-white dark:bg-[#0d1117] border border-gray-200 dark:border-[#2a2f3a] rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] max-w-xl mx-auto">
             <CardContent className="p-10 sm:p-12">
               {!isSubmitted ? (
                 <form onSubmit={handleSubmit} className="space-y-8">
@@ -455,7 +455,7 @@ export default function AdventurersGuildLanding() {
                       placeholder="Your Name (Optional)"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="bg-[#1a1f27] border border-[#3a3f4b] text-white placeholder:text-gray-400 px-5 py-4 rounded-xl text-base transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                      className="bg-white dark:bg-[#1a1f27] border border-gray-300 dark:border-[#3a3f4b] text-gray-800 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 px-5 py-4 rounded-xl text-base transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                     />
                     <Input
                       type="email"
@@ -463,13 +463,13 @@ export default function AdventurersGuildLanding() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="bg-[#1a1f27] border border-[#3a3f4b] text-white placeholder:text-gray-400 px-5 py-4 rounded-xl text-base transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                      className="bg-white dark:bg-[#1a1f27] border border-gray-300 dark:border-[#3a3f4b] text-gray-800 dark:text-white placeholder:text-gray-500 dark:placeholder:text-gray-400 px-5 py-4 rounded-xl text-base transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                     />
                   </div>
                   <Button
                     type="submit"
                     size="lg"
-                    className="w-full bg-gradient-to-r from-red-600 via-red-500 to-red-700 text-white font-semibold py-4 text-lg rounded-xl shadow-md hover:brightness-110 hover:shadow-lg transition-all duration-300"
+                    className="w-full bg-gradient-to-r from-red-500 to-red-700 text-white font-semibold py-4 text-lg rounded-xl shadow hover:shadow-md hover:brightness-110 transition-all duration-300"
                   >
                     ENLIST NOW
                   </Button>
@@ -477,10 +477,10 @@ export default function AdventurersGuildLanding() {
               ) : (
                 <div className="text-center py-10">
                   <CheckCircle className="w-14 h-14 text-green-500 mx-auto mb-4 animate-pulse" />
-                  <h3 className="text-2xl font-semibold text-white mb-2">
+                  <h3 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
                     Welcome to the Guild!
                   </h3>
-                  <p className="text-gray-400 max-w-md mx-auto">
+                  <p className="text-gray-600 dark:text-gray-400 max-w-md mx-auto">
                     Your adventure begins soon. Keep an eye on your inbox for
                     next steps!
                   </p>
