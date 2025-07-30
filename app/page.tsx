@@ -1,26 +1,45 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Code, Zap, Target, Users, Trophy, Compass, Shield, Sword, ChevronRight, CheckCircle, Github, Linkedin, Twitter, ArrowRight, Star, Sparkles, Menu, X } from 'lucide-react'
-import Image from "next/image"
-import Link from "next/link"
-import { ThemeToggle } from "@/components/ui/theme-toggle"
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Code,
+  Zap,
+  Target,
+  Users,
+  Trophy,
+  Compass,
+  Shield,
+  Sword,
+  ChevronRight,
+  CheckCircle,
+  Github,
+  Linkedin,
+  Twitter,
+  ArrowRight,
+  Star,
+  Sparkles,
+  Menu,
+  X,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 export default function AdventurersGuildLanding() {
-  const [email, setEmail] = useState('')
-  const [name, setName] = useState('')
-  const [isSubmitted, setIsSubmitted] = useState(false)
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitted(true)
-    setTimeout(() => setIsSubmitted(false), 5000)
-  }
+    e.preventDefault();
+    setIsSubmitted(true);
+    setTimeout(() => setIsSubmitted(false), 5000);
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
@@ -28,27 +47,39 @@ export default function AdventurersGuildLanding() {
       <nav className="fixed top-0 w-full z-50 bg-background/30 backdrop-blur-xl border-b border-border/30 transition-all duration-300">
         <div className="container mx-auto px-6 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <Image 
-              src="/images/guild-logo.png" 
-              alt="The Adventurers Guild" 
-              width={40} 
+            <Image
+              src="/images/guild-logo.png"
+              alt="The Adventurers Guild"
+              width={40}
               height={40}
               className="w-10 h-10"
             />
-            <span className="text-xl font-bold text-foreground">The Adventurers Guild</span>
+            <span className="text-xl font-bold text-foreground">
+              The Adventurers Guild
+            </span>
           </div>
-          
+
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            <Link href="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors font-medium">
+            <Link
+              href="#how-it-works"
+              className="text-muted-foreground hover:text-foreground transition-colors font-medium"
+            >
               How It Works
             </Link>
-            <Link href="#benefits" className="text-muted-foreground hover:text-foreground transition-colors font-medium">
+            <Link
+              href="#benefits"
+              className="text-muted-foreground hover:text-foreground transition-colors font-medium"
+            >
               Benefits
             </Link>
-            <Button 
+            <Button
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 font-semibold transition-all duration-300 ease-out"
-              onClick={() => document.getElementById('waitlist')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() =>
+                document
+                  .getElementById("waitlist")
+                  ?.scrollIntoView({ behavior: "smooth" })
+              }
             >
               Join Waitlist
             </Button>
@@ -56,11 +87,15 @@ export default function AdventurersGuildLanding() {
           </div>
 
           {/* Mobile Menu Button */}
-          <button 
+          <button
             className="md:hidden"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
           >
-            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            {mobileMenuOpen ? (
+              <X className="w-6 h-6" />
+            ) : (
+              <Menu className="w-6 h-6" />
+            )}
           </button>
         </div>
 
@@ -68,10 +103,16 @@ export default function AdventurersGuildLanding() {
         {mobileMenuOpen && (
           <div className="md:hidden bg-background border-t border-border">
             <div className="px-6 py-4 space-y-4">
-              <Link href="#how-it-works" className="block text-muted-foreground hover:text-foreground font-medium">
+              <Link
+                href="#how-it-works"
+                className="block text-muted-foreground hover:text-foreground font-medium"
+              >
                 How It Works
               </Link>
-              <Link href="#benefits" className="block text-muted-foreground hover:text-foreground font-medium">
+              <Link
+                href="#benefits"
+                className="block text-muted-foreground hover:text-foreground font-medium"
+              >
                 Benefits
               </Link>
               <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground transition-all duration-300 ease-out">
@@ -107,9 +148,12 @@ export default function AdventurersGuildLanding() {
               QUEST BUILD
             </div>
           </div>
-          
+
           {/* Top Right Badge */}
-          <div className="absolute top-24 right-8 md:right-16 lg:right-24 floating-animation" style={{ animationDelay: '1s' }}>
+          <div
+            className="absolute top-24 right-8 md:right-16 lg:right-24 floating-animation"
+            style={{ animationDelay: "1s" }}
+          >
             <div className="bg-white/20 backdrop-blur-sm border-2 border-white/30 rounded-2xl p-4 transform rotate-6 shadow-xl">
               <div className="text-center">
                 <Sword className="w-8 h-8 text-white mx-auto mb-2" />
@@ -118,23 +162,32 @@ export default function AdventurersGuildLanding() {
               </div>
             </div>
           </div>
-          
+
           {/* Bottom Left Compass */}
-          <div className="absolute bottom-32 left-12 md:left-20 lg:left-32 floating-animation" style={{ animationDelay: '2s' }}>
+          <div
+            className="absolute bottom-32 left-12 md:left-20 lg:left-32 floating-animation"
+            style={{ animationDelay: "2s" }}
+          >
             <div className="bg-white/10 backdrop-blur-sm border border-white/20 rounded-full p-6 transform -rotate-45 shadow-2xl">
               <Compass className="w-12 h-12 text-white" />
             </div>
           </div>
-          
+
           {/* Bottom Right Code Element */}
-          <div className="absolute bottom-40 right-12 md:right-20 lg:right-32 floating-animation" style={{ animationDelay: '0.5s' }}>
+          <div
+            className="absolute bottom-40 right-12 md:right-20 lg:right-32 floating-animation"
+            style={{ animationDelay: "0.5s" }}
+          >
             <div className="bg-gray-900/80 backdrop-blur-sm text-green-400 px-3 py-2 rounded-lg text-xs font-mono transform rotate-3 shadow-lg border border-green-400/30">
-              {'<adventure />'}
+              {"<adventure />"}
             </div>
           </div>
-          
+
           {/* Floating XP Badge */}
-          <div className="absolute top-1/2 left-4 md:left-8 transform -translate-y-1/2 floating-animation" style={{ animationDelay: '1.5s' }}>
+          <div
+            className="absolute top-1/2 left-4 md:left-8 transform -translate-y-1/2 floating-animation"
+            style={{ animationDelay: "1.5s" }}
+          >
             <div className="bg-purple-600/90 backdrop-blur-sm text-white rounded-full w-16 h-16 flex items-center justify-center transform -rotate-12 shadow-lg">
               <div className="text-center">
                 <div className="text-xs font-bold">XP</div>
@@ -142,9 +195,12 @@ export default function AdventurersGuildLanding() {
               </div>
             </div>
           </div>
-          
+
           {/* Guild Rank Badge */}
-          <div className="absolute top-1/2 right-4 md:right-8 transform -translate-y-1/2 floating-animation" style={{ animationDelay: '2.5s' }}>
+          <div
+            className="absolute top-1/2 right-4 md:right-8 transform -translate-y-1/2 floating-animation"
+            style={{ animationDelay: "2.5s" }}
+          >
             <div className="bg-yellow-500/90 backdrop-blur-sm text-gray-900 rounded-lg px-3 py-2 transform rotate-6 shadow-lg">
               <div className="text-center">
                 <Star className="w-6 h-6 mx-auto mb-1" />
@@ -159,13 +215,13 @@ export default function AdventurersGuildLanding() {
           <Badge className="mb-8 bg-primary text-primary-foreground border-0 px-4 py-2 text-sm font-semibold">
             REVOLUTIONARY CS COMMUNITY
           </Badge>
-          
+
           <h1 className="text-6xl md:text-8xl lg:text-9xl font-black mb-8 text-foreground leading-none tracking-tight">
             ADVENTURERS
             <br />
             GUILD
           </h1>
-          
+
           <p className="text-2xl md:text-3xl lg:text-4xl font-bold mb-12 text-foreground/90 max-w-4xl mx-auto leading-tight">
             FORGING DIGITAL PIONEERS
           </p>
@@ -182,10 +238,14 @@ export default function AdventurersGuildLanding() {
           </div>
 
           <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-12 py-4 text-xl font-bold transition-all duration-300 ease-out"
-              onClick={() => document.getElementById('waitlist')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() =>
+                document
+                  .getElementById("waitlist")
+                  ?.scrollIntoView({ behavior: "smooth" })
+              }
             >
               JOIN THE GUILD
             </Button>
@@ -202,8 +262,9 @@ export default function AdventurersGuildLanding() {
             WE'RE CHARTING THE UNSEEN.
           </h2>
           <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed">
-            Transform your computer science education into an epic quest. Gain real-world skills, 
-            earn XP, and ascend the ranks from F to S by tackling challenges commissioned by real companies.
+            Transform your computer science education into an epic quest. Gain
+            real-world skills, earn XP, and ascend the ranks from F to S by
+            tackling challenges commissioned by real companies.
           </p>
         </div>
       </section>
@@ -219,37 +280,44 @@ export default function AdventurersGuildLanding() {
               Traditional CS education is broken
             </p>
           </div>
-          
+
           <div className="grid md:grid-cols-2 gap-16">
             {[
-              { 
-                title: "Theory Without Practice", 
+              {
+                title: "Theory Without Practice",
                 desc: "Students graduate with knowledge but no real-world experience. Employers want skills, not just grades.",
-                number: "01"
+                number: "01",
               },
-              { 
-                title: "Passive Learning", 
+              {
+                title: "Passive Learning",
                 desc: "Lectures and textbooks don't prepare you for the dynamic, collaborative nature of modern tech work.",
-                number: "02"
+                number: "02",
               },
-              { 
-                title: "No Industry Connection", 
+              {
+                title: "No Industry Connection",
                 desc: "Universities operate in isolation from the companies that will eventually hire their graduates.",
-                number: "03"
+                number: "03",
               },
-              { 
-                title: "Unclear Progression", 
+              {
+                title: "Unclear Progression",
                 desc: "Students have no clear path to measure their growth or understand what skills they need next.",
-                number: "04"
-              }
+                number: "04",
+              },
             ].map((item, index) => (
-              <div key={index} className="flex items-start space-x-6 hover:translate-y-[-4px] transition-transform duration-300 ease-out">
+              <div
+                key={index}
+                className="flex items-start space-x-6 hover:translate-y-[-4px] transition-transform duration-300 ease-out"
+              >
                 <div className="text-6xl font-black text-primary/20">
                   {item.number}
                 </div>
                 <div>
-                  <h3 className="text-2xl font-bold mb-4 text-foreground">{item.title}</h3>
-                  <p className="text-lg text-muted-foreground leading-relaxed">{item.desc}</p>
+                  <h3 className="text-2xl font-bold mb-4 text-foreground">
+                    {item.title}
+                  </h3>
+                  <p className="text-lg text-muted-foreground leading-relaxed">
+                    {item.desc}
+                  </p>
                 </div>
               </div>
             ))}
@@ -258,7 +326,10 @@ export default function AdventurersGuildLanding() {
       </section>
 
       {/* Solution Section */}
-      <section id="how-it-works" className="py-24 px-6 bg-card text-card-foreground">
+      <section
+        id="how-it-works"
+        className="py-24 px-6 bg-card text-card-foreground"
+      >
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-20">
             <h2 className="text-5xl md:text-7xl font-black mb-6">
@@ -268,13 +339,13 @@ export default function AdventurersGuildLanding() {
               Gamified, real-world CS education
             </p>
           </div>
-          
+
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <div>
-              <Image 
-                src="/images/quest-board.png" 
-                alt="Quest Board" 
-                width={600} 
+              <Image
+                src="/images/quest-board.png"
+                alt="Quest Board"
+                width={600}
                 height={400}
                 className="rounded-2xl shadow-2xl"
               />
@@ -284,31 +355,34 @@ export default function AdventurersGuildLanding() {
                 {
                   title: "Real Quests",
                   desc: "Work on actual projects commissioned by real companies. Build solutions that matter.",
-                  icon: "🎯"
+                  icon: "🎯",
                 },
                 {
                   title: "XP & Rankings",
                   desc: "Earn experience points and climb from F-Rank to S-Rank. Clear progression, real rewards.",
-                  icon: "⭐"
+                  icon: "⭐",
                 },
                 {
                   title: "Guild Community",
                   desc: "Join a community of ambitious developers. Collaborate, compete, and grow together.",
-                  icon: "🛡️"
+                  icon: "🛡️",
                 },
                 {
                   title: "Industry Mentorship",
                   desc: "Get guidance from experienced professionals who've walked the path before you.",
-                  icon: "🗡️"
-                }
+                  icon: "🗡️",
+                },
               ].map((item, index) => (
-                <div key={index} className="flex items-start space-x-6 hover:translate-y-[-4px] transition-transform duration-300 ease-out">
-                  <div className="text-4xl">
-                    {item.icon}
-                  </div>
+                <div
+                  key={index}
+                  className="flex items-start space-x-6 hover:translate-y-[-4px] transition-transform duration-300 ease-out"
+                >
+                  <div className="text-4xl">{item.icon}</div>
                   <div>
                     <h3 className="text-2xl font-bold mb-3">{item.title}</h3>
-                    <p className="text-lg text-muted-foreground leading-relaxed">{item.desc}</p>
+                    <p className="text-lg text-muted-foreground leading-relaxed">
+                      {item.desc}
+                    </p>
                   </div>
                 </div>
               ))}
@@ -325,31 +399,36 @@ export default function AdventurersGuildLanding() {
               WHY JOIN?
             </h2>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-12">
             {[
               {
                 title: "Build Real Skills",
                 desc: "Work on projects that actually matter. Build a portfolio that stands out.",
-                icon: "💻"
+                icon: "💻",
               },
               {
                 title: "Network & Mentorship",
                 desc: "Connect with industry professionals and experienced developers.",
-                icon: "🤝"
+                icon: "🤝",
               },
               {
                 title: "Stand Out",
                 desc: "Demonstrate proven skills that employers actually want to see.",
-                icon: "🚀"
-              }
+                icon: "🚀",
+              },
             ].map((benefit, index) => (
-              <div key={index} className="text-center hover:translate-y-[-8px] transition-transform duration-300 ease-out">
-                <div className="text-6xl mb-6">
-                  {benefit.icon}
-                </div>
-                <h3 className="text-2xl font-bold mb-4 text-foreground">{benefit.title}</h3>
-                <p className="text-lg text-muted-foreground leading-relaxed">{benefit.desc}</p>
+              <div
+                key={index}
+                className="text-center hover:translate-y-[-8px] transition-transform duration-300 ease-out"
+              >
+                <div className="text-6xl mb-6">{benefit.icon}</div>
+                <h3 className="text-2xl font-bold mb-4 text-foreground">
+                  {benefit.title}
+                </h3>
+                <p className="text-lg text-muted-foreground leading-relaxed">
+                  {benefit.desc}
+                </p>
               </div>
             ))}
           </div>
@@ -365,18 +444,18 @@ export default function AdventurersGuildLanding() {
           <p className="text-xl md:text-2xl text-primary-foreground/90 mb-16 font-medium">
             Join the waitlist and be among the first to embark on your adventure
           </p>
-          
-          <Card className="bg-card rounded-2xl shadow-lg hover:shadow-xl transition-all duration-500 hover:scale-105 border-0">
-            <CardContent className="p-12">
+
+          <Card className="bg-[#0d1117] border border-[#2a2f3a] rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-500 hover:scale-[1.02] max-w-xl mx-auto">
+            <CardContent className="p-10 sm:p-12">
               {!isSubmitted ? (
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="space-y-4">
+                <form onSubmit={handleSubmit} className="space-y-8">
+                  <div className="space-y-6">
                     <Input
                       type="text"
                       placeholder="Your Name (Optional)"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
-                      className="text-lg py-4 border-2 border-border focus:border-primary"
+                      className="bg-[#1a1f27] border border-[#3a3f4b] text-white placeholder:text-gray-400 px-5 py-4 rounded-xl text-base transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                     />
                     <Input
                       type="email"
@@ -384,23 +463,26 @@ export default function AdventurersGuildLanding() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="text-lg py-4 border-2 border-border focus:border-primary"
+                      className="bg-[#1a1f27] border border-[#3a3f4b] text-white placeholder:text-gray-400 px-5 py-4 rounded-xl text-base transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500"
                     />
                   </div>
-                  <Button 
-                    type="submit" 
-                    size="lg" 
-                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground py-4 text-xl font-bold transition-all duration-300 ease-out"
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="w-full bg-gradient-to-r from-red-600 via-red-500 to-red-700 text-white font-semibold py-4 text-lg rounded-xl shadow-md hover:brightness-110 hover:shadow-lg transition-all duration-300"
                   >
                     ENLIST NOW
                   </Button>
                 </form>
               ) : (
-                <div className="text-center py-8">
-                  <CheckCircle className="w-16 h-16 text-green-600 mx-auto mb-4" />
-                  <h3 className="text-2xl font-bold text-foreground mb-2">Welcome to the Guild!</h3>
-                  <p className="text-muted-foreground">
-                    Your adventure begins soon. Check your email for updates.
+                <div className="text-center py-10">
+                  <CheckCircle className="w-14 h-14 text-green-500 mx-auto mb-4 animate-pulse" />
+                  <h3 className="text-2xl font-semibold text-white mb-2">
+                    Welcome to the Guild!
+                  </h3>
+                  <p className="text-gray-400 max-w-md mx-auto">
+                    Your adventure begins soon. Keep an eye on your inbox for
+                    next steps!
                   </p>
                 </div>
               )}
@@ -414,37 +496,49 @@ export default function AdventurersGuildLanding() {
         <div className="container mx-auto max-w-6xl">
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="flex items-center space-x-3 mb-8 md:mb-0">
-              <Image 
-                src="/images/guild-logo.png" 
-                alt="The Adventurers Guild" 
-                width={32} 
+              <Image
+                src="/images/guild-logo.png"
+                alt="The Adventurers Guild"
+                width={32}
                 height={32}
                 className="w-8 h-8"
               />
               <div>
                 <div className="text-xl font-bold">The Adventurers Guild</div>
-                <div className="text-muted-foreground">Forging Digital Pioneers</div>
+                <div className="text-muted-foreground">
+                  Forging Digital Pioneers
+                </div>
               </div>
             </div>
-            
+
             <div className="flex items-center space-x-6">
-              <Link href="https://www.linkedin.com/company/adventurers-guild" className="text-muted-foreground hover:text-card-foreground transition-colors">
+              <Link
+                href="https://www.linkedin.com/company/adventurers-guild"
+                className="text-muted-foreground hover:text-card-foreground transition-colors"
+              >
                 <Linkedin className="w-6 h-6" />
               </Link>
-              <Link href="#" className="text-muted-foreground hover:text-card-foreground transition-colors">
+              <Link
+                href="#"
+                className="text-muted-foreground hover:text-card-foreground transition-colors"
+              >
                 <Twitter className="w-6 h-6" />
               </Link>
-              <Link href="https://github.com/LarytheLord/Adventurers-Guild" className="text-muted-foreground hover:text-card-foreground transition-colors">
+              <Link
+                href="https://github.com/LarytheLord/Adventurers-Guild"
+                className="text-muted-foreground hover:text-card-foreground transition-colors"
+              >
                 <Github className="w-6 h-6" />
               </Link>
             </div>
           </div>
-          
+
           <div className="mt-12 pt-8 border-t border-border text-center text-muted-foreground">
-            © {new Date().getFullYear()} The Adventurers Guild. All rights reserved.
+            © {new Date().getFullYear()} The Adventurers Guild. All rights
+            reserved.
           </div>
         </div>
       </footer>
     </div>
-  )
+  );
 }
