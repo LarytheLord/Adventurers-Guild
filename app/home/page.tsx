@@ -8,10 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { ArrowRight, Github, Linkedin, Menu, Search, Star, Twitter, X } from 'lucide-react';
+import { ArrowRight, Github, Linkedin, Menu, Search, Star, Twitter, X, Sparkles, Trophy } from 'lucide-react';
 import Image from "next/image";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { SkillTree } from "@/components/skill-tree";
+import { QuestCompletion } from "@/components/quest-completion";
 
 // --- MOCK DATA ---
 const quests = [
@@ -74,6 +76,12 @@ function UserDashboard() {
             <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed mb-8">
               Ready to embark on a new quest and forge your legend?
             </p>
+            
+            {/* Feature Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4 mt-8">
+              <SkillTree />
+              <QuestCompletion />
+            </div>
           </div>
           <Card className="bg-background rounded-2xl shadow-lg p-6">
             <div className="flex items-center space-x-4 mb-4">

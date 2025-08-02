@@ -59,6 +59,7 @@ The Adventurers Guild addresses these challenges head-on by creating a vibrant, 
 
 Our platform is being built incrementally, with these core features driving our vision:
 
+* **🎮 Skill Tree & Developer Progression System:** Visual skill progression with categories like Frontend, Backend, AI, DevOps. Earn Skill Points (SP) from completing quests and unlock new skill branches with a gamified interface.
 * **Interactive Quest Board:** Browse, filter, and accept available commissioned projects.
 * **Adventurer Profile & Dashboard:** Track XP, current rank, completed Quests, and skill progression.
 * **XP & Ranking Engine:** Backend system for calculating and managing Adventurer ranks.
@@ -119,8 +120,29 @@ Ready to wield your skills and contribute to the future of EdTech? Welcome to **
     ```
 
 5.  **Set Up Environment Variables:**
-    * Create a `.env` file in the root directory of the project.
+    * Create a `.env.local` file in the root directory of the project.
     * Refer to our [`CONTRIBUTING.md`](CONTRIBUTING.md) for the required variables (e.g., database credentials, API keys).
+    
+    **For Email Functionality (SMTP Setup):**
+    ```bash
+    # SMTP Configuration for Email Sending
+    SMTP_HOST=smtp.gmail.com
+    SMTP_PORT=587
+    SMTP_USER=your-email@gmail.com
+    SMTP_PASS=your-app-password
+    ADMIN_EMAIL=your-email@gmail.com
+
+    # Next.js
+    NEXT_PUBLIC_APP_URL=https://adventurersguild.vercel.app
+    ```
+    
+    **Gmail Setup (Recommended):**
+    1. Enable 2-Factor Authentication on your Gmail account
+    2. Generate App Password: Google Account → Security → 2-Step Verification → App passwords
+    3. Select "Mail" and generate a 16-character password
+    4. Use this password in `SMTP_PASS` (not your regular Gmail password)
+    
+    **⚠️ Security Note:** Never commit `.env.local` to Git (it's already in `.gitignore`)
 
 6.  **Run Locally:**
     ```bash
@@ -161,7 +183,7 @@ Our expedition is just beginning. Key milestones for the Guild include:
 
 ## ⚖️ License
 
-This project is currently under discussion for its open-source license. We intend to use a widely recognized open-source license (e.g., **MIT License**). Please check back for updates in the `LICENSE` file.
+This project is currently under discussion for its open-source license. We intend to use a widely recognized open-source license (e.g., **MIT License**). Please check back for updates in the [License](License) file.
 
 ---
 

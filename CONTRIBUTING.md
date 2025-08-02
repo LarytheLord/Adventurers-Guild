@@ -44,6 +44,56 @@ pnpm install
 
 This will install all the necessary tools and libraries for the project.
 
+### 2.1. Set Up Environment Variables (Email & API Keys)
+
+The guild's email system requires SMTP configuration. Create a `.env.local` file in the root directory:
+
+```bash
+# SMTP Configuration for Email Sending
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=your-email@gmail.com
+SMTP_PASS=your-app-password
+ADMIN_EMAIL=your-email@gmail.com
+
+# Next.js
+NEXT_PUBLIC_APP_URL=https://adventurersguild.vercel.app
+```
+
+#### Gmail SMTP Setup (Recommended):
+
+1. **Enable 2-Factor Authentication** on your Gmail account
+2. **Generate App Password**:
+   - Go to Google Account settings → Security → 2-Step Verification → App passwords
+   - Select "Mail" and generate a 16-character password
+   - Use this password in `SMTP_PASS` (not your regular Gmail password)
+3. **Update `.env.local`** with your credentials
+
+#### Alternative Email Providers:
+
+**Outlook/Hotmail:**
+```bash
+SMTP_HOST=smtp-mail.outlook.com
+SMTP_PORT=587
+```
+
+**Yahoo:**
+```bash
+SMTP_HOST=smtp.mail.yahoo.com
+SMTP_PORT=587
+```
+
+#### Security Notes:
+- ⚠️ **Never commit `.env.local` to Git** (it's already in `.gitignore`)
+- Use app passwords instead of regular passwords
+- For production, consider services like SendGrid, Mailgun, or AWS SES
+
+#### Testing Email Functionality:
+1. Update `.env.local` with real email credentials
+2. Run the development server: `npm run dev`
+3. Go to the waitlist section and test the email form
+4. Check your inbox for the welcome email
+
 ### 3. Create a Quest Branch
 
 Never work directly on the `main` branch. Create a new branch specifically for your quest. This keeps the archives clean and makes your work easier to review.
