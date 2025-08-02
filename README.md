@@ -59,6 +59,7 @@ The Adventurers Guild addresses these challenges head-on by creating a vibrant, 
 
 Our platform is being built incrementally, with these core features driving our vision:
 
+* **🎮 Skill Tree & Developer Progression System:** Visual skill progression with categories like Frontend, Backend, AI, DevOps. Earn Skill Points (SP) from completing quests and unlock new skill branches with a gamified interface.
 * **Interactive Quest Board:** Browse, filter, and accept available commissioned projects.
 * **Adventurer Profile & Dashboard:** Track XP, current rank, completed Quests, and skill progression.
 * **XP & Ranking Engine:** Backend system for calculating and managing Adventurer ranks.

@@ -77,6 +77,9 @@ export default function AdventurersGuildLanding() {
             <Link href="#benefits" className="text-muted-foreground hover:text-foreground transition-colors font-medium">
               Benefits
             </Link>
+            <Link href="#testimonials" className="text-muted-foreground hover:text-foreground transition-colors font-medium">
+              Testimonials
+            </Link>
             <Button 
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-2 font-semibold transition-all duration-300 ease-out"
               onClick={() => document.getElementById('waitlist')?.scrollIntoView({ behavior: 'smooth' })}
@@ -104,6 +107,9 @@ export default function AdventurersGuildLanding() {
               </Link>
               <Link href="#benefits" className="block text-muted-foreground hover:text-foreground font-medium">
                 Benefits
+              </Link>
+              <Link href="#testimonials" className="block text-muted-foreground hover:text-foreground font-medium">
+                Testimonials
               </Link>
               <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground transition-all duration-300 ease-out">
                 Join Waitlist
@@ -220,9 +226,20 @@ export default function AdventurersGuildLanding() {
             >
               JOIN THE GUILD
             </Button>
+            <Link href="/home">
+              <Button 
+                size="lg" 
+                variant="outline"
+                className="border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground px-12 py-4 text-xl font-bold transition-all duration-300 ease-out"
+              >
+                ENTER GUILD
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
+
+
 
       {/* Mission Statement */}
       <section className="py-24 px-6 bg-background">
@@ -382,6 +399,35 @@ export default function AdventurersGuildLanding() {
                 <h3 className="text-2xl font-bold mb-4 text-foreground">{benefit.title}</h3>
                 <p className="text-lg text-muted-foreground leading-relaxed">{benefit.desc}</p>
               </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
+      <section id="testimonials" className="py-24 px-6 bg-card text-card-foreground">
+        <div className="container mx-auto max-w-6xl">
+          <div className="text-center mb-20">
+            <h2 className="text-5xl md:text-7xl font-black mb-6">
+              FROM THE ADVENTURERS
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[...Array(3)].map((_, index) => (
+              <Card key={index} className="bg-background rounded-2xl shadow-lg p-8 flex flex-col justify-between">
+                <p className="text-lg text-muted-foreground leading-relaxed mb-6">
+                  “The Adventurers Guild has been a game-changer for my career. I've learned more in the past three months than I did in three years of college.”
+                </p>
+                <div className="flex items-center space-x-4">
+                  <div className="w-12 h-12 rounded-full bg-primary flex items-center justify-center">
+                    <span className="text-primary-foreground font-bold text-lg">J.D.</span>
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-lg">Jane Doe</h4>
+                    <p className="text-muted-foreground">S-Rank Adventurer</p>
+                  </div>
+                </div>
+              </Card>
             ))}
           </div>
         </div>
