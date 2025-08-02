@@ -12,7 +12,7 @@ This document outlines potential areas for improvement for the Adventurers Guild
 ## Performance
 
 *   **Image Optimization:** The project uses `.png` and `.jpg` images. To improve loading times, consider converting them to a more modern format like WebP, which offers better compression. Next.js's built-in `Image` component can automate this optimization.
-*   **Code Splitting:** While Next.js handles page-based code splitting automatically, you can further optimize performance by dynamically importing components that are not required for the initial render (e.g., components that are off-screen).
+*   **Code Splitting:**  While Next.js handles page-based code splitting automatically, you can further optimize performance by dynamically importing components that are not required for the initial render (e.g., components that are off-screen).
 *   **Bundle Size Analysis:** Use a tool like `@next/bundle-analyzer` to inspect the size of your JavaScript bundles. This can help identify large dependencies that could be replaced with smaller alternatives.
 
 ## Accessibility (a11y)

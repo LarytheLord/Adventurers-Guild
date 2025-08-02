@@ -120,6 +120,21 @@
   }
 }
 
+@keyframes slide-in-from-bottom {
+  0% {
+    opacity: 0;
+    transform: translateY(100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-in {
+  animation: slide-in-from-bottom 0.3s ease-out;
+}
+
 /* Smooth scrolling for all elements */
 .smooth-scroll {
   scroll-behavior: smooth;

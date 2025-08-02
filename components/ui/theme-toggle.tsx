@@ -5,7 +5,7 @@
 import * as React from "react"
 import { useTheme } from "next-themes"
 import { Button } from "./button"
-import { Sun, Moon, Laptop } from "lucide-react"
+import { Sun, Moon } from "lucide-react"
 
 export function ThemeToggle() {
   const { theme, setTheme, systemTheme } = useTheme()
@@ -18,30 +18,22 @@ export function ThemeToggle() {
   if (!mounted) return null
 
   const currentTheme = theme === "system" ? systemTheme : theme
+  const isDark = currentTheme === "dark"
+
+  const toggleTheme = () => {
+    setTheme(isDark ? "light" : "dark")
+  }
 
   return (
-    <div className="flex items-center gap-2">
-      <Button
-        variant={currentTheme === "light" ? "default" : "ghost"}
-        aria-label="Switch to light mode"
-        onClick={() => setTheme("light")}
-      >
-        <Sun className="transition-transform duration-300 scale-100" />
-      </Button>
-      <Button
-        variant={currentTheme === "dark" ? "default" : "ghost"}
-        aria-label="Switch to dark mode"
-        onClick={() => setTheme("dark")}
-      >
-        <Moon className="transition-transform duration-300 scale-100" />
-      </Button>
-      <Button
-        variant={theme === "system" ? "default" : "ghost"}
-        aria-label="Use system theme"
-        onClick={() => setTheme("system")}
-      >
-        <Laptop className="transition-transform duration-300 scale-100" />
-      </Button>
-    </div>
+    <Button
+      variant="ghost"
+      size="icon"
+      aria-label={`Switch to ${isDark ? 'light' : 'dark'} mode`}
+      onClick={toggleTheme}
+      className="relative w-10 h-10 rounded-full transition-all duration-300 hover:scale-110"
+    >
+      <Sun className={`h-5 w-5 transition-all duration-300 ${isDark ? 'rotate-0 scale-100' : 'rotate-90 scale-0'}`} />
+      <Moon className={`absolute h-5 w-5 transition-all duration-300 ${isDark ? '-rotate-90 scale-0' : 'rotate-0 scale-100'}`} />
+    </Button>
   )
 } 

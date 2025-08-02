@@ -9,6 +9,7 @@ import { Code, Zap, Target, Users, Trophy, Compass, Shield, Sword, ChevronRight,
 import Image from "next/image"
 import Link from "next/link"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
+import { GoToTop } from "@/components/ui/go-to-top"
 
 export default function AdventurersGuildLanding() {
   const [email, setEmail] = useState('')
@@ -494,6 +495,9 @@ export default function AdventurersGuildLanding() {
           </div>
         </div>
       </footer>
+
+      {/* Go to Top Button */}
+      <GoToTop />
     </div>
   )
 }
