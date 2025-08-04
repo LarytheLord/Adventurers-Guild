@@ -1,0 +1,119 @@
+Create a comprehensive plan for an MVP of a gamified developer community platform called "The Adventurers Guild." The platform should connect student developers ("Adventurers") with real-world projects ("Quests") from companies ("Quest Givers").
+
+Project Scope:
+
+The MVP should focus on the core functionality:
+
+User onboarding and profile management for two user types: Adventurers and Quest Givers.
+
+A "Quests" dashboard where Quest Givers can post projects and Adventurers can view and apply for them.
+
+A basic "XP" and "Rank" system for Adventurers.
+
+A simple project submission and review process.
+
+Technical Stack:
+
+Frontend: Next.js (for both static and server-side rendering), TypeScript, Tailwind CSS (for styling and rapid UI development), and Shadcn/ui for pre-built, accessible UI components.
+
+Backend: A serverless approach using either Firebase with Firestore or a Node.js/Express.js backend deployed on a service like Vercel or AWS Lambda.
+
+Database: PostgreSQL, hosted on a service like Supabase or Neon.
+
+State Management: React Context API or Zustand for global state.
+
+Deployment: Vercel (for Next.js frontend) and Supabase/Neon (for the PostgreSQL database).
+
+Code Quality/Tooling: Prettier for code formatting, ESLint for linting, and Husky for Git hooks to ensure code quality before commits.
+
+MVP Feature Breakdown:
+
+User Authentication and Profiles
+Public:
+
+src/app/page.tsx: A marketing landing page explaining the platform.
+
+/login: Sign-in/Sign-up page using email/password and OAuth (Google, GitHub).
+
+/register/adventurer: Onboarding form for Adventurers.
+
+/register/quest-giver: Onboarding form for Quest Givers.
+
+Adventurer Profile:
+
+src/app/adventurer/[id]/page.tsx: Public profile page with Name, Bio, Skills, GitHub Link, and Quests Completed.
+
+src/app/dashboard/profile: Private dashboard for Adventurer to edit their profile and view their XP, Rank, and Quests Applied For.
+
+Quest Giver Profile:
+
+src/app/quest-giver/[id]/page.tsx: Public company profile page.
+
+src/app/dashboard/profile: Private dashboard for Quest Giver to edit company info and view their posted quests.
+
+Quests Management System
+Quest Giver Flow:
+
+src/app/dashboard/quests/create: A form to post a new Quest. Required fields: Title, Description, XP Value, Skills Required, Deadline.
+
+src/app/dashboard/quests: A table or list view showing all posted Quests with their Status (e.g., Open, In Progress, Closed) and a list of applicants.
+
+Adventurer Flow:
+
+src/app/quests: A public page listing all open Quests.
+
+src/app/quests/[id]: A detailed page for a single Quest. Includes a button to "Apply" or "View Quest Giver Profile."
+
+Gamification and Progress
+XP System:
+
+When an Adventurer's application is accepted, their status changes to "In Progress."
+
+When a Quest Giver marks a Quest as "Complete" and approves the Adventurer's work, a server function should update the Adventurer's XP and automatically calculate their new Rank.
+
+Project Submission and Review
+Submission: Adventurers should be able to submit a URL (e.g., a GitHub repository link) for their completed project.
+
+Review: Quest Givers should be able to view the submission and mark it as "Approved" or "Denied."
+
+Database Schema (PostgreSQL):
+
+Provide a detailed schema for the following tables:
+
+users: Contains common user data.
+
+adventurers: Extends users with Adventurer-specific fields (e.g., xp, rank, skills).
+
+quest_givers: Extends users with company-specific fields (e.g., companyName).
+
+quests: Stores all project information.
+
+applications: A join table to manage the relationship between Adventurers and Quests, including status and submission_url.
+
+Implementation Plan (Sprint-based):
+
+Sprint 1: Core Foundation (2 weeks):
+
+Set up the Next.js project with TypeScript, Tailwind, and Shadcn.
+
+Implement user authentication (Sign-in/Sign-up) using NextAuth.js.
+
+Establish the database schema on Supabase/Neon.
+
+Sprint 2: Profiles & CRUD (2 weeks):
+
+Develop the Adventurer and Quest Giver profile pages (read/write).
+
+Create the UI and backend logic for Quest Givers to post new quests (Create, Read, Update, Delete).
+
+Sprint 3: Matching & Gamification (2 weeks):
+
+Build the public Quests page for Adventurers to browse and apply.
+
+Implement the core logic for the XP and Rank system.
+
+Develop the submission and review process.
+
+Final Deliverable:
+
+Generate a complete, step-by-step plan that a developer could follow to build this MVP, including file paths, component names, and a detailed explanation of the API routes and database interactions for each feature. The plan should also include a brief section on how to deploy the application on Vercel and Supabase.

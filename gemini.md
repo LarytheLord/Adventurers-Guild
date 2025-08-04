@@ -1,3 +1,10 @@
+# Adventurers Guild - Gemini Development Log
+
+This file contains the code for the profile page and related components, as developed by Gemini.
+
+## `app/home/page.tsx`
+
+```tsx
 'use client'
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -300,3 +307,198 @@ export default function HomePage() {
     </div>
   );
 }
+```
+
+## `app/profile/page.tsx`
+
+```tsx
+import { ChevronLeft } from 'lucide-react';
+import Link from 'next/link';
+
+'use client'
+
+import { UserProfileCard } from "@/components/profile/UserProfileCard";
+import { SkillPentagon } from "@/components/profile/SkillPentagon";
+import { SkillDetail } from "@/components/profile/SkillDetail";
+import { useState } from "react";
+
+const user = {
+  name: "LaryTheLord",
+  avatar: "/placeholder-user.jpg",
+  rank: "S",
+  xp: 24500,
+  xpNextLevel: 25000,
+  bio: "A passionate developer on a quest to master the art of coding and build amazing things.",
+  social: {
+    github: "https://github.com/LarytheLord",
+    linkedin: "https://www.linkedin.com/in/larythelord/",
+    twitter: "https://twitter.com/larythelord",
+  },
+  banner: "/images/profile-banner.png",
+};
+
+const skills = [
+    { name: 'Frontend', value: 90, description: 'Mastery of modern frontend technologies including React, Next.js, and Tailwind CSS.' },
+    { name: 'Backend', value: 75, description: 'Proficient in building robust and scalable backend systems with Node.js, Express, and databases.' },
+    { name: 'AI/ML', value: 60, description: 'Experience in developing AI-powered features and working with machine learning models.' },
+    { name: 'DevOps', value: 50, description: 'Knowledge of CI/CD pipelines, containerization with Docker, and cloud deployment.' },
+    { name: 'Soft Skills', value: 80, description: 'Excellent communication, teamwork, and problem-solving abilities.' },
+];
+
+export default function ProfilePage() {
+  const [selectedSkill, setSelectedSkill] = useState(skills[0]);
+
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="relative h-48 md:h-64">
+        <Link href="/home" className="absolute top-4 left-4 z-10 bg-background/50 p-2 rounded-full hover:bg-background/80 transition-colors">
+          <ChevronLeft className="w-6 h-6" />
+        </Link>
+        <img src={user.banner} alt="Profile Banner" className="w-full h-full object-cover" />
+        <div className="absolute inset-0 bg-black/50" />
+      </div>
+      <div className="container mx-auto p-4 sm:p-6 lg:p-8 -mt-24">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-1">
+            <UserProfileCard user={user} />
+          </div>
+          <div className="lg:col-span-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="bg-card p-4 rounded-lg">
+                <SkillPentagon skills={skills} onSkillSelect={setSelectedSkill} />
+              </div>
+              <div className="bg-card p-4 rounded-lg">
+                <SkillDetail skill={selectedSkill} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+```
+
+## `components/profile/UserProfileCard.tsx`
+
+```tsx
+'use client'
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+import { Github, Linkedin, Twitter } from "lucide-react";
+import Link from "next/link";
+
+export function UserProfileCard({ user }) {
+  return (
+    <Card className="overflow-hidden">
+      <CardHeader className="flex flex-col items-center text-center p-0">
+        <div className="relative w-full h-24 bg-muted" />
+        <Avatar className="w-32 h-32 -mt-16 border-4 border-background">
+          <AvatarImage src={user.avatar} />
+          <AvatarFallback>{user.name.substring(0, 2)}</AvatarFallback>
+        </Avatar>
+        <div className="p-6">
+          <CardTitle className="text-2xl font-bold">{user.name}</CardTitle>
+          <p className="text-muted-foreground">{user.rank}-Rank Adventurer</p>
+        </div>
+      </CardHeader>
+      <CardContent className="p-6">
+        <p className="text-center mb-6">{user.bio}</p>
+        <div className="mb-6">
+          <div className="flex justify-between items-center mb-2">
+            <span className="font-semibold">XP</span>
+            <span>{user.xp.toLocaleString()} / {user.xpNextLevel.toLocaleString()}</span>
+          </div>
+          <Progress value={(user.xp / user.xpNextLevel) * 100} />
+        </div>
+        <div className="flex justify-center space-x-4">
+          <Link href={user.social.github} passHref>
+            <Button variant="outline" size="icon">
+              <Github className="h-4 w-4" />
+            </Button>
+          </Link>
+          <Link href={user.social.linkedin} passHref>
+            <Button variant="outline" size="icon">
+              <Linkedin className="h-4 w-4" />
+            </Button>
+          </Link>
+          <Link href={user.social.twitter} passHref>
+            <Button variant="outline" size="icon">
+              <Twitter className="h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+## `components/profile/SkillPentagon.tsx`
+
+```tsx
+'use client'
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Legend } from 'recharts';
+
+export function SkillPentagon({ skills, onSkillSelect }) {
+  return (
+    <Card className="bg-card/50 backdrop-blur-sm">
+      <CardHeader>
+        <CardTitle className="text-lg font-bold">Skill Pentagon</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <ResponsiveContainer width="100%" height={300}>
+          <RadarChart data={skills} outerRadius="80%">
+            <PolarGrid stroke="hsl(var(--border))" />
+            <PolarAngleAxis dataKey="name" tick={{ fill: 'hsl(var(--foreground))' }} onClick={(data) => onSkillSelect(skills.find(s => s.name === data.value))} />
+            <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: 'hsl(var(--muted-foreground))' }} />
+            <Radar name="Skills" dataKey="value" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.6} />
+            <Legend />
+          </RadarChart>
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
+  );
+}
+```
+
+## `components/profile/SkillDetail.tsx`
+
+```tsx
+'use client'
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
+
+export function SkillDetail({ skill }) {
+  return (
+    <Card className="bg-card/50 backdrop-blur-sm">
+      <CardHeader>
+        <CardTitle className="text-lg font-bold">Skill Details</CardTitle>
+      </CardHeader>
+      <CardContent>
+        {skill ? (
+          <div>
+            <h3 className="text-xl font-bold mb-4">{skill.name}</h3>
+            <div className="flex items-center justify-between mb-2">
+              <span className="font-semibold">Proficiency</span>
+              <span>{skill.value}%</span>
+            </div>
+            <Progress value={skill.value} className="[&>div]:bg-primary" />
+            <p className="text-muted-foreground mt-4">
+              {skill.description}
+            </p>
+          </div>
+        ) : (
+          <p>Select a skill to see details.</p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+```
