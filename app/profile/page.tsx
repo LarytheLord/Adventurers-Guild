@@ -1,9 +1,6 @@
-
+'use client'
 import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
-
-'use client'
-
 import { UserProfileCard } from "@/components/profile/UserProfileCard";
 import { SkillPentagon } from "@/components/profile/SkillPentagon";
 import { SkillDetail } from "@/components/profile/SkillDetail";

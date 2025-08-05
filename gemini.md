@@ -1,3 +1,4 @@
+
 # Adventurers Guild - Gemini Development Log
 
 This file contains the code for the profile page and related components, as developed by Gemini.
@@ -19,19 +20,9 @@ import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { ArrowRight, Github, Linkedin, Menu, Search, Star, Twitter, X, Sparkles, Trophy, User, LogOut } from 'lucide-react';
 import Image from "next/image";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { SkillTree } from "@/components/skill-tree";
 import { QuestCompletion } from "@/components/quest-completion";
-
-// --- MOCK DATA ---
-const quests = [
-  { title: "Bug Bounty Brigades", description: "Hunt down and squash bugs in existing codebases. A great way to learn and earn XP.", image: "/images/quest-board.png", rank: "C", xp: 500 },
-  { title: "Digital Archaeology", description: "Explore and document legacy codebases. Uncover hidden gems and learn from the past.", image: "/images/quest-board.png", rank: "B", xp: 800 },
-  { title: "Narrative-Driven Hackathons", description: "Participate in themed hackathons with engaging storylines. Build innovative solutions and win prizes.", image: "/images/quest-board.png", rank: "A", xp: 1200 },
-  { title: "UI/UX Redesign Challenge", description: "Redesign the user interface of a popular open-source application. Focus on usability and modern design principles.", image: "/images/quest-board.png", rank: "B", xp: 750 },
-  { title: "Open Source Contribution", description: "Contribute to a major open-source project. Add a new feature, fix a critical bug, or improve documentation.", image: "/images/quest-board.png", rank: "S", xp: 2000 },
-  { title: "Code Refactoring Quest", description: "Refactor a messy codebase to improve its readability, performance, and maintainability.", image: "/images/quest-board.png", rank: "D", xp: 300 },
-];
 
 const user = {
   name: "LaryTheLord",
@@ -43,7 +34,7 @@ const user = {
 
 // --- REUSABLE COMPONENTS ---
 
-function QuestCard({ quest }: { quest: typeof quests[0] }) {
+function QuestCard({ quest }: { quest: any }) {
   const rankColor = {
     S: 'bg-yellow-500 text-black',
     A: 'bg-red-500 text-white',
@@ -89,6 +80,9 @@ function UserDashboard() {
             <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6 sm:mt-8">
               <SkillTree />
               <QuestCompletion />
+              <Link href="/commission">
+                <Button>Commission a Quest</Button>
+              </Link>
             </div>
           </div>
           <Card className="bg-background rounded-2xl shadow-lg p-4 sm:p-6">
@@ -117,8 +111,19 @@ function UserDashboard() {
 }
 
 function QuestBoard() {
+  const [quests, setQuests] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [rankFilter, setRankFilter] = useState('all');
+
+  useEffect(() => {
+    const fetchQuests = async () => {
+      const response = await fetch('/api/quests');
+      const data = await response.json();
+      setQuests(data.quests);
+    };
+
+    fetchQuests();
+  }, []);
 
   const filteredQuests = useMemo(() => {
     return quests
@@ -129,7 +134,7 @@ function QuestBoard() {
       .filter(quest => 
         rankFilter === 'all' || quest.rank === rankFilter
       );
-  }, [searchTerm, rankFilter]);
+  }, [quests, searchTerm, rankFilter]);
 
   return (
     <section id="quests" className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 bg-background">
@@ -312,11 +317,9 @@ export default function HomePage() {
 ## `app/profile/page.tsx`
 
 ```tsx
+'use client'
 import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
-
-'use client'
-
 import { UserProfileCard } from "@/components/profile/UserProfileCard";
 import { SkillPentagon } from "@/components/profile/SkillPentagon";
 import { SkillDetail } from "@/components/profile/SkillDetail";
@@ -376,6 +379,207 @@ export default function ProfilePage() {
       </div>
     </div>
   );
+}
+```
+
+## `app/commission/page.tsx`
+
+```tsx
+'use client'
+
+import { useState } from 'react'
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ArrowLeft } from 'lucide-react'
+import Link from 'next/link'
+
+export default function CommissionPage() {
+  const [title, setTitle] = useState('')
+  const [description, setDescription] = useState('')
+  const [rank, setRank] = useState('C')
+  const [xp, setXp] = useState(500)
+  const [image, setImage] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState('')
+  const [isSubmitted, setIsSubmitted] = useState(false)
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmitting(true)
+    setError('')
+    setIsSubmitted(false)
+
+    try {
+      const response = await fetch('/api/quests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title, description, rank, xp, image }),
+      })
+
+      const data = await response.json()
+
+      if (data.success) {
+        setIsSubmitted(true)
+        setTitle('')
+        setDescription('')
+        setRank('C')
+        setXp(500)
+        setImage('')
+        setTimeout(() => setIsSubmitted(false), 5000)
+      } else {
+        throw new Error(data.message || 'Failed to submit quest')
+      }
+    } catch (error) {
+      console.error('Error:', error)
+      setError('Something went wrong. Please try again.')
+      setTimeout(() => setError(''), 5000)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="min-h-screen bg-background text-foreground">
+      <div className="container mx-auto p-4 sm:p-6 lg:p-8">
+        <div className="flex items-center mb-8">
+          <Link href="/home">
+            <Button variant="outline" size="icon">
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+          </Link>
+          <h1 className="text-3xl font-bold ml-4">Commission a Quest</h1>
+        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Create a New Quest</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {isSubmitted && (
+              <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
+                Quest submitted successfully!
+              </div>
+            )}
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                {error}
+              </div>
+            )}
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label htmlFor="title" className="block text-sm font-medium text-muted-foreground mb-2">Quest Title</label>
+                <Input
+                  id="title"
+                  type="text"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="e.g., Bug Bounty Brigades"
+                  required
+                  disabled={isSubmitting}
+                />
+              </div>
+              <div>
+                <label htmlFor="description" className="block text-sm font-medium text-muted-foreground mb-2">Quest Description</label>
+                <Textarea
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="A detailed description of the quest."
+                  required
+                  disabled={isSubmitting}
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label htmlFor="rank" className="block text-sm font-medium text-muted-foreground mb-2">Rank</label>
+                  <select
+                    id="rank"
+                    value={rank}
+                    onChange={(e) => setRank(e.target.value)}
+                    className="w-full p-2 border rounded-md"
+                    required
+                    disabled={isSubmitting}
+                  >
+                    <option value="S">S-Rank</option>
+                    <option value="A">A-Rank</option>
+                    <option value="B">B-Rank</option>
+                    <option value="C">C-Rank</option>
+                    <option value="D">D-Rank</option>
+                  </select>
+                </div>
+                <div>
+                  <label htmlFor="xp" className="block text-sm font-medium text-muted-foreground mb-2">XP Reward</label>
+                  <Input
+                    id="xp"
+                    type="number"
+                    value={xp}
+                    onChange={(e) => setXp(Number(e.target.value))}
+                    required
+                    disabled={isSubmitting}
+                  />
+                </div>
+              </div>
+              <div>
+                <label htmlFor="image" className="block text-sm font-medium text-muted-foreground mb-2">Image URL (Optional)</label>
+                <Input
+                  id="image"
+                  type="text"
+                  value={image}
+                  onChange={(e) => setImage(e.target.value)}
+                  placeholder="https://example.com/quest-image.png"
+                  disabled={isSubmitting}
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting ? 'Submitting...' : 'Submit Quest'}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  )
+}
+```
+
+## `app/api/quests/route.ts`
+
+```ts
+import { NextResponse } from 'next/server'
+
+// Mock database
+let quests = [
+  { title: "Bug Bounty Brigades", description: "Hunt down and squash bugs in existing codebases. A great way to learn and earn XP.", image: "/images/quest-board.png", rank: "C", xp: 500 },
+  { title: "Digital Archaeology", description: "Explore and document legacy codebases. Uncover hidden gems and learn from the past.", image: "/images/quest-board.png", rank: "B", xp: 800 },
+  { title: "Narrative-Driven Hackathons", description: "Participate in themed hackathons with engaging storylines. Build innovative solutions and win prizes.", image: "/images/quest-board.png", rank: "A", xp: 1200 },
+  { title: "UI/UX Redesign Challenge", description: "Redesign the user interface of a popular open-source application. Focus on usability and modern design principles.", image: "/images/quest-board.png", rank: "B", xp: 750 },
+  { title: "Open Source Contribution", description: "Contribute to a major open-source project. Add a new feature, fix a critical bug, or improve documentation.", image: "/images/quest-board.png", rank: "S", xp: 2000 },
+  { title: "Code Refactoring Quest", description: "Refactor a messy codebase to improve its readability, performance, and maintainability.", image: "/images/quest-board.png", rank: "D", xp: 300 },
+];
+
+export async function GET() {
+  return NextResponse.json({ quests })
+}
+
+export async function POST(request: Request) {
+  try {
+    const { title, description, rank, xp, image } = await request.json()
+
+    if (!title || !description || !rank || !xp) {
+      return NextResponse.json({ success: false, message: 'Missing required fields' }, { status: 400 })
+    }
+
+    const newQuest = { title, description, rank, xp, image: image || '/images/quest-board.png' };
+    quests.push(newQuest);
+
+    return NextResponse.json({ success: true, quest: newQuest })
+  } catch (error) {
+    console.error('Error creating quest:', error);
+    return NextResponse.json({ success: false, message: 'Internal Server Error' }, { status: 500 })
+  }
 }
 ```
 
