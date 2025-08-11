@@ -19,7 +19,7 @@ The Skill Tree and Developer Progression System is a gamified feature that allow
 - Overall progress tracking across all skills
 
 ### 🔓 Skill Unlocking
-- Skills start locked and require SP to unlock
+- All skills are initially inaccessible, and you need to earn enough Skill Points (SP) to make them available.
 - Each skill has multiple levels (1-5)
 - Visual indicators show locked vs unlocked skills
 - Progress dots display current skill level
@@ -126,6 +126,7 @@ To contribute to the Skill Tree system:
 2. **Improve UI**: Enhance the visual design and user experience
 3. **Add Features**: Implement new gamification elements
 4. **Optimize Performance**: Improve component rendering and data management
+5. **Activity Heatmap**: Implement a contribution calendar similar to GitHub/LeetCode/CodeChef, showing daily activity streaks and submission counts to encourage consistency.
 
 ## Technical Stack
 
