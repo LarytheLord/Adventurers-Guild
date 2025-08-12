@@ -4,19 +4,19 @@
 
 ## TL;DR
 - Start small and prove traction before asking for large checks.  
-- Use agile funding instruments (e.g., SeedFAST) or micro-instruments to buy time. :contentReference[oaicite:0]{index=0}  
-- Use investor-matching platforms (e.g., FundTQ, AngelList, OpenVC) to find targeted investors and improve outreach. :contentReference[oaicite:1]{index=1}  
-- Explore government/incubator funding (e.g., Startup India Seed Fund Scheme) for non-dilutive or early proof-of-concept funding. :contentReference[oaicite:2]{index=2}
+- Use agile funding instruments (e.g., [SeedFAST](https://seedlegals.com/seedfast/)) or micro-instruments to buy time.  
+- Use investor-matching platforms (e.g., [FundTQ](https://fundtq.com), [AngelList](https://angel.co), [OpenVC](https://open.vc)) to find targeted investors and improve outreach.  
+- Explore government/incubator funding (e.g., [Startup India Seed Fund Scheme](https://www.startupindia.gov.in)) for non-dilutive or early proof-of-concept funding.
 
 ---
 
 ## 1. Recommended funding strategies (high level)
 
 ### 1.1 Agile / incremental funding (SeedFAST & similar)
-- Raise smaller amounts ahead of a formal valuation using instruments like a SeedFAST (advance subscription-style instrument). This is useful for bridge capital and early validation without fixing valuation immediately. :contentReference[oaicite:3]{index=3}
+- Raise smaller amounts ahead of a formal valuation using instruments like a SeedFAST (advance subscription-style instrument). This is useful for bridge capital and early validation without fixing valuation immediately.
 
 ### 1.2 Targeted investor discovery & pitch tools
-- Platforms that provide investor matchmaking, valuation tools, and pitch templates can accelerate introductions and improve your pitch quality (e.g., FundTQ, AngelList, OpenVC). Use these to shortlist investors who fit your sector and stage. :contentReference[oaicite:4]{index=4}
+- Platforms that provide investor matchmaking, valuation tools, and pitch templates can accelerate introductions and improve your pitch quality (e.g., [FundTQ](https://fundtq.com), [AngelList](https://angel.co), [OpenVC](https://open.vc)). Use these to shortlist investors who fit your sector and stage.
 
 ### 1.3 Micro VCs, syndicates & angels
 - Target micro-VCs, angel networks, and syndicates that specialise in pre-revenue or pre-product startups — they often invest smaller cheques and provide hands-on mentorship.
@@ -25,15 +25,16 @@
 - Consider flexible structures that mix small equity stakes with revenue-share or convertible notes (where acceptable to investors) to preserve runway while aligning incentives.
 
 ### 1.5 Grants & incubators (government & university)
-- Explore grant schemes and incubator seed funds (e.g., Startup India Seed Fund Scheme) for non-dilutive support, mentorship, and infrastructure. These programs often have application windows and eligibility criteria. :contentReference[oaicite:5]{index=5}
+- Explore grant schemes and incubator seed funds (e.g., [Startup India Seed Fund Scheme](https://www.startupindia.gov.in)) for non-dilutive support, mentorship, and infrastructure. These programs often have application windows and eligibility criteria.
 
 ---
 
 ## 2. Tools & platforms (shortlist)
-- **SeedFAST / SeedLegals** — instrument to raise ahead of a priced round. :contentReference[oaicite:6]{index=6}  
-- **FundTQ** — fundraising + valuation + pitch toolkit (matchmaking and templates). :contentReference[oaicite:7]{index=7}  
-- **AngelList / OpenVC / StartEngine / Wefunder** — platforms to find angels, syndicates, and crowdfunding options. :contentReference[oaicite:8]{index=8}  
-- **Startup India** — national programs, seed fund schemes, incubator networks (India-specific). :contentReference[oaicite:9]{index=9}
+- **SeedFAST / SeedLegals** — instrument to raise ahead of a priced round. [SeedLegals](https://seedlegals.com)  
+- **FundTQ** — fundraising + valuation + pitch toolkit (matchmaking and templates). [FundTQ](https://fundtq.com)  
+- **AngelList / OpenVC / StartEngine / Wefunder** — platforms to find angels, syndicates, and crowdfunding options.  
+  [AngelList](https://angel.co) / [OpenVC](https://open.vc) / [StartEngine](https://startengine.com) / [Wefunder](https://wefunder.com)  
+- **Startup India** — national programs, seed fund schemes, incubator networks (India-specific). [Startup India](https://www.startupindia.gov.in)
 
 ---
 
@@ -55,7 +56,7 @@ Keep files in a simple data room (Google Drive / Notion / Dropbox) and keep acce
 
 ### Step 2 — choose funding route & target list (1 week)
 - Decide: SeedFAST / convertible / angel syndicate / grant / crowdfunding.  
-- Use FundTQ / AngelList / OpenVC to create a targeted investor short-list. :contentReference[oaicite:10]{index=10}
+- Use [FundTQ](https://fundtq.com), [AngelList](https://angel.co), [OpenVC](https://open.vc) to create a targeted investor short-list.
 
 ### Step 3 — outreach & conversion (2–6 weeks)
 - Send a short, targeted intro email + one-pager (follow-up in 3–5 days). Automate tracking with a simple CRM (Airtable, Notion, HubSpot free).  
@@ -66,7 +67,7 @@ Keep files in a simple data room (Google Drive / Notion / Dropbox) and keep acce
 - Negotiate simple, founder-friendly terms: focus on alignment (mentorship, follow-on rights) over cheque size where helpful.
 
 ### Step 5 — close & post-close
-- Use a lawyer or a templated legal platform (SeedLegals type) for docs. After close: update cap table, issue stock options where needed, and deposit funds into corporate account with clear bookkeeping.
+- Use a lawyer or a templated legal platform ([SeedLegals](https://seedlegals.com) type) for docs. After close: update cap table, issue stock options where needed, and deposit funds into corporate account with clear bookkeeping.
 
 ---
 
@@ -82,20 +83,19 @@ Keep files in a simple data room (Google Drive / Notion / Dropbox) and keep acce
 - Prioritise investor fit (sector, stage, mentoring style) over cheque size.  
 - Keep records tidy and transparent — it speeds due diligence and builds trust.  
 - Be ready to iterate quickly on the deck after every investor call.  
-- Use government/incubator routes for early non-dilutive runway if eligible. :contentReference[oaicite:11]{index=11}
+- Use government/incubator routes for early non-dilutive runway if eligible.
 
 ---
 
 ## 6. Useful links & resources
-- SeedLegals — SeedFAST docs & guides. :contentReference[oaicite:12]{index=12}  
-- FundTQ — fundraising & valuation platform. :contentReference[oaicite:13]{index=13}  
-- AngelList — investor discovery. :contentReference[oaicite:14]{index=14}  
-- OpenVC — free investor discovery & pitch submission. :contentReference[oaicite:15]{index=15}  
-- Startup India — government seed fund & incubator programs. :contentReference[oaicite:16]{index=16}
+- [SeedLegals](https://seedlegals.com) — SeedFAST docs & guides.  
+- [FundTQ](https://fundtq.com) — fundraising & valuation platform.  
+- [AngelList](https://angel.co) — investor discovery.  
+- [OpenVC](https://open.vc) — free investor discovery & pitch submission.  
+- [Startup India](https://www.startupindia.gov.in) — government seed fund & incubator programs.
 
 ---
 
 ## 7. Concluding notes
 - This guide is tactical: choose one path (grants / SeedFAST / angels) and execute — don't try to run all routes at once.  
 - If you want, we can produce: a short 1-page checklist PDF, a sample 6-slide deck, and an outreach email template tailored to your sector.
-
