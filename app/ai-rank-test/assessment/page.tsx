@@ -24,7 +24,7 @@ import {
   Terminal,
   FileCode
 } from 'lucide-react'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/hooks/use-auth'
 
 // This will be replaced with Monaco Editor in production
 const CodeEditor = ({ value, onChange, language }: any) => {

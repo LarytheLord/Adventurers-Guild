@@ -18,7 +18,7 @@ import {
   Award,
   AlertCircle
 } from 'lucide-react'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/hooks/use-auth'
 
 export default function AIRankTestWelcome() {
   const router = useRouter()
