@@ -1,46 +1,45 @@
-import { supabase } from './supabase'
+import { createBrowserSupabaseClient, createServerSupabaseClient } from './supabase'
 import { Database } from '@/types/supabase'
 
 type User = Database['public']['Tables']['users']['Row']
+type UserRole = 'student' | 'company' | 'admin'
 
 export class AuthService {
+  private static getClient(isServer: boolean = false) {
+    return isServer ? createServerSupabaseClient() : createBrowserSupabaseClient()
+  }
+
   // Sign up with email
   static async signUp(email: string, password: string, userData: {
     name?: string
-    role?: 'student' | 'company'
+    role?: UserRole
+    company_name?: string
   }) {
+    const supabase = this.getClient()
+    
     const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: {
         data: {
           name: userData.name,
-          role: userData.role || 'student'
-        }
+          role: userData.role || 'student',
+          company_name: userData.company_name
+        },
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`
       }
     })
 
     if (authError) throw authError
 
-    // Create user profile
-    if (authData.user) {
-      const { error: profileError } = await supabase
-        .from('users')
-        .insert({
-          id: authData.user.id,
-          email: authData.user.email!,
-          name: userData.name || null,
-          role: userData.role || 'student'
-        })
-
-      if (profileError) throw profileError
-    }
-
+    // Profile will be created automatically via database trigger
     return authData
   }
 
   // Sign in with email
   static async signIn(email: string, password: string) {
+    const supabase = this.getClient()
+    
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password
@@ -52,10 +51,13 @@ export class AuthService {
 
   // Sign in with OAuth (Google, GitHub)
   static async signInWithOAuth(provider: 'google' | 'github') {
+    const supabase = this.getClient()
+    
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`
+        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+        scopes: provider === 'github' ? 'read:user user:email' : undefined
       }
     })
 
@@ -65,12 +67,15 @@ export class AuthService {
 
   // Sign out
   static async signOut() {
+    const supabase = this.getClient()
     const { error } = await supabase.auth.signOut()
     if (error) throw error
   }
 
   // Get current user
-  static async getCurrentUser(): Promise<User | null> {
+  static async getCurrentUser(isServer: boolean = false): Promise<User | null> {
+    const supabase = this.getClient(isServer)
+    
     const { data: { user } } = await supabase.auth.getUser()
     
     if (!user) return null
@@ -84,8 +89,17 @@ export class AuthService {
     return profile
   }
 
+  // Get session
+  static async getSession(isServer: boolean = false) {
+    const supabase = this.getClient(isServer)
+    const { data: { session } } = await supabase.auth.getSession()
+    return session
+  }
+
   // Update user profile
   static async updateProfile(userId: string, updates: Partial<User>) {
+    const supabase = this.getClient()
+    
     const { data, error } = await supabase
       .from('users')
       .update(updates)
@@ -99,10 +113,37 @@ export class AuthService {
 
   // Reset password
   static async resetPassword(email: string) {
+    const supabase = this.getClient()
+    
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/reset-password`
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password`
     })
 
     if (error) throw error
+  }
+
+  // Update password
+  static async updatePassword(newPassword: string) {
+    const supabase = this.getClient()
+    
+    const { error } = await supabase.auth.updateUser({
+      password: newPassword
+    })
+
+    if (error) throw error
+  }
+
+  // Verify email with OTP
+  static async verifyOtp(email: string, token: string) {
+    const supabase = this.getClient()
+    
+    const { data, error } = await supabase.auth.verifyOtp({
+      email,
+      token,
+      type: 'email'
+    })
+
+    if (error) throw error
+    return data
   }
 }
