@@ -1,42 +1,46 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Progress } from '@/components/ui/progress'
-import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { 
-  Code, 
   Play, 
-  Send, 
+  ChevronRight, 
+  ChevronLeft,
   Timer,
   CheckCircle,
   XCircle,
+  Code,
+  Lightbulb,
   AlertCircle,
-  Loader2,
-  ChevronLeft,
-  ChevronRight,
-  Terminal,
-  FileCode
+  Brain,
+  Zap,
+  Target,
+  Activity,
+  Save,
+  RotateCcw
 } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
+import { toast } from 'sonner'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
-// This will be replaced with Monaco Editor in production
-const CodeEditor = ({ value, onChange, language }: any) => {
-  return (
-    <Textarea
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="font-mono text-sm min-h-[400px] bg-slate-950 text-slate-100"
-      placeholder={`// Write your ${language} solution here...`}
-    />
-  )
-}
+// Monaco Editor (dynamically imported to avoid SSR issues)
+import dynamic from 'next/dynamic'
+const MonacoEditor = dynamic(
+  () => import('@monaco-editor/react'),
+  { ssr: false }
+)
 
 interface TestCase {
   input: any
@@ -362,28 +366,43 @@ export default function AIRankTestAssessment() {
                   </Select>
                 </div>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <CodeEditor
-                  value={code}
-                  onChange={setCode}
-                  language={selectedLanguage}
-                />
+              <CardContent className="p-0 space-y-0">
+                <div className="border rounded">
+                  <MonacoEditor
+                    height="400px"
+                    language={selectedLanguage === 'typescript' ? 'typescript' : selectedLanguage}
+                    value={code}
+                    onChange={(value) => setCode(value || '')}
+                    theme="vs-dark"
+                    options={{
+                      minimap: { enabled: false },
+                      fontSize: 14,
+                      fontFamily: 'JetBrains Mono, Fira Code, Monaco, Consolas, monospace',
+                      lineNumbers: 'on',
+                      roundedSelection: false,
+                      scrollBeyondLastLine: false,
+                      automaticLayout: true,
+                      tabSize: 2,
+                      wordWrap: 'on'
+                    }}
+                  />
+                </div>
 
-                <div className="flex gap-2">
+                <div className="p-4 flex gap-2">
                   <Button
                     onClick={handleRunTests}
-                    disabled={isRunningTests || isSubmitting}
-                    className="flex-1"
+                    disabled={isRunningTests || isSubmitting || !code.trim()}
+                    className="flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800"
                   >
                     {isRunningTests ? (
                       <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                         Running Tests...
                       </>
                     ) : (
                       <>
                         <Play className="w-4 h-4 mr-2" />
-                        Run Tests
+                        Run & Test
                       </>
                     )}
                   </Button>
@@ -395,12 +414,12 @@ export default function AIRankTestAssessment() {
                   >
                     {isSubmitting ? (
                       <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                         Submitting...
                       </>
                     ) : (
                       <>
-                        <Send className="w-4 h-4 mr-2" />
+                        <ChevronRight className="w-4 h-4 mr-2" />
                         Submit Solution
                       </>
                     )}
