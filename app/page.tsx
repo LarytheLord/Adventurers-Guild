@@ -72,14 +72,17 @@ export default function AdventurersGuildLanding() {
           
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
-            <Link href="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors font-medium text-sm xl:text-base">
+            <Link href="/how-it-works" className="text-muted-foreground hover:text-foreground transition-colors font-medium text-sm xl:text-base">
               How It Works
             </Link>
-            <Link href="#benefits" className="text-muted-foreground hover:text-foreground transition-colors font-medium text-sm xl:text-base">
-              Benefits
+            <Link href="/quests" className="text-muted-foreground hover:text-foreground transition-colors font-medium text-sm xl:text-base">
+              Browse Quests
             </Link>
-            <Link href="#testimonials" className="text-muted-foreground hover:text-foreground transition-colors font-medium text-sm xl:text-base">
-              Testimonials
+            <Link href="/about" className="text-muted-foreground hover:text-foreground transition-colors font-medium text-sm xl:text-base">
+              About
+            </Link>
+            <Link href="/login" className="text-muted-foreground hover:text-foreground transition-colors font-medium text-sm xl:text-base">
+              Login
             </Link>
             <Button 
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 sm:px-6 py-2 font-semibold transition-all duration-300 ease-out text-sm xl:text-base"
@@ -143,17 +146,8 @@ export default function AdventurersGuildLanding() {
 
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center pt-16 sm:pt-20">
-        {/* Background Image */}
-        <div className="absolute inset-0">
-          <Image
-            src="/images/hero-bg.png"
-            alt="Digital Adventure Landscape"
-            fill
-            className="object-cover"
-            priority
-          />
-          <div className="absolute inset-0 bg-black/20"></div>
-        </div>
+        {/* Background Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-background to-secondary/10"></div>
 
         {/* Decorative Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -245,7 +239,7 @@ export default function AdventurersGuildLanding() {
             >
               JOIN THE GUILD
             </Button>
-            <Link href="/home" className="w-full sm:w-auto">
+            <Link href="/login" className="w-full sm:w-auto">
               <Button 
                 size="lg" 
                 variant="outline"
@@ -636,8 +630,41 @@ export default function AdventurersGuildLanding() {
             </div>
           </div>
           
-          <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-border text-center text-muted-foreground text-sm">
-            © {new Date().getFullYear()} The Adventurers Guild. All rights reserved.
+          <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-border">
+            <div className="grid md:grid-cols-4 gap-8 mb-8">
+              <div>
+                <h4 className="font-semibold mb-4">Platform</h4>
+                <div className="space-y-2 text-sm">
+                  <Link href="/how-it-works" className="block text-muted-foreground hover:text-foreground">How It Works</Link>
+                  <Link href="/quests" className="block text-muted-foreground hover:text-foreground">Browse Quests</Link>
+                  <Link href="/commission" className="block text-muted-foreground hover:text-foreground">Post a Quest</Link>
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-4">Company</h4>
+                <div className="space-y-2 text-sm">
+                  <Link href="/about" className="block text-muted-foreground hover:text-foreground">About Us</Link>
+                  <Link href="/contact" className="block text-muted-foreground hover:text-foreground">Contact</Link>
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-4">Account</h4>
+                <div className="space-y-2 text-sm">
+                  <Link href="/login" className="block text-muted-foreground hover:text-foreground">Login</Link>
+                  <Link href="/signup" className="block text-muted-foreground hover:text-foreground">Sign Up</Link>
+                </div>
+              </div>
+              <div>
+                <h4 className="font-semibold mb-4">Legal</h4>
+                <div className="space-y-2 text-sm">
+                  <Link href="/privacy-policy" className="block text-muted-foreground hover:text-foreground">Privacy Policy</Link>
+                  <Link href="/terms-of-service" className="block text-muted-foreground hover:text-foreground">Terms of Service</Link>
+                </div>
+              </div>
+            </div>
+            <div className="text-center text-muted-foreground text-sm">
+              © {new Date().getFullYear()} The Adventurers Guild. All rights reserved.
+            </div>
           </div>
         </div>
       </footer>

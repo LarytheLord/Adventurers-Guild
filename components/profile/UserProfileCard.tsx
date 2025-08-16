@@ -8,7 +8,21 @@ import { Progress } from "@/components/ui/progress";
 import { Github, Linkedin, Twitter } from "lucide-react";
 import Link from "next/link";
 
-export function UserProfileCard({ user }) {
+interface User {
+  name: string
+  avatar: string
+  rank: string
+  bio: string
+  xp: number
+  xpNextLevel: number
+  social: {
+    github: string
+    linkedin: string
+    twitter: string
+  }
+}
+
+export function UserProfileCard({ user }: { user: User }) {
   return (
     <Card className="overflow-hidden">
       <CardHeader className="flex flex-col items-center text-center p-0">

@@ -1,708 +1,348 @@
+The Adventurers Guild: Complete Website Development Plan 🗺️
+This document outlines the comprehensive plan for developing "The Adventurers Guild" website, encompassing all necessary features, pages, technical details, and future additions to create a complete and impactful platform. This plan builds upon the current progress (waitlist page ready, homepage in progress) and aims to detail everything needed for a successful launch and continuous development.
 
-# Adventurers Guild - Gemini Development Log
+1. Project Overview & Vision ✨
+The Adventurers Guild is a groundbreaking platform designed to gamify computer science education and bridge the gap between academic learning and industry demands. We transform aspiring developers ("Adventurers") into industry-ready problem-solvers by connecting them with real-world "Quests" (commissioned projects) from companies. Our vision is to establish a new standard for skill development, portfolio building, and talent sourcing in the tech industry.
 
-This file contains the code for the profile page and related components, as developed by Gemini.
+2. Minimum Viable Product (MVP) Scope & Core Features 🚀
+The MVP focuses on proving the core value proposition: connecting Adventurers with Quests and demonstrating skill progression.
 
-## `app/home/page.tsx`
+MVP Core Features:
+User Authentication: Secure sign-up/sign-in for Adventurers and Quest Givers.
 
-```tsx
-'use client'
+User Profiles: Basic profiles for both Adventurers (skills, bio, XP, rank) and Quest Givers (company info).
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ThemeToggle } from "@/components/ui/theme-toggle";
-import { ArrowRight, Github, Linkedin, Menu, Search, Star, Twitter, X, Sparkles, Trophy, User, LogOut } from 'lucide-react';
-import Image from "next/image";
-import Link from "next/link";
-import { useMemo, useState, useEffect } from "react";
-import { SkillTree } from "@/components/skill-tree";
-import { QuestCompletion } from "@/components/quest-completion";
+Quest Board: A browsable list of "Quests" posted by Quest Givers.
 
-const user = {
-  name: "LaryTheLord",
-  avatar: "/placeholder-user.jpg",
-  rank: "S",
-  xp: 24500,
-  xpNextLevel: 25000,
-};
+Quest Creation (Quest Giver): Ability for Quest Givers to post new project briefs.
 
-// --- REUSABLE COMPONENTS ---
+Quest Application (Adventurer): Ability for Adventurers to apply for open Quests.
 
-function QuestCard({ quest }: { quest: any }) {
-  const rankColor = {
-    S: 'bg-yellow-500 text-black',
-    A: 'bg-red-500 text-white',
-    B: 'bg-blue-500 text-white',
-    C: 'bg-green-500 text-white',
-    D: 'bg-gray-500 text-white',
-  }[quest.rank] || 'bg-gray-400';
+Basic XP & Rank System: Automatic XP gain upon Quest completion, and visible rank progression (F-S).
 
-  return (
-    <Card className="bg-card rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border-0 overflow-hidden flex flex-col">
-      <CardHeader className="p-0">
-        <Image src={quest.image} alt={quest.title} width={400} height={225} className="w-full h-40 sm:h-48 object-cover" />
-      </CardHeader>
-      <CardContent className="p-4 sm:p-6 flex-grow">
-        <Badge className={`mb-3 sm:mb-4 ${rankColor} text-xs sm:text-sm`}>{quest.rank}-Rank</Badge>
-        <CardTitle className="text-lg sm:text-xl md:text-2xl font-bold mb-2 sm:mb-3">{quest.title}</CardTitle>
-        <CardDescription className="text-muted-foreground text-sm sm:text-base md:text-lg leading-relaxed">{quest.description}</CardDescription>
-      </CardContent>
-      <CardFooter className="p-4 sm:p-6 bg-card-foreground/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
-        <div className="font-bold text-base sm:text-lg text-primary">{quest.xp} XP</div>
-        <Button className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold w-full sm:w-auto text-sm sm:text-base">
-          View Quest <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
-        </Button>
-      </CardFooter>
-    </Card>
-  );
-}
+Simple Submission & Review: Adventurers submit work (e.g., GitHub link), Quest Givers review and approve.
 
-function UserDashboard() {
-  return (
-    <section id="profile" className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 bg-card text-card-foreground">
-      <div className="container mx-auto max-w-6xl">
-        <div className="grid lg:grid-cols-3 gap-8 sm:gap-12 items-center">
-          <div className="lg:col-span-2">
-            <h1 className="text-3xl sm:text-4xl md:text-6xl font-black mb-3 sm:mb-4 text-foreground leading-tight">
-              Welcome Back, Adventurer!
-            </h1>
-            <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground leading-relaxed mb-6 sm:mb-8">
-              Ready to embark on a new quest and forge your legend?
-            </p>
-            
-            {/* Feature Buttons */}
-            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6 sm:mt-8">
-              <SkillTree />
-              <QuestCompletion />
-              <Link href="/commission">
-                <Button>Commission a Quest</Button>
-              </Link>
-            </div>
-          </div>
-          <Card className="bg-background rounded-2xl shadow-lg p-4 sm:p-6">
-            <div className="flex items-center space-x-3 sm:space-x-4 mb-4">
-              <Avatar className="w-12 h-12 sm:w-16 sm:h-16">
-                <AvatarImage src={user.avatar} />
-                <AvatarFallback>{user.name.substring(0, 2)}</AvatarFallback>
-              </Avatar>
-              <div>
-                <h3 className="text-lg sm:text-xl font-bold">{user.name}</h3>
-                <p className="text-muted-foreground text-sm sm:text-base">Adventurer</p>
-              </div>
-            </div>
-            <div>
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 gap-1 sm:gap-0">
-                <span className="font-semibold text-sm sm:text-base">Rank: {user.rank}</span>
-                <span className="font-semibold text-sm sm:text-base">XP: {user.xp.toLocaleString()} / {user.xpNextLevel.toLocaleString()}</span>
-              </div>
-              <Progress value={(user.xp / user.xpNextLevel) * 100} className="w-full" />
-            </div>
-          </Card>
-        </div>
-      </div>
-    </section>
-  );
-}
+Dashboard Views: Separate basic dashboards for Adventurers (their Quests, XP) and Quest Givers (their posted Quests, applicants).
 
-function QuestBoard() {
-  const [quests, setQuests] = useState([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [rankFilter, setRankFilter] = useState('all');
+3. Future Features & Additions (Post-MVP) 🌟
+To make the platform truly complete and scalable, the following features will be added iteratively after the MVP.
 
-  useEffect(() => {
-    const fetchQuests = async () => {
-      const response = await fetch('/api/quests');
-      const data = await response.json();
-      setQuests(data.quests);
-    };
+Enhanced Gamification & Progression:
+Detailed Adventurer Dashboards: In-depth analytics on skill growth, quest statistics, success rates.
 
-    fetchQuests();
-  }, []);
+Skill Trees/Badges: Visual representation of mastered skills and achievements.
 
-  const filteredQuests = useMemo(() => {
-    return quests
-      .filter(quest => 
-        quest.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        quest.description.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-      .filter(quest => 
-        rankFilter === 'all' || quest.rank === rankFilter
-      );
-  }, [quests, searchTerm, rankFilter]);
+Leaderboards: Public/private rankings of Adventurers by XP, completed quests, or specific skills.
 
-  return (
-    <section id="quests" className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 bg-background">
-      <div className="container mx-auto max-w-7xl">
-        <div className="text-center mb-12 sm:mb-16 md:mb-20">
-          <h2 className="text-4xl sm:text-5xl md:text-7xl font-black mb-4 sm:mb-6 text-foreground">
-            The Quest Board
-          </h2>
-          <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground font-medium max-w-3xl mx-auto px-4">
-            Choose your next adventure. Filter by rank, skills, or rewards to find the perfect quest for you.
-          </p>
-        </div>
+Mentorship System: Dedicated features for higher-ranked Adventurers to mentor lower ranks, with mentor profiles and tracking.
 
-        <div className="mb-8 sm:mb-12 flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-grow">
-            <Search className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground" />
-            <Input 
-              type="text"
-              placeholder="Search for quests..." 
-              className="pl-10 sm:pl-12 text-base sm:text-lg py-4 sm:py-6 border-2 border-border focus:border-primary w-full"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-          <Select value={rankFilter} onValueChange={setRankFilter}>
-            <SelectTrigger className="text-base sm:text-lg py-4 sm:py-6 border-2 border-border focus:border-primary min-w-[140px] sm:min-w-[160px]">
-              <SelectValue placeholder="Filter by rank" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Ranks</SelectItem>
-              <SelectItem value="S">S-Rank</SelectItem>
-              <SelectItem value="A">A-Rank</SelectItem>
-              <SelectItem value="B">B-Rank</SelectItem>
-              <SelectItem value="C">C-Rank</SelectItem>
-              <SelectItem value="D">D-Rank</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-          {filteredQuests.map((quest, index) => (
-            <QuestCard key={index} quest={quest} />
-          ))}
-        </div>
-        {filteredQuests.length === 0 && (
-            <div className="text-center col-span-full py-12 sm:py-16">
-                <p className="text-lg sm:text-2xl text-muted-foreground">No quests match your criteria. Try a different search!</p>
-            </div>
-        )}
-      </div>
-    </section>
-  );
-}
+Community Forums/Guilds: Integrated forum or internal communication tools beyond Discord for persistent discussions and team formation.
 
-function AppFooter() {
-  return (
-    <footer className="py-12 sm:py-16 px-4 sm:px-6 bg-card text-card-foreground">
-      <div className="container mx-auto max-w-6xl">
-        <div className="flex flex-col sm:flex-row items-center justify-between">
-          <div className="flex items-center space-x-2 sm:space-x-3 mb-6 sm:mb-0">
-            <Image src="/images/guild-logo.png" alt="The Adventurers Guild" width={28} height={28} className="w-7 h-7 sm:w-8 sm:h-8" />
-            <div>
-              <div className="text-lg sm:text-xl font-bold">The Adventurers Guild</div>
-              <div className="text-muted-foreground text-sm">Forging Digital Pioneers</div>
-            </div>
-          </div>
-          <div className="flex items-center space-x-4 sm:space-x-6">
-            <Link href="https://www.linkedin.com/company/adventurers-guild" className="text-muted-foreground hover:text-card-foreground transition-colors">
-              <Linkedin className="w-5 h-5 sm:w-6 sm:h-6" />
-            </Link>
-            <Link href="#" className="text-muted-foreground hover:text-card-foreground transition-colors">
-              <Twitter className="w-5 h-5 sm:w-6 sm:h-6" />
-            </Link>
-            <Link href="https://github.com/LarytheLord/Adventurers-Guild" className="text-muted-foreground hover:text-card-foreground transition-colors">
-              <Github className="w-5 h-5 sm:w-6 sm:h-6" />
-            </Link>
-          </div>
-        </div>
-        <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-border text-center text-muted-foreground text-sm">
-          &copy; {new Date().getFullYear()} The Adventurers Guild. All rights reserved.
-        </div>
-      </div>
-    </footer>
-  );
-}
+Certifications/Micro-credentials: Guild-issued verifiable certifications for specific skill sets or Quest Lines.
 
-// --- MAIN PAGE COMPONENT ---
+Advanced Quest Management:
+Automated Quest Matching: AI/ML-driven algorithms to suggest Quests to Adventurers based on skills, rank, and preferences.
 
-export default function HomePage() {
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+Team Formation Tools: Integrated features for Adventurers to form teams for larger Quests, manage roles, and communicate.
 
-  return (
-    <div className="min-h-screen bg-background text-foreground">
-      <nav className="sticky top-0 w-full z-50 bg-background/95 backdrop-blur-xl border-b border-border/30 transition-all duration-300">
-        <div className="container mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-2 sm:space-x-3">
-            <Image src="/images/guild-logo.png" alt="The Adventurers Guild" width={32} height={32} className="w-8 h-8 sm:w-10 sm:h-10" />
-            <span className="text-lg sm:text-xl font-bold text-foreground">The Adventurers Guild</span>
-          </div>
-          
-          <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
-            <Link href="#quests" className="text-muted-foreground hover:text-foreground transition-colors font-medium text-sm xl:text-base">Quest Board</Link>
-            <Link href="#profile" className="text-muted-foreground hover:text-foreground transition-colors font-medium text-sm xl:text-base">Profile</Link>
-            <ThemeToggle />
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Avatar className="cursor-pointer">
-                  <AvatarImage src={user.avatar} />
-                  <AvatarFallback>{user.name.substring(0, 2)}</AvatarFallback>
-                </Avatar>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56">
-                <div className="p-2">
-                  <div className="font-bold">{user.name}</div>
-                  <div className="text-xs text-muted-foreground">{user.rank}-Rank Adventurer</div>
-                </div>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link href="/profile" className="flex items-center">
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Profile</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Logout</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
+Project Management Tools: Basic integrated PM tools (task assignment, deadlines, progress tracking) for active Quests.
 
-          <div className="flex items-center space-x-2 lg:hidden">
-            <ThemeToggle />
-            <button className="p-2" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-          </div>
-        </div>
+Dispute Resolution System: A structured process for resolving disagreements between Adventurers and Quest Givers.
 
-        {mobileMenuOpen && (
-          <div className="lg:hidden bg-background/95 backdrop-blur-xl border-t border-border">
-            <div className="px-4 sm:px-6 py-4 space-y-4">
-              <Link 
-                href="#quests" 
-                className="block text-muted-foreground hover:text-foreground font-medium py-2"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Quest Board
-              </Link>
-              <Link 
-                href="#profile" 
-                className="block text-muted-foreground hover:text-foreground font-medium py-2"
-                onClick={() => setMobileMenuOpen(false)}
-              >
-                Profile
-              </Link>
-              <div className="flex justify-between items-center">
-                <ThemeToggle />
-                <Avatar>
-                  <AvatarImage src={user.avatar} />
-                  <AvatarFallback>{user.name.substring(0, 2)}</AvatarFallback>
-                </Avatar>
-              </div>
-            </div>
-          </div>
-        )}
-      </nav>
+Payment Gateway Integration: Direct payment processing for commissioned Quests within the platform.
 
-      <main>
-        <UserDashboard />
-        <QuestBoard />
-      </main>
+Contract Management: Automated generation and management of simple project agreements.
 
-      <AppFooter />
-    </div>
-  );
-}
-```
+Client & Business Features:
+Client Dashboards: Detailed reports on project progress, Adventurer performance, and expenditure.
 
-## `app/profile/page.tsx`
+Talent Scouting: Features for Quest Givers to directly search and invite top-ranked Adventurers.
 
-```tsx
-'use client'
-import { ChevronLeft } from 'lucide-react';
-import Link from 'next/link';
-import { UserProfileCard } from "@/components/profile/UserProfileCard";
-import { SkillPentagon } from "@/components/profile/SkillPentagon";
-import { SkillDetail } from "@/components/profile/SkillDetail";
-import { useState } from "react";
+Subscription/Premium Tiers: For Quest Givers (e.g., dedicated support, faster matching) or Adventurers (e.g., advanced resources, exclusive quests).
 
-const user = {
-  name: "LaryTheLord",
-  avatar: "/placeholder-user.jpg",
-  rank: "S",
-  xp: 24500,
-  xpNextLevel: 25000,
-  bio: "A passionate developer on a quest to master the art of coding and build amazing things.",
-  social: {
-    github: "https://github.com/LarytheLord",
-    linkedin: "https://www.linkedin.com/in/larythelord/",
-    twitter: "https://twitter.com/larythelord",
-  },
-  banner: "/images/profile-banner.png",
-};
+Content & Learning Resources:
+Learning Paths: Curated "Quest Lines" or learning paths for specific technologies (e.g., "Full-Stack React Quest Line").
 
-const skills = [
-    { name: 'Frontend', value: 90, description: 'Mastery of modern frontend technologies including React, Next.js, and Tailwind CSS.' },
-    { name: 'Backend', value: 75, description: 'Proficient in building robust and scalable backend systems with Node.js, Express, and databases.' },
-    { name: 'AI/ML', value: 60, description: 'Experience in developing AI-powered features and working with machine learning models.' },
-    { name: 'DevOps', value: 50, description: 'Knowledge of CI/CD pipelines, containerization with Docker, and cloud deployment.' },
-    { name: 'Soft Skills', value: 80, description: 'Excellent communication, teamwork, and problem-solving abilities.' },
-];
+Knowledge Base: A repository of tutorials, best practices, and technical guides.
 
-export default function ProfilePage() {
-  const [selectedSkill, setSelectedSkill] = useState(skills[0]);
+Code Sandbox/IDE Integration: In-browser coding environments for smaller training quests.
 
-  return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="relative h-48 md:h-64">
-        <Link href="/home" className="absolute top-4 left-4 z-10 bg-background/50 p-2 rounded-full hover:bg-background/80 transition-colors">
-          <ChevronLeft className="w-6 h-6" />
-        </Link>
-        <img src={user.banner} alt="Profile Banner" className="w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-black/50" />
-      </div>
-      <div className="container mx-auto p-4 sm:p-6 lg:p-8 -mt-24">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-1">
-            <UserProfileCard user={user} />
-          </div>
-          <div className="lg:col-span-2">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="bg-card p-4 rounded-lg">
-                <SkillPentagon skills={skills} onSkillSelect={setSelectedSkill} />
-              </div>
-              <div className="bg-card p-4 rounded-lg">
-                <SkillDetail skill={selectedSkill} />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-```
+4. Technical Stack (Detailed) 💻
+Frontend:
+Framework: Next.js (React) for modern web development, supporting both static site generation (marketing pages) and server-side rendering (dynamic dashboards).
 
-## `app/commission/page.tsx`
+Language: TypeScript for type safety, improved code quality, and better maintainability.
 
-```tsx
-'use client'
+Styling: Tailwind CSS for rapid and consistent UI development through utility-first classes.
 
-import { useState } from 'react'
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
+UI Components: Shadcn/ui for pre-built, accessible, and customizable React components (buttons, forms, tables, modals).
 
-export default function CommissionPage() {
-  const [title, setTitle] = useState('')
-  const [description, setDescription] = useState('')
-  const [rank, setRank] = useState('C')
-  const [xp, setXp] = useState(500)
-  const [image, setImage] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState('')
-  const [isSubmitted, setIsSubmitted] = useState(false)
+Icon Library: Lucide React or React Icons for scalable vector icons.
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    setError('')
-    setIsSubmitted(false)
+Charting: Recharts or similar library for displaying XP progression, quest statistics, etc.
 
-    try {
-      const response = await fetch('/api/quests', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ title, description, rank, xp, image }),
-      })
+Backend:
+Architecture: Serverless Functions (e.g., Next.js API Routes, Vercel Functions, AWS Lambda) for scalability and cost-efficiency.
 
-      const data = await response.json()
+Language: Node.js with Express.js (if a dedicated backend service is preferred over serverless functions for complex logic).
 
-      if (data.success) {
-        setIsSubmitted(true)
-        setTitle('')
-        setDescription('')
-        setRank('C')
-        setXp(500)
-        setImage('')
-        setTimeout(() => setIsSubmitted(false), 5000)
-      } else {
-        throw new Error(data.message || 'Failed to submit quest')
-      }
-    } catch (error) {
-      console.error('Error:', error)
-      setError('Something went wrong. Please try again.')
-      setTimeout(() => setError(''), 5000)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
+Authentication: NextAuth.js for handling OAuth (Google, GitHub) and email/password authentication securely.
 
-  return (
-    <div className="min-h-screen bg-background text-foreground">
-      <div className="container mx-auto p-4 sm:p-6 lg:p-8">
-        <div className="flex items-center mb-8">
-          <Link href="/home">
-            <Button variant="outline" size="icon">
-              <ArrowLeft className="h-4 w-4" />
-            </Button>
-          </Link>
-          <h1 className="text-3xl font-bold ml-4">Commission a Quest</h1>
-        </div>
-        <Card>
-          <CardHeader>
-            <CardTitle>Create a New Quest</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isSubmitted && (
-              <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-                Quest submitted successfully!
-              </div>
-            )}
-            {error && (
-              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-                {error}
-              </div>
-            )}
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
-                <label htmlFor="title" className="block text-sm font-medium text-muted-foreground mb-2">Quest Title</label>
-                <Input
-                  id="title"
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g., Bug Bounty Brigades"
-                  required
-                  disabled={isSubmitting}
-                />
-              </div>
-              <div>
-                <label htmlFor="description" className="block text-sm font-medium text-muted-foreground mb-2">Quest Description</label>
-                <Textarea
-                  id="description"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  placeholder="A detailed description of the quest."
-                  required
-                  disabled={isSubmitting}
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <label htmlFor="rank" className="block text-sm font-medium text-muted-foreground mb-2">Rank</label>
-                  <select
-                    id="rank"
-                    value={rank}
-                    onChange={(e) => setRank(e.target.value)}
-                    className="w-full p-2 border rounded-md"
-                    required
-                    disabled={isSubmitting}
-                  >
-                    <option value="S">S-Rank</option>
-                    <option value="A">A-Rank</option>
-                    <option value="B">B-Rank</option>
-                    <option value="C">C-Rank</option>
-                    <option value="D">D-Rank</option>
-                  </select>
-                </div>
-                <div>
-                  <label htmlFor="xp" className="block text-sm font-medium text-muted-foreground mb-2">XP Reward</label>
-                  <Input
-                    id="xp"
-                    type="number"
-                    value={xp}
-                    onChange={(e) => setXp(Number(e.target.value))}
-                    required
-                    disabled={isSubmitting}
-                  />
-                </div>
-              </div>
-              <div>
-                <label htmlFor="image" className="block text-sm font-medium text-muted-foreground mb-2">Image URL (Optional)</label>
-                <Input
-                  id="image"
-                  type="text"
-                  value={image}
-                  onChange={(e) => setImage(e.target.value)}
-                  placeholder="https://example.com/quest-image.png"
-                  disabled={isSubmitting}
-                />
-              </div>
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? 'Submitting...' : 'Submit Quest'}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  )
-}
-```
+API Layer: RESTful API endpoints for data interaction between frontend and database.
 
-## `app/api/quests/route.ts`
+Database:
+Primary Database: PostgreSQL (Relational Database) for structured data, reliability, and complex queries.
 
-```ts
-import { NextResponse } from 'next/server'
+Provider: Supabase or Neon for managed PostgreSQL with easy integration.
 
-// Mock database
-let quests = [
-  { title: "Bug Bounty Brigades", description: "Hunt down and squash bugs in existing codebases. A great way to learn and earn XP.", image: "/images/quest-board.png", rank: "C", xp: 500 },
-  { title: "Digital Archaeology", description: "Explore and document legacy codebases. Uncover hidden gems and learn from the past.", image: "/images/quest-board.png", rank: "B", xp: 800 },
-  { title: "Narrative-Driven Hackathons", description: "Participate in themed hackathons with engaging storylines. Build innovative solutions and win prizes.", image: "/images/quest-board.png", rank: "A", xp: 1200 },
-  { title: "UI/UX Redesign Challenge", description: "Redesign the user interface of a popular open-source application. Focus on usability and modern design principles.", image: "/images/quest-board.png", rank: "B", xp: 750 },
-  { title: "Open Source Contribution", description: "Contribute to a major open-source project. Add a new feature, fix a critical bug, or improve documentation.", image: "/images/quest-board.png", rank: "S", xp: 2000 },
-  { title: "Code Refactoring Quest", description: "Refactor a messy codebase to improve its readability, performance, and maintainability.", image: "/images/quest-board.png", rank: "D", xp: 300 },
-];
+State Management:
+Global State: Zustand or React Context API for managing application-wide state (e.g., user session, notifications).
 
-export async function GET() {
-  return NextResponse.json({ quests })
-}
+Deployment:
+Frontend: Vercel for seamless deployment of Next.js applications, offering automatic scaling and CI/CD.
 
-export async function POST(request: Request) {
-  try {
-    const { title, description, rank, xp, image } = await request.json()
+Backend Functions: Vercel (for Next.js API Routes) or AWS Lambda (for standalone Node.js functions).
 
-    if (!title || !description || !rank || !xp) {
-      return NextResponse.json({ success: false, message: 'Missing required fields' }, { status: 400 })
-    }
+Database: Supabase or Neon (managed services).
 
-    const newQuest = { title, description, rank, xp, image: image || '/images/quest-board.png' };
-    quests.push(newQuest);
+Code Quality & Tooling:
+Code Formatter: Prettier for consistent code styling.
 
-    return NextResponse.json({ success: true, quest: newQuest })
-  } catch (error) {
-    console.error('Error creating quest:', error);
-    return NextResponse.json({ success: false, message: 'Internal Server Error' }, { status: 500 })
-  }
-}
-```
+Linter: ESLint with recommended React and TypeScript configurations for identifying code issues and enforcing best practices.
 
-## `components/profile/UserProfileCard.tsx`
+Git Hooks: Husky to automate linting and formatting checks before commits.
 
-```tsx
-'use client'
+Testing: Jest and React Testing Library for unit and integration testing.
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
-import { Github, Linkedin, Twitter } from "lucide-react";
-import Link from "next/link";
+5. Page Breakdown (User-Facing & Admin) 🌐
+Public Pages:
+Homepage (/): Landing page with problem, solution, value proposition, call to action (Join Waitlist/Sign Up).
 
-export function UserProfileCard({ user }) {
-  return (
-    <Card className="overflow-hidden">
-      <CardHeader className="flex flex-col items-center text-center p-0">
-        <div className="relative w-full h-24 bg-muted" />
-        <Avatar className="w-32 h-32 -mt-16 border-4 border-background">
-          <AvatarImage src={user.avatar} />
-          <AvatarFallback>{user.name.substring(0, 2)}</AvatarFallback>
-        </Avatar>
-        <div className="p-6">
-          <CardTitle className="text-2xl font-bold">{user.name}</CardTitle>
-          <p className="text-muted-foreground">{user.rank}-Rank Adventurer</p>
-        </div>
-      </CardHeader>
-      <CardContent className="p-6">
-        <p className="text-center mb-6">{user.bio}</p>
-        <div className="mb-6">
-          <div className="flex justify-between items-center mb-2">
-            <span className="font-semibold">XP</span>
-            <span>{user.xp.toLocaleString()} / {user.xpNextLevel.toLocaleString()}</span>
-          </div>
-          <Progress value={(user.xp / user.xpNextLevel) * 100} />
-        </div>
-        <div className="flex justify-center space-x-4">
-          <Link href={user.social.github} passHref>
-            <Button variant="outline" size="icon">
-              <Github className="h-4 w-4" />
-            </Button>
-          </Link>
-          <Link href={user.social.linkedin} passHref>
-            <Button variant="outline" size="icon">
-              <Linkedin className="h-4 w-4" />
-            </Button>
-          </Link>
-          <Link href={user.social.twitter} passHref>
-            <Button variant="outline" size="icon">
-              <Twitter className="h-4 w-4" />
-            </Button>
-          </Link>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
-```
+About Us (/about): Mission, vision, team.
 
-## `components/profile/SkillPentagon.tsx`
+How It Works (/how-it-works): Detailed explanation of the Guild system (F-S ranks, Quests, benefits).
 
-```tsx
-'use client'
+Quests List (/quests): Publicly browseable list of available and past Quests. Filters for skills, rank, status.
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Legend } from 'recharts';
+Individual Quest Page (/quests/[id]): Detailed Quest brief, requirements, XP value, "Apply Now" button.
 
-export function SkillPentagon({ skills, onSkillSelect }) {
-  return (
-    <Card className="bg-card/50 backdrop-blur-sm">
-      <CardHeader>
-        <CardTitle className="text-lg font-bold">Skill Pentagon</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <RadarChart data={skills} outerRadius="80%">
-            <PolarGrid stroke="hsl(var(--border))" />
-            <PolarAngleAxis dataKey="name" tick={{ fill: 'hsl(var(--foreground))' }} onClick={(data) => onSkillSelect(skills.find(s => s.name === data.value))} />
-            <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fill: 'hsl(var(--muted-foreground))' }} />
-            <Radar name="Skills" dataKey="value" stroke="hsl(var(--primary))" fill="hsl(var(--primary))" fillOpacity={0.6} />
-            <Legend />
-          </RadarChart>
-        </ResponsiveContainer>
-      </CardContent>
-    </Card>
-  );
-}
-```
+Adventurer Public Profile (/adventurers/[id]): Public view of Adventurer's completed quests, rank, skills, bio, GitHub.
 
-## `components/profile/SkillDetail.tsx`
+Quest Giver Public Profile (/quest-givers/[id]): Public view of company profile, past commissioned quests.
 
-```tsx
-'use client'
+Login (/login): User authentication form.
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Progress } from "@/components/ui/progress";
+Register (/register): Initial user type selection (Adventurer/Quest Giver).
 
-export function SkillDetail({ skill }) {
-  return (
-    <Card className="bg-card/50 backdrop-blur-sm">
-      <CardHeader>
-        <CardTitle className="text-lg font-bold">Skill Details</CardTitle>
-      </CardHeader>
-      <CardContent>
-        {skill ? (
-          <div>
-            <h3 className="text-xl font-bold mb-4">{skill.name}</h3>
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-semibold">Proficiency</span>
-              <span>{skill.value}%</span>
-            </div>
-            <Progress value={skill.value} className="[&>div]:bg-primary" />
-            <p className="text-muted-foreground mt-4">
-              {skill.description}
-            </p>
-          </div>
-        ) : (
-          <p>Select a skill to see details.</p>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
-```
+register/adventurer: Adventurer registration form.
+
+register/quest-giver: Quest Giver registration form.
+
+Code of Conduct (/code-of-conduct): Detailed document outlining community rules.
+
+Privacy Policy (/privacy-policy): Data handling and privacy information.
+
+Terms of Service (/terms-of-service): Legal terms for platform usage.
+
+Contact Us (/contact): Form or contact details for inquiries.
+
+Authenticated Pages (Dashboards):
+Adventurer Dashboard (/dashboard/adventurer)
+My Profile (/dashboard/adventurer/profile): Edit profile details, skills, bio.
+
+My Quests (/dashboard/adventurer/my-quests): List of Quests applied for, in progress, completed.
+
+Quest Board (/dashboard/adventurer/quest-board): Filtered view of open Quests matching Adventurer's rank/skills.
+
+Progression (/dashboard/adventurer/progression): Visual display of XP, current rank, and path to next rank.
+
+Quest Giver Dashboard (/dashboard/quest-giver)
+My Company Profile (/dashboard/quest-giver/profile): Edit company details.
+
+My Posted Quests (/dashboard/quest-giver/my-quests): Manage existing Quests (view applicants, review submissions, change status).
+
+Post New Quest (/dashboard/quest-giver/new-quest): Form for creating new Quest listings.
+
+Billing & Payments (/dashboard/quest-giver/billing): View payment history, invoices.
+
+Admin Dashboard (/dashboard/admin) - (Internal Team Only)
+User Management: View/manage all users (Adventurers, Quest Givers, Admins).
+
+Quest Oversight: Monitor all active Quests, intervene if needed.
+
+XP/Rank Management: Manual adjustments (if necessary) and oversight of the system.
+
+Payments & Invoicing: Oversee financial transactions.
+
+Content Management: Manage static pages, announcements.
+
+6. Functionality Breakdown ⚙️
+6.1. User Authentication & Authorization:
+Auth API Routes: sign-up, sign-in, sign-out, forgot-password, reset-password, oauth-callback.
+
+Middleware: Protect authenticated routes.
+
+Role-Based Access Control (RBAC): Ensure users only access relevant dashboards/features based on their role (adventurer, quest_giver, admin).
+
+6.2. User Profile Management:
+Profile API Routes: GET /api/users/[id], PUT /api/users/[id], POST /api/users/upload-avatar.
+
+Frontend Components: Profile forms, avatar upload.
+
+6.3. Quest Management:
+Quest API Routes:
+
+GET /api/quests: List all quests (filterable by status, skills, rank).
+
+GET /api/quests/[id]: Retrieve single quest details.
+
+POST /api/quests: Create new quest (Quest Giver only).
+
+PUT /api/quests/[id]: Update quest (Quest Giver/Admin only).
+
+DELETE /api/quests/[id]: Delete quest (Quest Giver/Admin only).
+
+Frontend Components: Quest List, Quest Detail Page, Create/Edit Quest Form.
+
+6.4. Quest Application:
+Application API Routes:
+
+POST /api/quests/[id]/apply: Adventurer applies for a quest.
+
+GET /api/quests/[id]/applications: View applications for a specific quest (Quest Giver/Admin).
+
+PUT /api/applications/[id]/status: Update application status (Quest Giver/Admin).
+
+Frontend Components: Apply Button, Application List, Status Indicators.
+
+6.5. Gamification (XP & Rank Engine):
+XP Calculation Function: Triggered when a Quest is marked "Complete" by Quest Giver. Adds XP to Adventurer's profile.
+
+Rank Progression Logic: Checks Adventurer's total XP against predefined rank thresholds (F-S). Updates rank field.
+
+Rank Assessment Logic: For C-S ranks, flag for "Professional Guild Programmer" review before rank update.
+
+Frontend Components: XP/Rank display on profile/dashboard.
+
+6.6. Project Submission & Review:
+Submission API Routes:
+
+POST /api/applications/[id]/submit: Adventurer submits submission_url for a completed quest.
+
+PUT /api/applications/[id]/review: Quest Giver/Admin reviews submission and marks as Approved or Denied.
+
+Frontend Components: Submission Input Field, Review Interface (approve/deny buttons).
+
+7. Database Schema (PostgreSQL) 🗄️
+-- Users Table: Central authentication and common user data
+CREATE TABLE users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email TEXT UNIQUE NOT NULL,
+    password_hash TEXT, -- For email/password auth
+    provider TEXT, -- 'google', 'github', 'email'
+    provider_id TEXT, -- ID from OAuth provider
+    role TEXT NOT NULL DEFAULT 'adventurer', -- 'adventurer', 'quest_giver', 'admin'
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Adventurers Table: Extends users for Adventurer-specific data
+CREATE TABLE adventurers (
+    user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    display_name TEXT NOT NULL,
+    bio TEXT,
+    skills TEXT[], -- Array of strings for skills (e.g., ['React', 'Node.js', 'SQL'])
+    github_link TEXT,
+    linkedin_link TEXT,
+    profile_picture_url TEXT,
+    xp INTEGER NOT NULL DEFAULT 0,
+    rank TEXT NOT NULL DEFAULT 'F' -- F, E, D, C, B, A, S
+);
+
+-- Quest Givers Table: Extends users for Company-specific data
+CREATE TABLE quest_givers (
+    user_id UUID PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+    company_name TEXT NOT NULL,
+    company_logo_url TEXT,
+    website_url TEXT,
+    contact_person_name TEXT,
+    industry TEXT
+);
+
+-- Quests Table: Stores all project information
+CREATE TABLE quests (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    quest_giver_id UUID NOT NULL REFERENCES quest_givers(user_id) ON DELETE CASCADE,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    xp_value INTEGER NOT NULL, -- XP awarded upon successful completion
+    skills_required TEXT[], -- Array of strings for required skills
+    min_rank TEXT NOT NULL DEFAULT 'F', -- Minimum rank required to apply
+    deadline TIMESTAMP WITH TIME ZONE,
+    status TEXT NOT NULL DEFAULT 'Open', -- 'Open', 'In Progress', 'Under Review', 'Completed', 'Closed'
+    budget_estimate TEXT, -- Optional: e.g., '$500-$1000'
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Applications Table: Manages Adventurer applications to Quests
+CREATE TABLE applications (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    adventurer_id UUID NOT NULL REFERENCES adventurers(user_id) ON DELETE CASCADE,
+    quest_id UUID NOT NULL REFERENCES quests(id) ON DELETE CASCADE,
+    status TEXT NOT NULL DEFAULT 'Applied', -- 'Applied', 'Accepted', 'Denied', 'In Progress', 'Submitted', 'Approved', 'Rejected'
+    submission_url TEXT, -- Link to Adventurer's completed work (e.g., GitHub repo, deployed app)
+    application_message TEXT, -- Message from Adventurer when applying
+    feedback TEXT, -- Feedback from Quest Giver/Admin on submission
+    applied_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+    UNIQUE(adventurer_id, quest_id) -- Ensures an Adventurer can only apply once per Quest
+);
+
+-- Optional: Guild_History Table for detailed XP/Rank audit trail (Future)
+-- CREATE TABLE guild_history (
+--     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+--     user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+--     event_type TEXT NOT NULL, -- 'XP_GAINED', 'RANK_UP', 'QUEST_COMPLETED', etc.
+--     xp_change INTEGER,
+--     new_xp INTEGER,
+--     new_rank TEXT,
+--     quest_id UUID REFERENCES quests(id),
+--     event_timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+-- );
+
+8. Development Workflow & Best Practices 🛠️
+Version Control: Git and GitHub for collaborative development.
+
+Branching Strategy: Use a main branch for production-ready code, develop for ongoing integration, and feature branches for new development.
+
+Pull Requests (PRs): All code changes should go through PRs, requiring at least one review.
+
+Code Reviews: Emphasize thorough code reviews for quality, maintainability, and security.
+
+Linting & Formatting: Enforce ESLint and Prettier using Husky pre-commit hooks.
+
+Testing: Implement unit tests for critical functions and components, and integration tests for key workflows.
+
+Documentation: Maintain clear documentation for setup, API endpoints, and complex logic.
+
+Issue Tracking: Utilize GitHub Issues or a tool like Linear (as mentioned previously) for tracking tasks, bugs, and features.
+
+9. Missing Key Elements (Non-Code for Complete Startup) 📈
+While the website is crucial, a successful startup also requires these elements.
+
+Brand Identity: Comprehensive brand guidelines, consistent visuals, and messaging across all platforms (website, social media, Discord).
+
+Legal & Compliance: Formal business registration, legal counsel, and robust privacy policies/terms of service (beyond basic templates). This includes clarity on IP ownership for Quest contributions.
+
+Marketing & Growth Strategy: Ongoing execution of the detailed marketing plan for both Adventurer acquisition and Quest Giver sourcing.
+
+Community Management Team: Dedicated individuals (or a growing team) to actively nurture the Discord community, onboard new members, and facilitate mentorship.
+
+Financial Operations: Systems for invoicing, payment processing (for commissions), and Adventurer payouts.
+
+Customer Support: A system (e.g., Zendesk, as discussed) for handling user inquiries, technical issues, and disputes effectively.
+
+Feedback Loops: Continuous collection and analysis of feedback from both Adventurers and Quest Givers to inform product development and operations.
+
+This plan provides a comprehensive roadmap for building The Adventurers Guild, detailing the technical aspects, feature sets, and crucial non-code elements required for a complete and thriving startup.

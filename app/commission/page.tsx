@@ -1,23 +1,38 @@
 
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
+import { MockAuthService, User } from '@/lib/mockAuth'
+import { MockDataService } from '@/lib/mockData'
 
 export default function CommissionPage() {
+  const [user, setUser] = useState<User | null>(null)
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
+  const [requirements, setRequirements] = useState('')
   const [rank, setRank] = useState('C')
-  const [xp, setXp] = useState(500)
-  const [image, setImage] = useState('')
+  const [budget, setBudget] = useState('')
+  const [deadline, setDeadline] = useState('')
+  const [tags, setTags] = useState<string[]>([])
+  const [newTag, setNewTag] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [isSubmitted, setIsSubmitted] = useState(false)
+
+  useEffect(() => {
+    const currentUser = MockAuthService.getCurrentUser()
+    if (!currentUser) {
+      window.location.href = '/login'
+      return
+    }
+    setUser(currentUser)
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -26,27 +41,41 @@ export default function CommissionPage() {
     setIsSubmitted(false)
 
     try {
-      const response = await fetch('/api/quests', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ title, description, rank, xp, image }),
-      })
+      if (!user) throw new Error('Not authenticated')
 
-      const data = await response.json()
-
-      if (data.success) {
-        setIsSubmitted(true)
-        setTitle('')
-        setDescription('')
-        setRank('C')
-        setXp(500)
-        setImage('')
-        setTimeout(() => setIsSubmitted(false), 5000)
-      } else {
-        throw new Error(data.message || 'Failed to submit quest')
+      // Calculate XP reward based on difficulty
+      const xpRewards = { F: 200, D: 400, C: 600, B: 800, A: 1200, S: 2000 }
+      const skillRewards = {
+        'React Mastery': Math.floor(xpRewards[rank as keyof typeof xpRewards] * 0.3),
+        'TypeScript': Math.floor(xpRewards[rank as keyof typeof xpRewards] * 0.2)
       }
+
+      const questData = {
+        title,
+        description,
+        requirements,
+        difficulty: rank as 'F' | 'D' | 'C' | 'B' | 'A' | 'S',
+        xp_reward: xpRewards[rank as keyof typeof xpRewards],
+        skill_rewards: skillRewards,
+        budget: budget ? parseFloat(budget) : undefined,
+        deadline: deadline || undefined,
+        status: 'active' as const,
+        company_id: user.id,
+        company_name: user.company_name || user.name,
+        tags: tags
+      }
+
+      MockDataService.createQuest(questData)
+      
+      setIsSubmitted(true)
+      setTitle('')
+      setDescription('')
+      setRequirements('')
+      setRank('C')
+      setBudget('')
+      setDeadline('')
+      setTags([])
+      setTimeout(() => setIsSubmitted(false), 5000)
     } catch (error) {
       console.error('Error:', error)
       setError('Something went wrong. Please try again.')
@@ -54,6 +83,21 @@ export default function CommissionPage() {
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const addTag = () => {
+    if (newTag.trim() && !tags.includes(newTag.trim())) {
+      setTags([...tags, newTag.trim()])
+      setNewTag('')
+    }
+  }
+
+  const removeTag = (tagToRemove: string) => {
+    setTags(tags.filter(tag => tag !== tagToRemove))
+  }
+
+  if (!user) {
+    return <div>Loading...</div>
   }
 
   return (
@@ -84,71 +128,121 @@ export default function CommissionPage() {
             )}
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label htmlFor="title" className="block text-sm font-medium text-muted-foreground mb-2">Quest Title</label>
+                <label htmlFor="title" className="block text-sm font-medium text-muted-foreground mb-2">Quest Title *</label>
                 <Input
                   id="title"
                   type="text"
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  placeholder="e.g., Bug Bounty Brigades"
+                  placeholder="e.g., Build React Dashboard Component"
                   required
                   disabled={isSubmitting}
                 />
               </div>
+              
               <div>
-                <label htmlFor="description" className="block text-sm font-medium text-muted-foreground mb-2">Quest Description</label>
+                <label htmlFor="description" className="block text-sm font-medium text-muted-foreground mb-2">Quest Description *</label>
                 <Textarea
                   id="description"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="A detailed description of the quest."
+                  placeholder="Describe what you need built, the goals, and any specific requirements..."
+                  rows={4}
                   required
                   disabled={isSubmitting}
                 />
               </div>
+
+              <div>
+                <label htmlFor="requirements" className="block text-sm font-medium text-muted-foreground mb-2">Technical Requirements</label>
+                <Textarea
+                  id="requirements"
+                  value={requirements}
+                  onChange={(e) => setRequirements(e.target.value)}
+                  placeholder="List the technical skills, frameworks, or tools required..."
+                  rows={3}
+                  disabled={isSubmitting}
+                />
+              </div>
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label htmlFor="rank" className="block text-sm font-medium text-muted-foreground mb-2">Rank</label>
+                  <label htmlFor="rank" className="block text-sm font-medium text-muted-foreground mb-2">Difficulty Level *</label>
                   <select
                     id="rank"
                     value={rank}
                     onChange={(e) => setRank(e.target.value)}
-                    className="w-full p-2 border rounded-md"
+                    className="w-full p-2 border rounded-md bg-background"
                     required
                     disabled={isSubmitting}
                   >
-                    <option value="S">S-Rank</option>
-                    <option value="A">A-Rank</option>
-                    <option value="B">B-Rank</option>
-                    <option value="C">C-Rank</option>
-                    <option value="D">D-Rank</option>
+                    <option value="F">F-Rank (Beginner) - 200 XP</option>
+                    <option value="D">D-Rank (Easy) - 400 XP</option>
+                    <option value="C">C-Rank (Medium) - 600 XP</option>
+                    <option value="B">B-Rank (Hard) - 800 XP</option>
+                    <option value="A">A-Rank (Expert) - 1200 XP</option>
+                    <option value="S">S-Rank (Master) - 2000 XP</option>
                   </select>
                 </div>
                 <div>
-                  <label htmlFor="xp" className="block text-sm font-medium text-muted-foreground mb-2">XP Reward</label>
+                  <label htmlFor="budget" className="block text-sm font-medium text-muted-foreground mb-2">Budget (USD)</label>
                   <Input
-                    id="xp"
+                    id="budget"
                     type="number"
-                    value={xp}
-                    onChange={(e) => setXp(Number(e.target.value))}
-                    required
+                    value={budget}
+                    onChange={(e) => setBudget(e.target.value)}
+                    placeholder="500"
                     disabled={isSubmitting}
                   />
                 </div>
               </div>
+
               <div>
-                <label htmlFor="image" className="block text-sm font-medium text-muted-foreground mb-2">Image URL (Optional)</label>
+                <label htmlFor="deadline" className="block text-sm font-medium text-muted-foreground mb-2">Deadline (Optional)</label>
                 <Input
-                  id="image"
-                  type="text"
-                  value={image}
-                  onChange={(e) => setImage(e.target.value)}
-                  placeholder="https://example.com/quest-image.png"
+                  id="deadline"
+                  type="date"
+                  value={deadline}
+                  onChange={(e) => setDeadline(e.target.value)}
                   disabled={isSubmitting}
                 />
               </div>
+
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground mb-2">Tags</label>
+                <div className="flex space-x-2 mb-2">
+                  <Input
+                    placeholder="Add a tag (e.g., React, API, Design)"
+                    value={newTag}
+                    onChange={(e) => setNewTag(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                    disabled={isSubmitting}
+                  />
+                  <Button type="button" variant="outline" onClick={addTag} disabled={isSubmitting}>
+                    Add
+                  </Button>
+                </div>
+                {tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {tags.map((tag) => (
+                      <span key={tag} className="bg-secondary text-secondary-foreground px-2 py-1 rounded-md text-sm flex items-center">
+                        {tag}
+                        <button 
+                          type="button"
+                          onClick={() => removeTag(tag)}
+                          className="ml-2 text-xs hover:text-destructive"
+                          disabled={isSubmitting}
+                        >
+                          ×
+                        </button>
+                      </span>
+                    ))}
+                  </div>
+                )}
+              </div>
+              
               <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? 'Submitting...' : 'Submit Quest'}
+                {isSubmitting ? 'Creating Quest...' : 'Create Quest'}
               </Button>
             </form>
           </CardContent>

@@ -4,7 +4,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 
-export function SkillDetail({ skill }) {
+interface Skill {
+  name: string
+  value: number
+  description: string
+}
+
+export function SkillDetail({ skill }: { skill: Skill | null }) {
   return (
     <Card className="bg-card/50 backdrop-blur-sm">
       <CardHeader>

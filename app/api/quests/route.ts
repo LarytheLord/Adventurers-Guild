@@ -1,34 +1,51 @@
 
 import { NextResponse } from 'next/server'
-
-// Mock database
-let quests = [
-  { title: "Bug Bounty Brigades", description: "Hunt down and squash bugs in existing codebases. A great way to learn and earn XP.", image: "/images/quest-board.png", rank: "C", xp: 500 },
-  { title: "Digital Archaeology", description: "Explore and document legacy codebases. Uncover hidden gems and learn from the past.", image: "/images/quest-board.png", rank: "B", xp: 800 },
-  { title: "Narrative-Driven Hackathons", description: "Participate in themed hackathons with engaging storylines. Build innovative solutions and win prizes.", image: "/images/quest-board.png", rank: "A", xp: 1200 },
-  { title: "UI/UX Redesign Challenge", description: "Redesign the user interface of a popular open-source application. Focus on usability and modern design principles.", image: "/images/quest-board.png", rank: "B", xp: 750 },
-  { title: "Open Source Contribution", description: "Contribute to a major open-source project. Add a new feature, fix a critical bug, or improve documentation.", image: "/images/quest-board.png", rank: "S", xp: 2000 },
-  { title: "Code Refactoring Quest", description: "Refactor a messy codebase to improve its readability, performance, and maintainability.", image: "/images/quest-board.png", rank: "D", xp: 300 },
-];
+import { MockDataService } from '@/lib/mockData'
 
 export async function GET() {
-  return NextResponse.json({ quests })
+  try {
+    const quests = MockDataService.getQuests()
+    return NextResponse.json({ success: true, quests })
+  } catch (error) {
+    console.error('Error fetching quests:', error)
+    return NextResponse.json({ success: false, message: 'Failed to fetch quests' }, { status: 500 })
+  }
 }
 
 export async function POST(request: Request) {
   try {
-    const { title, description, rank, xp, image } = await request.json()
+    const { title, description, requirements, difficulty, budget, deadline, tags, company_id, company_name } = await request.json()
 
-    if (!title || !description || !rank || !xp) {
+    if (!title || !description || !difficulty || !company_id) {
       return NextResponse.json({ success: false, message: 'Missing required fields' }, { status: 400 })
     }
 
-    const newQuest = { title, description, rank, xp, image: image || '/images/quest-board.png' };
-    quests.push(newQuest);
+    // Calculate XP reward based on difficulty
+    const xpRewards = { F: 200, D: 400, C: 600, B: 800, A: 1200, S: 2000 }
+    const skillRewards = {
+      'React Mastery': Math.floor(xpRewards[difficulty as keyof typeof xpRewards] * 0.3),
+      'TypeScript': Math.floor(xpRewards[difficulty as keyof typeof xpRewards] * 0.2)
+    }
 
+    const questData = {
+      title,
+      description,
+      requirements: requirements || '',
+      difficulty: difficulty as 'F' | 'D' | 'C' | 'B' | 'A' | 'S',
+      xp_reward: xpRewards[difficulty as keyof typeof xpRewards],
+      skill_rewards: skillRewards,
+      budget: budget ? parseFloat(budget) : undefined,
+      deadline: deadline || undefined,
+      status: 'active' as const,
+      company_id,
+      company_name: company_name || 'Unknown Company',
+      tags: tags || []
+    }
+
+    const newQuest = MockDataService.createQuest(questData)
     return NextResponse.json({ success: true, quest: newQuest })
   } catch (error) {
-    console.error('Error creating quest:', error);
+    console.error('Error creating quest:', error)
     return NextResponse.json({ success: false, message: 'Internal Server Error' }, { status: 500 })
   }
 }
