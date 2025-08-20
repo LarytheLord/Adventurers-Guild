@@ -261,14 +261,18 @@ export default function AdventurersGuildLanding() {
       {/* Mission Statement */}
       <section className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 bg-background">
         <div className="container mx-auto max-w-4xl text-center">
-          <h2 className="text-3xl sm:text-4xl md:text-6xl font-black mb-6 sm:mb-8 text-foreground leading-tight">
-            WE'RE NOT JUST CODING.
+          <h2 className="text-3xl sm:text-4xl md:text-6xl font-black mb-6 sm:mb-8 leading-tight">
+            <span className="text-black">FORGE YOUR PATH.</span>
             <br />
-            WE'RE CHARTING THE UNSEEN.
+            <span className="text-red-600">CONQUER THE UNKNOWN.</span>
           </h2>
           <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground leading-relaxed px-4">
-            Transform your computer science education into an epic quest. Gain real-world skills, 
-            earn XP, and ascend the ranks from F to S by tackling challenges commissioned by real companies.
+            Your education is no longer a <span className="text-black font-semibold">classroom routine</span> — 
+            it’s a <span className="text-black font-semibold">battlefield of ideas</span>.  
+            Earn <span className="text-black font-semibold">XP</span>, sharpen your craft, and climb from 
+            <span className="text-black font-semibold"> novice</span> to 
+            <span className="text-red-600 font-bold"> S-rank warrior</span> by tackling 
+            challenges that real companies put on the line.
           </p>
         </div>
       </section>
