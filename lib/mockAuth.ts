@@ -9,6 +9,8 @@ export interface User {
   xp?: number
   avatar_url?: string
   company_name?: string
+  github_url?: string
+  linkedin_url?: string
   created_at: string
 }
 

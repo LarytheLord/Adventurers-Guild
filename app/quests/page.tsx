@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowLeft, Search, DollarSign, Trophy, Users, Clock, ArrowRight } from 'lucide-react'
-import { MockDataService, Quest } from '@/lib/mockData'
+import { Quest } from '@/lib/mockData';
 
 export default function QuestsPage() {
   const [quests, setQuests] = useState<Quest[]>([])
@@ -19,10 +19,15 @@ export default function QuestsPage() {
   const [statusFilter, setStatusFilter] = useState('all')
 
   useEffect(() => {
-    const allQuests = MockDataService.getQuests()
-    setQuests(allQuests)
-    setFilteredQuests(allQuests)
-  }, [])
+    const fetchQuests = async () => {
+      const response = await fetch('/api/quests');
+      const data = await response.json();
+      setQuests(data.quests);
+      setFilteredQuests(data.quests);
+    };
+
+    fetchQuests();
+  }, []);
 
   useEffect(() => {
     let filtered = quests

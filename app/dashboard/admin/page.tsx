@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useAuth } from '@/hooks/use-auth'
+import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -182,7 +182,7 @@ const mockDisputes = [
 ]
 
 export default function AdminDashboard() {
-  const { profile, isLoading, signOut } = useAuth()
+  const { profile, loading, signOut } = useAuth()
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
   const [filterRole, setFilterRole] = useState('all')
@@ -191,7 +191,7 @@ export default function AdminDashboard() {
   const [selectedTab, setSelectedTab] = useState('overview')
 
   // Redirect if not an admin user
-  if (!isLoading && (!profile || profile.role !== 'admin')) {
+  if (!loading && (!profile || profile.role !== 'admin')) {
     router.push('/login')
     return null
   }

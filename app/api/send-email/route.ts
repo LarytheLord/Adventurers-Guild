@@ -3,7 +3,8 @@ export const config = {
 };
 
 import { NextRequest, NextResponse } from 'next/server'
-import nodemailer from 'nodemailer'
+import nodemailer from 'nodemailer';
+import type { TransportOptions } from 'nodemailer';
 
 export async function POST(request: NextRequest) {
     try {
@@ -19,7 +20,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Create SMTP transporter with optimized settings for Vercel
-        const transporter = nodemailer.createTransport({
+        const transporter = nodemailer.createTransport(({
             host: process.env.SMTP_HOST || 'smtp.gmail.com',
             port: parseInt(process.env.SMTP_PORT || '587'),
             secure: process.env.SMTP_PORT === '465', // true for 465, false for other ports
@@ -38,7 +39,7 @@ export async function POST(request: NextRequest) {
             tls: {
                 rejectUnauthorized: false
             }
-        })
+        }) as TransportOptions)
 
         // Verify transporter configuration
         try {

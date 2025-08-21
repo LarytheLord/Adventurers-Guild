@@ -18,8 +18,8 @@ import {
   Settings,
   LogOut
 } from 'lucide-react'
-import { MockAuthService, User } from '@/lib/mockAuth'
-import { MockDataService, Quest, QuestApplication } from '@/lib/mockData'
+import { useAuth } from '@/hooks/useAuth'
+import { Quest, QuestApplication } from '@/lib/mockData' // Keep Quest and QuestApplication types for now
 import { CreateQuestDialog } from '@/components/company/CreateQuestDialog'
 import { QuestApplicationsDialog } from '@/components/company/QuestApplicationsDialog'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
@@ -27,7 +27,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 
 export default function CompanyDashboard() {
-  const [user, setUser] = useState<User | null>(null)
+  const { profile, loading, signOut } = useAuth()
   const [quests, setQuests] = useState<Quest[]>([])
   const [applications, setApplications] = useState<QuestApplication[]>([])
   const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null)
@@ -35,28 +35,31 @@ export default function CompanyDashboard() {
   const [showApplications, setShowApplications] = useState(false)
 
   useEffect(() => {
-    const currentUser = MockAuthService.getCurrentUser()
-    if (!currentUser || currentUser.role !== 'company') {
+    if (loading) return;
+    if (!profile || profile.role !== 'company') {
       window.location.href = '/login'
       return
     }
-    
-    setUser(currentUser)
-    
-    // Load company's quests
-    const companyQuests = MockDataService.getQuestsByCompany(currentUser.id)
-    setQuests(companyQuests)
-  }, [])
+
+    const fetchQuests = async () => {
+      const response = await fetch(`/api/company/${profile.id}/quests`)
+      const data = await response.json()
+      setQuests(data.quests)
+    }
+
+    fetchQuests()
+  }, [profile, loading])
 
   const handleViewApplications = (quest: Quest) => {
     setSelectedQuest(quest)
-    const questApplications = MockDataService.getApplicationsForQuest(quest.id)
-    setApplications(questApplications)
+    // TODO: Fetch applications for the selected quest
+    // const questApplications = MockDataService.getApplicationsForQuest(quest.id)
+    // setApplications(questApplications)
     setShowApplications(true)
   }
 
   const handleLogout = () => {
-    MockAuthService.signOut()
+    signOut()
     window.location.href = '/'
   }
 
@@ -67,7 +70,7 @@ export default function CompanyDashboard() {
     totalApplications: quests.reduce((sum, q) => sum + q.applications_count, 0)
   }
 
-  if (!user) {
+  if (loading || !profile) {
     return <div>Loading...</div>
   }
 
@@ -85,8 +88,8 @@ export default function CompanyDashboard() {
           <div className="flex items-center space-x-4">
             <ThemeToggle />
             <Avatar>
-              <AvatarImage src={user.avatar_url} />
-              <AvatarFallback>{user.name.substring(0, 2)}</AvatarFallback>
+              <AvatarImage src={profile.avatar_url || undefined} />
+              <AvatarFallback>{profile.name?.substring(0, 2) || ''}</AvatarFallback>
             </Avatar>
             <Button variant="ghost" onClick={handleLogout}>
               <LogOut className="w-4 h-4 mr-2" />
@@ -99,7 +102,7 @@ export default function CompanyDashboard() {
       <div className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h2 className="text-3xl font-bold mb-2">Welcome back, {user.company_name || user.name}!</h2>
+          <h2 className="text-3xl font-bold mb-2">Welcome back, {profile.company_name || profile.name}!</h2>
           <p className="text-muted-foreground">Manage your quests and find talented adventurers.</p>
         </div>
 
@@ -197,31 +200,29 @@ export default function CompanyDashboard() {
                       </div>
                     </CardHeader>
                     <CardContent>
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-6 text-sm text-muted-foreground">
-                          <span className="flex items-center">
-                            <DollarSign className="w-4 h-4 mr-1" />
-                            ${quest.budget}
-                          </span>
-                          <span className="flex items-center">
-                            <TrendingUp className="w-4 h-4 mr-1" />
-                            {quest.xp_reward} XP
-                          </span>
-                          <span className="flex items-center">
-                            <Users className="w-4 h-4 mr-1" />
-                            {quest.applications_count} applications
-                          </span>
-                        </div>
-                        <div className="flex space-x-2">
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleViewApplications(quest)}
-                          >
-                            <Eye className="w-4 h-4 mr-2" />
-                            View Applications
-                          </Button>
-                        </div>
+                      <div className="flex items-center space-x-6 text-sm text-muted-foreground">
+                        <span className="flex items-center">
+                          <DollarSign className="w-4 h-4 mr-1" />
+                          ${quest.budget}
+                        </span>
+                        <span className="flex items-center">
+                          <TrendingUp className="w-4 h-4 mr-1" />
+                          {quest.xp_reward} XP
+                        </span>
+                        <span className="flex items-center">
+                          <Users className="w-4 h-4 mr-1" />
+                          {quest.applications_count} applications
+                        </span>
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleViewApplications(quest)}
+                        >
+                          <Eye className="w-4 h-4 mr-2" />
+                          View Applications
+                        </Button>
                       </div>
                     </CardContent>
                   </Card>

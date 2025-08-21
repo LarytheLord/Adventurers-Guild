@@ -28,7 +28,7 @@ import {
   Calendar,
   Download
 } from 'lucide-react'
-import { useAuth } from '@/hooks/use-auth'
+import { useAuth } from '@/hooks/useAuth'
 import { toast } from 'sonner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
@@ -248,7 +248,9 @@ export default function AIRankTestResults() {
     )
   }
 
-  const rankDetail = rankDetails[mockResults.rank] || rankDetails['Bronze']
+  type Rank = keyof typeof rankDetails;
+
+  const rankDetail = rankDetails[mockResults.rank as Rank] || rankDetails['Bronze']
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted/20 py-8">

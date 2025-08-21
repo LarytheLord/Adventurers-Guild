@@ -24,7 +24,7 @@ import {
   Save,
   RotateCcw
 } from 'lucide-react'
-import { useAuth } from '@/hooks/use-auth'
+import { useAuth } from '@/hooks/useAuth'
 import { toast } from 'sonner'
 import {
   Select,

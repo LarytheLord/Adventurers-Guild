@@ -25,7 +25,7 @@ import {
   Sword
 } from 'lucide-react'
 import Link from 'next/link'
-import { useAuth } from '@/hooks/use-auth'
+import { useAuth } from '@/hooks/useAuth'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 
 // XP thresholds for ranks

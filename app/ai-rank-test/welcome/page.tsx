@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/hooks/use-auth'
+import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -12,18 +12,21 @@ import { toast } from 'sonner'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export default function AIRankTestWelcome() {
-  const { profile, isLoading } = useAuth()
+  const { profile, loading } = useAuth()
   const router = useRouter()
   const [isStarting, setIsStarting] = useState(false)
 
   // Redirect if not logged in
-  if (!isLoading && !profile) {
+  if (!loading && !profile) {
     router.push('/login')
     return null
   }
 
-  // Check if user has already completed the test
-  const hasCompletedTest = localStorage.getItem('hasCompletedRankTest') === 'true'
+  const [hasCompletedTest, setHasCompletedTest] = useState(false);
+
+  useEffect(() => {
+    setHasCompletedTest(localStorage.getItem('hasCompletedRankTest') === 'true');
+  }, []);
 
   const handleStartTest = async () => {
     setIsStarting(true)

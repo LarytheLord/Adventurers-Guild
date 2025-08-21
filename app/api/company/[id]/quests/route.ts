@@ -1,9 +1,15 @@
 import { createAdminSupabaseClient } from '@/lib/supabase';
-import { NextResponse } from 'next/server';
+import { NextResponse, NextRequest } from 'next/server';
 
-export async function GET() {
+export async function GET(
+  req: NextRequest,
+  context: any
+) {
   const supabase = createAdminSupabaseClient();
-  const { data, error } = await supabase.from('quests').select('*');
+  const { data, error } = await supabase
+    .from('quests')
+    .select('*')
+    .eq('quest_giver_id', context.params.id);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });

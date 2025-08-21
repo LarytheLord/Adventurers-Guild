@@ -21,25 +21,42 @@ import {
   AlertCircle,
   ExternalLink
 } from 'lucide-react'
-import { MockDataService, Quest } from '@/lib/mockData'
-import { MockAuthService } from '@/lib/mockAuth'
+import { Quest } from '@/lib/mockData';
+import { User } from '@/lib/mockAuth';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function QuestDetailPage() {
-  const params = useParams()
-  const [quest, setQuest] = useState<Quest | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [user, setUser] = useState(null)
+  const params = useParams();
+  const { user } = useAuth();
+  const [quest, setQuest] = useState<Quest | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [similarQuests, setSimilarQuests] = useState<Quest[]>([]);
 
   useEffect(() => {
-    const currentUser = MockAuthService.getCurrentUser()
-    setUser(currentUser)
+    const fetchQuest = async () => {
+      if (params.id) {
+        const response = await fetch(`/api/quests/${params.id}`);
+        const data = await response.json();
+        setQuest(data.quest);
+      }
+      setLoading(false);
+    };
 
-    if (params.id) {
-      const questData = MockDataService.getQuestById(params.id as string)
-      setQuest(questData)
-    }
-    setLoading(false)
-  }, [params.id])
+    const fetchSimilarQuests = async () => {
+      const response = await fetch(`/api/quests`);
+      const data = await response.json();
+      if (quest) {
+        setSimilarQuests(
+          data.quests.filter(
+            (q: Quest) => q.id !== quest.id && q.difficulty === quest.difficulty
+          )
+        );
+      }
+    };
+
+    fetchQuest();
+    fetchSimilarQuests();
+  }, [params.id, quest]);
 
   if (loading) {
     return (
@@ -320,8 +337,7 @@ export default function QuestDetailPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {MockDataService.getQuests()
-                    .filter(q => q.id !== quest.id && q.difficulty === quest.difficulty)
+                  {similarQuests
                     .slice(0, 3)
                     .map((similarQuest) => (
                       <Link key={similarQuest.id} href={`/quests/${similarQuest.id}`}>
