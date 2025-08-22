@@ -8,11 +8,10 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ArrowLeft } from 'lucide-react'
 import Link from 'next/link'
-import { MockAuthService, User } from '@/lib/mockAuth'
-import { MockDataService } from '@/lib/mockData'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function CommissionPage() {
-  const [user, setUser] = useState<User | null>(null)
+  const { user, profile } = useAuth()
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [requirements, setRequirements] = useState('')
@@ -26,13 +25,10 @@ export default function CommissionPage() {
   const [isSubmitted, setIsSubmitted] = useState(false)
 
   useEffect(() => {
-    const currentUser = MockAuthService.getCurrentUser()
-    if (!currentUser) {
+    if (!user) {
       window.location.href = '/login'
-      return
     }
-    setUser(currentUser)
-  }, [])
+  }, [user])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -41,9 +37,8 @@ export default function CommissionPage() {
     setIsSubmitted(false)
 
     try {
-      if (!user) throw new Error('Not authenticated')
+      if (!user || !profile) throw new Error('Not authenticated')
 
-      // Calculate XP reward based on difficulty
       const xpRewards = { F: 200, D: 400, C: 600, B: 800, A: 1200, S: 2000 }
       const skillRewards = {
         'React Mastery': Math.floor(xpRewards[rank as keyof typeof xpRewards] * 0.3),
@@ -61,12 +56,23 @@ export default function CommissionPage() {
         deadline: deadline || undefined,
         status: 'active' as const,
         company_id: user.id,
-        company_name: user.company_name || user.name,
+        company_name: profile.company_name || profile.name,
         tags: tags
       }
 
-      MockDataService.createQuest(questData)
-      
+      const response = await fetch('/api/quests', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(questData),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Something went wrong')
+      }
+
       setIsSubmitted(true)
       setTitle('')
       setDescription('')
@@ -76,9 +82,9 @@ export default function CommissionPage() {
       setDeadline('')
       setTags([])
       setTimeout(() => setIsSubmitted(false), 5000)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error)
-      setError('Something went wrong. Please try again.')
+      setError(error.message || 'Something went wrong. Please try again.')
       setTimeout(() => setError(''), 5000)
     } finally {
       setIsSubmitting(false)

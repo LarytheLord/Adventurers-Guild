@@ -21,13 +21,16 @@ import {
   AlertCircle,
   ExternalLink
 } from 'lucide-react'
-import { Quest } from '@/lib/mockData';
-import { User } from '@/lib/mockAuth';
+import { Database } from '@/types/supabase';
 import { useAuth } from '@/hooks/useAuth';
+import { QuestApplicationDialog } from '@/components/student/QuestApplicationDialog';
+import { QuestSubmissionDialog } from '@/components/student/QuestSubmissionDialog';
+
+type Quest = Database['public']['Tables']['quests']['Row'];
 
 export default function QuestDetailPage() {
   const params = useParams();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const [quest, setQuest] = useState<Quest | null>(null);
   const [loading, setLoading] = useState(true);
   const [similarQuests, setSimilarQuests] = useState<Quest[]>([]);
@@ -37,7 +40,7 @@ export default function QuestDetailPage() {
       if (params.id) {
         const response = await fetch(`/api/quests/${params.id}`);
         const data = await response.json();
-        setQuest(data.quest);
+        setQuest(data);
       }
       setLoading(false);
     };
@@ -47,7 +50,7 @@ export default function QuestDetailPage() {
       const data = await response.json();
       if (quest) {
         setSimilarQuests(
-          data.quests.filter(
+          data.filter(
             (q: Quest) => q.id !== quest.id && q.difficulty === quest.difficulty
           )
         );
@@ -105,7 +108,8 @@ export default function QuestDetailPage() {
     return colors[status as keyof typeof colors] || 'bg-gray-100 text-gray-800'
   }
 
-  const canApply = user && user.role === 'student' && quest.status === 'active'
+  const canApply = user && profile?.role === 'student' && quest.status === 'active'
+  const canSubmit = user && profile?.role === 'student' && quest.status === 'in_progress' && quest.assigned_to === user.id
 
   return (
     <div className="min-h-screen bg-background">
@@ -219,7 +223,7 @@ export default function QuestDetailPage() {
                     <span className="font-medium">Total XP</span>
                     <span className="text-lg font-bold text-primary">{quest.xp_reward} XP</span>
                   </div>
-                  {Object.entries(quest.skill_rewards).map(([skill, points]) => (
+                  {quest.skill_rewards && Object.entries(quest.skill_rewards).map(([skill, points]) => (
                     <div key={skill} className="flex items-center justify-between p-3 bg-muted rounded-lg">
                       <span className="font-medium">{skill}</span>
                       <span className="text-lg font-bold text-secondary">+{points} SP</span>
@@ -277,11 +281,9 @@ export default function QuestDetailPage() {
                 <Separator />
 
                 {canApply ? (
-                  <Link href={user ? "/home" : "/login"}>
-                    <Button className="w-full" size="lg">
-                      Apply for Quest
-                    </Button>
-                  </Link>
+                  <QuestApplicationDialog quest={quest} />
+                ) : canSubmit ? (
+                  <QuestSubmissionDialog quest={quest} />
                 ) : quest.status !== 'active' ? (
                   <Button disabled className="w-full" size="lg">
                     Quest {quest.status.replace('_', ' ')}

@@ -19,20 +19,50 @@ import {
   LogOut
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
-import { Quest, QuestApplication } from '@/lib/mockData' // Keep Quest and QuestApplication types for now
 import { CreateQuestDialog } from '@/components/company/CreateQuestDialog'
 import { QuestApplicationsDialog } from '@/components/company/QuestApplicationsDialog'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { EditQuestDialog } from '@/components/company/EditQuestDialog';
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import Link from 'next/link'
 import Image from 'next/image'
+import { toast } from "@/components/ui/use-toast";
+import { Database } from '@/types/supabase'
+
+type Quest = Database['public']['Tables']['quests']['Row'];
+type QuestApplication = Database['public']['Tables']['quest_applications']['Row'] & { profiles: Database['public']['Tables']['users']['Row'] };
 
 export default function CompanyDashboard() {
   const { profile, loading, signOut } = useAuth()
   const [quests, setQuests] = useState<Quest[]>([])
   const [applications, setApplications] = useState<QuestApplication[]>([])
   const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null)
-  const [showCreateQuest, setShowCreateQuest] = useState(false)
+  const [showSubmissions, setShowSubmissions] = useState(false)
+  const [selectedSubmissionQuest, setSelectedSubmissionQuest] = useState<Quest | null>(null)
+  
   const [showApplications, setShowApplications] = useState(false)
+
+  const handleQuestUpdated = (updatedQuest: Quest) => {
+    setQuests(quests.map(q => q.id === updatedQuest.id ? updatedQuest : q));
+  };
+
+  const handleQuestDeleted = async (questId: string) => {
+    try {
+      const response = await fetch(`/api/quests/delete/${questId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete quest');
+      }
+
+      setQuests(quests.filter(q => q.id !== questId));
+      toast({ title: 'Success', description: 'Quest deleted successfully.' });
+    } catch (error) {
+      console.error(error);
+      toast({ title: 'Error', description: 'Failed to delete quest. Please try again.', variant: 'destructive' });
+    }
+  };
 
   useEffect(() => {
     if (loading) return;
@@ -50,12 +80,21 @@ export default function CompanyDashboard() {
     fetchQuests()
   }, [profile, loading])
 
-  const handleViewApplications = (quest: Quest) => {
+  const handleViewApplications = async (quest: Quest) => {
     setSelectedQuest(quest)
-    // TODO: Fetch applications for the selected quest
-    // const questApplications = MockDataService.getApplicationsForQuest(quest.id)
-    // setApplications(questApplications)
+    const response = await fetch(`/api/quests/${quest.id}/applications`)
+    const data = await response.json()
+    setApplications(data)
     setShowApplications(true)
+  }
+
+  const handleViewSubmissions = async (quest: Quest) => {
+    setSelectedSubmissionQuest(quest)
+    const response = await fetch(`/api/quests/${quest.id}/submissions`)
+    const data = await response.json()
+    // Assuming data is an array of submissions
+    setApplications(data) // Reusing applications state for simplicity, ideally would have separate state for submissions
+    setShowSubmissions(true)
   }
 
   const handleLogout = () => {
@@ -67,7 +106,7 @@ export default function CompanyDashboard() {
     totalQuests: quests.length,
     activeQuests: quests.filter(q => q.status === 'active').length,
     completedQuests: quests.filter(q => q.status === 'completed').length,
-    totalApplications: quests.reduce((sum, q) => sum + q.applications_count, 0)
+    totalApplications: quests.reduce((sum, q) => sum + (q.max_applicants || 0), 0)
   }
 
   if (loading || !profile) {
@@ -156,10 +195,7 @@ export default function CompanyDashboard() {
               <TabsTrigger value="quests">My Quests</TabsTrigger>
               <TabsTrigger value="analytics">Analytics</TabsTrigger>
             </TabsList>
-            <Button onClick={() => setShowCreateQuest(true)}>
-              <Plus className="w-4 h-4 mr-2" />
-              Create Quest
-            </Button>
+                        <CreateQuestDialog onQuestCreated={(quest) => setQuests([quest, ...quests])} />
           </div>
 
           <TabsContent value="quests" className="space-y-6">
@@ -211,7 +247,7 @@ export default function CompanyDashboard() {
                         </span>
                         <span className="flex items-center">
                           <Users className="w-4 h-4 mr-1" />
-                          {quest.applications_count} applications
+                          {quest.max_applicants} applications
                         </span>
                       </div>
                       <div className="flex space-x-2">
@@ -222,6 +258,32 @@ export default function CompanyDashboard() {
                         >
                           <Eye className="w-4 h-4 mr-2" />
                           View Applications
+                        </Button>
+                        <EditQuestDialog quest={quest} onQuestUpdated={handleQuestUpdated} />
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="destructive" size="sm">Delete</Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                This action cannot be undone. This will permanently delete the quest.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleQuestDeleted(quest.id)}>Delete</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleViewSubmissions(quest)}
+                        >
+                          <FileText className="w-4 h-4 mr-2" />
+                          View Submissions
                         </Button>
                       </div>
                     </CardContent>
@@ -254,20 +316,30 @@ export default function CompanyDashboard() {
       </div>
 
       {/* Dialogs */}
-      <CreateQuestDialog 
-        open={showCreateQuest}
-        onOpenChange={setShowCreateQuest}
-        onQuestCreated={(quest) => {
-          setQuests([quest, ...quests])
-          setShowCreateQuest(false)
-        }}
-      />
+      
 
       <QuestApplicationsDialog
         open={showApplications}
         onOpenChange={setShowApplications}
         quest={selectedQuest}
         applications={applications}
+        onApplicationStatusChange={(applicationId, newStatus) => {
+          setApplications(prev => prev.map(app => app.id === applicationId ? { ...app, status: newStatus } : app));
+          if (newStatus === 'approved') {
+            // Optionally update the assigned_to field of the quest if an application is approved
+            // This would require another API call to update the quest itself
+          }
+        }}
+      />
+
+      <QuestSubmissionsDialog
+        open={showSubmissions}
+        onOpenChange={setShowSubmissions}
+        quest={selectedSubmissionQuest}
+        submissions={applications} // Reusing applications state for simplicity
+        onSubmissionStatusChange={(submissionId, newStatus) => {
+          setApplications(prev => prev.map(sub => sub.id === submissionId ? { ...sub, status: newStatus } : sub));
+        }}
       />
     </div>
   )

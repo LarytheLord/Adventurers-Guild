@@ -1,74 +1,40 @@
 'use client'
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { ArrowRight, Github, Linkedin, Menu, Twitter, X, Sparkles, Trophy, User, LogOut, DollarSign, Clock, Users } from 'lucide-react';
+import { Github, Linkedin, Menu, Twitter, X, User, LogOut } from 'lucide-react';
 import Image from "next/image";
 import Link from "next/link";
 import { SkillTree } from "@/components/skill-tree";
 import { QuestCompletion } from "@/components/quest-completion";
-import { MockAuthService, User as UserType } from '@/lib/mockAuth';
-import { MockDataService, Quest } from '@/lib/mockData';
-import { QuestApplicationDialog } from '@/components/student/QuestApplicationDialog';
-
 import AdventureSearch from '@/components/AdventureSearch';
 import AdventureFilter from '@/components/AdventureFilter';
+import { useAuth } from "@/hooks/useAuth";
+import QuestBoard from "@/components/home/QuestBoard";
 
 export default function HomePage() {
-  const [user, setUser] = useState<UserType | null>(null);
-  const [quests, setQuests] = useState<Quest[]>([]);
+  const { user, profile, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [rankFilter, setRankFilter] = useState('all');
-  const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
-  const [showApplicationDialog, setShowApplicationDialog] = useState(false);
 
   useEffect(() => {
-    const currentUser = MockAuthService.getCurrentUser();
-    if (!currentUser) {
-      window.location.href = '/login';
-      return;
-    }
-    
-    if (currentUser.role !== 'student') {
+    if (user && profile?.role !== 'student') {
       window.location.href = '/company/dashboard';
-      return;
     }
-    
-    setUser(currentUser);
-    
-    // Load quests
-    const allQuests = MockDataService.getQuests();
-    setQuests(allQuests);
-  }, []);
+  }, [user, profile]);
 
   const handleLogout = () => {
-    MockAuthService.signOut();
+    signOut();
     window.location.href = '/';
   };
 
-  const handleApplyToQuest = (quest: Quest) => {
-    setSelectedQuest(quest);
-    setShowApplicationDialog(true);
-  };
-
-  // Filtered Quests
-  const filteredQuests = quests
-    .filter(quest =>
-      quest.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      quest.description.toLowerCase().includes(searchTerm.toLowerCase())
-    )
-    .filter(quest =>
-      rankFilter === 'all' || quest.difficulty === rankFilter
-    );
-
-  if (!user) {
+  if (!user || !profile) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -97,24 +63,26 @@ export default function HomePage() {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                   <Avatar className="h-8 w-8">
-                    <AvatarImage src={user.avatar_url} alt={user.name} />
-                    <AvatarFallback>{user.name.substring(0, 2)}</AvatarFallback>
+                    <AvatarImage src={profile.avatar_url || undefined} alt={profile.name || 'User'} />
+                    <AvatarFallback>{profile.name?.substring(0, 2) || '??'}</AvatarFallback>
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56" align="end" forceMount>
                 <div className="flex items-center justify-start gap-2 p-2">
                   <div className="flex flex-col space-y-1 leading-none">
-                    <p className="font-medium">{user.name}</p>
+                    {profile.name && <p className="font-medium">{profile.name}</p>}
                     <p className="w-[200px] truncate text-sm text-muted-foreground">
                       {user.email}
                     </p>
                   </div>
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
-                  <User className="mr-2 h-4 w-4" />
-                  <span>Profile</span>
+                <DropdownMenuItem asChild>
+                  <Link href="/profile">
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Profile</span>
+                  </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout}>
@@ -144,7 +112,7 @@ export default function HomePage() {
                 Quest Board
               </Link>
               <Link
-                href="#profile"
+                href="/profile"
                 className="block text-muted-foreground hover:text-foreground font-medium py-2"
                 onClick={() => setMobileMenuOpen(false)}
               >
@@ -152,8 +120,8 @@ export default function HomePage() {
               </Link>
               <div className="flex justify-between items-center">
                 <Avatar>
-                  <AvatarImage src={user.avatar_url} />
-                  <AvatarFallback>{user.name.substring(0, 2)}</AvatarFallback>
+                  <AvatarImage src={profile.avatar_url || undefined} />
+                  <AvatarFallback>{profile.name?.substring(0, 2) || '??'}</AvatarFallback>
                 </Avatar>
                 <Button variant="ghost" onClick={handleLogout}>
                   <LogOut className="w-4 h-4 mr-2" />
@@ -172,7 +140,7 @@ export default function HomePage() {
             <div className="grid lg:grid-cols-3 gap-8 sm:gap-12 items-center">
               <div className="lg:col-span-2">
                 <h1 className="text-3xl sm:text-4xl md:text-6xl font-black mb-3 sm:mb-4 text-foreground leading-tight">
-                  Welcome Back, {user.name}!
+                  Welcome Back, {profile.name || 'Adventurer'}!
                 </h1>
                 <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground leading-relaxed mb-6 sm:mb-8">
                   Ready to embark on a new quest and forge your legend?
@@ -186,20 +154,20 @@ export default function HomePage() {
               <Card className="bg-background rounded-2xl shadow-lg p-4 sm:p-6">
                 <div className="flex items-center space-x-3 sm:space-x-4 mb-4">
                   <Avatar className="w-12 h-12 sm:w-16 sm:h-16">
-                    <AvatarImage src={user.avatar_url} />
-                    <AvatarFallback>{user.name.substring(0, 2)}</AvatarFallback>
+                    <AvatarImage src={profile.avatar_url || undefined} />
+                    <AvatarFallback>{profile.name?.substring(0, 2) || '??'}</AvatarFallback>
                   </Avatar>
                   <div>
-                    <h3 className="text-lg sm:text-xl font-bold">{user.name}</h3>
+                    <h3 className="text-lg sm:text-xl font-bold">{profile.name || 'Adventurer'}</h3>
                     <p className="text-muted-foreground text-sm sm:text-base">Adventurer</p>
                   </div>
                 </div>
                 <div>
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 gap-1 sm:gap-0">
-                    <span className="font-semibold text-sm sm:text-base">Rank: {user.rank}</span>
-                    <span className="font-semibold text-sm sm:text-base">XP: {user.xp?.toLocaleString()} / 25,000</span>
+                    <span className="font-semibold text-sm sm:text-base">Rank: {profile.rank}</span>
+                    <span className="font-semibold text-sm sm:text-base">XP: {profile.xp?.toLocaleString()} / 25,000</span>
                   </div>
-                  <Progress value={((user.xp || 0) / 25000) * 100} className="w-full" />
+                  <Progress value={((profile.xp || 0) / 25000) * 100} className="w-full" />
                 </div>
               </Card>
             </div>
@@ -219,95 +187,14 @@ export default function HomePage() {
             />
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mt-6">
-            {filteredQuests.map((quest) => (
-              <QuestCard 
-                key={quest.id} 
-                quest={quest} 
-                onApply={() => handleApplyToQuest(quest)}
-              />
-            ))}
-          </div>
-
-          {filteredQuests.length === 0 && (
-            <div className="text-center col-span-full py-16">
-              <p className="text-2xl text-muted-foreground">No quests match your criteria. Try a different search!</p>
-            </div>
-          )}
+          <Suspense fallback={<p>Loading quests...</p>}>
+            <QuestBoard />
+          </Suspense>
         </section>
       </main>
 
       <AppFooter />
-
-      {/* Quest Application Dialog */}
-      <QuestApplicationDialog
-        open={showApplicationDialog}
-        onOpenChange={setShowApplicationDialog}
-        quest={selectedQuest}
-        onApplicationSubmitted={() => {
-          setShowApplicationDialog(false);
-          // You could show a success message here
-        }}
-      />
     </div>
-  );
-}
-
-function QuestCard({ quest, onApply }: { quest: Quest; onApply: () => void }) {
-  const rankColor = {
-    S: 'bg-yellow-500 text-black',
-    A: 'bg-red-500 text-white',
-    B: 'bg-blue-500 text-white',
-    C: 'bg-green-500 text-white',
-    D: 'bg-gray-500 text-white',
-    F: 'bg-gray-400 text-white',
-  }[quest.difficulty] || 'bg-gray-400';
-
-  return (
-    <Card className="bg-card rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border-0 overflow-hidden flex flex-col">
-      <CardHeader className="p-0">
-        <Image src="/images/quest-board.png" alt={quest.title} width={400} height={225} className="w-full h-40 sm:h-48 object-cover" />
-      </CardHeader>
-      <CardContent className="p-4 sm:p-6 flex-grow">
-        <div className="flex items-center justify-between mb-3">
-          <Badge className={`${rankColor} text-xs sm:text-sm`}>{quest.difficulty}-Rank</Badge>
-          <span className="text-xs text-muted-foreground">{quest.company_name}</span>
-        </div>
-        <CardTitle className="text-lg sm:text-xl md:text-2xl font-bold mb-2 sm:mb-3">{quest.title}</CardTitle>
-        <CardDescription className="text-muted-foreground text-sm sm:text-base md:text-lg leading-relaxed mb-4">
-          {quest.description}
-        </CardDescription>
-        <div className="flex flex-wrap gap-1 mb-4">
-          {quest.tags.slice(0, 3).map((tag) => (
-            <Badge key={tag} variant="outline" className="text-xs">
-              {tag}
-            </Badge>
-          ))}
-        </div>
-      </CardContent>
-      <CardFooter className="p-4 sm:p-6 bg-card-foreground/5 flex flex-col gap-3">
-        <div className="flex items-center justify-between w-full text-sm text-muted-foreground">
-          <span className="flex items-center">
-            <DollarSign className="w-4 h-4 mr-1" />
-            ${quest.budget}
-          </span>
-          <span className="flex items-center">
-            <Trophy className="w-4 h-4 mr-1" />
-            {quest.xp_reward} XP
-          </span>
-          <span className="flex items-center">
-            <Users className="w-4 h-4 mr-1" />
-            {quest.applications_count}
-          </span>
-        </div>
-        <Button 
-          className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm sm:text-base"
-          onClick={onApply}
-        >
-          Apply for Quest <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 ml-2" />
-        </Button>
-      </CardFooter>
-    </Card>
   );
 }
 

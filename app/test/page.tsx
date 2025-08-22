@@ -4,28 +4,31 @@ import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from 'next/link'
-import { MockAuthService } from '@/lib/mockAuth'
-import { MockDataService } from '@/lib/mockData'
+import { useAuth } from '@/hooks/useAuth'
 
 export default function TestPage() {
   const [testResults, setTestResults] = useState<string[]>([])
+  const { user } = useAuth();
 
-  const runTests = () => {
+  const runTests = async () => {
     const results: string[] = []
     
     try {
-      // Test 1: Mock Auth Service
-      const testUser = MockAuthService.signUp({
-        email: 'test@example.com',
-        password: 'test123',
-        name: 'Test User',
-        role: 'student'
-      })
-      results.push('✅ Mock Auth Service - Working')
+      // Test 1: Auth Hook
+      if(user) {
+        results.push('✅ Auth Hook - User is authenticated')
+      } else {
+        results.push('✅ Auth Hook - User is not authenticated (as expected)')
+      }
       
-      // Test 2: Mock Data Service
-      const quests = MockDataService.getQuests()
-      results.push(`✅ Mock Data Service - ${quests.length} quests loaded`)
+      // Test 2: API Service
+      const response = await fetch('/api/quests');
+      if(response.ok) {
+        const quests = await response.json();
+        results.push(`✅ API Service - ${quests.length} quests loaded`)
+      } else {
+        results.push(`❌ API Service - Failed to load quests`)
+      }
       
       // Test 3: Components exist
       results.push('✅ All components imported successfully')
@@ -102,7 +105,7 @@ export default function TestPage() {
               <Button variant="outline" className="w-full">Contact Us</Button>
             </Link>
             <Link href="/privacy-policy">
-              <Button variant="outline" className="w-full">Privacy Policy</Button>
+_              <Button variant="outline" className="w-full">Privacy Policy</Button>
             </Link>
             <Link href="/terms-of-service">
               <Button variant="outline" className="w-full">Terms of Service</Button>

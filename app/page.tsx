@@ -536,7 +536,7 @@ export default function AdventurersGuildLanding() {
               <div className="flex space-x-20 pr-20">
                 <div className="flex items-center justify-center w-[200px]">
                   <Image
-                    src="https://ik.imagekit.io/ulajgq5pme/output-onlinepngtools.png?updatedAt=1754142825193"
+                    src=".\public\images\gssoc.jpeg"
                     alt="GSSOC"
                     width={180}
                     height={60}

@@ -7,33 +7,64 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { CheckCircle, X, Clock, User } from 'lucide-react'
-import { Quest, QuestApplication } from '@/lib/mockData'
+import { Database } from '@/types/supabase'
+import { toast } from "@/components/ui/use-toast"
+
+type Quest = Database['public']['Tables']['quests']['Row'];
+type QuestApplication = Database['public']['Tables']['quest_applications']['Row'] & { users: Database['public']['Tables']['users']['Row'] };
 
 interface QuestApplicationsDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   quest: Quest | null
   applications: QuestApplication[]
+  onApplicationStatusChange: (applicationId: string, newStatus: 'approved' | 'rejected') => void
 }
 
 export function QuestApplicationsDialog({ 
   open, 
   onOpenChange, 
   quest, 
-  applications 
+  applications,
+  onApplicationStatusChange
 }: QuestApplicationsDialogProps) {
   if (!quest) return null
 
+  const updateApplicationStatus = async (applicationId: string, status: 'approved' | 'rejected') => {
+    try {
+      const response = await fetch(`/api/quest_applications/${applicationId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status }),
+      })
+
+      if (!response.ok) {
+        throw new Error(`Failed to update application status to ${status}`)
+      }
+
+      toast({
+        title: "Success",
+        description: `Application ${status} successfully.`,
+      })
+      onApplicationStatusChange(applicationId, status)
+    } catch (error: any) {
+      console.error(error)
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update application status. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
   const handleAcceptApplication = (application: QuestApplication) => {
-    // In a real app, this would update the database
-    console.log('Accepting application:', application.id)
-    // You could add a callback prop to handle this
+    updateApplicationStatus(application.id, 'approved')
   }
 
   const handleRejectApplication = (application: QuestApplication) => {
-    // In a real app, this would update the database
-    console.log('Rejecting application:', application.id)
-    // You could add a callback prop to handle this
+    updateApplicationStatus(application.id, 'rejected')
   }
 
   const getStatusColor = (status: string) => {
@@ -117,14 +148,15 @@ export function QuestApplicationsDialog({
                       <div className="flex items-center space-x-3">
                         <Avatar>
                           <AvatarFallback>
-                            {application.user_name.substring(0, 2)}
+                            {application.users?.name?.substring(0, 2) || ''}
                           </AvatarFallback>
+                          <AvatarImage src={application.users?.avatar_url || undefined} />
                         </Avatar>
                         <div>
-                          <CardTitle className="text-base">{application.user_name}</CardTitle>
+                          <CardTitle className="text-base">{application.users?.name}</CardTitle>
                           <div className="flex items-center space-x-2 mt-1">
-                            <Badge className={getRankColor(application.user_rank)}>
-                              {application.user_rank}-Rank
+                            <Badge className={getRankColor(application.users?.rank || 'F')}>
+                              {application.users?.rank}-Rank
                             </Badge>
                             <Badge className={getStatusColor(application.status)}>
                               {application.status}

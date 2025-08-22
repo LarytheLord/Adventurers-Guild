@@ -1,50 +1,61 @@
 'use client'
 import { ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
+import { Toaster } from "@/components/ui/toaster";
 import { UserProfileCard } from "@/components/profile/UserProfileCard";
 import { SkillPentagon } from "@/components/profile/SkillPentagon";
 import { SkillDetail } from "@/components/profile/SkillDetail";
-import { useState, useEffect } from "react";
-import { MockAuthService, User } from '@/lib/mockAuth';
+import { useAuth } from '@/hooks/useAuth';
 
 // This will be populated from the authenticated user
 
-const skills = [
-    { name: 'Frontend', value: 90, description: 'Mastery of modern frontend technologies including React, Next.js, and Tailwind CSS.' },
-    { name: 'Backend', value: 75, description: 'Proficient in building robust and scalable backend systems with Node.js, Express, and databases.' },
-    { name: 'AI/ML', value: 60, description: 'Experience in developing AI-powered features and working with machine learning models.' },
-    { name: 'DevOps', value: 50, description: 'Knowledge of CI/CD pipelines, containerization with Docker, and cloud deployment.' },
-    { name: 'Soft Skills', value: 80, description: 'Excellent communication, teamwork, and problem-solving abilities.' },
-];
+
 
 export default function ProfilePage() {
-  const [user, setUser] = useState<User | null>(null)
-  const [selectedSkill, setSelectedSkill] = useState(skills[0]);
+  const { profile, loading } = useAuth();
+  const [skills, setSkills] = useState<any[]>([]); // New state for fetched skills
+  const [selectedSkill, setSelectedSkill] = useState<any | null>(null);
 
   useEffect(() => {
-    const currentUser = MockAuthService.getCurrentUser()
-    if (!currentUser) {
-      window.location.href = '/login'
-      return
+    if (!loading && !profile) {
+      window.location.href = '/login';
     }
-    setUser(currentUser)
-  }, [])
 
-  if (!user) {
-    return <div>Loading...</div>
+    const fetchSkills = async () => {
+      try {
+        const response = await fetch('/api/skills');
+        const data = await response.json();
+        const transformedSkills = data.skills.map((skill: any) => ({
+              ...skill,
+              value: (skill.level / skill.max_level) * 100, // Calculate proficiency value
+            }));
+            setSkills(transformedSkills);
+        if (data.skills.length > 0) {
+          setSelectedSkill(data.skills[0]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch skills:", error);
+      }
+    };
+
+    fetchSkills();
+  }, [profile, loading]);
+
+  if (loading || !profile) {
+    return <div>Loading...</div>;
   }
 
   // Create user object compatible with existing profile components
   const profileUser = {
-    name: user.name,
-    avatar: user.avatar_url || "/placeholder-user.jpg",
-    rank: user.rank || "F",
-    xp: user.xp || 0,
+    name: profile.name,
+    avatar: profile.avatar_url || "/placeholder-user.jpg",
+    rank: profile.rank || "F",
+    xp: profile.xp || 0,
     xpNextLevel: 25000,
-    bio: "A passionate developer on a quest to master the art of coding and build amazing things.",
+    bio: profile.bio || "A passionate developer on a quest to master the art of coding and build amazing things.",
     social: {
-      github: user.github_url || "https://github.com",
-      linkedin: user.linkedin_url || "https://linkedin.com",
+      github: profile.github_url || "https://github.com",
+      linkedin: profile.linkedin_url || "https://linkedin.com",
       twitter: "https://twitter.com",
     },
     banner: "/placeholder.jpg", // Using existing placeholder
@@ -73,9 +84,12 @@ export default function ProfilePage() {
                 <SkillDetail skill={selectedSkill} />
               </div>
             </div>
+            <div className="mt-8 bg-card p-4 rounded-lg">
+              <h2 className="text-2xl font-bold mb-4">Edit Profile</h2>
+              <UserProfileForm />
+            </div>
           </div>
         </div>
       </div>
+    <Toaster />
     </div>
-  );
-}

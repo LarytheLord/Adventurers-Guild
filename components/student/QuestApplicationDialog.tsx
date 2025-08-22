@@ -1,209 +1,123 @@
+
 'use client'
 
-import { useState } from 'react'
 import { Button } from "@/components/ui/button"
-import { Textarea } from "@/components/ui/textarea"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { DollarSign, Trophy, Clock, Users, Send } from 'lucide-react'
-import { MockAuthService } from '@/lib/mockAuth'
-import { MockDataService, Quest } from '@/lib/mockData'
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import * as z from "zod"
+import { Textarea } from "@/components/ui/textarea"
+import { useAuth } from "@/hooks/useAuth"
+import { toast } from "@/components/ui/use-toast"
+import { Database } from "@/types/supabase"
+import { useState } from "react"
+
+type Quest = Database['public']['Tables']['quests']['Row'];
+
+const applicationSchema = z.object({
+  cover_letter: z.string().min(1, "Cover letter is required"),
+  proposed_timeline: z.string().min(1, "Proposed timeline is required"),
+})
+
+type ApplicationFormValues = z.infer<typeof applicationSchema>
 
 interface QuestApplicationDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  quest: Quest | null
-  onApplicationSubmitted: () => void
+  quest: Quest
 }
 
-export function QuestApplicationDialog({ 
-  open, 
-  onOpenChange, 
-  quest, 
-  onApplicationSubmitted 
-}: QuestApplicationDialogProps) {
-  const [coverLetter, setCoverLetter] = useState('')
-  const [proposedTimeline, setProposedTimeline] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
+export function QuestApplicationDialog({ quest }: QuestApplicationDialogProps) {
+  const { user } = useAuth()
+  const [open, setOpen] = useState(false)
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<ApplicationFormValues>({
+    resolver: zodResolver(applicationSchema),
+  })
 
-  if (!quest) return null
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+  const onSubmit = async (data: ApplicationFormValues) => {
+    if (!user) {
+      toast({
+        title: "Error",
+        description: "You must be logged in to apply for a quest.",
+        variant: "destructive",
+      })
+      return
+    }
 
     try {
-      const user = MockAuthService.getCurrentUser()
-      if (!user) throw new Error('Not authenticated')
-
-      const application = MockDataService.applyToQuest({
-        quest_id: quest.id,
-        user_id: user.id,
-        user_name: user.name,
-        user_rank: user.rank || 'F',
-        cover_letter: coverLetter,
-        proposed_timeline: proposedTimeline,
-        status: 'pending'
+      const response = await fetch(`/api/quests/${quest.id}/apply`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ ...data, user_id: user.id }),
       })
 
-      console.log('Application submitted:', application)
-      
-      // Reset form
-      setCoverLetter('')
-      setProposedTimeline('')
-      
-      onApplicationSubmitted()
-    } catch (error) {
-      console.error('Failed to submit application:', error)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to apply for quest")
+      }
 
-  const getRankColor = (rank: string) => {
-    const colors = {
-      S: 'bg-yellow-500 text-black',
-      A: 'bg-red-500 text-white',
-      B: 'bg-blue-500 text-white',
-      C: 'bg-green-500 text-white',
-      D: 'bg-gray-500 text-white',
-      F: 'bg-gray-400 text-white'
+      toast({
+        title: "Success",
+        description: "Application submitted successfully.",
+      })
+      reset()
+      setOpen(false)
+    } catch (error: any) {
+      console.error(error)
+      toast({
+        title: "Error",
+        description: error.message || "Failed to apply for quest. Please try again.",
+        variant: "destructive",
+      })
     }
-    return colors[rank as keyof typeof colors] || 'bg-gray-400 text-white'
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button>Apply for Quest</Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Apply for Quest</DialogTitle>
+          <DialogTitle>Apply for {quest.title}</DialogTitle>
           <DialogDescription>
-            Submit your application to work on this quest
+            Submit your application for this quest.
           </DialogDescription>
         </DialogHeader>
-
-        <div className="space-y-6">
-          {/* Quest Details */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div>
-                  <CardTitle className="text-xl">{quest.title}</CardTitle>
-                  <CardDescription className="mt-2">
-                    by {quest.company_name}
-                  </CardDescription>
-                </div>
-                <Badge className={getRankColor(quest.difficulty)}>
-                  {quest.difficulty}-Rank
-                </Badge>
-              </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                {quest.description}
-              </p>
-              
-              {quest.requirements && (
-                <div>
-                  <h4 className="font-medium mb-2">Requirements</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {quest.requirements}
-                  </p>
-                </div>
-              )}
-
-              <div className="flex flex-wrap gap-2">
-                {quest.tags.map((tag) => (
-                  <Badge key={tag} variant="outline" className="text-xs">
-                    {tag}
-                  </Badge>
-                ))}
-              </div>
-
-              <Separator />
-
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                <div className="flex items-center">
-                  <DollarSign className="w-4 h-4 mr-2 text-muted-foreground" />
-                  <span>${quest.budget}</span>
-                </div>
-                <div className="flex items-center">
-                  <Trophy className="w-4 h-4 mr-2 text-muted-foreground" />
-                  <span>{quest.xp_reward} XP</span>
-                </div>
-                <div className="flex items-center">
-                  <Users className="w-4 h-4 mr-2 text-muted-foreground" />
-                  <span>{quest.applications_count} applications</span>
-                </div>
-                {quest.deadline && (
-                  <div className="flex items-center">
-                    <Clock className="w-4 h-4 mr-2 text-muted-foreground" />
-                    <span>{new Date(quest.deadline).toLocaleDateString()}</span>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Application Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="cover-letter">Cover Letter *</Label>
-              <Textarea
-                id="cover-letter"
-                placeholder="Tell the company why you're the right person for this quest. Highlight your relevant experience, skills, and what you can bring to the project..."
-                value={coverLetter}
-                onChange={(e) => setCoverLetter(e.target.value)}
-                rows={6}
-                required
-              />
-              <p className="text-xs text-muted-foreground">
-                Tip: Mention specific technologies from the requirements and any relevant projects you've worked on.
-              </p>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="timeline">Proposed Timeline *</Label>
-              <Textarea
-                id="timeline"
-                placeholder="How long do you think this project will take? Break down your approach and timeline..."
-                value={proposedTimeline}
-                onChange={(e) => setProposedTimeline(e.target.value)}
-                rows={3}
-                required
-              />
-              <p className="text-xs text-muted-foreground">
-                Be realistic about your timeline. Consider the complexity and your other commitments.
-              </p>
-            </div>
-
-            <div className="flex justify-end space-x-2 pt-4">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => onOpenChange(false)}
-              >
-                Cancel
-              </Button>
-              <Button 
-                type="submit" 
-                disabled={isSubmitting || !coverLetter.trim() || !proposedTimeline.trim()}
-              >
-                {isSubmitting ? (
-                  'Submitting...'
-                ) : (
-                  <>
-                    <Send className="w-4 h-4 mr-2" />
-                    Submit Application
-                  </>
-                )}
-              </Button>
-            </div>
-          </form>
-        </div>
+        <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="cover_letter" className="text-right">
+              Cover Letter
+            </Label>
+            <Textarea id="cover_letter" {...register("cover_letter")} className="col-span-3" />
+            {errors.cover_letter && <p className="col-span-4 text-red-500 text-xs">{errors.cover_letter.message}</p>}
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="proposed_timeline" className="text-right">
+              Proposed Timeline
+            </Label>
+            <Input id="proposed_timeline" {...register("proposed_timeline")} className="col-span-3" />
+            {errors.proposed_timeline && <p className="col-span-4 text-red-500 text-xs">{errors.proposed_timeline.message}</p>}
+          </div>
+          <DialogFooter>
+            <Button type="submit">Submit Application</Button>
+          </DialogFooter>
+        </form>
       </DialogContent>
     </Dialog>
   )

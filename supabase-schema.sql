@@ -5,7 +5,7 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- Custom types
-CREATE TYPE user_role AS ENUM ('student', 'company', 'admin');
+CREATE TYPE user_role AS ENUM ('student', 'company', 'admin', 'client');
 CREATE TYPE user_rank AS ENUM ('F', 'D', 'C', 'B', 'A', 'S');
 CREATE TYPE quest_status AS ENUM ('draft', 'active', 'in_progress', 'completed', 'cancelled');
 CREATE TYPE quest_difficulty AS ENUM ('F', 'D', 'C', 'B', 'A', 'S');
