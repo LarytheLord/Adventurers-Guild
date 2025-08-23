@@ -400,20 +400,20 @@ export default function AdventurersGuildLanding() {
               {
                 title: "Build Real Skills",
                 desc: "Work on projects that actually matter. Build a portfolio that stands out.",
-                icon: <Laptop />
+                icon: <Laptop className='h-9 w-9'/>
               },
               {
                 title: "Network & Mentorship",
                 desc: "Connect with industry professionals and experienced developers.",
-                icon: <Users />
+                icon: <Users className='h-9 w-9'/>
               },
               {
                 title: "Stand Out",
                 desc: "Demonstrate proven skills that employers actually want to see.",
-                icon: <Rocket />
+                icon: <Rocket className='h-9 w-9'/>
               }
             ].map((benefit, index) => (
-              <div key={index} className="text-center hover:translate-y-[-8px] transition-transform duration-300 ease-out">
+              <div key={index} className="flex flex-col items-center justify-center text-center hover:translate-y-[-8px] transition-transform duration-300 ease-out border border-gray-700 rounded-2xl shadow-md p-10 bg-[#0f172a]">
                 <div className="text-4xl sm:text-5xl md:text-6xl mb-4 sm:mb-6 text-primary">
                   {benefit.icon}
                 </div>
