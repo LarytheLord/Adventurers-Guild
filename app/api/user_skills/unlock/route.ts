@@ -1,5 +1,5 @@
 
-import { createClient } from '@/lib/supabase/server'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
@@ -10,7 +10,7 @@ const unlockSkillSchema = z.object({
 
 export async function POST(req: NextRequest) {
   try {
-    const supabase = createClient()
+    const supabase = createSupabaseServerClient()
     const body = await req.json()
 
     const validation = unlockSkillSchema.safeParse(body)

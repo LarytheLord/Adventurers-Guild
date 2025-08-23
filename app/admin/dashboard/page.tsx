@@ -1,4 +1,3 @@
-
 'use client'
 
 import { Button } from "@/components/ui/button"
@@ -7,16 +6,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useAuth } from "@/hooks/useAuth"
 import { Database } from "@/types/supabase"
 import { useEffect, useState } from "react"
+import { useToast } from "@/components/ui/use-toast";
+import { Toaster } from "@/components/ui/sonner";
 
 type Quest = Database['public']['Tables']['quests']['Row'];
 
-import { useToast } from "@/components/ui/use-toast";
-
-// ... (rest of the imports)
-
 export default function AdminDashboard() {
   const { toast } = useToast();
-  // ... (rest of the component)
   const { user } = useAuth()
   const [quests, setQuests] = useState<Quest[]>([])
 
@@ -126,5 +122,7 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
       </div>
-    <Toaster />
+      <Toaster />
     </div>
+  )
+}

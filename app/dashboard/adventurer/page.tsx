@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
@@ -12,14 +11,9 @@ import {
   Trophy, 
   Star, 
   Target, 
-  Zap, 
-  Users, 
-  Clock,
-  TrendingUp,
   BookOpen,
   Award,
   Bell,
-  Settings,
   LogOut,
   ChevronRight,
   Sword
@@ -41,9 +35,9 @@ const XP_THRESHOLDS = {
 export default function AdventurerDashboard() {
   const router = useRouter()
   const { profile, loading, signOut } = useAuth()
-  const [activeQuests, setActiveQuests] = useState([])
-  const [completedQuests, setCompletedQuests] = useState(0)
-  const [notifications, setNotifications] = useState([])
+  const [activeQuests] = useState([])
+  const [completedQuests] = useState(0)
+  const [notifications] = useState([])
 
   useEffect(() => {
     if (!loading && !profile) {
@@ -270,7 +264,7 @@ export default function AdventurerDashboard() {
                   <Target className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
                   <h3 className="text-lg font-semibold mb-2">No Active Quests</h3>
                   <p className="text-muted-foreground mb-4">
-                    You haven't started any quests yet.
+                    You haven&apos;t started any quests yet.
                   </p>
                   <Link href="/quests">
                     <Button>Browse Available Quests</Button>

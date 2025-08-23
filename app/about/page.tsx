@@ -197,7 +197,7 @@ export default function AboutPage() {
         <section className="text-center bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-12">
           <h2 className="text-3xl font-bold mb-4">Ready to Join the Guild?</h2>
           <p className="text-xl text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Whether you're a student ready to level up your skills or a company looking for talented developers, 
+            Whether you&apos;re a student ready to level up your skills or a company looking for talented developers, 
             The Adventurers Guild is your gateway to the future of tech education.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">

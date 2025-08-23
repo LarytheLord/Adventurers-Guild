@@ -4,7 +4,7 @@ import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { Database } from '@/types/supabase';
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   const supabase = createRouteHandlerClient<Database>({ cookies });
   try {
     const { data: quests, error } = await supabase.from('quests').select('*');

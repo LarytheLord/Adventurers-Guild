@@ -1,5 +1,5 @@
 
-import { createClient } from '@/lib/supabase/server'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
@@ -11,7 +11,7 @@ const applicationSchema = z.object({
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const supabase = createClient()
+    const supabase = createSupabaseServerClient()
     const { id: quest_id } = params
     const body = await req.json()
 

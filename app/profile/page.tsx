@@ -6,15 +6,24 @@ import { UserProfileCard } from "@/components/profile/UserProfileCard";
 import { SkillPentagon } from "@/components/profile/SkillPentagon";
 import { SkillDetail } from "@/components/profile/SkillDetail";
 import { useAuth } from '@/hooks/useAuth';
+import { useState, useEffect } from 'react';
+import { UserProfileForm } from '@/components/profile/UserProfileForm';
+import Image from 'next/image';
 
-// This will be populated from the authenticated user
-
-
+interface Skill {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  max_level: number;
+  points_per_level: number;
+  value: number;
+}
 
 export default function ProfilePage() {
   const { profile, loading } = useAuth();
-  const [skills, setSkills] = useState<any[]>([]); // New state for fetched skills
-  const [selectedSkill, setSelectedSkill] = useState<any | null>(null);
+  const [skills, setSkills] = useState<Skill[]>([]); // New state for fetched skills
+  const [selectedSkill, setSelectedSkill] = useState<Skill | null>(null);
 
   useEffect(() => {
     if (!loading && !profile) {
@@ -67,7 +76,7 @@ export default function ProfilePage() {
         <Link href="/home" className="absolute top-4 left-4 z-10 bg-background/50 p-2 rounded-full hover:bg-background/80 transition-colors">
           <ChevronLeft className="w-6 h-6" />
         </Link>
-        <img src={profileUser.banner} alt="Profile Banner" className="w-full h-full object-cover" />
+        <Image src={profileUser.banner} alt="Profile Banner" layout="fill" objectFit="cover" />
         <div className="absolute inset-0 bg-black/50" />
       </div>
       <div className="container mx-auto p-4 sm:p-6 lg:p-8 -mt-24">
@@ -91,5 +100,7 @@ export default function ProfilePage() {
           </div>
         </div>
       </div>
-    <Toaster />
+      <Toaster />
     </div>
+  );
+}

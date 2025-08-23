@@ -82,7 +82,7 @@ export default function CommissionPage() {
       setDeadline('')
       setTags([])
       setTimeout(() => setIsSubmitted(false), 5000)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error:', error)
       setError(error.message || 'Something went wrong. Please try again.')
       setTimeout(() => setError(''), 5000)

@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
@@ -10,22 +10,12 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { 
   Play, 
   ChevronRight, 
-  ChevronLeft,
   Timer,
   CheckCircle,
   XCircle,
-  Code,
-  Lightbulb,
   AlertCircle,
-  Brain,
-  Zap,
-  Target,
-  Activity,
-  Save,
-  RotateCcw
 } from 'lucide-react'
 import { useAuth } from '@/hooks/useAuth'
-import { toast } from 'sonner'
 import {
   Select,
   SelectContent,
@@ -33,7 +23,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 // Monaco Editor (dynamically imported to avoid SSR issues)
 import dynamic from 'next/dynamic'
@@ -43,8 +32,8 @@ const MonacoEditor = dynamic(
 )
 
 interface TestCase {
-  input: any
-  expectedOutput: any
+  input: Record<string, unknown>
+  expectedOutput: unknown
   isHidden?: boolean
 }
 
@@ -104,13 +93,22 @@ You can return the answer in any order.`,
   }
 ]
 
+interface TestResult {
+    testCase: number;
+    passed: boolean;
+    input: Record<string, unknown>;
+    expectedOutput: unknown;
+    actualOutput: unknown;
+    error: string | null;
+}
+
 export default function AIRankTestAssessment() {
   const router = useRouter()
   const { profile } = useAuth()
   const [currentProblemIndex, setCurrentProblemIndex] = useState(0)
   const [selectedLanguage, setSelectedLanguage] = useState('javascript')
   const [code, setCode] = useState('')
-  const [testResults, setTestResults] = useState<any[]>([])
+  const [testResults, setTestResults] = useState<TestResult[]>([])
   const [isRunningTests, setIsRunningTests] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [timeRemaining, setTimeRemaining] = useState(60 * 60) // 60 minutes
@@ -123,7 +121,36 @@ export default function AIRankTestAssessment() {
   useEffect(() => {
     // Initialize with starter code
     setCode(currentProblem.starterCode[selectedLanguage] || '')
-  }, [currentProblemIndex, selectedLanguage])
+  }, [currentProblemIndex, selectedLanguage, currentProblem.starterCode])
+
+  const handleSubmitTest = async () => {
+    setIsSubmitting(true)
+
+    try {
+      // Final submission to AI service
+      const response = await fetch('/api/ai-rank-test/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          userId: profile?.id,
+          completedProblems: currentProblemIndex + 1,
+          totalTime: 3600 - timeRemaining
+        })
+      })
+
+      const result = await response.json()
+      
+      // Store completion status
+      localStorage.setItem('hasCompletedRankTest', 'true')
+      
+      // Redirect to results page
+      router.push(`/ai-rank-test/results?testId=${result.testId}`)
+    } catch (error) {
+      console.error('Error submitting test:', error)
+      // Fallback to dashboard
+      router.push('/dashboard/adventurer')
+    }
+  }
 
   useEffect(() => {
     // Timer countdown
@@ -138,7 +165,7 @@ export default function AIRankTestAssessment() {
     }, 1000)
 
     return () => clearInterval(timer)
-  }, [])
+  }, [handleSubmitTest])
 
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60)
@@ -174,7 +201,7 @@ export default function AIRankTestAssessment() {
 
     try {
       // Call AI service API to evaluate the solution
-      const response = await fetch('/api/ai-rank-test/evaluate', {
+      await fetch('/api/ai-rank-test/evaluate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -184,8 +211,6 @@ export default function AIRankTestAssessment() {
           timeSpent: 3600 - timeRemaining
         })
       })
-
-      const result = await response.json()
 
       // Move to next problem or finish
       if (currentProblemIndex < totalProblems - 1) {
@@ -200,35 +225,6 @@ export default function AIRankTestAssessment() {
       console.error('Error submitting problem:', error)
     } finally {
       setIsSubmitting(false)
-    }
-  }
-
-  const handleSubmitTest = async () => {
-    setIsSubmitting(true)
-
-    try {
-      // Final submission to AI service
-      const response = await fetch('/api/ai-rank-test/submit', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: profile?.id,
-          completedProblems: currentProblemIndex + 1,
-          totalTime: 3600 - timeRemaining
-        })
-      })
-
-      const result = await response.json()
-      
-      // Store completion status
-      localStorage.setItem('hasCompletedRankTest', 'true')
-      
-      // Redirect to results page
-      router.push(`/ai-rank-test/results?testId=${result.testId}`)
-    } catch (error) {
-      console.error('Error submitting test:', error)
-      // Fallback to dashboard
-      router.push('/dashboard/adventurer')
     }
   }
 

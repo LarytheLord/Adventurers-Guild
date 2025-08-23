@@ -36,19 +36,10 @@ export function LoginForm() {
       } else {
         setError('Invalid email or password. Try: student@demo.com or company@demo.com')
       }
-    } catch (err) {
+    } catch (err: unknown) {
       setError('Login failed. Please try again.')
     } finally {
       setLoading(false)
-    }
-  }
-
-  const handleOAuthLogin = async (provider: 'google' | 'github') => {
-    try {
-      // TODO: Implement OAuth with Supabase later
-      console.log(`${provider} login`)
-    } catch (err) {
-      setError(`Failed to login with ${provider}`)
     }
   }
 
@@ -154,7 +145,7 @@ export function LoginForm() {
           </div>
           
           <div className="mt-4 text-center text-sm">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link href="/signup" className="text-primary hover:underline font-medium">
               Sign up
             </Link>

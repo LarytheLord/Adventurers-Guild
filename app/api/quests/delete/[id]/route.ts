@@ -1,10 +1,10 @@
 
-import { createClient } from '@/lib/supabase/server'
+
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const supabase = createClient()
+    const supabase = createSupabaseServerClient()
     const { id } = params
 
     const { error } = await supabase.from('quests').delete().eq('id', id)

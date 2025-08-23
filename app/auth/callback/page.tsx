@@ -9,7 +9,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 
 export default function AuthCallbackPage() {
   const router = useRouter()
-  const [error, setError] = useState<string | null>(null)
+  const [error] = useState<string | null>(null)
 
   const { profile } = useAuth()
 

@@ -26,7 +26,7 @@ export default function PrivacyPolicyPage() {
 
           <h2>Introduction</h2>
           <p>
-            The Adventurers Guild ("we," "our," or "us") is committed to protecting your privacy. 
+            The Adventurers Guild (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;) is committed to protecting your privacy. 
             This Privacy Policy explains how we collect, use, disclose, and safeguard your information 
             when you use our platform.
           </p>
@@ -93,7 +93,7 @@ export default function PrivacyPolicyPage() {
             These services have their own privacy policies that govern their use of your information.
           </p>
 
-          <h2>Children's Privacy</h2>
+          <h2>Children&apos;s Privacy</h2>
           <p>
             Our platform is not intended for children under 13. We do not knowingly collect 
             personal information from children under 13.
@@ -108,7 +108,7 @@ export default function PrivacyPolicyPage() {
           <h2>Changes to This Policy</h2>
           <p>
             We may update this Privacy Policy from time to time. We will notify you of any 
-            material changes by posting the new policy on this page and updating the "Last updated" date.
+            material changes by posting the new policy on this page and updating the &quot;Last updated&quot; date.
           </p>
 
           <h2>Contact Us</h2>

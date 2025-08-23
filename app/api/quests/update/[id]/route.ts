@@ -1,5 +1,5 @@
 
-import { createClient } from '@/lib/supabase/server'
+
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
@@ -22,7 +22,7 @@ const questUpdateSchema = z.object({
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const supabase = createClient()
+    const supabase = createSupabaseServerClient()
     const { id } = params
     const body = await req.json()
 

@@ -1,35 +1,90 @@
-Unhandled Runtime Error
+npm run dev
 
-Error: Invalid src prop (https://ik.imagekit.io/ulajgq5pme/output-onlinepngtools.png?updatedAt=1754142825193) on `next/image`, hostname "ik.imagekit.io" is not configured under images in your `next.config.js`
-See more info: https://nextjs.org/docs/messages/next-image-unconfigured-host
+> my-v0-project@0.1.0 dev
+> next dev
 
-app\page.tsx (538:19) @ AdventurersGuildLanding
+   ▲ Next.js 15.2.4
+   - Local:        http://localhost:3000
+   - Network:      http://10.83.89.119:3000
+   - Environments: .env.local
 
-
-  536 |               <div className="flex space-x-20 pr-20">
-  537 |                 <div className="flex items-center justify-center w-[200px]">
-> 538 |                   <Image
-      |                   ^
-  539 |                     src="https://ik.imagekit.io/ulajgq5pme/output-onlinepngtools.png?updatedAt=1754142825193"
-  540 |                     alt="GSSOC"
-  541 |                     width={180}
-Call Stack
-8
-
-Hide 6 ignore-listed frame(s)
-defaultLoader
-..\src\shared\lib\image-loader.ts (70:17)
-eval
-..\src\shared\lib\get-img-props.ts (220:14)
-Array.map
-<anonymous> (0:0)
-generateImgAttrs
-..\src\shared\lib\get-img-props.ts (218:8)
-getImgProps
-..\src\shared\lib\get-img-props.ts (666:25)
-eval
-..\src\client\image-component.tsx (394:53)
-AdventurersGuildLanding
-app\page.tsx (538:19)
-ClientPageRoot
-..\src\client\components\client-page.tsx (60:12)
+ ✓ Starting...
+ ✓ Ready in 3.3s
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 986ms (171 modules)
+ ○ Compiling / ...
+<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (108kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
+ ✓ Compiled / in 9.6s (1019 modules)
+TypeError: Invalid URL
+    at defaultLoader (..\..\..\src\shared\lib\image-loader.ts:54:20)
+    at eval (..\..\..\src\shared\lib\get-img-props.ts:220:13)
+    at Array.map (<anonymous>)
+    at generateImgAttrs (..\..\..\src\shared\lib\get-img-props.ts:218:7)
+    at getImgProps (..\..\..\src\shared\lib\get-img-props.ts:666:24)
+    at eval (..\..\src\client\image-component.tsx:394:64)
+  52 |       let parsedSrc: URL
+  53 |       try {
+> 54 |         parsedSrc = new URL(src)
+     |                    ^
+  55 |       } catch (err) {
+  56 |         console.error(err)
+  57 |         throw new Error( {
+  code: 'ERR_INVALID_URL',
+  input: '.\\public\\images\\gssoc.jpeg'
+}
+ ⨯ Error: Failed to parse src ".\public\images\gssoc.jpeg" on `next/image`, if using relative image it must start with a leading slash "/" or be an absolute URL (http:// or https://)
+    at defaultLoader (..\..\..\src\shared\lib\image-loader.ts:57:14)
+    at eval (..\..\..\src\shared\lib\get-img-props.ts:220:13)
+    at Array.map (<anonymous>)
+    at generateImgAttrs (..\..\..\src\shared\lib\get-img-props.ts:218:7)
+    at getImgProps (..\..\..\src\shared\lib\get-img-props.ts:666:24)
+    at eval (..\..\src\client\image-component.tsx:394:64)
+  55 |       } catch (err) {
+  56 |         console.error(err)
+> 57 |         throw new Error(
+     |              ^
+  58 |           `Failed to parse src "${src}" on \`next/image\`, if using relative image it must start with a leading slash "/" or be an absolute URL (http:// or https://)`
+  59 |         )
+  60 |       } {
+  digest: '1469548473'
+}
+(node:5316) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+ GET / 500 in 11488ms
+ ✓ Compiled in 1886ms (454 modules)
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ✓ Compiled in 973ms (1001 modules)
+TypeError: Invalid URL
+    at defaultLoader (..\..\..\src\shared\lib\image-loader.ts:54:20)
+    at eval (..\..\..\src\shared\lib\get-img-props.ts:220:13)
+    at Array.map (<anonymous>)
+    at generateImgAttrs (..\..\..\src\shared\lib\get-img-props.ts:218:7)
+    at getImgProps (..\..\..\src\shared\lib\get-img-props.ts:666:24)
+    at eval (..\..\src\client\image-component.tsx:394:64)
+  52 |       let parsedSrc: URL
+  53 |       try {
+> 54 |         parsedSrc = new URL(src)
+     |                    ^
+  55 |       } catch (err) {
+  56 |         console.error(err)
+  57 |         throw new Error( {
+  code: 'ERR_INVALID_URL',
+  input: '.\\\\public\\images\\gssoc.jpeg'
+}
+ ⨯ Error: Failed to parse src ".\\public\images\gssoc.jpeg" on `next/image`, if using relative image it must start with a leading slash "/" or be an absolute URL (http:// or https://)
+    at defaultLoader (..\..\..\src\shared\lib\image-loader.ts:57:14)
+    at eval (..\..\..\src\shared\lib\get-img-props.ts:220:13)
+    at Array.map (<anonymous>)
+    at generateImgAttrs (..\..\..\src\shared\lib\get-img-props.ts:218:7)
+    at getImgProps (..\..\..\src\shared\lib\get-img-props.ts:666:24)
+    at eval (..\..\src\client\image-component.tsx:394:64)
+  55 |       } catch (err) {
+  56 |         console.error(err)
+> 57 |         throw new Error(
+     |              ^
+  58 |           `Failed to parse src "${src}" on \`next/image\`, if using relative image it must start with a leading slash "/" or be an absolute URL (http:// or https://)`
+  59 |         )
+  60 |       } {
+  digest: '2885620773'
+}
+ GET / 500 in 1066ms

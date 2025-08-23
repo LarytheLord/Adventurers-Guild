@@ -1,15 +1,16 @@
-import { createAdminSupabaseClient } from '@/lib/supabase';
-import { NextResponse, NextRequest } from 'next/server';
+import { createSupabaseServerClient } from '@/lib/supabase/server';
+import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
-  req: NextRequest,
+  request: NextRequest,
+  // @ts-expect-error
   { params }: { params: { id: string } }
 ) {
-  const supabase = createAdminSupabaseClient();
+  const supabase = createSupabaseServerClient();
   const { data, error } = await supabase
     .from('quests')
     .select('*')
-    .eq('quest_giver_id', params.id);
+    .eq('company_id', params.id);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });

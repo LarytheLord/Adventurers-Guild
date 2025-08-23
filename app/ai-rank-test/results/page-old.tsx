@@ -9,10 +9,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Progress } from '@/components/ui/progress'
 import { 
   Trophy, 
-  Zap, 
   CheckCircle, 
   BarChart3, 
-  Sparkles, 
   ArrowRight, 
   AlertCircle, 
   Loader2 
@@ -49,7 +47,7 @@ export default function AIRankTestResults() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const testId = searchParams.get('testId')
-  const { profile, refreshProfile } = useAuth()
+  const { refreshProfile } = useAuth()
   const [result, setResult] = useState<TestResult | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -73,8 +71,8 @@ export default function AIRankTestResults() {
 
         // Refresh user profile to get updated rank and XP
         await refreshProfile()
-      } catch (error: any) {
-        console.error('Error fetching test results:', error)
+      } catch (err: unknown) {
+        console.error('Error fetching test results:', err)
         // Use mock data for now
         setResult(mockResult)
         setError('Could not fetch results. Using mock data.')
@@ -120,7 +118,7 @@ export default function AIRankTestResults() {
           </div>
           <h1 className="text-4xl font-bold mb-4">Test Completed!</h1>
           <p className="text-xl text-muted-foreground">
-            Here's your performance breakdown
+            Here&apos;s your performance breakdown
           </p>
         </div>
 
@@ -165,7 +163,7 @@ export default function AIRankTestResults() {
 
         {/* Next Steps */}
         <div className="text-center">
-          <h2 className="text-2xl font-bold mb-4">What's Next?</h2>
+          <h2 className="text-2xl font-bold mb-4">What&apos;s Next?</h2>
           <p className="text-muted-foreground mb-6">
             Your profile has been updated with your new rank and XP.
           </p>

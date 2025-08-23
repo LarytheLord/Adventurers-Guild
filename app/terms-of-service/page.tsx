@@ -33,8 +33,8 @@ export default function TermsOfServicePage() {
 
           <h2>Platform Description</h2>
           <p>
-            The Adventurers Guild is a platform that connects developers ("Adventurers") with 
-            companies and individuals ("Quest Givers") who need development work completed. 
+            The Adventurers Guild is a platform that connects developers (&quot;Adventurers&quot;) with 
+            companies and individuals (&quot;Quest Givers&quot;) who need development work completed. 
             We facilitate these connections but are not a party to the actual work agreements.
           </p>
 

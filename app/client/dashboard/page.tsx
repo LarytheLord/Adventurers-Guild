@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useAuth } from "@/hooks/useAuth"
 import { Plus } from "lucide-react"
+import { CreateProjectForm } from "@/components/client/CreateProjectForm"
 
 export default function ClientDashboard() {
   const { user } = useAuth()

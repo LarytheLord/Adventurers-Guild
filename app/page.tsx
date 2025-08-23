@@ -536,7 +536,7 @@ export default function AdventurersGuildLanding() {
               <div className="flex space-x-20 pr-20">
                 <div className="flex items-center justify-center w-[200px]">
                   <Image
-                    src=".\public\images\gssoc.jpeg"
+                    src="/images/gssoc.jpeg"
                     alt="GSSOC"
                     width={180}
                     height={60}
@@ -550,7 +550,7 @@ export default function AdventurersGuildLanding() {
                 </div>
                 <div className="flex items-center justify-center w-[200px]">
                   <Image
-                    src="https://ik.imagekit.io/ulajgq5pme/output-onlinepngtools.png?updatedAt=1754142825193"
+                    src="/images/gssoc.jpeg"
                     alt="GSSOC"
                     width={180}
                     height={60}
@@ -566,13 +566,8 @@ export default function AdventurersGuildLanding() {
               {/* Duplicate set for seamless scrolling */}
               <div className="flex space-x-20 pr-20">
                 <div className="flex items-center justify-center w-[200px]">
-                  <Image
-                    src="https://ik.imagekit.io/ulajgq5pme/output-onlinepngtools.png?updatedAt=1754142825193"
-                    alt="GSSOC"
-                    width={180}
-                    height={60}
-                    className="h-12 w-auto object-contain opacity-70 hover:opacity-100 transition-opacity"
-                  />
+                  <Image src="/images/gssoc.jpeg" alt="GSSOC" width={180} />
+
                 </div>
                 <div className="flex items-center justify-center w-[200px]">
                   <span className="text-3xl font-bold text-muted-foreground hover:text-foreground transition-colors duration-300">

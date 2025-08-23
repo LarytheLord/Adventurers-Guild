@@ -6,7 +6,6 @@ import { useAuth } from '@/hooks/useAuth'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Progress } from '@/components/ui/progress'
 import { CheckCircle, Clock, Code, Zap, Brain, Target, Shield, Trophy, Lightbulb, AlertCircle } from 'lucide-react'
 import { toast } from 'sonner'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -15,18 +14,14 @@ export default function AIRankTestWelcome() {
   const { profile, loading } = useAuth()
   const router = useRouter()
   const [isStarting, setIsStarting] = useState(false)
-
-  // Redirect if not logged in
-  if (!loading && !profile) {
-    router.push('/login')
-    return null
-  }
-
   const [hasCompletedTest, setHasCompletedTest] = useState(false);
 
   useEffect(() => {
+    if (!loading && !profile) {
+      router.push('/login')
+    }
     setHasCompletedTest(localStorage.getItem('hasCompletedRankTest') === 'true');
-  }, []);
+  }, [loading, profile, router]);
 
   const handleStartTest = async () => {
     setIsStarting(true)
@@ -85,7 +80,7 @@ export default function AIRankTestWelcome() {
           <Alert className="mb-8 border-green-200 bg-green-50 dark:bg-green-900/10">
             <CheckCircle className="h-4 w-4 text-green-600" />
             <AlertDescription className="text-green-800 dark:text-green-200">
-              You've already completed your rank test! Your current rank is <strong>{localStorage.getItem('currentRank') || 'Bronze'}</strong>. 
+              You&apos;ve already completed your rank test! Your current rank is <strong>{localStorage.getItem('currentRank') || 'Bronze'}</strong>. 
               You can retake the test to potentially improve your rank.
             </AlertDescription>
           </Alert>
@@ -356,7 +351,7 @@ export default function AIRankTestWelcome() {
               </div>
               <div className="flex items-start gap-2">
                 <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-                <span>Don't get stuck - move to next problem and return later</span>
+                <span>Don&apos;t get stuck - move to next problem and return later</span>
               </div>
             </CardContent>
           </Card>

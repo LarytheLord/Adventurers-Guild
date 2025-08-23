@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { useAuth } from "@/hooks/useAuth"
+
 import { toast } from "@/components/ui/use-toast"
 import { Database } from "@/types/supabase"
 import { useEffect, useState } from "react"

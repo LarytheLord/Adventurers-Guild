@@ -23,6 +23,7 @@ import { CreateQuestDialog } from '@/components/company/CreateQuestDialog'
 import { QuestApplicationsDialog } from '@/components/company/QuestApplicationsDialog'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { EditQuestDialog } from '@/components/company/EditQuestDialog';
+import { QuestSubmissionsDialog } from '@/components/company/QuestSubmissionsDialog';
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import Link from 'next/link'
 import Image from 'next/image'

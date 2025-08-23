@@ -2,9 +2,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   try {
-    const supabase = createClient()
+    const supabase = createSupabaseServerClient()
 
     const { data: skillCategories, error: categoriesError } = await supabase
       .from('skill_categories')

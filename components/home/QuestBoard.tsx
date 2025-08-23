@@ -1,4 +1,3 @@
-
 import { Database } from "@/types/supabase";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -6,25 +5,10 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, DollarSign, Trophy, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { createServerComponentClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
 
 type Quest = Database['public']['Tables']['quests']['Row'];
 
-async function getQuests() {
-  const supabase = createServerComponentClient<Database>({ cookies });
-  const { data, error } = await supabase.from('quests').select('*');
-
-  if (error) {
-    console.error('Error fetching quests:', error);
-    return [];
-  }
-  return data;
-}
-
-export default async function QuestBoard() {
-  const quests = await getQuests();
-
+export default function QuestBoard({ quests }: { quests: Quest[] }) {
   return (
     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mt-6">
       {quests.map((quest) => (
