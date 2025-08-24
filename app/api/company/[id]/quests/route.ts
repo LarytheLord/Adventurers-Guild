@@ -3,8 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  // @ts-expect-error
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   const supabase = createSupabaseServerClient();
   const { data, error } = await supabase

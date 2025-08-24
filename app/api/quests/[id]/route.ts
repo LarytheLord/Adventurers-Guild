@@ -6,15 +6,31 @@ import { Database } from '@/types/supabase';
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   const supabase = createRouteHandlerClient<Database>({ cookies });
   try {
-    const { data: quest, error } = await supabase
+    const { data, error } = await supabase
       .from('quests')
-      .select('*')
+      .select(`
+        *,
+        company:users!quests_company_id_fkey(name),
+        applications:quest_applications(count)
+      `)
       .eq('id', params.id)
       .single();
 
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
+
+    const applicationsCount = Array.isArray(data?.applications)
+      ? (data?.applications[0]?.count ?? 0)
+      : 0;
+
+    const quest = data
+      ? {
+          ...data,
+          company_name: (data as any).company?.name ?? 'Unknown Company',
+          applications_count: applicationsCount,
+        }
+      : null;
 
     return NextResponse.json(quest);
   } catch (error) {

@@ -162,7 +162,7 @@ const rankDetails = {
 
 export default function AIRankTestResults() {
   const router = useRouter()
-  useAuth() // Note: useAuth hook is called but its return value (profile) is not used.
+  
   const [isLoading, setIsLoading] = useState(true)
   const [animatedScore, setAnimatedScore] = useState(0)
   const [showDetails, setShowDetails] = useState(false)

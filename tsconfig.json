@@ -22,6 +22,16 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": ["next-env.d.ts", "app/**/*", "components/**/*", "hooks/**/*", "lib/**/*", "types/**/*", "contexts/**/*", ".next/types/**/*.ts"],
+  "exclude": [
+    "node_modules",
+    ".next",
+    "public",
+    "supabase db push",
+    "supabase push",
+    "Guild",
+    "echo",
+    "R",
+    "Khan"
+  ]
 }

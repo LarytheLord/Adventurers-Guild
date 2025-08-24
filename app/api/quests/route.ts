@@ -7,11 +7,30 @@ import { Database } from '@/types/supabase';
 export async function GET() {
   const supabase = createRouteHandlerClient<Database>({ cookies });
   try {
-    const { data: quests, error } = await supabase.from('quests').select('*');
+    const { data, error } = await supabase
+      .from('quests')
+      .select(`
+        *,
+        company:users!quests_company_id_fkey(name),
+        applications:quest_applications(count)
+      `);
+
     if (error) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
-    return NextResponse.json(quests);
+
+    const quests = (data || []).map((q: any) => {
+      const applicationsCount = Array.isArray(q.applications)
+        ? (q.applications[0]?.count ?? 0)
+        : 0;
+      return {
+        ...q,
+        company_name: q.company?.name ?? 'Unknown Company',
+        applications_count: applicationsCount,
+      };
+    });
+
+    return NextResponse.json({ quests });
   } catch (error) {
     return NextResponse.json({ error: 'An unexpected error occurred.' }, { status: 500 });
   }
@@ -45,7 +64,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json(data);
+    // shape the created quest similarly to GET response
+    const shaped = {
+      ...data,
+      company_name: session.user.email || 'Your Company',
+      applications_count: 0,
+    } as any;
+
+    return NextResponse.json(shaped);
   } catch (error) {
     console.error('Error parsing request body or creating quest:', error);
     return NextResponse.json({ error: 'An unexpected error occurred.' }, { status: 500 });

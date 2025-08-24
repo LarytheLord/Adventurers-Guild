@@ -22,8 +22,9 @@ export default function QuestsPage() {
     const fetchQuests = async () => {
       const response = await fetch('/api/quests');
       const data = await response.json();
-      setQuests(data.quests);
-      setFilteredQuests(data.quests);
+      const list = Array.isArray(data) ? data : data.quests;
+      setQuests(list);
+      setFilteredQuests(list);
     };
 
     fetchQuests();

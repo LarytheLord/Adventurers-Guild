@@ -36,7 +36,7 @@ function QuestCard({ quest }: { quest: Quest }) {
       <CardContent className="p-4 sm:p-6 flex-grow">
         <div className="flex items-center justify-between mb-3">
           <Badge className={`${rankColor} text-xs sm:text-sm`}>{quest.difficulty}-Rank</Badge>
-          <span className="text-xs text-muted-foreground">{quest.company_id}</span>
+          <span className="text-xs text-muted-foreground">{quest.company_name}</span>
         </div>
         <CardTitle className="text-lg sm:text-xl md:text-2xl font-bold mb-2 sm:mb-3">{quest.title}</CardTitle>
         {quest.description && <CardDescription className="text-muted-foreground text-sm sm:text-base md:text-lg leading-relaxed mb-4">
@@ -62,7 +62,7 @@ function QuestCard({ quest }: { quest: Quest }) {
           </span>
           <span className="flex items-center">
             <Users className="w-4 h-4 mr-1" />
-            {/* {quest.applications_count} */}
+            {quest.applications_count}
           </span>
         </div>
         <Button asChild className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-semibold text-sm sm:text-base">

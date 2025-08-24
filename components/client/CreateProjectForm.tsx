@@ -9,7 +9,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Textarea } from "@/components/ui/textarea"
 import { useAuth } from "@/hooks/useAuth"
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 
 const projectSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -64,11 +64,11 @@ export function CreateProjectForm() {
         description: "Project created successfully. It will be reviewed by an admin.",
       })
       reset()
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(error)
       toast({
         title: "Error",
-        description: "Failed to create project. Please try again.",
+        description: (error as Error).message || "Failed to create project. Please try again.",
         variant: "destructive",
       })
     }

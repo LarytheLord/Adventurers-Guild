@@ -35,9 +35,9 @@ const XP_THRESHOLDS = {
 export default function AdventurerDashboard() {
   const router = useRouter()
   const { profile, loading, signOut } = useAuth()
-  const [activeQuests] = useState([])
-  const [completedQuests] = useState(0)
-  const [notifications] = useState([])
+  const activeQuests = []
+  const completedQuests = 0
+  const notifications = []
 
   useEffect(() => {
     if (!loading && !profile) {

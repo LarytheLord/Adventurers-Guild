@@ -25,7 +25,6 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5" />
       </head>
       <body className={`${GeistSans.variable} ${GeistMono.variable} font-sans antialiased`} > 
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>

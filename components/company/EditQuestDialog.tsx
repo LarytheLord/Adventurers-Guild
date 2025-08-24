@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 import { Database } from "@/types/supabase"
 import { useEffect, useState } from "react"
 

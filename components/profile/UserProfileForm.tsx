@@ -9,7 +9,7 @@ import { useForm } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { useAuth } from "@/hooks/useAuth"
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 import { useEffect } from "react"
 
 const profileSchema = z.object({
@@ -66,7 +66,7 @@ export function UserProfileForm() {
     }
 
     try {
-      await updateProfile(user.id, data)
+      await updateProfile(data)
       toast({
         title: "Success",
         description: "Profile updated successfully.",

@@ -15,7 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { CheckCircle, X, Clock, User, Star, ExternalLink } from 'lucide-react'
 import { Database } from '@/types/supabase'
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 import { useState } from "react"
 
 type Quest = Database['public']['Tables']['quests']['Row'];
@@ -57,11 +57,11 @@ export function QuestSubmissionsDialog({
         description: `Submission ${status} successfully.`,
       })
       onSubmissionStatusChange(submissionId, status)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error)
       toast({
         title: "Error",
-        description: error.message || "Failed to update submission status. Please try again.",
+        description: (error as Error).message || "Failed to update submission status. Please try again.",
         variant: "destructive",
       })
     }
@@ -98,11 +98,11 @@ export function QuestSubmissionsDialog({
         description: `Submission rated ${rating} stars successfully.`,
       })
       // Optionally update the local state to reflect the new rating
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error)
       toast({
         title: "Error",
-        description: error.message || "Failed to rate submission. Please try again.",
+        description: (error as Error).message || "Failed to rate submission. Please try again.",
         variant: "destructive",
       })
     }

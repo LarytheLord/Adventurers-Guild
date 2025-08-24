@@ -10,6 +10,16 @@ import { useState, useEffect } from 'react';
 import { UserProfileForm } from '@/components/profile/UserProfileForm';
 import Image from 'next/image';
 
+interface ApiSkill {
+  id: string;
+  name: string;
+  category: string;
+  description: string;
+  max_level: number;
+  level: number; // Assuming 'level' comes from the API
+  points_per_level: number;
+}
+
 interface Skill {
   id: string;
   name: string;
@@ -32,15 +42,26 @@ export default function ProfilePage() {
 
     const fetchSkills = async () => {
       try {
-        const response = await fetch('/api/skills');
-        const data = await response.json();
-        const transformedSkills = data.skills.map((skill: any) => ({
-              ...skill,
-              value: (skill.level / skill.max_level) * 100, // Calculate proficiency value
-            }));
-            setSkills(transformedSkills);
-        if (data.skills.length > 0) {
-          setSelectedSkill(data.skills[0]);
+        const skillsResponse = await fetch('/api/skills');
+        const skillsData = await skillsResponse.json();
+
+        const userSkillsResponse = await fetch(`/api/user_skills?userId=${user?.id}`); // Assuming this endpoint exists
+        const userSkillsData = await userSkillsResponse.json();
+
+        const combinedSkills = skillsData.skills.map((skill: ApiSkill) => {
+          const userSkill = userSkillsData.find((us: any) => us.skill_id === skill.id); // Assuming userSkillsData is an array of user_skills
+          return {
+            ...skill,
+            level: userSkill?.level || 0,
+            skill_points: userSkill?.skill_points || 0,
+            is_unlocked: userSkill?.is_unlocked || false,
+            value: ((userSkill?.level || 0) / skill.max_level) * 100,
+          };
+        });
+
+        setSkills(combinedSkills);
+        if (combinedSkills.length > 0) {
+          setSelectedSkill(combinedSkills[0]);
         }
       } catch (error) {
         console.error("Failed to fetch skills:", error);

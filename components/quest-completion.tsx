@@ -15,8 +15,7 @@ import {
   Database,
   Brain,
   Server,
-  Award,
-  Sparkles
+  Award
 } from 'lucide-react'
 
 interface QuestReward {

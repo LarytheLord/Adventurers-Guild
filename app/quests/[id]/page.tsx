@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { 
   ArrowLeft, 
   DollarSign, 
@@ -48,9 +48,10 @@ export default function QuestDetailPage() {
     const fetchSimilarQuests = async () => {
       const response = await fetch(`/api/quests`);
       const data = await response.json();
+      const list: Quest[] = Array.isArray(data) ? data : data.quests;
       if (quest) {
         setSimilarQuests(
-          data.filter(
+          list.filter(
             (q: Quest) => q.id !== quest.id && q.difficulty === quest.difficulty
           )
         );

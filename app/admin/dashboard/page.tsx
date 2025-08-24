@@ -6,13 +6,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { useAuth } from "@/hooks/useAuth"
 import { Database } from "@/types/supabase"
 import { useEffect, useState } from "react"
-import { useToast } from "@/components/ui/use-toast";
 import { Toaster } from "@/components/ui/sonner";
+import { toast } from 'sonner';
 
 type Quest = Database['public']['Tables']['quests']['Row'];
 
 export default function AdminDashboard() {
-  const { toast } = useToast();
+  
   const { user } = useAuth()
   const [quests, setQuests] = useState<Quest[]>([])
 

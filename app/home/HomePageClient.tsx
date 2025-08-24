@@ -18,7 +18,13 @@ import { useAuth } from "@/hooks/useAuth";
 import QuestBoard from "@/components/home/QuestBoard";
 import { Suspense } from "react";
 
-export default function HomePageClient({ quests }) {
+import { Database } from "@/types/supabase";
+
+interface HomePageClientProps {
+  quests: Database["public"]["Tables"]["quests"]["Row"][];
+}
+
+export default function HomePageClient({ quests }: HomePageClientProps) {
   const { user, profile, signOut } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');

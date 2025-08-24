@@ -47,13 +47,11 @@ import {
   Activity,
   FileText,
   Search,
-  Filter,
   Download,
   Settings,
   Ban,
   UserCheck,
   Eye,
-  Edit,
   Trash2,
   BarChart3,
   PieChart,
@@ -77,6 +75,32 @@ const mockPlatformStats = {
   applicationsToday: 34,
   flaggedContent: 3
 }
+
+interface AdventurerUser {
+  id: number;
+  name: string;
+  email: string;
+  role: 'adventurer';
+  rank: string;
+  status: string;
+  joinedDate: string;
+  questsCompleted: number;
+  rating: number;
+}
+
+interface CompanyUser {
+  id: number;
+  name: string;
+  email: string;
+  role: 'company';
+  rank: null;
+  status: string;
+  joinedDate: string;
+  questsPosted: number;
+  totalSpent: number;
+}
+
+type User = AdventurerUser | CompanyUser;
 
 const mockUsers = [
   {
@@ -186,7 +210,7 @@ export default function AdminDashboard() {
   const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
   const [filterRole, setFilterRole] = useState('all')
-  const [selectedUser, setSelectedUser] = useState<any>(null)
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [isUserDialogOpen, setIsUserDialogOpen] = useState(false)
   const [selectedTab, setSelectedTab] = useState('overview')
 

@@ -530,66 +530,6 @@ export default function AdventurersGuildLanding() {
             {/* Gradient Overlays */}
             <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-background to-transparent z-10"></div>
             <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-background to-transparent z-10"></div>
-            
-            <div className="flex animate-scroll whitespace-nowrap">
-              {/* First set of partners */}
-              <div className="flex space-x-20 pr-20">
-                <div className="flex items-center justify-center w-[200px]">
-                  <Image
-                    src="/images/gssoc.jpeg"
-                    alt="GSSOC"
-                    width={180}
-                    height={60}
-                    className="h-12 w-auto object-contain opacity-70 hover:opacity-100 transition-opacity"
-                  />
-                </div>
-                <div className="flex items-center justify-center w-[200px]">
-                  <span className="text-3xl font-bold text-muted-foreground hover:text-foreground transition-colors duration-300">
-                    AI GRANT
-                  </span>
-                </div>
-                <div className="flex items-center justify-center w-[200px]">
-                  <Image
-                    src="/images/gssoc.jpeg"
-                    alt="GSSOC"
-                    width={180}
-                    height={60}
-                    className="h-12 w-auto object-contain opacity-70 hover:opacity-100 transition-opacity"
-                  />
-                </div>
-                <div className="flex items-center justify-center w-[200px]">
-                  <span className="text-3xl font-bold text-muted-foreground hover:text-foreground transition-colors duration-300">
-                    AI GRANT
-                  </span>
-                </div>
-              </div>
-              {/* Duplicate set for seamless scrolling */}
-              <div className="flex space-x-20 pr-20">
-                <div className="flex items-center justify-center w-[200px]">
-                  <Image src="/images/gssoc.jpeg" alt="GSSOC" width={180} />
-
-                </div>
-                <div className="flex items-center justify-center w-[200px]">
-                  <span className="text-3xl font-bold text-muted-foreground hover:text-foreground transition-colors duration-300">
-                    AI GRANT
-                  </span>
-                </div>
-                <div className="flex items-center justify-center w-[200px]">
-                  <Image
-                    src="https://ik.imagekit.io/ulajgq5pme/output-onlinepngtools.png?updatedAt=1754142825193"
-                    alt="GSSOC"
-                    width={180}
-                    height={60}
-                    className="h-12 w-auto object-contain opacity-70 hover:opacity-100 transition-opacity"
-                  />
-                </div>
-                <div className="flex items-center justify-center w-[200px]">
-                  <span className="text-3xl font-bold text-muted-foreground hover:text-foreground transition-colors duration-300">
-                    AI GRANT
-                  </span>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </section>

@@ -18,7 +18,7 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import * as z from "zod"
 import { Textarea } from "@/components/ui/textarea"
 import { useAuth } from "@/hooks/useAuth"
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 import { Database } from "@/types/supabase"
 import { useState } from "react"
 
@@ -77,11 +77,11 @@ export function QuestApplicationDialog({ quest }: QuestApplicationDialogProps) {
       })
       reset()
       setOpen(false)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error)
       toast({
         title: "Error",
-        description: error.message || "Failed to apply for quest. Please try again.",
+        description: (error as Error).message || "Failed to apply for quest. Please try again.",
         variant: "destructive",
       })
     }

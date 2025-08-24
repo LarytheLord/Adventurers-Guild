@@ -105,7 +105,7 @@ export default function TestPage() {
               <Button variant="outline" className="w-full">Contact Us</Button>
             </Link>
             <Link href="/privacy-policy">
-_              <Button variant="outline" className="w-full">Privacy Policy</Button>
+              <Button variant="outline" className="w-full">Privacy Policy</Button>
             </Link>
             <Link href="/terms-of-service">
               <Button variant="outline" className="w-full">Terms of Service</Button>

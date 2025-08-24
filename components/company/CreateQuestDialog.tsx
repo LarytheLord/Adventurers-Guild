@@ -24,8 +24,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { useState } from "react"
 import { useAuth } from "@/hooks/useAuth"
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 
 const questSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -46,7 +47,7 @@ interface CreateQuestDialogProps {
 
 export function CreateQuestDialog({ onQuestCreated }: CreateQuestDialogProps) {
   const { user } = useAuth()
-  const [open, setOpen] = React.useState(false)
+  const [open, setOpen] = useState(false)
   const {
     register,
     handleSubmit,
@@ -80,7 +81,7 @@ export function CreateQuestDialog({ onQuestCreated }: CreateQuestDialogProps) {
       }
 
       const newQuest = await response.json()
-      onQuestCreated(newQuest[0])
+      onQuestCreated(Array.isArray(newQuest) ? newQuest[0] : newQuest)
 
       toast({
         title: "Success",
@@ -88,11 +89,11 @@ export function CreateQuestDialog({ onQuestCreated }: CreateQuestDialogProps) {
       })
       reset()
       setOpen(false)
-    } catch (error) {
+    } catch (error: unknown) {
       console.error(error)
       toast({
         title: "Error",
-        description: "Failed to create quest. Please try again.",
+        description: (error as Error).message || "Failed to create quest. Please try again.",
         variant: "destructive",
       })
     }

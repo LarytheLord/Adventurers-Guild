@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { CheckCircle, X, Clock, User } from 'lucide-react'
 import { Database } from '@/types/supabase'
-import { toast } from "@/components/ui/use-toast"
+import { toast } from "sonner"
 
 type Quest = Database['public']['Tables']['quests']['Row'];
 type QuestApplication = Database['public']['Tables']['quest_applications']['Row'] & { users: Database['public']['Tables']['users']['Row'] };
@@ -49,11 +49,11 @@ export function QuestApplicationsDialog({
         description: `Application ${status} successfully.`,
       })
       onApplicationStatusChange(applicationId, status)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error)
       toast({
         title: "Error",
-        description: error.message || "Failed to update application status. Please try again.",
+        description: (error as Error).message || "Failed to update application status. Please try again.",
         variant: "destructive",
       })
     }

@@ -66,8 +66,8 @@ export function SignupForm() {
       } else {
         window.location.href = '/home'
       }
-    } catch (err) {
-      setError('Failed to create account')
+    } catch (err: unknown) {
+      setError((err as Error).message || 'Failed to create account')
     } finally {
       setLoading(false)
     }
@@ -77,8 +77,8 @@ export function SignupForm() {
     try {
       // TODO: Implement OAuth with Supabase later
       console.log(`${provider} signup`)
-    } catch (err) {
-      setError(`Failed to signup with ${provider}`)
+    } catch (err: unknown) {
+      setError((err as Error).message || `Failed to signup with ${provider}`)
     }
   }
 
@@ -210,11 +210,11 @@ export function SignupForm() {
                   />
                   <Label htmlFor="terms" className="text-sm">
                     I agree to the{' '}
-                    <Link href="/terms" className="text-primary hover:underline">
+                    <Link href="/terms-of-service" className="text-primary hover:underline">
                       Terms of Service
                     </Link>{' '}
                     and{' '}
-                    <Link href="/privacy" className="text-primary hover:underline">
+                    <Link href="/privacy-policy" className="text-primary hover:underline">
                       Privacy Policy
                     </Link>
                   </Label>

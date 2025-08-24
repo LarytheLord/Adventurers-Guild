@@ -1,5 +1,6 @@
 
 
+import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
@@ -9,6 +10,15 @@ const questSchema = z.object({
   difficulty: z.enum(['F', 'D', 'C', 'B', 'A', 'S']),
   xp_reward: z.number().int().positive('XP reward must be a positive integer'),
   company_id: z.string().uuid('Invalid company ID'),
+  requirements: z.string().optional(),
+  skill_rewards: z.record(z.string(), z.number()).optional(),
+  budget: z.number().optional(),
+  payment_amount: z.number().optional(),
+  deadline: z.string().datetime().optional(),
+  max_applicants: z.number().int().positive().optional(),
+  tags: z.array(z.string()).optional(),
+  attachments: z.array(z.string()).optional(),
+  is_featured: z.boolean().optional(),
 })
 
 export async function POST(req: NextRequest) {
@@ -33,13 +43,7 @@ export async function POST(req: NextRequest) {
       is_featured,
     } = body
 
-    const validation = questSchema.safeParse({
-      title,
-      description,
-      difficulty,
-      xp_reward,
-      company_id,
-    })
+    const validation = questSchema.safeParse(body)
 
     if (!validation.success) {
       return NextResponse.json({ error: validation.error.format() }, { status: 400 })
