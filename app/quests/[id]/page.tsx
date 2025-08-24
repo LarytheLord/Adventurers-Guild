@@ -26,7 +26,10 @@ import { useAuth } from '@/hooks/useAuth';
 import { QuestApplicationDialog } from '@/components/student/QuestApplicationDialog';
 import { QuestSubmissionDialog } from '@/components/student/QuestSubmissionDialog';
 
-type Quest = Database['public']['Tables']['quests']['Row'];
+type Quest = Database['public']['Tables']['quests']['Row'] & {
+  company_name?: string
+  applications_count?: number
+}
 
 export default function QuestDetailPage() {
   const params = useParams();

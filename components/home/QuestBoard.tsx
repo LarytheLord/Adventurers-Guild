@@ -6,7 +6,10 @@ import { ArrowRight, DollarSign, Trophy, Users } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
-type Quest = Database['public']['Tables']['quests']['Row'];
+type Quest = Database['public']['Tables']['quests']['Row'] & {
+  company_name?: string
+  applications_count?: number
+}
 
 export default function QuestBoard({ quests }: { quests: Quest[] }) {
   return (

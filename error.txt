@@ -1,90 +1,31 @@
-npm run dev
+git status
+On branch Profile-and-skill-map
+Your branch is up to date with 'origin/Profile-and-skill-map'.
 
-> my-v0-project@0.1.0 dev
-> next dev
+You have unmerged paths.
+  (fix conflicts and run "git commit")
+  (use "git merge --abort" to abort the merge)
 
-   ▲ Next.js 15.2.4
-   - Local:        http://localhost:3000
-   - Network:      http://10.83.89.119:3000
-   - Environments: .env.local
+Changes to be committed:
+        modified:   README.md
+        modified:   app/page.tsx
+        modified:   package.json
 
- ✓ Starting...
- ✓ Ready in 3.3s
- ○ Compiling /middleware ...
- ✓ Compiled /middleware in 986ms (171 modules)
- ○ Compiling / ...
-<w> [webpack.cache.PackFileCacheStrategy] Serializing big strings (108kiB) impacts deserialization performance (consider using Buffer instead and decode when needed)
- ✓ Compiled / in 9.6s (1019 modules)
-TypeError: Invalid URL
-    at defaultLoader (..\..\..\src\shared\lib\image-loader.ts:54:20)
-    at eval (..\..\..\src\shared\lib\get-img-props.ts:220:13)
-    at Array.map (<anonymous>)
-    at generateImgAttrs (..\..\..\src\shared\lib\get-img-props.ts:218:7)
-    at getImgProps (..\..\..\src\shared\lib\get-img-props.ts:666:24)
-    at eval (..\..\src\client\image-component.tsx:394:64)
-  52 |       let parsedSrc: URL
-  53 |       try {
-> 54 |         parsedSrc = new URL(src)
-     |                    ^
-  55 |       } catch (err) {
-  56 |         console.error(err)
-  57 |         throw new Error( {
-  code: 'ERR_INVALID_URL',
-  input: '.\\public\\images\\gssoc.jpeg'
-}
- ⨯ Error: Failed to parse src ".\public\images\gssoc.jpeg" on `next/image`, if using relative image it must start with a leading slash "/" or be an absolute URL (http:// or https://)
-    at defaultLoader (..\..\..\src\shared\lib\image-loader.ts:57:14)
-    at eval (..\..\..\src\shared\lib\get-img-props.ts:220:13)
-    at Array.map (<anonymous>)
-    at generateImgAttrs (..\..\..\src\shared\lib\get-img-props.ts:218:7)
-    at getImgProps (..\..\..\src\shared\lib\get-img-props.ts:666:24)
-    at eval (..\..\src\client\image-component.tsx:394:64)
-  55 |       } catch (err) {
-  56 |         console.error(err)
-> 57 |         throw new Error(
-     |              ^
-  58 |           `Failed to parse src "${src}" on \`next/image\`, if using relative image it must start with a leading slash "/" or be an absolute URL (http:// or https://)`
-  59 |         )
-  60 |       } {
-  digest: '1469548473'
-}
-(node:5316) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
-(Use `node --trace-deprecation ...` to show where the warning was created)
- GET / 500 in 11488ms
- ✓ Compiled in 1886ms (454 modules)
- ⚠ Fast Refresh had to perform a full reload due to a runtime error.
- ✓ Compiled in 973ms (1001 modules)
-TypeError: Invalid URL
-    at defaultLoader (..\..\..\src\shared\lib\image-loader.ts:54:20)
-    at eval (..\..\..\src\shared\lib\get-img-props.ts:220:13)
-    at Array.map (<anonymous>)
-    at generateImgAttrs (..\..\..\src\shared\lib\get-img-props.ts:218:7)
-    at getImgProps (..\..\..\src\shared\lib\get-img-props.ts:666:24)
-    at eval (..\..\src\client\image-component.tsx:394:64)
-  52 |       let parsedSrc: URL
-  53 |       try {
-> 54 |         parsedSrc = new URL(src)
-     |                    ^
-  55 |       } catch (err) {
-  56 |         console.error(err)
-  57 |         throw new Error( {
-  code: 'ERR_INVALID_URL',
-  input: '.\\\\public\\images\\gssoc.jpeg'
-}
- ⨯ Error: Failed to parse src ".\\public\images\gssoc.jpeg" on `next/image`, if using relative image it must start with a leading slash "/" or be an absolute URL (http:// or https://)
-    at defaultLoader (..\..\..\src\shared\lib\image-loader.ts:57:14)
-    at eval (..\..\..\src\shared\lib\get-img-props.ts:220:13)
-    at Array.map (<anonymous>)
-    at generateImgAttrs (..\..\..\src\shared\lib\get-img-props.ts:218:7)
-    at getImgProps (..\..\..\src\shared\lib\get-img-props.ts:666:24)
-    at eval (..\..\src\client\image-component.tsx:394:64)
-  55 |       } catch (err) {
-  56 |         console.error(err)
-> 57 |         throw new Error(
-     |              ^
-  58 |           `Failed to parse src "${src}" on \`next/image\`, if using relative image it must start with a leading slash "/" or be an absolute URL (http:// or https://)`
-  59 |         )
-  60 |       } {
-  digest: '2885620773'
-}
- GET / 500 in 1066ms
+Unmerged paths:
+  (use "git add/rm <file>..." as appropriate to mark resolution)
+        both modified:   app/home/page.tsx
+        both modified:   app/layout.tsx
+        both added:      components/AdventureFilter.tsx
+        both added:      components/AdventureSearch.tsx
+        deleted by us:   next.config.mjs
+        deleted by us:   package-lock.json
+
+Changes not staged for commit:
+  (use "git add/rm <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   .env.example
+        modified:   app/quests/[id]/page.tsx
+        modified:   app/quests/page.tsx
+        modified:   components/home/QuestBoard.tsx
+        deleted:    contexts/AuthContext.tsx
+        modified:   error.txt

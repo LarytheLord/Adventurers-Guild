@@ -9,7 +9,12 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowLeft, Search, DollarSign, Trophy, Users, Clock, ArrowRight } from 'lucide-react'
-import { Quest } from '@/lib/mockData';
+import { Database } from '@/types/supabase'
+
+type Quest = Database['public']['Tables']['quests']['Row'] & {
+  company_name?: string
+  applications_count?: number
+}
 
 export default function QuestsPage() {
   const [quests, setQuests] = useState<Quest[]>([])

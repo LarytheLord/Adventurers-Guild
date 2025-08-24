@@ -425,7 +425,8 @@ export default function AdventurersGuildLanding() {
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
             {[...Array(3)].map((_, index) => (
-              <Card key={index} className="bg-background rounded-2xl shadow-lg p-6 sm:p-8 flex flex-col justify-between">
+              <Card key={index} className="bg-background rounded-2xl shadow-lg p-6 sm:p-8 flex flex-col justify-between 
+             transform transition duration-300 ease-in-out hover:scale-[1.03] hover:-translate-y-2 hover:shadow-2xl cursor-pointer">
                 <p className="text-base sm:text-lg text-muted-foreground leading-relaxed mb-4 sm:mb-6">
                   "The Adventurers Guild has been a game-changer for my career. I've learned more in the past three months than I did in three years of college."
                 </p>

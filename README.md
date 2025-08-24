@@ -183,7 +183,7 @@ Our expedition is just beginning. Key milestones for the Guild include:
 
 ## ⚖️ License
 
-This project is currently under discussion for its open-source license. We intend to use a widely recognized open-source license (e.g., **MIT License**). Please check back for updates in the [License](License) file.
+This project is currently under discussion for its open-source license. We intend to use a widely recognized open-source license (e.g., **MIT License**). Please check back for updates in the [License](License.md) file.
 
 ---
 
