@@ -264,7 +264,7 @@ export default function AdventurersGuildLanding() {
           <h2 className="text-3xl sm:text-4xl md:text-6xl font-black mb-6 sm:mb-8 leading-tight">
             <span className="text-black">FORGE YOUR PATH.</span>
             <br />
-            <span className="text-red-600">CONQUER THE UNKNOWN.</span>
+            <span className="text-red-600">CONQUER THE unknown.</span>
           </h2>
           <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground leading-relaxed px-4">
             Your education is no longer a <span className="text-black font-semibold">classroom routine</span> — 
