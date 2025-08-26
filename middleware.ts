@@ -24,8 +24,25 @@ const roleBasedRoutes = {
   '/dashboard/adventurer': ['student', 'admin'],
   '/dashboard/quest-giver': ['company', 'admin'],
   '/company/dashboard': ['company', 'admin'],
-  '/dashboard/admin': ['admin'],
+  '/admin/dashboard': ['admin'],
+  '/client/dashboard': ['client', 'admin'],
   '/ai-rank-test': ['student', 'admin']
+}
+
+// Get the appropriate dashboard path based on user role
+function getDashboardPath(role: string): string {
+  switch (role) {
+    case 'student':
+      return '/dashboard/adventurer'
+    case 'company':
+      return '/company/dashboard'
+    case 'admin':
+      return '/admin/dashboard'
+    case 'client':
+      return '/client/dashboard'
+    default:
+      return '/dashboard/adventurer' // Default fallback
+  }
 }
 
 export async function middleware(request: NextRequest) {
@@ -85,7 +102,7 @@ export async function middleware(request: NextRequest) {
   }
 
   // Get the session
-  const { data: { session }, error } = await supabase.auth.getSession()
+  const { data: { session } } = await supabase.auth.getSession()
 
   // If no session and trying to access protected route, redirect to login
   if (!session) {
@@ -114,12 +131,7 @@ export async function middleware(request: NextRequest) {
     if (pathname.startsWith(route)) {
       if (!allowedRoles.includes(userProfile.role as string)) {
         // Redirect to appropriate dashboard based on role
-        const redirectPath = userProfile.role === 'company' 
-          ? '/company/dashboard' 
-          : userProfile.role === 'admin'
-          ? '/dashboard/admin'
-          : '/dashboard/adventurer'
-        
+        const redirectPath = getDashboardPath(userProfile.role as string)
         return NextResponse.redirect(new URL(redirectPath, request.url))
       }
     }

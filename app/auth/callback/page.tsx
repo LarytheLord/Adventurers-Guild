@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2 } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { getDashboardPath, hasCompletedRankTest } from '@/lib/authUtils'
 
 export default function AuthCallbackPage() {
   const router = useRouter()
@@ -16,19 +17,16 @@ export default function AuthCallbackPage() {
   useEffect(() => {
     // For mock auth, we just redirect based on profile
     if (profile) {
-      // Redirect based on role
-      if (profile.role === 'company') {
-        router.push('/company/dashboard')
-      } else if (profile.role === 'admin') {
-        router.push('/dashboard/admin')
+      // Redirect based on role using our utility function
+      const dashboardPath = getDashboardPath(profile)
+      
+      // Check if this is a new student user who needs to take the rank test
+      if (profile.role === 'student' && 
+          !hasCompletedRankTest() && 
+          process.env.NEXT_PUBLIC_ENABLE_AI_RANK_TEST === 'true') {
+        router.push('/ai-rank-test/welcome')
       } else {
-        // Check if this is a new user who needs to take the rank test
-        const hasCompletedRankTest = localStorage.getItem('hasCompletedRankTest')
-        if (!hasCompletedRankTest && process.env.NEXT_PUBLIC_ENABLE_AI_RANK_TEST === 'true') {
-          router.push('/ai-rank-test/welcome')
-        } else {
-          router.push('/dashboard/adventurer')
-        }
+        router.push(dashboardPath)
       }
     } else {
       // No session, redirect to login after a short delay

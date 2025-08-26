@@ -1,5 +1,7 @@
 import { createBrowserClient } from '@supabase/ssr'
 import { createClient } from '@supabase/supabase-js'
+import { createServerComponentClient as createServerComponentClientOriginal } from '@supabase/auth-helpers-nextjs'
+import { cookies } from 'next/headers'
 import { Database } from '@/types/supabase'
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
@@ -11,10 +13,10 @@ export const createBrowserSupabaseClient = () => {
   return createBrowserClient<Database>(supabaseUrl, supabaseAnonKey)
 }
 
-// Server client - temporarily using browser client
-// Will be properly implemented when we move to server components
+// Server client for server components
 export const createServerSupabaseClient = () => {
-  return createBrowserSupabaseClient()
+  const cookieStore = cookies()
+  return createServerComponentClientOriginal<Database>({ cookies: () => cookieStore })
 }
 
 // Admin client with service role (use with caution!)
