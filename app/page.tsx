@@ -253,7 +253,7 @@ export default function AdventurersGuildLanding() {
       </section>
 
       {/* Mission Statement */}
-      <section className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 bg-background">
+      <section id="mission" className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 bg-background">
         <div className="container mx-auto max-w-4xl text-center">
           <h2 className="text-3xl sm:text-4xl md:text-6xl font-black mb-6 sm:mb-8 text-foreground leading-tight">
             WE'RE NOT JUST CODING.
@@ -268,7 +268,7 @@ export default function AdventurersGuildLanding() {
       </section>
 
       {/* Problem Section */}
-      <section className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 bg-background">
+      <section id="problem" className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 bg-background">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12 sm:mb-16 md:mb-20">
             <h2 className="text-4xl sm:text-5xl md:text-7xl font-black mb-4 sm:mb-6 text-foreground">
