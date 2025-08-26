@@ -1,0 +1,166 @@
+Guiding New Adventurers: Local Setup & First Contribution 🛠️
+Your goal is to make the initial setup as smooth and encouraging as possible, especially for those new to coding or open source. This guide can be presented during a dedicated session or shared as a resource in your Discord's #getting-started channel.
+
+1. Preparation: Before the Setup Session 📋
+Before you start guiding contributors, ensure these are ready:
+
+Updated CONTRIBUTING.md: This file on your GitHub repository is crucial. It should contain:
+
+A clear Code of Conduct (which you have!).
+
+Detailed Prerequisites (Node.js, npm/Yarn, Git).
+
+Step-by-step setup instructions (clone, install, .env setup, run).
+
+Branching strategy (e.g., main, develop, feature/).
+
+Pull Request (PR) guidelines (what to include in a PR description).
+
+Issue claiming process (commenting "I'm claiming this Quest").
+
+.env.example file: Provide a template file in your repository showing all required environment variables, but without actual values. This makes setup clear and prevents sensitive info from being committed.
+
+"Good First Issues" Labeled: Ensure your GitHub repository has several issues clearly labeled good first issue and documentation. These should be simple, well-defined tasks that don't require deep project knowledge.
+
+Discord Channels: Have #getting-started and #help-desk channels ready on Discord.
+
+Live Demo Environment: Have the project running locally on your machine, ready to share your screen for a live demo.
+
+2. Introduction: Your First Quest Briefing 📜
+Start by setting the stage and reassuring everyone.
+
+Welcome & Reassurance: "Welcome, new Adventurers! Today, we're tackling your very first Quest: setting up The Adventurers Guild project on your local machines. Don't worry if this feels daunting; we'll go step-by-step, and no question is too basic."
+
+Why Local Setup Matters: "Setting up locally is like getting your personal 'Digital Forge' ready. It's where you'll craft your code, test your solutions, and prepare your contributions for the Guild."
+
+The Goal: "By the end of this, you'll have the project running on your computer, ready to pick up your first 'Quest' (GitHub issue)."
+
+3. Step-by-Step Local Setup Guide 💻
+Walk them through each command, explaining why they're doing it.
+
+A. Prerequisites: Equipping Your Adventurer 🎒
+Install Git:
+
+"Git is your essential Adventuring tool for version control. It helps us track changes to our code."
+
+Action: Guide them to download/install Git (e.g., git-scm.com/downloads).
+
+Verification: git --version
+
+Install Node.js & npm/Yarn:
+
+"Node.js is our JavaScript runtime, and npm (or Yarn) is our package manager for all our project's dependencies."
+
+Action: Guide them to download/install Node.js (which includes npm) from nodejs.org. Recommend the LTS version.
+
+Verification: node -v and npm -v (or yarn -v).
+
+Install a Code Editor:
+
+"You'll need a good code editor. VS Code is highly recommended and free."
+
+Action: Suggest VS Code (code.visualstudio.com).
+
+B. Cloning the Repository: Entering the Forge 🏰
+Fork the Repository:
+
+"First, you'll fork The Adventurers Guild repository on GitHub. This creates your own personal copy of the project under your GitHub account. It's like having your own private workshop!"
+
+Action: Guide them to github.com/LarytheLord/Adventurers-Guild, click the 'Fork' button.
+
+Clone Your Fork:
+
+"Now, we'll bring that copy to your local machine using git clone."
+
+Action: Go to their forked repository on GitHub, click the green 'Code' button, copy the HTTPS URL.
+
+Command: git clone [YOUR_FORK_URL]
+
+Example: git clone https://github.com/YourGitHubUsername/Adventurers-Guild.git
+
+Action: cd Adventurers-Guild (navigate into the project folder).
+
+C. Installing Dependencies: Gathering Your Tools 🧰
+Install Project Dependencies:
+
+"Our project relies on many external libraries. This command installs them all."
+
+Command: npm install (or yarn install if they prefer Yarn).
+
+Troubleshooting: "If you see errors, don't panic! We'll help you in the #help-desk channel."
+
+D. Environment Variables: Powering Up ⚡
+Create .env.local:
+
+"Many projects need secret keys or configuration settings. We use an .env.local file for this."
+
+Action: "Copy the contents of the .env.example file into a new file named .env.local in the root of your project."
+
+Explanation: "For the MVP, you might not have many external keys, but it's good practice. For now, you might just need NEXT_PUBLIC_VERCEL_URL if you're deploying, or DATABASE_URL if you're setting up a local database."
+
+Crucial: "Never commit your .env.local file to GitHub!"
+
+E. Running the Project Locally: Seeing the Guild Live! 🌟
+Start the Development Server:
+
+"This command starts our application on your computer."
+
+Command: npm run dev (or yarn dev).
+
+Verification: "You should see a message like 'Ready on http://localhost:3000'. Open that link in your browser!"
+
+Troubleshooting: "If it doesn't open, check your terminal for errors. We're here to help!"
+
+4. Your First Contribution: Embarking on a Quest 🗺️
+Once the project is running, guide them on making their first actual contribution.
+
+Find a "Good First Issue":
+
+"Head to our GitHub repository's Issues tab and filter by the good first issue label. These are designed for new contributors."
+
+Action: Show them how to find and filter issues on GitHub.
+
+Claim Your Quest:
+
+"Found an issue? Comment on it, saying 'I'd like to work on this Quest!' This marks it as yours."
+
+Create a New Branch:
+
+"Before you code, create a new branch for your changes. This keeps your work separate and organized."
+
+Command: git checkout -b feature/your-issue-name (e.g., git checkout -b feature/add-dark-mode-button).
+
+Code Your Solution:
+
+"Make your changes in your code editor. Test them locally!"
+
+Commit Your Changes:
+
+"Save your work with clear commit messages."
+
+Command: git add . (to stage all changes)
+
+Command: git commit -m "feat: Add dark mode toggle button" (use descriptive messages).
+
+Push Your Branch:
+
+"Send your changes from your local machine to your forked GitHub repository."
+
+Command: git push origin feature/your-issue-name
+
+Open a Pull Request (PR):
+
+"Go to your forked repository on GitHub. You'll see a prompt to 'Compare & pull request'. Click it!"
+
+Action: Guide them to fill out the PR template: describe changes, link the issue, request review.
+
+Explanation: "This is how you submit your Quest for review. Our Quest Reviewers will look at your code, provide feedback, and help get it merged!"
+
+5. Support & Resources: Your Guild Guides 🤝
+Discord #help-desk: "This is your primary support channel. Post any questions, errors, or roadblocks you encounter. Don't get stuck in silence!"
+
+@Guild Guides & Mentors: "Our experienced Adventurers and GSSoC mentors are here to help. Don't hesitate to tag them if you need specific guidance."
+
+CONTRIBUTING.md: "Always refer to this file on GitHub for detailed guidelines."
+
+Code of Conduct: "Remember to always uphold our Code of Conduct in all interactions."

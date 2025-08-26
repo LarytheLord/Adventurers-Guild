@@ -66,6 +66,7 @@ Our platform is being built incrementally, with these core features driving our 
 * **Client Portal:** Interface for companies to submit, manage, and approve Quests.
 * **Team Collaboration Tools:** Integrated features for group project management and communication.
 * **Quality Assurance Module:** Tools and processes to ensure high-quality project deliverables.
+* **AI-Powered Skill Assessment:** Advanced algorithms to evaluate and recommend skill development paths.
 
 ---
 
@@ -73,11 +74,20 @@ Our platform is being built incrementally, with these core features driving our 
 
 The Adventurers Guild is being built with modern, scalable technologies. We welcome contributions across our stack!
 
-* **Frontend:** React, Next.js, Tailwind CSS
-* **Backend:** Node.js (Express.js), Python (Flask/Django)
-* **Database:** PostgreSQL, MongoDB, Firebase/Firestore
-* **Deployment:** Vercel, AWS
+* **Frontend:** React, Next.js 13+ (App Router), TypeScript, Tailwind CSS, Shadcn/UI
+* **Backend:** Node.js, Supabase (Backend-as-a-Service)
+* **Database:** PostgreSQL (via Supabase)
+* **Authentication:** Supabase Auth with OAuth providers (Google, GitHub)
+* **Storage:** Supabase Storage for file uploads
+* **Real-time:** Supabase Realtime for live updates
+* **Deployment:** Vercel (Frontend), Supabase (Backend)
+* **State Management:** React Context API
+* **Forms:** React Hook Form with Zod validation
+* **Styling:** Tailwind CSS with custom design system
+* **UI Components:** Radix UI primitives with Shadcn customizations
+* **Email:** Nodemailer with SMTP
 * **Version Control:** Git, GitHub
+* **Package Management:** pnpm
 * **Communication:** Discord
 
 ---
@@ -99,56 +109,80 @@ If you're a GSSoC '25 participant looking for an impactful open-source project, 
 
 Ready to wield your skills and contribute to the future of EdTech? Welcome to **The Digital Forge!**
 
-1.  **Join Our Discord Server:** This is our primary communication hub for contributors, discussions, and real-time support. It's the best place to get started and meet the community.
-    * 🔗 [**Join The Digital Forge Discord**](https://discord.gg/7hQYkEx5)
+### Prerequisites
 
-2.  **Prerequisites:** Ensure you have the following installed on your system:
-    * Node.js (LTS version recommended)
-    * npm or Yarn
-    * Git
-    * [Any specific database client or other tools you use, e.g., Docker Desktop if applicable]
+Ensure you have the following installed on your system:
+* Node.js (LTS version recommended)
+* pnpm (recommended package manager)
+* Git
+* Supabase CLI (for local development)
 
-3.  **Clone the Repository:**
-    ```bash
-    git clone [https://github.com/LarytheLord/adventurers-guild.git](https://github.com/LarytheLord/adventurers-guild.git)
-    cd adventurers-guild
-    ```
+### Quick Start
 
-4.  **Install Dependencies:**
-    ```bash
-    npm install # or yarn install
-    ```
+1. **Join Our Discord Server:** This is our primary communication hub for contributors, discussions, and real-time support. It's the best place to get started and meet the community.
+   * 🔗 [**Join The Digital Forge Discord**](https://discord.gg/7hQYkEx5)
 
-5.  **Set Up Environment Variables:**
-    * Create a `.env.local` file in the root directory of the project.
-    * Refer to our [`CONTRIBUTING.md`](CONTRIBUTING.md) for the required variables (e.g., database credentials, API keys).
-    
-    **For Email Functionality (SMTP Setup):**
-    ```bash
-    # SMTP Configuration for Email Sending
-    SMTP_HOST=smtp.gmail.com
-    SMTP_PORT=587
-    SMTP_USER=your-email@gmail.com
-    SMTP_PASS=your-app-password
-    ADMIN_EMAIL=your-email@gmail.com
+2. **Clone the Repository:**
+   ```bash
+   git clone https://github.com/LarytheLord/adventurers-guild.git
+   cd adventurers-guild
+   ```
 
-    # Next.js
-    NEXT_PUBLIC_APP_URL=https://adventurersguild.vercel.app
-    ```
-    
-    **Gmail Setup (Recommended):**
-    1. Enable 2-Factor Authentication on your Gmail account
-    2. Generate App Password: Google Account → Security → 2-Step Verification → App passwords
-    3. Select "Mail" and generate a 16-character password
-    4. Use this password in `SMTP_PASS` (not your regular Gmail password)
-    
-    **⚠️ Security Note:** Never commit `.env.local` to Git (it's already in `.gitignore`)
+3. **Install Dependencies:**
+   ```bash
+   pnpm install
+   ```
 
-6.  **Run Locally:**
-    ```bash
-    npm run dev # or yarn dev
-    ```
-    This command will typically start the development server, and you can access the application in your browser at `http://localhost:3000` (or as specified in the console).
+4. **Set Up Environment Variables:**
+   * Create a `.env.local` file in the root directory of the project.
+   * Refer to our [`CONTRIBUTING.md`](CONTRIBUTING.md) for the required variables (e.g., database credentials, API keys).
+   
+   **For Email Functionality (SMTP Setup):**
+   ```bash
+   # Supabase Configuration (get from project dashboard)
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+
+   # Email Configuration for Email Sending
+   SMTP_HOST=smtp.gmail.com
+   SMTP_PORT=587
+   SMTP_USER=your-email@gmail.com
+   SMTP_PASS=your-app-password
+   ADMIN_EMAIL=your-email@gmail.com
+
+   # App Configuration
+   NEXT_PUBLIC_APP_URL=http://localhost:3000
+
+   # Optional: For file uploads
+   NEXT_PUBLIC_SUPABASE_STORAGE_BUCKET=quest-files
+   ```
+   
+   **Gmail Setup (Recommended):**
+   1. Enable 2-Factor Authentication on your Gmail account
+   2. Generate App Password: Google Account → Security → 2-Step Verification → App passwords
+   3. Select "Mail" and generate a 16-character password
+   4. Use this password in `SMTP_PASS` (not your regular Gmail password)
+   
+   **⚠️ Security Note:** Never commit `.env.local` to Git (it's already in `.gitignore`)
+
+5. **Set Up Supabase (Database):**
+   ```bash
+   # Install Supabase CLI
+   npm install -g supabase
+   
+   # Start local Supabase stack
+   supabase start
+   
+   # Apply database schema
+   supabase db push
+   ```
+
+6. **Run Locally:**
+   ```bash
+   pnpm dev
+   ```
+   This command will start the development server, and you can access the application in your browser at `http://localhost:3000`.
 
 ---
 
@@ -165,6 +199,16 @@ Please refer to our comprehensive [`CONTRIBUTING.md`](CONTRIBUTING.md) for detai
 * Setting up your specific development environment
 * How to claim issues (especially for GSSoC '25 participants!)
 
+### How to Contribute
+
+1. **Find an Issue:** Browse our [issues](https://github.com/LarytheLord/adventurers-guild/issues) or check the [project board](https://github.com/LarytheLord/adventurers-guild/projects) for tasks.
+2. **Claim the Issue:** Comment on the issue to let others know you're working on it.
+3. **Fork and Clone:** Fork the repository and clone it to your local machine.
+4. **Create a Branch:** Create a new branch for your work.
+5. **Make Changes:** Implement your solution following our coding standards.
+6. **Test Your Changes:** Ensure your changes work as expected and don't break existing functionality.
+7. **Submit a Pull Request:** Push your changes and create a pull request to the main branch.
+
 ---
 
 ## 🗺️ Roadmap: Our Expedition Ahead
@@ -178,6 +222,37 @@ Our expedition is just beginning. Key milestones for the Guild include:
 * Developing advanced AI-driven Quest matching algorithms for optimal Adventurer-Quest pairings.
 * Implementation of advanced team collaboration and project management features.
 * Introduction of mentorship programs within the Guild ranks.
+* Creation of a comprehensive analytics dashboard for administrators.
+* Implementation of a mobile app for on-the-go quest management.
+* Integration with popular development tools and platforms.
+
+---
+
+## 🧪 Testing
+
+We're building a comprehensive testing suite to ensure code quality and prevent regressions:
+
+* **Unit Testing:** Jest for testing individual functions and components
+* **Integration Testing:** Testing how components work together
+* **End-to-End Testing:** Cypress/Playwright for testing user flows
+* **Accessibility Testing:** axe-core for accessibility compliance
+
+To run tests:
+```bash
+pnpm test        # Run all tests
+pnpm test:unit   # Run unit tests
+pnpm test:e2e    # Run end-to-end tests
+```
+
+---
+
+## 📚 Documentation
+
+* [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines and development workflow
+* [RESPONSIVE_DESIGN.md](RESPONSIVE_DESIGN.md) - Responsive design implementation details
+* [project_improvements.md](project_improvements.md) - Suggestions for future improvements
+* [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) - Community guidelines
+* API Documentation (coming soon)
 
 ---
 
@@ -194,4 +269,19 @@ Join our community and follow our journey!
 * **Website:** [The Adventurers Guild](https://adventurersguild.vercel.app)
 * **Discord (The Digital Forge):** [Join our Community!](https://discord.gg/7hQYkEx5)
 * **LinkedIn (Company Page):** [The Adventurers Guild](https://linkedin.com/company/Adventurers-Guild)
-* **LinkedIn (My Personal Profile):** [Your Personal Portfolio/LinkedIn](https://abikhn.vercel.app) ---
+* **LinkedIn (My Personal Profile):** [Your Personal Portfolio/LinkedIn](https://abikhn.vercel.app)
+* **Twitter:** [@AdventurersGld](https://twitter.com/AdventurersGld)
+
+---
+
+## 🙏 Acknowledgements
+
+We'd like to thank:
+* The open-source community for their incredible tools and libraries
+* All our contributors who help make this project amazing
+* GirlScript Foundation for the GSSoC program
+* Our mentors and supporters who believe in our vision
+
+---
+
+*"Code Your Adventure. Master the Digital Frontier."* - The Adventurers Guild Motto
