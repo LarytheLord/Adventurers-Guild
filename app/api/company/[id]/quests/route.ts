@@ -4,7 +4,7 @@ import { withRoleProtection } from '@/lib/protectedRouteHandler';
 
 async function getCompanyQuests(
   request: NextRequest,
-  context: { user: any, profile: any, params: { id: string } }
+  context: { user: {id: string, email?: string}, profile: {id: string, role: string}, params: { id: string } }
 ) {
   // Only company users or admins can view their own quests
   if (context.profile.role !== 'company' && context.profile.role !== 'admin') {

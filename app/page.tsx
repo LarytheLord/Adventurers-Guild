@@ -256,9 +256,9 @@ export default function AdventurersGuildLanding() {
       <section id="mission" className="py-16 sm:py-20 md:py-24 px-4 sm:px-6 bg-background">
         <div className="container mx-auto max-w-4xl text-center">
           <h2 className="text-3xl sm:text-4xl md:text-6xl font-black mb-6 sm:mb-8 text-foreground leading-tight">
-            WE'RE NOT JUST CODING.
+            WE&apos;RE NOT JUST CODING.
             <br />
-            WE'RE CHARTING THE UNSEEN.
+            WE&apos;RE CHARTING THE UNSEEN.
           </h2>
           <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground leading-relaxed px-4">
             Transform your computer science education into an epic quest. Gain real-world skills, 
@@ -428,7 +428,7 @@ export default function AdventurersGuildLanding() {
               <Card key={index} className="bg-background rounded-2xl shadow-lg p-6 sm:p-8 flex flex-col justify-between 
              transform transition duration-300 ease-in-out hover:scale-[1.03] hover:-translate-y-2 hover:shadow-2xl cursor-pointer">
                 <p className="text-base sm:text-lg text-muted-foreground leading-relaxed mb-4 sm:mb-6">
-                  "The Adventurers Guild has been a game-changer for my career. I've learned more in the past three months than I did in three years of college."
+                  &quot;The Adventurers Guild has been a game-changer for my career. I&apos;ve learned more in the past three months than I did in three years of college.&quot;
                 </p>
                 <div className="flex items-center space-x-3 sm:space-x-4">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-primary flex items-center justify-center">

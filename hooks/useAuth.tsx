@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react'
 import { User as AuthUser, Session } from '@supabase/supabase-js'
-import { createBrowserSupabaseClient } from '@/lib/supabase'
+import { getBrowserSupabaseClient } from '@/lib/supabase'
 import { Database } from '@/types/supabase'
 
 type UserProfile = Database['public']['Tables']['users']['Row']
@@ -27,7 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
 
-  const supabase = createBrowserSupabaseClient()
+  const supabase = getBrowserSupabaseClient()
 
   useEffect(() => {
     // Get initial session

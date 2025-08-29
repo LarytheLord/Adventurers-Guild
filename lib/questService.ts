@@ -181,7 +181,7 @@ export class QuestService {
     github_repo?: string
     demo_url?: string
     description: string
-    attachments?: any[]
+    attachments?: {name: string, url: string, type: string}[]
   }) {
     const { data, error } = await supabase
       .from('quest_submissions')
@@ -243,7 +243,7 @@ export class QuestService {
     if (updateError) throw updateError
 
     // Award XP and skill points
-    await this.awardQuestRewards(userId, quest.xp_reward, quest.skill_rewards as any)
+    await this.awardQuestRewards(userId, quest.xp_reward, quest.skill_rewards as {[key: string]: number})
 
     return true
   }

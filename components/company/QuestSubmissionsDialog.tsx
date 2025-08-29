@@ -176,7 +176,7 @@ export function QuestSubmissionsDialog({
                 <User className="w-12 h-12 text-muted-foreground mb-4" />
                 <h3 className="text-lg font-semibold mb-2">No submissions yet</h3>
                 <p className="text-muted-foreground text-center">
-                  Adventurers haven't submitted work for this quest yet. Check back later!
+                  Adventurers haven&apos;t submitted work for this quest yet. Check back later!
                 </p>
               </CardContent>
             </Card>

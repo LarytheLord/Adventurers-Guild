@@ -1,12 +1,16 @@
-import { createBrowserSupabaseClient, createServerSupabaseClient } from './supabase'
 import { Database } from '@/types/supabase'
+import { getBrowserSupabaseClient, createServerSupabaseClient } from './supabase'
 
 type User = Database['public']['Tables']['users']['Row']
 type UserRole = 'student' | 'company' | 'admin'
 
 export class AuthService {
   private static getClient(isServer: boolean = false) {
-    return isServer ? createServerSupabaseClient() : createBrowserSupabaseClient()
+    return isServer ? createServerSupabaseClient() : getBrowserSupabaseClient()
+  }
+
+  private static getAppUrl(): string {
+    return process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'
   }
 
   // Sign up with email
@@ -26,7 +30,7 @@ export class AuthService {
           role: userData.role || 'student',
           company_name: userData.company_name
         },
-        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`
+        emailRedirectTo: `${this.getAppUrl()}/auth/callback`
       }
     })
 
@@ -56,7 +60,7 @@ export class AuthService {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider,
       options: {
-        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
+        redirectTo: `${this.getAppUrl()}/auth/callback`,
         scopes: provider === 'github' ? 'read:user user:email' : undefined
       }
     })
@@ -116,7 +120,7 @@ export class AuthService {
     const supabase = this.getClient()
     
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password`
+      redirectTo: `${this.getAppUrl()}/auth/reset-password`
     })
 
     if (error) throw error
@@ -135,7 +139,7 @@ export class AuthService {
 
   // Verify email with OTP
   static async verifyOtp(email: string, token: string) {
-    const supabase = this.getClient()
+    const supabase = await this.getClient()
     
     const { data, error } = await supabase.auth.verifyOtp({
       email,

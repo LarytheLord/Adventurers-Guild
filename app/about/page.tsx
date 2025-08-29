@@ -30,7 +30,7 @@ export default function AboutPage() {
             Forging Digital Pioneers
           </h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-            We're revolutionizing computer science education by bridging the gap between 
+            We&apos;re revolutionizing computer science education by bridging the gap between 
             theoretical knowledge and real-world industry experience through gamified learning.
           </p>
         </section>

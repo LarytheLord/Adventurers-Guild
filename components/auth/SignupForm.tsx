@@ -11,6 +11,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Github, Mail, Eye, EyeOff, User, Building } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/contexts/AuthContext'
 
 export function SignupForm() {
   const [formData, setFormData] = useState({
@@ -25,6 +27,8 @@ export function SignupForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const router = useRouter()
+  const { signUp } = useAuth()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -51,21 +55,12 @@ export function SignupForm() {
     }
 
     try {
-      const { MockAuthService } = await import('@/lib/mockAuth')
-      const user = MockAuthService.signUp({
-        email: formData.email,
-        password: formData.password,
+      await signUp(formData.email, formData.password, {
         name: formData.name,
         role: formData.role,
         company_name: formData.companyName || undefined
-      })
-      
-      // Redirect based on role
-      if (user.role === 'company') {
-        window.location.href = '/company/dashboard'
-      } else {
-        window.location.href = '/home'
-      }
+      } as any)
+      router.push('/auth/callback')
     } catch (err: unknown) {
       setError((err as Error).message || 'Failed to create account')
     } finally {

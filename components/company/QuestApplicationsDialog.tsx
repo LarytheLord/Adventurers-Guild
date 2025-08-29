@@ -134,7 +134,7 @@ export function QuestApplicationsDialog({
                 <User className="w-12 h-12 text-muted-foreground mb-4" />
                 <h3 className="text-lg font-semibold mb-2">No applications yet</h3>
                 <p className="text-muted-foreground text-center">
-                  Adventurers haven't applied to this quest yet. Check back later!
+                  Adventurers haven&apos;t applied to this quest yet. Check back later!
                 </p>
               </CardContent>
             </Card>

@@ -5,7 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { UserProfileCard } from "@/components/profile/UserProfileCard";
 import { SkillPentagon } from "@/components/profile/SkillPentagon";
 import { SkillDetail } from "@/components/profile/SkillDetail";
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { useState, useEffect } from 'react';
 import { UserProfileForm } from '@/components/profile/UserProfileForm';
 import Image from 'next/image';
@@ -49,7 +49,7 @@ export default function ProfilePage() {
         const userSkillsData = await userSkillsResponse.json();
 
         const combinedSkills = skillsData.skills.map((skill: ApiSkill) => {
-          const userSkill = userSkillsData.find((us: any) => us.skill_id === skill.id); // Assuming userSkillsData is an array of user_skills
+          const userSkill = userSkillsData.find((us: {skill_id: string, current_level: number, points: number}) => us.skill_id === skill.id); // Assuming userSkillsData is an array of user_skills
           return {
             ...skill,
             level: userSkill?.level || 0,

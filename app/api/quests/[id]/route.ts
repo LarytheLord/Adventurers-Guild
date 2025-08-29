@@ -27,7 +27,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     const quest = data
       ? {
           ...data,
-          company_name: (data as any).company?.name ?? 'Unknown Company',
+          company_name: (data as {company?: {name: string}}).company?.name ?? 'Unknown Company',
           applications_count: applicationsCount,
         }
       : null;

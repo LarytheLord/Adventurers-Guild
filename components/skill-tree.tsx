@@ -239,7 +239,7 @@ const skillCategories: SkillCategory[] = [
   }
 ]
 
-export function SkillTree() {
+function SkillTree() {
   const [selectedCategory, setSelectedCategory] = useState<SkillCategory | null>(null)
   const [isOpen, setIsOpen] = useState(false)
 
@@ -427,4 +427,6 @@ export function SkillTree() {
       </DialogContent>
     </Dialog>
   )
-} 
+}
+
+export default SkillTree

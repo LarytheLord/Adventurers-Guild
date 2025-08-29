@@ -22,7 +22,7 @@ import {
   ExternalLink
 } from 'lucide-react'
 import { Database } from '@/types/supabase';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/contexts/AuthContext';
 import { QuestApplicationDialog } from '@/components/student/QuestApplicationDialog';
 import { QuestSubmissionDialog } from '@/components/student/QuestSubmissionDialog';
 
@@ -80,7 +80,7 @@ export default function QuestDetailPage() {
           <AlertCircle className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
           <h1 className="text-2xl font-bold mb-2">Quest Not Found</h1>
           <p className="text-muted-foreground mb-6">
-            The quest you're looking for doesn't exist or has been removed.
+            The quest you&apos;re looking for doesn&apos;t exist or has been removed.
           </p>
           <Link href="/quests">
             <Button>Browse All Quests</Button>
@@ -218,7 +218,7 @@ export default function QuestDetailPage() {
               <CardHeader>
                 <CardTitle>Skill Rewards</CardTitle>
                 <CardDescription>
-                  XP and skill points you'll earn upon successful completion
+                  XP and skill points you&apos;ll earn upon successful completion
                 </CardDescription>
               </CardHeader>
               <CardContent>

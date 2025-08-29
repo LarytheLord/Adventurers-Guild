@@ -5,6 +5,7 @@ export const config = {
 import { NextRequest, NextResponse } from 'next/server'
 import nodemailer from 'nodemailer';
 import type { TransportOptions } from 'nodemailer';
+import { createClient } from '@supabase/supabase-js'
 
 export async function POST(request: NextRequest) {
     try {
@@ -17,6 +18,28 @@ export async function POST(request: NextRequest) {
                 message: 'Email service configuration error',
                 success: false
             }, { status: 500 })
+        }
+
+        // Create Supabase client
+        const supabase = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            process.env.SUPABASE_SERVICE_ROLE_KEY!
+        )
+
+        // Store waitlist entry in database
+        const { error: insertError } = await supabase
+            .from('waitlist')
+            .insert([{ name, email }])
+
+        if (insertError) {
+            console.error('Database insert error:', insertError)
+            // If it's a duplicate email, we'll still send the email but return a different message
+            if (insertError.code !== '23505') { // 23505 is unique violation
+                return NextResponse.json({
+                    message: 'Failed to add to waitlist',
+                    success: false
+                }, { status: 500 })
+            }
         }
 
         // Create SMTP transporter with optimized settings for Vercel
@@ -132,6 +155,7 @@ export async function POST(request: NextRequest) {
         <p><strong>Name:</strong> ${name || 'Not provided'}</p>
         <p><strong>Email:</strong> ${email}</p>
         <p><strong>Joined:</strong> ${new Date().toLocaleString()}</p>
+        ${insertError && insertError.code === '23505' ? '<p style="color: #f59e0b;"><strong>Note:</strong> This user was already on the waitlist.</p>' : ''}
       </div>
       <div style="background: #e3f2fd; padding: 15px; border-radius: 5px; margin: 15px 0;">
         <h4 style="margin-top: 0; color: #1976d2;">About The Adventurers Guild:</h4>

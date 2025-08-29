@@ -25,6 +25,7 @@ const roleBasedRoutes = {
   '/dashboard/quest-giver': ['company', 'admin'],
   '/company/dashboard': ['company', 'admin'],
   '/admin/dashboard': ['admin'],
+  '/admin/waitlist': ['admin'],
   '/client/dashboard': ['client', 'admin'],
   '/ai-rank-test': ['student', 'admin']
 }

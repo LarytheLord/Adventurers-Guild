@@ -1,31 +1,119 @@
-git status
-On branch Profile-and-skill-map
-Your branch is up to date with 'origin/Profile-and-skill-map'.
+./app/ai-rank-test/assessment/page.tsx
+126:9  Warning: The 'handleSubmitTest' function makes the dependencies of useEffect Hook (at line 168) change on every render. To fix this, wrap the definition of 'handleSubmitTest' in its own useCallback() Hook.  react-hooks/exhaustive-deps
 
-You have unmerged paths.
-  (fix conflicts and run "git commit")
-  (use "git merge --abort" to abort the merge)
+./app/ai-rank-test/results/page.tsx
+30:10  Warning: 'useAuth' is defined but never used.  @typescript-eslint/no-unused-vars
 
-Changes to be committed:
-        modified:   README.md
-        modified:   app/page.tsx
-        modified:   package.json
+./app/api/ai-rank-test/evaluate/route.ts
+2:10  Warning: 'createSupabaseServerClient' is defined but never used.  @typescript-eslint/no-unused-vars
 
-Unmerged paths:
-  (use "git add/rm <file>..." as appropriate to mark resolution)
-        both modified:   app/home/page.tsx
-        both modified:   app/layout.tsx
-        both added:      components/AdventureFilter.tsx
-        both added:      components/AdventureSearch.tsx
-        deleted by us:   next.config.mjs
-        deleted by us:   package-lock.json
+./app/api/quests/route.ts
+22:68  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+22:116  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+34:12  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+72:26  Error: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
 
-Changes not staged for commit:
-  (use "git add/rm <file>..." to update what will be committed)
-  (use "git restore <file>..." to discard changes in working directory)
-        modified:   .env.example
-        modified:   app/quests/[id]/page.tsx
-        modified:   app/quests/page.tsx
-        modified:   components/home/QuestBoard.tsx
-        deleted:    contexts/AuthContext.tsx
-        modified:   error.txt
+./app/api/quests/[id]/route.ts
+36:12  Warning: 'error' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/api/skills/route.ts
+2:10  Warning: 'NextRequest' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/client/dashboard/page.tsx
+7:10  Warning: 'Plus' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/company/dashboard/page.tsx
+18:3  Warning: 'Settings' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/dashboard/admin/page.tsx
+41:3  Warning: 'TrendingUp' is defined but never used.  @typescript-eslint/no-unused-vars
+45:3  Warning: 'Clock' is defined but never used.  @typescript-eslint/no-unused-vars
+48:3  Warning: 'FileText' is defined but never used.  @typescript-eslint/no-unused-vars
+223:45  Warning: 'userId' is defined but never used.  @typescript-eslint/no-unused-vars
+239:46  Warning: 'questId' is defined but never used.  @typescript-eslint/no-unused-vars
+255:48  Warning: 'disputeId' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/dashboard/adventurer/page.tsx
+3:10  Warning: 'useState' is defined but never used.  @typescript-eslint/no-unused-vars
+61:57  Warning: '_' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/home/HomePageClient.tsx
+6:16  Warning: 'CardContent' is defined but never used.  @typescript-eslint/no-unused-vars
+6:29  Warning: 'CardHeader' is defined but never used.  @typescript-eslint/no-unused-vars
+6:41  Warning: 'CardTitle' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/home/page.tsx
+5:8  Warning: 'AdventureSearch' is defined but never used.  @typescript-eslint/no-unused-vars
+6:8  Warning: 'AdventureFilter' is defined but never used.  @typescript-eslint/no-unused-vars
+7:10  Warning: 'useState' is defined but never used.  @typescript-eslint/no-unused-vars
+7:20  Warning: 'useMemo' is defined but never used.  @typescript-eslint/no-unused-vars
+10:16  Warning: 'CardContent' is defined but never used.  @typescript-eslint/no-unused-vars
+13:10  Warning: 'Button' is defined but never used.  @typescript-eslint/no-unused-vars
+14:10  Warning: 'ThemeToggle' is defined but never used.  @typescript-eslint/no-unused-vars
+15:10  Warning: 'X' is defined but never used.  @typescript-eslint/no-unused-vars
+15:13  Warning: 'Menu' is defined but never used.  @typescript-eslint/no-unused-vars
+18:8  Warning: 'QuestCard' is defined but never used.  @typescript-eslint/no-unused-vars
+32:10  Warning: 'UserDashboard' is defined but never used.  @typescript-eslint/no-unused-vars
+87:11  Warning: 'user' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+100:10  Warning: 'AppFooter' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./app/page.tsx
+8:10  Warning: 'Code' is defined but never used.  @typescript-eslint/no-unused-vars
+8:16  Warning: 'Zap' is defined but never used.  @typescript-eslint/no-unused-vars
+8:36  Warning: 'Trophy' is defined but never used.  @typescript-eslint/no-unused-vars
+8:53  Warning: 'Shield' is defined but never used.  @typescript-eslint/no-unused-vars
+8:122  Warning: 'ArrowRight' is defined but never used.  @typescript-eslint/no-unused-vars
+8:140  Warning: 'Sparkles' is defined but never used.  @typescript-eslint/no-unused-vars
+8:159  Warning: 'Mail' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/auth/LoginForm.tsx
+39:14  Warning: 'err' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/company/QuestApplicationsDialog.tsx
+6:29  Warning: 'CardDescription' is defined but never used.  @typescript-eslint/no-unused-vars
+9:26  Warning: 'Clock' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/company/QuestSubmissionsDialog.tsx
+13:29  Warning: 'CardDescription' is defined but never used.  @typescript-eslint/no-unused-vars
+19:10  Warning: 'useState' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/dashboard/StudentDashboard.tsx
+3:29  Warning: 'CardDescription' is defined but never used.  @typescript-eslint/no-unused-vars
+4:10  Warning: 'Badge' is defined but never used.  @typescript-eslint/no-unused-vars
+7:24  Warning: 'Target' is defined but never used.  @typescript-eslint/no-unused-vars
+11:6  Warning: 'UserProfile' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/quest-completion.tsx
+7:10  Warning: 'Progress' is defined but never used.  @typescript-eslint/no-unused-vars
+13:3  Warning: 'Zap' is defined but never used.  @typescript-eslint/no-unused-vars
+104:10  Warning: 'selectedQuest' is assigned a value but never used.  @typescript-eslint/no-unused-vars  
+104:25  Warning: 'setSelectedQuest' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./components/skill-tree.tsx
+15:3  Warning: 'Shield' is defined but never used.  @typescript-eslint/no-unused-vars
+16:3  Warning: 'Star' is defined but never used.  @typescript-eslint/no-unused-vars
+18:3  Warning: 'Target' is defined but never used.  @typescript-eslint/no-unused-vars
+21:3  Warning: 'TrendingUp' is defined but never used.  @typescript-eslint/no-unused-vars
+24:3  Warning: 'X' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/ui/chart.tsx
+72:7  Warning: '_' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./components/ui/use-toast.ts
+21:7  Warning: 'actionTypes' is assigned a value but only used as a type.  @typescript-eslint/no-unused-vars
+
+./lib/mockAuth.ts
+52:32  Warning: 'password' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./lib/protectedRouteHandler.ts
+10:38  Warning: 'request' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./lib/questService.ts
+4:6  Warning: 'Quest' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./lib/skillService.ts
+4:6  Warning: 'SkillCategory' is defined but never used.  @typescript-eslint/no-unused-vars
+5:6  Warning: 'UserSkill' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./lib/supabase.ts
+18:23  Error: A `require()` style import is forbidden.  @typescript-eslint/no-require-imports

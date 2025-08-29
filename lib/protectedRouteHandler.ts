@@ -46,10 +46,10 @@ export function hasRequiredRole(userRole: string, requiredRoles: string[]): bool
  * @returns Protected handler function
  */
 export function withRoleProtection(
-  handler: (request: NextRequest, context: { user: any, profile: any, params?: any }) => Promise<NextResponse>,
+  handler: (request: NextRequest, context: { user: {id: string, email?: string}, profile: {id: string, role: string}, params?: {[key: string]: string} }) => Promise<NextResponse>,
   requiredRoles: string[] = []
 ) {
-  return async function protectedHandler(request: NextRequest, context?: { params: any }): Promise<NextResponse> {
+  return async function protectedHandler(request: NextRequest, context?: { params: {[key: string]: string} }): Promise<NextResponse> {
     try {
       // Get session
       const session = await getUserSession(request)

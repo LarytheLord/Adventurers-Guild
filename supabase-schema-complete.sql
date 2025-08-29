@@ -203,12 +203,12 @@ CREATE INDEX idx_notifications_user_id_unread ON notifications(user_id, is_read)
 
 -- Create updated_at trigger function
 CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $
+RETURNS TRIGGER AS $$
 BEGIN
     NEW.updated_at = NOW();
     RETURN NEW;
 END;
-$ language 'plpgsql';
+$$ language 'plpgsql';
 
 -- Apply updated_at triggers
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
@@ -463,18 +463,57 @@ FOR UPDATE TO authenticated USING (
   )
 );
 
+-- Storage Buckets Setup
+-- Note: These need to be created in the Supabase dashboard or via CLI
+-- Bucket names: avatars, quest-files
+
+-- Storage Policies for avatars bucket
+-- CREATE POLICY "Anyone can read avatars" ON storage.objects
+-- FOR SELECT TO authenticated, anon USING (bucket_id = 'avatars');
+
+-- CREATE POLICY "Users can upload their own avatars" ON storage.objects
+-- FOR INSERT TO authenticated WITH CHECK (
+--   bucket_id = 'avatars' AND
+--   (storage.foldername(name))[1] = auth.uid()::text
+-- );
+
+-- CREATE POLICY "Users can update their own avatars" ON storage.objects
+-- FOR UPDATE TO authenticated USING (
+--   bucket_id = 'avatars' AND
+--   (storage.foldername(name))[1] = auth.uid()::text
+-- );
+
+-- CREATE POLICY "Users can delete their own avatars" ON storage.objects
+-- FOR DELETE TO authenticated USING (
+--   bucket_id = 'avatars' AND
+--   (storage.foldername(name))[1] = auth.uid()::text
+-- );
+
+-- Storage Policies for quest-files bucket
+-- CREATE POLICY "Authenticated users can read quest files" ON storage.objects
+-- FOR SELECT TO authenticated USING (bucket_id = 'quest-files');
+
+-- CREATE POLICY "Quest participants can upload files" ON storage.objects
+-- FOR INSERT TO authenticated WITH CHECK (
+--   bucket_id = 'quest-files' AND
+--   EXISTS (
+--     SELECT 1 FROM public.quests q
+--     WHERE q.id = (storage.foldername(name))[1]::uuid AND
+--     (q.company_id = auth.uid() OR q.assigned_to = auth.uid())
+--   )
+-- );
+
 -- Functions for business logic
 
 -- Function to automatically create user profile on signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
-RETURNS TRIGGER AS $
+RETURNS TRIGGER AS $$
 BEGIN
   INSERT INTO public.users (id, email, name, role)
   VALUES (
     NEW.id,
     NEW.email,
-    COALESCE(NEW.raw_user_meta_data->
-    CASE
+    COALESCE(NEW.raw_user_meta_data->>'name', ''),
     CASE 
       WHEN NEW.raw_user_meta_data->>'role' = 'company' THEN 'company'::user_role
       WHEN NEW.raw_user_meta_data->>'role' = 'client' THEN 'client'::user_role
@@ -483,7 +522,7 @@ BEGIN
   );
   RETURN NEW;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Trigger for new user signup
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
@@ -493,7 +532,7 @@ CREATE TRIGGER on_auth_user_created
 
 -- Function to update user XP and rank when quest is completed
 CREATE OR REPLACE FUNCTION public.update_user_xp_on_quest_completion()
-RETURNS TRIGGER AS $
+RETURNS TRIGGER AS $$
 DECLARE
   user_rank user_rank;
 BEGIN
@@ -524,7 +563,7 @@ BEGIN
   
   RETURN NEW;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Trigger for quest submission approval
 DROP TRIGGER IF EXISTS on_quest_submission_approved ON public.quest_submissions;
@@ -536,14 +575,14 @@ CREATE TRIGGER on_quest_submission_approved
 
 -- Function to unlock skills when prerequisites are met
 CREATE OR REPLACE FUNCTION public.unlock_skill_if_prerequisites_met()
-RETURNS TRIGGER AS $
+RETURNS TRIGGER AS $$
 BEGIN
   -- This function would be called when a user's skill points are updated
   -- Implementation would check if all prerequisites for other skills are met
   -- and automatically unlock them
   RETURN NEW;
 END;
-$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Grant necessary permissions
 GRANT USAGE ON SCHEMA public TO postgres, authenticated, anon;

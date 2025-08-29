@@ -9,6 +9,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Github, Mail, Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/contexts/AuthContext'
 
 export function LoginForm() {
   const [email, setEmail] = useState('')
@@ -16,6 +18,8 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const router = useRouter()
+  const { signIn, signInWithOAuth } = useAuth()
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -23,21 +27,10 @@ export function LoginForm() {
     setError('')
 
     try {
-      const { MockAuthService } = await import('@/lib/mockAuth')
-      const user = MockAuthService.signIn(email, password)
-      
-      if (user) {
-        // Redirect based on user role
-        if (user.role === 'company') {
-          window.location.href = '/company/dashboard'
-        } else {
-          window.location.href = '/home'
-        }
-      } else {
-        setError('Invalid email or password. Try: student@demo.com or company@demo.com')
-      }
+      await signIn(email, password)
+      router.push('/auth/callback')
     } catch (err: unknown) {
-      setError('Login failed. Please try again.')
+      setError('Login failed. Please check your credentials and try again.')
     } finally {
       setLoading(false)
     }
@@ -108,31 +101,35 @@ export function LoginForm() {
             
             <TabsContent value="oauth" className="space-y-4">
               <div className="space-y-3">
-                <p className="text-sm text-muted-foreground text-center">Try demo accounts:</p>
+                <p className="text-sm text-muted-foreground text-center">Sign in with OAuth:</p>
                 <Button
                   variant="outline"
                   className="w-full"
                   onClick={async () => {
-                    const { MockAuthService } = await import('@/lib/mockAuth')
-                    const user = MockAuthService.signIn('student@demo.com', 'demo123')
-                    if (user) window.location.href = '/home'
+                    try {
+                      await signInWithOAuth('google')
+                    } catch (e) {
+                      setError('Google sign-in failed.')
+                    }
                   }}
                 >
                   <Mail className="w-4 h-4 mr-2" />
-                  Student Demo Account
+                  Continue with Google
                 </Button>
                 
                 <Button
                   variant="outline"
                   className="w-full"
                   onClick={async () => {
-                    const { MockAuthService } = await import('@/lib/mockAuth')
-                    const user = MockAuthService.signIn('company@demo.com', 'demo123')
-                    if (user) window.location.href = '/company/dashboard'
+                    try {
+                      await signInWithOAuth('github')
+                    } catch (e) {
+                      setError('GitHub sign-in failed.')
+                    }
                   }}
                 >
                   <Github className="w-4 h-4 mr-2" />
-                  Company Demo Account
+                  Continue with GitHub
                 </Button>
               </div>
             </TabsContent>

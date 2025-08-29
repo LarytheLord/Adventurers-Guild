@@ -1,9 +1,10 @@
 'use client'
 
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { useAuth } from "@/hooks/useAuth"
+import { useAuth } from "@/contexts/AuthContext"
 import { Database } from "@/types/supabase"
 import { useEffect, useState } from "react"
 import { Toaster } from "@/components/ui/sonner";
@@ -87,7 +88,24 @@ export default function AdminDashboard() {
         </div>
       </header>
 
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 space-y-8">
+        {/* Waitlist Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Waitlist Management</CardTitle>
+            <CardDescription>View and manage waitlist entries</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex justify-between items-center">
+              <p>View all users who have signed up for the waitlist</p>
+              <Link href="/admin/waitlist">
+                <Button>View Waitlist</Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Pending Quests Card */}
         <Card>
           <CardHeader>
             <CardTitle>Pending Quests</CardTitle>

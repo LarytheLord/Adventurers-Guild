@@ -100,7 +100,7 @@ const sampleQuests: Quest[] = [
   }
 ]
 
-export function QuestCompletion() {
+function QuestCompletion() {
   const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null)
   const [isOpen, setIsOpen] = useState(false)
   const [completedQuests, setCompletedQuests] = useState<string[]>([])
@@ -249,4 +249,6 @@ export function QuestCompletion() {
       </DialogContent>
     </Dialog>
   )
-} 
+}
+
+export default QuestCompletion

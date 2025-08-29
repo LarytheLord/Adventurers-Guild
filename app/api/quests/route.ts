@@ -4,6 +4,10 @@ import { cookies } from 'next/headers';
 import { NextRequest, NextResponse } from 'next/server';
 import { Database } from '@/types/supabase';
 
+type QuestRow = Database['public']['Tables']['quests']['Row']
+type Company = { name: string | null }
+type ApplicationAggregate = { count: number }
+
 export async function GET() {
   const supabase = createRouteHandlerClient<Database>({ cookies });
   try {
@@ -19,7 +23,11 @@ export async function GET() {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    const quests = (data || []).map((q: any) => {
+    const rows = (data || []) as Array<
+      QuestRow & { company?: Company | null; applications?: ApplicationAggregate[] | null }
+    >
+
+    const quests = rows.map((q) => {
       const applicationsCount = Array.isArray(q.applications)
         ? (q.applications[0]?.count ?? 0)
         : 0;
@@ -65,11 +73,12 @@ export async function POST(req: NextRequest) {
     }
 
     // shape the created quest similarly to GET response
-    const shaped = {
-      ...data,
+    type CreatedQuestResponse = QuestRow & { company_name: string; applications_count: number }
+    const shaped: CreatedQuestResponse = {
+      ...(data as QuestRow),
       company_name: session.user.email || 'Your Company',
       applications_count: 0,
-    } as any;
+    };
 
     return NextResponse.json(shaped);
   } catch (error) {

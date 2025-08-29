@@ -18,7 +18,7 @@ import {
   Settings,
   LogOut
 } from 'lucide-react'
-import { useAuth } from '@/hooks/useAuth'
+import { useAuth } from '@/contexts/AuthContext'
 import { CreateQuestDialog } from '@/components/company/CreateQuestDialog'
 import { QuestApplicationsDialog } from '@/components/company/QuestApplicationsDialog'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";

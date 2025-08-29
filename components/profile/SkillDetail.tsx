@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface Skill {
   id: string;
@@ -74,7 +74,7 @@ export function SkillDetail({ skill }: { skill: Skill | null }) {
                       description: `${skill.name} unlocked successfully!`, 
                     });
                     // Optionally, refresh profile data to show unlocked skill
-                  } catch (error: any) {
+                  } catch (error: unknown) {
                     console.error(error);
                     toast({
                       title: "Error",

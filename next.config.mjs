@@ -70,4 +70,5 @@ export default nextPwa({
   register: true,
   skipWaiting: true,
   runtimeCaching,
+  disable: true,
 })(nextConfig);

@@ -10,11 +10,11 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Github, Linkedin, Menu, Twitter, X, User, LogOut } from 'lucide-react';
 import Image from "next/image";
 import Link from "next/link";
-import { SkillTree } from "@/components/skill-tree";
-import { QuestCompletion } from "@/components/quest-completion";
+import SkillTree from "@/components/skill-tree";
+import QuestCompletion from "@/components/quest-completion";
 import AdventureSearch from '@/components/AdventureSearch';
 import AdventureFilter from '@/components/AdventureFilter';
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/contexts/AuthContext";
 import QuestBoard from "@/components/home/QuestBoard";
 import { Suspense } from "react";
 
