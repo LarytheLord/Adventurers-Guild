@@ -611,41 +611,119 @@ export default function AdventurersGuildLanding() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 sm:py-16 px-4 sm:px-6 bg-card text-card-foreground">
-        <div className="container mx-auto max-w-6xl">
-          <div className="flex flex-col sm:flex-row items-center justify-between">
-            <div className="flex items-center space-x-2 sm:space-x-3 mb-6 sm:mb-0">
-              <Image 
-                src="/images/guild-logo.png" 
-                alt="The Adventurers Guild" 
-                width={28} 
-                height={28}
-                className="w-7 h-7 sm:w-8 sm:h-8"
-              />
-              <div>
-                <div className="text-lg sm:text-xl font-bold">The Adventurers Guild</div>
-                <div className="text-muted-foreground text-sm">Forging Digital Pioneers</div>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-4 sm:space-x-6">
-              <Link href="https://www.linkedin.com/company/adventurers-guild" className="text-muted-foreground hover:text-card-foreground transition-colors">
-                <Linkedin className="w-5 h-5 sm:w-6 sm:h-6" />
-              </Link>
-              <Link href="#" className="text-muted-foreground hover:text-card-foreground transition-colors">
-                <Twitter className="w-5 h-5 sm:w-6 sm:h-6" />
-              </Link>
-              <Link href="https://github.com/LarytheLord/Adventurers-Guild" className="text-muted-foreground hover:text-card-foreground transition-colors">
-                <Github className="w-5 h-5 sm:w-6 sm:h-6" />
-              </Link>
-            </div>
-          </div>
-          
-          <div className="mt-8 sm:mt-12 pt-6 sm:pt-8 border-t border-border text-center text-muted-foreground text-sm">
-            © {new Date().getFullYear()} The Adventurers Guild. All rights reserved.
-          </div>
+      {/* Footer */}
+<footer className="bg-background border-t border-border/40 text-foreground">
+  <div className="container mx-auto px-4 sm:px-6 py-12 sm:py-16">
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 sm:gap-14">
+
+      {/* About Section */}
+      <div>
+        <div className="flex items-center space-x-2 mb-4">
+          <Image
+            src="/images/guild-logo.png"
+            alt="The Adventurers Guild"
+            width={32}
+            height={32}
+            className="w-8 h-8"
+          />
+          <span className="text-lg font-bold">The Adventurers Guild</span>
         </div>
-      </footer>
+        <p className="text-sm text-muted-foreground leading-relaxed">
+          Forging digital pioneers through real-world quests, mentorship, and community.
+        </p>
+      </div>
+
+      {/* Info Links */}
+      <div>
+        <h4 className="font-semibold text-base mb-4">Info</h4>
+        <ul className="space-y-2 text-sm text-muted-foreground">
+          <li><Link href="/about" className="hover:text-foreground transition-colors">About Us</Link></li>
+          <li><Link href="/how-it-works" className="hover:text-foreground transition-colors">How It Works</Link></li>
+          <li><Link href="/faq" className="hover:text-foreground transition-colors">FAQs</Link></li>
+          <li><Link href="/contact" className="hover:text-foreground transition-colors">Contact</Link></li>
+        </ul>
+      </div>
+
+      {/* Legal Links */}
+      <div>
+        <h4 className="font-semibold text-base mb-4">Legal</h4>
+        <ul className="space-y-2 text-sm text-muted-foreground">
+          <li><Link href="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link></li>
+          <li><Link href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link></li>
+          <li><Link href="/returns" className="hover:text-foreground transition-colors">Returns</Link></li>
+          <li><Link href="/shipping" className="hover:text-foreground transition-colors">Shipping</Link></li>
+        </ul>
+      </div>
+
+      {/* Newsletter */}
+      <div>
+        <h4 className="font-semibold text-base mb-4">Join Our Newsletter</h4>
+        <form className="flex flex-col sm:flex-row items-center gap-3">
+          <Input
+            type="email"
+            placeholder="Enter your email"
+            className="flex-1 text-sm"
+            aria-label="Email Address"
+          />
+          <Button type="submit" className="px-5 py-2 text-sm">
+            Subscribe
+          </Button>
+        </form>
+        <p className="text-xs text-muted-foreground mt-3">
+          By subscribing, you agree to our <Link href="/privacy" className="underline hover:text-foreground">Privacy Policy</Link>.
+        </p>
+      </div>
+    </div>
+
+    {/* Footer Bottom */}
+    <div className="mt-12 pt-6 border-t border-border/30 flex flex-col sm:flex-row items-center justify-between gap-6 text-sm text-muted-foreground">
+      {/* Payment Icons */}
+<div className="flex items-center gap-4">
+  <Image
+    src="/images/visa.png"
+    alt="Visa"
+    width={60}
+    height={20}
+    className="object-contain"
+  />
+  <Image
+    src="/images/mastercard.png"
+    alt="mastercard"
+    width={60}
+    height={20}
+    className="object-contain"
+  />
+  <Image
+    src="/images/Paypal.png"
+    alt="PayPal"
+    width={60}
+    height={20}
+    className="object-contain"
+  />
+</div>
+
+
+      {/* Social Links */}
+      <div className="flex space-x-4">
+        <Link href="https://linkedin.com/company/adventurers-guild" aria-label="LinkedIn">
+          <Linkedin className="w-5 h-5 hover:text-foreground transition-colors" />
+        </Link>
+        <Link href="https://twitter.com/" aria-label="Twitter">
+          <Twitter className="w-5 h-5 hover:text-foreground transition-colors" />
+        </Link>
+        <Link href="https://github.com/LarytheLord/Adventurers-Guild" aria-label="GitHub">
+          <Github className="w-5 h-5 hover:text-foreground transition-colors" />
+        </Link>
+      </div>
+
+      {/* Copyright */}
+      <p className="text-center">
+        © {new Date().getFullYear()} The Adventurers Guild. All rights reserved.
+      </p>
+    </div>
+  </div>
+</footer>
+
 
       {/* Go to Top Button */}
       <GoToTop />
