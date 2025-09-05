@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Code, Zap, Target, Users, Trophy, Compass, Shield, Sword, ChevronRight, CheckCircle, Github, Linkedin, Twitter, ArrowRight, Star, Sparkles, Menu, X, Mail, Laptop, Rocket } from 'lucide-react'
+import { Code, Zap, Target, Users, Trophy, Compass, Shield, Sword, ChevronRight, CheckCircle, Github, Linkedin, Twitter, Instagram, ArrowRight, Star, Sparkles, Menu, X, Mail, Laptop, Rocket } from 'lucide-react'
 import Image from "next/image"
 import Link from "next/link"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
@@ -611,7 +611,6 @@ export default function AdventurersGuildLanding() {
       </section>
 
       {/* Footer */}
-      {/* Footer */}
 <footer className="bg-background border-t border-border/40 text-foreground">
   <div className="container mx-auto px-4 sm:px-6 py-12 sm:py-16">
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-10 sm:gap-14">
@@ -621,7 +620,7 @@ export default function AdventurersGuildLanding() {
         <div className="flex items-center space-x-2 mb-4">
           <Image
             src="/images/guild-logo.png"
-            alt="The Adventurers Guild"
+            alt="The Adventurers Guild logo"
             width={32}
             height={32}
             className="w-8 h-8"
@@ -637,10 +636,10 @@ export default function AdventurersGuildLanding() {
       <div>
         <h4 className="font-semibold text-base mb-4">Info</h4>
         <ul className="space-y-2 text-sm text-muted-foreground">
-          <li><Link href="/about" className="hover:text-foreground transition-colors">About Us</Link></li>
-          <li><Link href="/how-it-works" className="hover:text-foreground transition-colors">How It Works</Link></li>
-          <li><Link href="/faq" className="hover:text-foreground transition-colors">FAQs</Link></li>
-          <li><Link href="/contact" className="hover:text-foreground transition-colors">Contact</Link></li>
+          <li><Link href="/about" aria-label="About Us" className="hover:text-foreground focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-foreground rounded">About Us</Link></li>
+          <li><Link href="/how-it-works" aria-label="How It Works" className="hover:text-foreground focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-foreground rounded">How It Works</Link></li>
+          <li><Link href="/faq" aria-label="Frequently Asked Questions" className="hover:text-foreground focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-foreground rounded">FAQs</Link></li>
+          <li><Link href="/contact" aria-label="Contact Us" className="hover:text-foreground focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-foreground rounded">Contact</Link></li>
         </ul>
       </div>
 
@@ -648,70 +647,92 @@ export default function AdventurersGuildLanding() {
       <div>
         <h4 className="font-semibold text-base mb-4">Legal</h4>
         <ul className="space-y-2 text-sm text-muted-foreground">
-          <li><Link href="/terms" className="hover:text-foreground transition-colors">Terms of Service</Link></li>
-          <li><Link href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</Link></li>
-          <li><Link href="/returns" className="hover:text-foreground transition-colors">Returns</Link></li>
-          <li><Link href="/shipping" className="hover:text-foreground transition-colors">Shipping</Link></li>
+          <li><Link href="/terms" aria-label="Terms of Service" className="hover:text-foreground focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-foreground rounded">Terms of Service</Link></li>
+          <li><Link href="/privacy" aria-label="Privacy Policy" className="hover:text-foreground focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-foreground rounded">Privacy Policy</Link></li>
+          <li><Link href="/returns" aria-label="Returns Policy" className="hover:text-foreground focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-foreground rounded">Returns</Link></li>
+          <li><Link href="/shipping" aria-label="Shipping Information" className="hover:text-foreground focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-foreground rounded">Shipping</Link></li>
         </ul>
       </div>
 
       {/* Newsletter */}
       <div>
         <h4 className="font-semibold text-base mb-4">Join Our Newsletter</h4>
-        <form className="flex flex-col sm:flex-row items-center gap-3">
+        <form className="flex flex-col sm:flex-row items-center gap-3" aria-label="Newsletter Signup">
           <Input
             type="email"
             placeholder="Enter your email"
             className="flex-1 text-sm"
             aria-label="Email Address"
+            required
           />
           <Button type="submit" className="px-5 py-2 text-sm">
             Subscribe
           </Button>
         </form>
         <p className="text-xs text-muted-foreground mt-3">
-          By subscribing, you agree to our <Link href="/privacy" className="underline hover:text-foreground">Privacy Policy</Link>.
+          By subscribing, you agree to our{" "}
+          <Link href="/privacy" aria-label="Read our Privacy Policy" className="underline hover:text-foreground">
+            Privacy Policy
+          </Link>.
         </p>
       </div>
     </div>
 
     {/* Footer Bottom */}
     <div className="mt-12 pt-6 border-t border-border/30 flex flex-col sm:flex-row items-center justify-between gap-6 text-sm text-muted-foreground">
-      {/* Payment Icons */}
-<div className="flex items-center gap-4">
-  <Image
-    src="/images/visa.png"
-    alt="Visa"
-    width={60}
-    height={20}
-    className="object-contain"
-  />
-  <Image
-    src="/images/mastercard.png"
-    alt="mastercard"
-    width={60}
-    height={20}
-    className="object-contain"
-  />
-  <Image
-    src="/images/Paypal.png"
-    alt="PayPal"
-    width={60}
-    height={20}
-    className="object-contain"
-  />
-</div>
 
+      {/* Payment Icons */}
+      <div className="flex items-center gap-4" aria-label="Supported Payment Methods">
+        <Image
+          src="/images/visa.png"
+          alt="Visa payment option"
+          width={60}
+          height={20}
+          className="object-contain"
+        />
+        <Image
+          src="/images/mastercard.png"
+          alt="Mastercard payment option"
+          width={60}
+          height={20}
+          className="object-contain"
+        />
+        <Image
+          src="/images/Paypal.png"
+          alt="PayPal payment option"
+          width={60}
+          height={20}
+          className="object-contain"
+        />
+      </div>
 
       {/* Social Links */}
       <div className="flex space-x-4">
-        <Link href="https://linkedin.com/company/adventurers-guild" aria-label="LinkedIn">
+        <Link
+          href="https://linkedin.com/company/adventurers-guild"
+          aria-label="LinkedIn"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-foreground rounded"
+        >
           <Linkedin className="w-5 h-5 hover:text-foreground transition-colors" />
         </Link>
-        <Link href="https://twitter.com/" aria-label="Twitter">
+        <Link
+          href="https://twitter.com/"
+          aria-label="Twitter"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-foreground rounded"
+        >
           <Twitter className="w-5 h-5 hover:text-foreground transition-colors" />
         </Link>
-        <Link href="https://github.com/LarytheLord/Adventurers-Guild" aria-label="GitHub">
+        <Link
+          href="https://github.com/LarytheLord/Adventurers-Guild"
+          aria-label="GitHub"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-foreground rounded"
+        >
           <Github className="w-5 h-5 hover:text-foreground transition-colors" />
         </Link>
       </div>
@@ -723,6 +744,7 @@ export default function AdventurersGuildLanding() {
     </div>
   </div>
 </footer>
+
 
 
       {/* Go to Top Button */}
