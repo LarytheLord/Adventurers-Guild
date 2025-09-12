@@ -129,7 +129,11 @@
 .animate-in { animation: slide-in-from-bottom 0.3s ease-out; }
 .smooth-scroll { scroll-behavior: smooth; }
 
-
+@keyframes glowing {
+    0% { background-position: 0 0; }
+    50% { background-position: 400% 0; }
+    100% { background-position: 0 0; }
+}
 /* Scorllbar */
 
 :where(html, body)::-webkit-scrollbar {
@@ -167,6 +171,69 @@ html.show-scrollbar, body.show-scrollbar {
   scrollbar-color: var(--scrollbar-thumb) transparent;
 }
 
+.glow-on-hover {
+
+    cursor: pointer;
+    position: relative;
+    z-index: 0;
+    border-radius: 12px; 
+}
+
+.glow-on-hover:before {
+    content: '';
+    background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
+    position: absolute;
+    top: -2px;
+    left:-2px;
+    background-size: 400%;
+    z-index: -1;
+    filter: blur(5px);
+    width: calc(100% + 4px);
+    height: calc(100% + 4px);
+    animation: glowing 20s linear infinite;
+    opacity: 0;
+    transition: opacity .3s ease-in-out;
+    border-radius: 10px;
+}
+
+.glow-on-hover:active {
+    color: #000
+}
+
+.glow-on-hover:active:after {
+    background: transparent;
+}
+
+.glow-on-hover:hover:before {
+    opacity: 1;
+}
+
+.light .glow-on-hover:after {
+    z-index: -1;
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #cccc;
+    left: 0;
+    top: 0;
+    border-radius: 10px;
+}
+
+.dark .glow-on-hover:after {
+    z-index: -1;
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #0c1221;
+    left: 0;
+    top: 0;
+    border-radius: 10px;
+}
+
+
+
 /* Responsive improvements */
 @media (max-width: 640px) {
   .container { padding-left: 1rem; padding-right: 1rem; }
@@ -181,3 +248,4 @@ html.show-scrollbar, body.show-scrollbar {
 @media (min-width: 1025px) {
   .container { padding-left: 2rem; padding-right: 2rem; }
 }
+
