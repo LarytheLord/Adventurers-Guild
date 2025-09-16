@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -123,7 +123,7 @@ export default function AIRankTestAssessment() {
     setCode(currentProblem.starterCode[selectedLanguage] || '')
   }, [currentProblemIndex, selectedLanguage, currentProblem.starterCode])
 
-  const handleSubmitTest = async () => {
+  const handleSubmitTest = useCallback(async () => {
     setIsSubmitting(true)
 
     try {
@@ -150,7 +150,7 @@ export default function AIRankTestAssessment() {
       // Fallback to dashboard
       router.push('/dashboard/adventurer')
     }
-  }
+  }, [profile?.id, currentProblemIndex, timeRemaining, router])
 
   useEffect(() => {
     // Timer countdown

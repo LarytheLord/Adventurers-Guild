@@ -10,13 +10,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Separator } from "@/components/ui/separator"
 import { CheckCircle, X, Clock, User, Star, ExternalLink } from 'lucide-react'
 import { Database } from '@/types/supabase'
 import { toast } from "sonner"
-import { useState } from "react"
 
 type Quest = Database['public']['Tables']['quests']['Row'];
 type QuestSubmission = Database['public']['Tables']['quest_submissions']['Row'] & { users: Database['public']['Tables']['users']['Row'] };

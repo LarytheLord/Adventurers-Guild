@@ -15,7 +15,6 @@ import {
   DollarSign,
   TrendingUp,
   FileText,
-  Settings,
   LogOut
 } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'

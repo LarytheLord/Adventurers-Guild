@@ -6,13 +6,14 @@ async function getCompanyQuests(
   request: NextRequest,
   context: { user: {id: string, email?: string}, profile: {id: string, role: string}, params: { id: string } }
 ) {
+  const { id } = context.params as { id: string };
   // Only company users or admins can view their own quests
   if (context.profile.role !== 'company' && context.profile.role !== 'admin') {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
   // Companies can only view their own quests, admins can view any
-  if (context.profile.role === 'company' && context.profile.id !== context.params.id) {
+  if (context.profile.role === 'company' && context.profile.id !== id) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
   }
 
@@ -20,7 +21,7 @@ async function getCompanyQuests(
   const { data, error } = await supabase
     .from('quests')
     .select('*')
-    .eq('company_id', context.params.id);
+    .eq('company_id', id);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
@@ -29,4 +30,5 @@ async function getCompanyQuests(
   return NextResponse.json({ quests: data });
 }
 
+// @ts-expect-error
 export const GET = withRoleProtection(getCompanyQuests, ['company', 'admin']);

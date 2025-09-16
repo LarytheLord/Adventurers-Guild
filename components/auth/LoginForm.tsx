@@ -30,7 +30,18 @@ export function LoginForm() {
       await signIn(email, password)
       router.push('/auth/callback')
     } catch (err: unknown) {
-      setError('Login failed. Please check your credentials and try again.')
+      // Check if the error is related to email confirmation
+      if (err instanceof Error) {
+        if (err.message.includes('Email not confirmed')) {
+          setError('Please confirm your email address before logging in. Check your inbox for the confirmation email.')
+        } else if (err.message.includes('Invalid login credentials')) {
+          setError('Invalid email or password. Please check your credentials and try again.')
+        } else {
+          setError(`Login failed: ${err.message}`)
+        }
+      } else {
+        setError('Login failed. Please check your credentials and try again.')
+      }
     } finally {
       setLoading(false)
     }
@@ -108,7 +119,7 @@ export function LoginForm() {
                   onClick={async () => {
                     try {
                       await signInWithOAuth('google')
-                    } catch (e) {
+                    } catch (error) {
                       setError('Google sign-in failed.')
                     }
                   }}
@@ -123,7 +134,7 @@ export function LoginForm() {
                   onClick={async () => {
                     try {
                       await signInWithOAuth('github')
-                    } catch (e) {
+                    } catch (error) {
                       setError('GitHub sign-in failed.')
                     }
                   }}

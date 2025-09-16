@@ -49,7 +49,7 @@ export class MockAuthService {
   }
 
   // Sign in user
-  static signIn(email: string, password: string): User | null {
+  static signIn(email: string, _password: string): User | null {
     // For demo purposes, create a user if they don't exist
     const existingUser = this.getCurrentUser()
     

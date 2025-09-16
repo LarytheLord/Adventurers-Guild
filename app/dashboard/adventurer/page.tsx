@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -35,9 +35,9 @@ const XP_THRESHOLDS = {
 export default function AdventurerDashboard() {
   const router = useRouter()
   const { profile, loading, signOut } = useAuth()
-  const activeQuests = []
+  // const activeQuests = []
   const completedQuests = 0
-  const notifications = []
+  // const notifications = []
 
   useEffect(() => {
     if (!loading && !profile) {

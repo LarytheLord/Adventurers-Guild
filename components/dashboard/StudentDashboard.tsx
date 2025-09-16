@@ -1,10 +1,9 @@
 'use client'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Trophy, Star, Target } from 'lucide-react'
+import { Trophy, Star } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { Database } from '@/types/supabase'
 

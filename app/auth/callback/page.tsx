@@ -10,11 +10,23 @@ import { getDashboardPath, hasCompletedRankTest } from '@/lib/authUtils'
 
 export default function AuthCallbackPage() {
   const router = useRouter()
-  const [error] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  const { profile } = useAuth()
+  const { profile, user } = useAuth()
 
   useEffect(() => {
+    // Check if there's an authentication error
+    if (user === null && profile === null) {
+      // Wait a bit to see if the auth state resolves
+      const timer = setTimeout(() => {
+        setLoading(false)
+        // If still no user after delay, redirect to login
+        router.push('/login')
+      }, 3000)
+      
+      return () => clearTimeout(timer)
+    }
+    
     // For mock auth, we just redirect based on profile
     if (profile) {
       // Redirect based on role using our utility function
@@ -28,13 +40,8 @@ export default function AuthCallbackPage() {
       } else {
         router.push(dashboardPath)
       }
-    } else {
-      // No session, redirect to login after a short delay
-      setTimeout(() => {
-        router.push('/login')
-      }, 1000)
     }
-  }, [profile, router])
+  }, [profile, user, router])
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
@@ -49,11 +56,18 @@ export default function AuthCallbackPage() {
             <Alert variant="destructive">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
-          ) : (
+          ) : loading ? (
             <>
               <Loader2 className="h-8 w-8 animate-spin mb-4" />
               <p className="text-muted-foreground text-center">
                 Please wait while we complete your sign in...
+              </p>
+            </>
+          ) : (
+            <>
+              <Loader2 className="h-8 w-8 animate-spin mb-4" />
+              <p className="text-muted-foreground text-center">
+                Redirecting...
               </p>
             </>
           )}

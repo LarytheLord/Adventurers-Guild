@@ -19,6 +19,7 @@ interface AuthContextType {
   signInWithOAuth: (provider: 'google' | 'github') => Promise<any>
   signOut: () => Promise<void>
   updateProfile: (updates: Partial<UserProfile>) => Promise<UserProfile>
+  refreshProfile: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -213,6 +214,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const refreshProfile = async () => {
+    setLoading(true);
+    try {
+      if (isSupabaseConfigured) {
+        const { AuthService } = await import('@/lib/auth');
+        const userProfile = await AuthService.getCurrentUser();
+        setProfile(userProfile);
+      } else {
+        const { MockAuthService } = await import('@/lib/mockAuth');
+        const mockUser = MockAuthService.getCurrentUser() as any;
+        if (mockUser) {
+          setMockStateFromUser(mockUser);
+        }
+      }
+    } catch (error) {
+      console.error('Error refreshing profile:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const value = {
     user,
     profile,
@@ -221,7 +243,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     signIn,
     signInWithOAuth,
     signOut,
-    updateProfile
+    updateProfile,
+    refreshProfile
   }
 
   return (

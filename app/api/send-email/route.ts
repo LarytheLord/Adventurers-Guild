@@ -2,12 +2,12 @@ export const config = {
   runtime: 'nodejs',
 };
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import nodemailer from 'nodemailer';
 import type { TransportOptions } from 'nodemailer';
-import { createClient } from '@supabase/supabase-js'
+import { createSupabaseServerClient } from '@/lib/supabase/server'
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
     try {
         const { name, email } = await request.json()
 
@@ -21,10 +21,7 @@ export async function POST(request: NextRequest) {
         }
 
         // Create Supabase client
-        const supabase = createClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.SUPABASE_SERVICE_ROLE_KEY!
-        )
+        const supabase = createSupabaseServerClient()
 
         // Store waitlist entry in database
         const { error: insertError } = await supabase

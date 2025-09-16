@@ -1,6 +1,6 @@
 import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
 import { cookies } from 'next/headers';
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { Database } from '@/types/supabase';
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
@@ -27,18 +27,18 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     const quest = data
       ? {
           ...data,
-          company_name: (data as {company?: {name: string}}).company?.name ?? 'Unknown Company',
+          company_name: data.company?.name ?? 'Unknown Company',
           applications_count: applicationsCount,
         }
       : null;
 
     return NextResponse.json(quest);
-  } catch (error) {
+  } catch (_error) {
     return NextResponse.json({ error: 'An unexpected error occurred.' }, { status: 500 });
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(_req: Request, { params }: { params: { id: string } }) {
   const supabase = createRouteHandlerClient<Database>({ cookies });
   const { data: { session } } = await supabase.auth.getSession();
 
@@ -78,13 +78,13 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
 
     return NextResponse.json(data);
-  } catch (error) {
-    console.error('Error parsing request body or updating quest:', error);
+  } catch (_error) {
+    console.error('Error parsing request body or updating quest:', _error);
     return NextResponse.json({ error: 'An unexpected error occurred.' }, { status: 500 });
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(_req: Request, { params }: { params: { id: string } }) {
   const supabase = createRouteHandlerClient<Database>({ cookies });
   const { data: { session } } = await supabase.auth.getSession();
 
@@ -118,8 +118,8 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     }
 
     return NextResponse.json({ message: 'Quest deleted successfully' });
-  } catch (error) {
-    console.error('Error deleting quest:', error);
+  } catch (_error) {
+    console.error('Error deleting quest:', _error);
     return NextResponse.json({ error: 'An unexpected error occurred.' }, { status: 500 });
   }
 }

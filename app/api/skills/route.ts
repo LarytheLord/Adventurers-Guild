@@ -1,9 +1,10 @@
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
+import { createServerSupabaseClient } from '@/lib/supabase'
 
 export async function GET() {
   try {
-    const supabase = createSupabaseServerClient()
+    const supabase = createServerSupabaseClient()
 
     const { data: skillCategories, error: categoriesError } = await supabase
       .from('skill_categories')
@@ -24,8 +25,8 @@ export async function GET() {
     }
 
     return NextResponse.json({ skillCategories, skills }, { status: 200 })
-  } catch (error) {
-    console.error('Error in GET /api/skills:', error)
+  } catch (err: unknown) {
+    console.error('Error in GET /api/skills:', err)
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
 }

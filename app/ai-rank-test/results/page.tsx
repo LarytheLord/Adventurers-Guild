@@ -27,7 +27,6 @@ import {
   Calendar,
   Download
 } from 'lucide-react'
-import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 

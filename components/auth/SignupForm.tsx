@@ -59,8 +59,10 @@ export function SignupForm() {
         name: formData.name,
         role: formData.role,
         company_name: formData.companyName || undefined
-      } as any)
-      router.push('/auth/callback')
+      })
+      // Instead of immediately redirecting to callback, show a message to check email
+      alert('Please check your email to confirm your account before logging in.')
+      router.push('/login')
     } catch (err: unknown) {
       setError((err as Error).message || 'Failed to create account')
     } finally {

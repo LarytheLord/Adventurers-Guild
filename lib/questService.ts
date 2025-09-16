@@ -1,7 +1,6 @@
 import { supabase } from './supabase'
 import { Database } from '@/types/supabase'
 
-type Quest = Database['public']['Tables']['quests']['Row']
 type QuestInsert = Database['public']['Tables']['quests']['Insert']
 type QuestUpdate = Database['public']['Tables']['quests']['Update']
 

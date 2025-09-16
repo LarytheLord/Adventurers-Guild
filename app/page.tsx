@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Code, Zap, Target, Users, Trophy, Compass, Shield, Sword, ChevronRight, CheckCircle, Github, Linkedin, Twitter, ArrowRight, Star, Sparkles, Menu, X, Mail, Laptop, Rocket } from 'lucide-react'
+import { Target, Users, Compass, Sword, ChevronRight, CheckCircle, Github, Linkedin, Twitter, Star, Menu, X, Laptop, Rocket } from 'lucide-react'
 import Image from "next/image"
 import Link from "next/link"
 import { ThemeToggle } from "@/components/ui/theme-toggle"

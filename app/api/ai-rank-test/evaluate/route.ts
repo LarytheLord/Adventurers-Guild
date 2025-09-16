@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { createSupabaseServerClient } from '@/lib/supabase/server'
 import { z } from 'zod'
+import { createSupabaseServerClient } from '@/lib/supabase/server'
 
 // Validation schema for the request body
 const evaluateSchema = z.object({
@@ -13,7 +13,7 @@ const evaluateSchema = z.object({
 export async function POST(request: NextRequest) {
   try {
     // Get the current user
-    const supabase = createServerSupabaseClient()
+    const supabase = createSupabaseServerClient()
     const { data: { user } } = await supabase.auth.getUser()
     
     if (!user) {

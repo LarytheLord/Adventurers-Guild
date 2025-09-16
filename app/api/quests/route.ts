@@ -39,7 +39,7 @@ export async function GET() {
     });
 
     return NextResponse.json({ quests });
-  } catch (error) {
+  } catch (error: unknown) {
     return NextResponse.json({ error: 'An unexpected error occurred.' }, { status: 500 });
   }
 }
@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const questData = await req.json();
+    const questData: Partial<Database['public']['Tables']['quests']['Insert']> = await req.json();
 
     // Add company_id from the authenticated user
     const newQuestData = {
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
     };
 
     return NextResponse.json(shaped);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error parsing request body or creating quest:', error);
     return NextResponse.json({ error: 'An unexpected error occurred.' }, { status: 500 });
   }

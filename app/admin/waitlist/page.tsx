@@ -14,31 +14,19 @@ export default function WaitlistAdminPage() {
   const supabase = createClientComponentClient()
   const { toast } = useToast()
 
+  const fetchWaitlistEntries = useCallback(async () => {
+    try {
+      const response = await fetch('/api/waitlist')
+      const data = await response.json()
+      setWaitlistEntries(data)
+    } catch (error) {
+      console.error('Failed to fetch waitlist entries:', error)
+    }
+  }, [])
+
   useEffect(() => {
     fetchWaitlistEntries()
   }, [fetchWaitlistEntries])
-
-  const fetchWaitlistEntries = useCallback(async () => {
-    try {
-      setLoading(true)
-      const { data, error } = await supabase
-        .from('waitlist')
-        .select('*')
-        .order('created_at', { ascending: false })
-
-      if (error) throw error
-      setWaitlistEntries(data || [])
-    } catch (error) {
-      console.error('Error fetching waitlist entries:', error)
-      toast({
-        title: 'Error',
-        description: 'Failed to fetch waitlist entries',
-        variant: 'destructive'
-      })
-    } finally {
-      setLoading(false)
-    }
-  }, [supabase, toast])
 
   const exportToCSV = async () => {
     try {

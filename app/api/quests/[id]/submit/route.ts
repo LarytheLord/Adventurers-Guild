@@ -1,53 +1,62 @@
 
 
 import { createSupabaseServerClient } from '@/lib/supabase/server'
+import { QuestWorkflowService } from '@/lib/questWorkflow'
 import { NextRequest, NextResponse } from 'next/server'
 import { z } from 'zod'
 
 const submissionSchema = z.object({
-  user_id: z.string().uuid('Invalid user ID'),
-  submission_url: z.string().url('Invalid URL').optional().or(z.literal("")),
-  github_repo: z.string().url('Invalid URL').optional().or(z.literal("")),
-  demo_url: z.string().url('Invalid URL').optional().or(z.literal("")),
-  description: z.string().min(1, 'Description is required'),
-  attachments: z.array(z.string()).optional(),
+  submission_url: z.string().url('Invalid submission URL').optional().or(z.literal("")),
+  github_repo: z.string().url('Invalid GitHub URL').optional().or(z.literal("")),
+  demo_url: z.string().url('Invalid demo URL').optional().or(z.literal("")),
+  description: z.string().min(20, 'Description must be at least 20 characters'),
+  attachments: z.array(z.object({
+    name: z.string(),
+    url: z.string().url(),
+    type: z.string()
+  })).optional(),
 })
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   try {
     const supabase = createSupabaseServerClient()
+    const { data: { session } } = await supabase.auth.getSession()
+
+    if (!session) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
     const { id: quest_id } = params
     const body = await req.json()
 
     const validation = submissionSchema.safeParse(body)
 
     if (!validation.success) {
-      return NextResponse.json({ error: validation.error.format() }, { status: 400 })
+      return NextResponse.json({ 
+        error: 'Validation failed',
+        details: validation.error.format()
+      }, { status: 400 })
     }
 
-    const { user_id, submission_url, github_repo, demo_url, description, attachments } = validation.data
+    const submissionData = validation.data
 
-    const { data: submission, error } = await supabase
-      .from('quest_submissions')
-      .insert([
-        {
-          quest_id,
-          user_id,
-          submission_url,
-          github_repo,
-          demo_url,
-          description,
-          attachments,
-        },
-      ])
-      .select()
+    // Use the workflow service for proper validation and notifications
+    const result = await QuestWorkflowService.submitQuestWork(
+      quest_id,
+      session.user.id,
+      submissionData
+    )
 
-    if (error) {
-      console.error('Error creating submission:', error)
-      return NextResponse.json({ error: 'Failed to create submission' }, { status: 500 })
+    if (!result.success) {
+      return NextResponse.json({ error: result.message }, { status: 400 })
     }
 
-    return NextResponse.json(submission, { status: 201 })
+    return NextResponse.json({
+      success: true,
+      message: result.message,
+      submission: result.data
+    }, { status: 201 })
+
   } catch (error) {
     console.error('Error in POST /api/quests/[id]/submit:', error)
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })

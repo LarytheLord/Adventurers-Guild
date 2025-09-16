@@ -1,8 +1,5 @@
 import { supabase } from './supabase'
-import { Database } from '@/types/supabase'
-
-type SkillCategory = Database['public']['Tables']['skill_categories']['Row']
-type UserSkill = Database['public']['Tables']['user_skills']['Row']
+// import { Database } from '@/types/supabase'
 
 export class SkillService {
   // Get all skill categories with skills

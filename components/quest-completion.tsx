@@ -4,13 +4,11 @@ import { useState } from 'react'
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { 
   Trophy, 
   Star, 
-  CheckCircle, 
-  Zap,
+  CheckCircle,
   Code,
   Database,
   Brain,
@@ -101,7 +99,7 @@ const sampleQuests: Quest[] = [
 ]
 
 function QuestCompletion() {
-  const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null)
+  // const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null)
   const [isOpen, setIsOpen] = useState(false)
   const [completedQuests, setCompletedQuests] = useState<string[]>([])
 

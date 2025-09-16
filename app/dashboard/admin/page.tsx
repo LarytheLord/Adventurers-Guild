@@ -220,41 +220,47 @@ export default function AdminDashboard() {
     return null
   }
 
-  const handleUserAction = (action: string, userId: number) => {
-    switch (action) {
-      case 'suspend':
-        toast.success('User suspended successfully')
-        break
-      case 'activate':
-        toast.success('User activated successfully')
-        break
-      case 'delete':
-        toast.success('User deleted successfully')
-        break
-      default:
-        break
-    }
-  }
+    // const handleViewUser = (userId: number) => {
+  //   console.log('View user:', userId);
+  //   // Implement view user logic
+  // };
 
-  const handleQuestAction = (action: string, questId: number) => {
-    switch (action) {
-      case 'approve':
-        toast.success('Quest approved successfully')
-        break
-      case 'reject':
-        toast.success('Quest rejected')
-        break
-      case 'flag':
-        toast.warning('Quest flagged for review')
-        break
-      default:
-        break
-    }
-  }
+  // const handleBanUser = (userId: number) => {
+  //   console.log('Ban user:', userId);
+  //   // Implement ban user logic
+  //   toast({
+  //     title: 'User Banned',
+  //     description: 'User has been successfully banned.',
+  //   });
+  // };
 
-  const handleDisputeAction = (action: string, disputeId: number) => {
-    toast.success(`Dispute ${action} successfully`)
-  }
+  // const handleDeleteUser = (userId: number) => {
+  //   console.log('Delete user:', userId);
+  //   // Implement delete user logic
+  //   toast({
+  //     title: 'User Deleted',
+  //     description: 'User has been successfully deleted.',
+  //   });
+  // };
+
+  // const handleViewQuest = (questId: number) => {
+  //   console.log('View quest:', questId);
+  //   // Implement view quest logic
+  // };
+
+  // const handleDeleteQuest = (questId: number) => {
+  //   console.log('Delete quest:', questId);
+  //   // Implement delete quest logic
+  //   toast({
+  //     title: 'Quest Deleted',
+  //     description: 'Quest has been successfully deleted.',
+  //   });
+  // };
+
+  // const handleViewDispute = (disputeId: number) => {
+  //   console.log('View dispute:', disputeId);
+  //   // Implement view dispute logic
+  // };
 
   const filteredUsers = mockUsers.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||

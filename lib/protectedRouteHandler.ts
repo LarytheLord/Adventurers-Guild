@@ -7,7 +7,7 @@ import { NextResponse } from 'next/server'
  * @param request - Next.js request object
  * @returns User session or null if not authenticated
  */
-export async function getUserSession(request: NextRequest) {
+export async function getUserSession(_request: NextRequest) {
   const supabase = createSupabaseServerClient()
   const { data: { session } } = await supabase.auth.getSession()
   return session
