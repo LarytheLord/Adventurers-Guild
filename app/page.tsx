@@ -459,20 +459,39 @@ export default function AdventurersGuildLanding() {
           </motion.div>
           
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-12">
-            {[
-              { title: "Build Real Skills", desc: "Work on projects that actually matter. Build a portfolio that stands out.", icon: <Laptop className='h-9 w-9'/> },
-              { title: "Network & Mentorship", desc: "Connect with industry professionals and experienced developers.", icon: <Users className='h-9 w-9'/> },
-              { title: "Stand Out", desc: "Demonstrate proven skills that employers actually want to see.", icon: <Rocket className='h-9 w-9'/> }
-            ].map((benefit) => (
-              <motion.div variants={scaleIn} transition={{ duration: 0.6, ease: "easeOut" }} key={benefit.title} className="flex flex-col items-center justify-center text-center hover:translate-y-[-8px] transition-transform duration-300 ease-out border border-gray-700 rounded-2xl shadow-md p-10 bg-[#0f172a]">
-                <div className="text-4xl sm:text-5xl md:text-6xl mb-4 sm:mb-6 text-primary">
-                  {benefit.icon}
-                </div>
-                <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-foreground">{benefit.title}</h3>
-                <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">{benefit.desc}</p>
-              </motion.div>
-            ))}
-          </div>
+          {[
+            {
+              title: "Build Real Skills",
+              desc: "Work on projects that actually matter. Build a portfolio that stands out.",
+              icon: <Laptop className="h-9 w-9" />
+            },
+            {
+              title: "Network & Mentorship",
+              desc: "Connect with industry professionals and experienced developers.",
+              icon: <Users className="h-9 w-9" />
+            },
+            {
+              title: "Stand Out",
+              desc: "Demonstrate proven skills that employers actually want to see.",
+              icon: <Rocket className="h-9 w-9" />
+            }
+          ].map((benefit, index) => (
+            <div
+              key={index}
+              className="flex flex-col justify-between items-center text-center transform transition duration-300 ease-in-out hover:scale-[1.03] hover:-translate-y-2 hover:shadow-2xl cursor-pointer border border-gray-300 dark:border-gray-700 rounded-2xl shadow-md p-10 bg-white dark:bg-[#0f172a]"
+            >
+              <div className="text-4xl sm:text-5xl md:text-6xl mb-4 sm:mb-6 text-primary">
+                {benefit.icon}
+              </div>
+              <h3 className="text-xl sm:text-2xl font-bold mb-3 sm:mb-4 text-gray-900 dark:text-foreground">
+                {benefit.title}
+              </h3>
+              <p className="text-base sm:text-lg text-gray-600 dark:text-muted-foreground leading-relaxed">
+                {benefit.desc}
+              </p>
+            </div>
+          ))}
+        </div>
         </div>
       </motion.section>
 
