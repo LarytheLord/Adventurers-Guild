@@ -496,7 +496,7 @@ export default function AdventurersGuildLanding() {
                 key={item.number}
                 className="flex items-start space-x-4 sm:space-x-6 hover:translate-y-[-4px] transition-transform duration-300 ease-out"
               >
-                <div className="text-4xl sm:text-5xl md:text-6xl font-black text-primary drop-shadow-md flex-shrink-0">
+                <div className="text-4xl sm:text-5xl md:text-6xl font-black text-primary bg-primary/10 rounded-lg px-3 py-2 border border-primary/20 shadow-lg flex-shrink-0">
                   {item.number}
                 </div>
                 <div>
@@ -610,7 +610,7 @@ export default function AdventurersGuildLanding() {
             className="text-center mb-12 sm:mb-16 md:mb-20"
           >
             <h2 className="text-4xl sm:text-5xl md:text-7xl font-black mb-4 sm:mb-6 text-foreground">
-              WHY JOIN?
+              WHY JOIN US?
             </h2>
           </motion.div>
 
@@ -618,17 +618,17 @@ export default function AdventurersGuildLanding() {
             {[
               {
                 title: "Build Real Skills",
-                desc: "Work on projects that actually matter. Build a portfolio that stands out.",
+                desc: "Work on projects that actually matter. Build a portfolio that stands out",
                 icon: <Laptop className="h-9 w-9" />,
               },
               {
                 title: "Network & Mentorship",
-                desc: "Connect with industry professionals and experienced developers.",
+                desc: "Connect with industry professionals and experienced developers",
                 icon: <Users className="h-9 w-9" />,
               },
               {
                 title: "Stand Out",
-                desc: "Demonstrate proven skills that employers actually want to see.",
+                desc: "Demonstrate proven skills that employers actually want to see",
                 icon: <Rocket className="h-9 w-9" />,
               },
             ].map((benefit, index) => (
