@@ -425,20 +425,27 @@ export default function AdventurersGuildLanding() {
       >
         <div className="container mx-auto max-w-4xl text-center">
           <h2 className="text-3xl sm:text-4xl md:text-6xl font-black mb-6 sm:mb-8 leading-tight">
-            <span className="text-black">FORGE YOUR PATH.</span>
+            <span className="text-black dark:text-white">FORGE YOUR PATH.</span>
             <br />
             <span className="text-red-600">CONQUER THE unknown.</span>
           </h2>
           <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground leading-relaxed px-4">
             Your education is no longer a{" "}
-            <span className="text-black font-semibold">classroom routine</span>{" "}
+            <span className="text-black dark:text-white font-semibold">
+              classroom routine
+            </span>{" "}
             — it’s a{" "}
-            <span className="text-black font-semibold">
+            <span className="text-black dark:text-white font-semibold">
               battlefield of ideas
             </span>
-            . Earn <span className="text-black font-semibold">XP</span>, sharpen
-            your craft, and climb from
-            <span className="text-black font-semibold"> novice</span> to
+            . Earn{" "}
+            <span className="text-black dark:text-white font-semibold">XP</span>
+            , sharpen your craft, and climb from
+            <span className="text-black dark:text-white font-semibold">
+              {" "}
+              novice
+            </span>{" "}
+            to
             <span className="text-red-600 font-bold"> S-rank warrior</span> by
             tackling challenges that real companies put on the line.
           </p>
