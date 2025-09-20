@@ -157,21 +157,24 @@ export default function AdventurersGuildLanding() {
           <div className="hidden lg:flex items-center space-x-6 xl:space-x-8">
             <Link
               href="#how-it-works"
-              className="text-muted-foreground hover:text-foreground transition-colors font-medium text-sm xl:text-base"
+              className="text-foreground hover:text-primary transition-all duration-300 ease-out font-medium text-sm xl:text-base relative group"
             >
               How It Works
+              <span className="absolute left-0 bottom-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300 ease-out"></span>
             </Link>
             <Link
               href="#benefits"
-              className="text-muted-foreground hover:text-foreground transition-colors font-medium text-sm xl:text-base"
+              className="text-foreground hover:text-primary transition-all duration-300 ease-out font-medium text-sm xl:text-base relative group"
             >
               Benefits
+              <span className="absolute left-0 bottom-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300 ease-out"></span>
             </Link>
             <Link
               href="#testimonials"
-              className="text-muted-foreground hover:text-foreground transition-colors font-medium text-sm xl:text-base"
+              className="text-foreground hover:text-primary transition-all duration-300 ease-out font-medium text-sm xl:text-base relative group"
             >
               Testimonials
+              <span className="absolute left-0 bottom-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300 ease-out"></span>
             </Link>
             <Button
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-4 sm:px-6 py-2 font-semibold transition-all duration-300 ease-out text-sm xl:text-base"
@@ -208,21 +211,21 @@ export default function AdventurersGuildLanding() {
             <div className="px-4 sm:px-6 py-4 space-y-4">
               <Link
                 href="#how-it-works"
-                className="block text-muted-foreground hover:text-foreground font-medium py-2"
+                className="block text-foreground hover:text-primary hover:bg-primary/10 transition-all duration-300 ease-out font-medium py-3 px-2 rounded-lg"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 How It Works
               </Link>
               <Link
                 href="#benefits"
-                className="block text-muted-foreground hover:text-foreground font-medium py-2"
+                className="block text-foreground hover:text-primary hover:bg-primary/10 transition-all duration-300 ease-out font-medium py-3 px-2 rounded-lg"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Benefits
               </Link>
               <Link
                 href="#testimonials"
-                className="block text-muted-foreground hover:text-foreground font-medium py-2"
+                className="block text-foreground hover:text-primary hover:bg-primary/10 transition-all duration-300 ease-out font-medium py-3 px-2 rounded-lg"
                 onClick={() => setMobileMenuOpen(false)}
               >
                 Testimonials
