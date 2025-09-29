@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { motion, useInView, useScroll, useTransform } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label"; // I've added this import
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -689,7 +690,7 @@ export default function AdventurersGuildLanding() {
               >
                 <Card
                   className="bg-background rounded-2xl shadow-lg p-6 sm:p-8 flex flex-col justify-between h-full
-                 transform transition duration-300 ease-in-out hover:scale-[1.03] hover:-translate-y-2 hover:shadow-2xl cursor-pointer"
+                                  transform transition duration-300 ease-in-out hover:scale-[1.03] hover:-translate-y-2 hover:shadow-2xl cursor-pointer"
                 >
                   <p className="text-base sm:text-lg text-muted-foreground leading-relaxed mb-4 sm:mb-6">
                     "The Adventurers Guild has been a game-changer for my
@@ -744,23 +745,33 @@ export default function AdventurersGuildLanding() {
                     </div>
                   )}
                   <div className="space-y-3 sm:space-y-4">
-                    <Input
-                      type="text"
-                      placeholder="Your Name (Optional)"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="text-base sm:text-lg py-3 sm:py-4 border-2 border-border focus:border-primary"
-                      disabled={isLoading}
-                    />
-                    <Input
-                      type="email"
-                      placeholder="Your Email Address"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      className="text-base sm:text-lg py-3 sm:py-4 border-2 border-border focus:border-primary"
-                      disabled={isLoading}
-                    />
+                    {/* UPDATED NAME INPUT WITH LABEL */}
+                    <div className="text-left">
+                      <Label htmlFor="waitlist-name" className="font-semibold">Your Name</Label>
+                      <Input
+                        id="waitlist-name"
+                        type="text"
+                        placeholder="e.g., Jane Doe (Optional)"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        className="mt-2 text-base sm:text-lg py-3 sm:py-4 border-2 border-border focus:border-primary"
+                        disabled={isLoading}
+                      />
+                    </div>
+                    {/* UPDATED EMAIL INPUT WITH LABEL */}
+                    <div className="text-left">
+                      <Label htmlFor="waitlist-email" className="font-semibold">Your Email Address</Label>
+                      <Input
+                        id="waitlist-email"
+                        type="email"
+                        placeholder="e.g., adventurer@email.com"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                        className="mt-2 text-base sm:text-lg py-3 sm:py-4 border-2 border-border focus:border-primary"
+                        disabled={isLoading}
+                      />
+                    </div>
                   </div>
                   <Button
                     type="submit"
@@ -995,14 +1006,18 @@ export default function AdventurersGuildLanding() {
                 className="flex flex-col sm:flex-row items-center gap-3"
                 aria-label="Newsletter Signup"
               >
-                <Input
-                  type="email"
-                  placeholder="Enter your email"
-                  className="flex-1 text-sm"
-                  aria-label="Email Address"
-                  required
-                />
-                <Button type="submit" className="px-5 py-2 text-sm">
+                {/* UPDATED NEWSLETTER INPUT WITH HIDDEN LABEL */}
+                <div className="flex-1 w-full">
+                  <Label htmlFor="newsletter-email" className="sr-only">Email Address</Label>
+                  <Input
+                    id="newsletter-email"
+                    type="email"
+                    placeholder="Enter your email"
+                    className="w-full text-sm"
+                    required
+                  />
+                </div>
+                <Button type="submit" className="px-5 py-2 text-sm w-full sm:w-auto">
                   Subscribe
                 </Button>
               </form>
