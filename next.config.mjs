@@ -65,9 +65,15 @@ const nextConfig = {
   },
 };
 
-export default nextPwa({
+// Disable PWA in development: having next-pwa generate a service worker during
+// dev can cause parsing issues on Windows when workspace paths contain
+// characters like apostrophes. Only enable the plugin in production.
+const withPwa = nextPwa({
   dest: 'public',
   register: true,
   skipWaiting: true,
   runtimeCaching,
-})(nextConfig);
+  disable: process.env.NODE_ENV !== 'production',
+});
+
+export default withPwa(nextConfig);
