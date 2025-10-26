@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
             tls: {
                 rejectUnauthorized: false
             }
-        })
+        } as any)
 
         // Verify transporter configuration
         try {

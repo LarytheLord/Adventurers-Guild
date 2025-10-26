@@ -1,0 +1,357 @@
+// styles/accessibility.css
+/* Accessibility improvements */
+
+/* Focus indicators for keyboard navigation */
+button:focus,
+input:focus,
+select:focus,
+textarea:focus,
+a:focus,
+[tabindex]:focus {
+  outline: 2px solid #2563eb; /* Use primary color */
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Skip to content link for screen readers */
+.skip-to-content {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: #2563eb;
+  color: white;
+  padding: 8px;
+  text-decoration: none;
+  border-radius: 4px;
+  z-index: 10000;
+}
+
+.skip-to-content:focus {
+  top: 6px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .high-contrast {
+    border: 2px solid #000;
+    background-color: #fff;
+    color: #000;
+  }
+
+  .high-contrast.inverse {
+    background-color: #000;
+    color: #fff;
+    border: 2px solid #fff;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .animate-spin {
+    animation: none !important;
+  }
+
+  .animate-pulse {
+    animation: none !important;
+  }
+}
+
+/* Dark mode improvements */
+@media (prefers-color-scheme: dark) {
+  .accessible-card {
+    background-color: #1e293b;
+    border: 1px solid #334155;
+    color: #f1f5f9;
+  }
+}
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Visually hidden but accessible to screen readers */
+.visually-hidden {
+  position: absolute !important;
+  height: 1px !important;
+  width: 1px !important;
+  overflow: hidden !important;
+  clip: rect(1px, 1px, 1px, 1px) !important;
+}
+
+/* Better focus management for modal dialogs */
+.modal:focus {
+  outline: none;
+}
+
+.modal:focus-within {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* Accessible table styles */
+.accessible-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.accessible-table th,
+.accessible-table td {
+  padding: 0.5rem;
+  text-align: left;
+  border-bottom: 1px solid #d1d5db;
+}
+
+.accessible-table th {
+  font-weight: 600;
+  background-color: #f9fafb;
+}
+
+/* Ensure sufficient color contrast */
+.text-low-contrast {
+  color: #9ca3af; /* Use with caution, consider higher contrast */
+}
+
+/* Accessible form elements */
+.accessible-input {
+  display: block;
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.375rem;
+  font-size: 1rem;
+}
+
+.accessible-input:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+  border-color: #2563eb;
+}
+
+/* Accessible buttons */
+.accessible-button {
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  border: 1px solid transparent;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.accessible-button:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* Accessible navigation */
+.accessible-nav ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+/* Responsive improvements */
+.responsive-container {
+  width: 100%;
+  padding-right: 1rem;
+  padding-left: 1rem;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+@media (min-width: 640px) {
+  .responsive-container {
+    max-width: 640px;
+  }
+}
+
+@media (min-width: 768px) {
+  .responsive-container {
+    max-width: 768px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .responsive-container {
+    max-width: 1024px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .responsive-container {
+    max-width: 1280px;
+  }
+}
+
+@media (min-width: 1536px) {
+  .responsive-container {
+    max-width: 1536px;
+  }
+}
+
+/* Mobile-first responsive adjustments */
+.mobile-hidden {
+  display: none;
+}
+
+.tablet-hidden {
+  display: block;
+}
+
+@media (min-width: 640px) {
+  .mobile-hidden {
+    display: block;
+  }
+  .tablet-hidden {
+    display: none;
+  }
+}
+
+/* Larger touch targets for mobile */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Better contrast for links */
+a:not(.no-contrast) {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+a:not(.no-contrast):visited {
+  color: #7e22ce;
+}
+
+a:not(.no-contrast):focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Accessible heading hierarchy */
+.h1-accessible {
+  font-size: 2rem;
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 1rem;
+}
+
+.h2-accessible {
+  font-size: 1.5rem;
+  font-weight: 600;
+  line-height: 1.3;
+  margin-bottom: 0.75rem;
+}
+
+.h3-accessible {
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-bottom: 0.5rem;
+}
+
+.h4-accessible {
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.5;
+  margin-bottom: 0.5rem;
+}
+
+/* Ensure proper heading hierarchy */
+.accessible-content h1,
+.accessible-content h2,
+.accessible-content h3,
+.accessible-content h4,
+.accessible-content h5,
+.accessible-content h6 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+/* Focus styles for custom components */
+.focusable-component:focus {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+}
+
+/* Accessible progress indicators */
+.accessible-progress {
+  height: 0.75rem;
+  border-radius: 9999px;
+  overflow: hidden;
+  background-color: #e5e7eb;
+}
+
+.accessible-progress[aria-valuenow]::after {
+  content: '';
+  display: block;
+  width: var(--progress-width, 0%);
+  height: 100%;
+  background-color: #2563eb;
+  transition: width 0.3s ease;
+}
+
+/* Accessible alert messages */
+.alert {
+  padding: 1rem;
+  border-radius: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.alert-info {
+  background-color: #dbeafe;
+  border: 1px solid #3b82f6;
+  color: #1e40af;
+}
+
+.alert-success {
+  background-color: #dcfce7;
+  border: 1px solid #22c55e;
+  color: #166534;
+}
+
+.alert-warning {
+  background-color: #fef9c3;
+  border: 1px solid #eab308;
+  color: #854d0e;
+}
+
+.alert-error {
+  background-color: #fee2e2;
+  border: 1px solid #ef4444;
+  color: #b91c1c;
+}
+
+/* Better focus for interactive elements */
+.interactive-element:focus,
+.interactive-element:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.interactive-element:not(:focus-visible) {
+  outline: none;
+}

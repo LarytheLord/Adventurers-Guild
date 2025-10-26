@@ -249,3 +249,153 @@ html.show-scrollbar, body.show-scrollbar {
   .container { padding-left: 2rem; padding-right: 2rem; }
 }
 
+/* Accessibility improvements */
+.focusable:focus {
+  @apply outline-2 outline-primary outline-offset-2 rounded-sm;
+}
+
+/* Skip to content link */
+#skip-to-content {
+  @apply absolute top-0 left-0 bg-primary text-primary-foreground p-2 rounded-b-lg -translate-y-full transition-transform duration-300 focus:translate-y-0 z-50;
+}
+
+/* Better focus indicators for high contrast mode */
+@media (prefers-contrast: high) {
+  .focusable:focus,
+  button:focus,
+  input:focus,
+  textarea:focus,
+  select:focus {
+    @apply outline-2 outline-[#000] outline-offset-2;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    @apply animate-none !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Increase touch target size for mobile */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+  @apply flex items-center justify-center;
+}
+
+/* Better contrast for links */
+a {
+  @apply text-primary underline;
+}
+
+a:visited {
+  @apply text-purple-600;
+}
+
+a:focus {
+  @apply outline-2 outline-primary outline-offset-2 rounded-sm;
+}
+
+/* Proper heading hierarchy */
+.h1-accessible {
+  @apply text-4xl font-bold leading-tight mb-4;
+}
+
+.h2-accessible {
+  @apply text-3xl font-semibold leading-tight mb-3;
+}
+
+.h3-accessible {
+  @apply text-2xl font-semibold leading-snug mb-2;
+}
+
+.h4-accessible {
+  @apply text-xl font-semibold leading-normal mb-2;
+}
+
+/* Responsive typography */
+.responsive-text {
+  @apply text-base sm:text-lg md:text-xl;
+}
+
+.responsive-heading {
+  @apply text-2xl sm:text-3xl md:text-4xl font-bold;
+}
+
+/* Ensure sufficient color contrast */
+.text-contrast {
+  @apply text-foreground;
+}
+
+.text-contrast-muted {
+  @apply text-muted-foreground;
+}
+
+/* Accessible progress bars */
+.accessible-progress {
+  @apply h-2 bg-muted rounded-full overflow-hidden;
+}
+
+.accessible-progress-fill {
+  @apply h-full bg-primary rounded-full transition-all duration-300 ease-out;
+}
+
+/* Responsive card adjustments */
+.responsive-card {
+  @apply rounded-xl p-4 sm:p-6 shadow-lg;
+}
+
+/* Improved table styling for accessibility */
+.accessible-table {
+  @apply w-full border-collapse;
+}
+
+.accessible-table th,
+.accessible-table td {
+  @apply p-3 text-left border-b border-border last:border-0;
+}
+
+.accessible-table th {
+  @apply font-bold bg-muted;
+}
+
+/* Responsive image styling */
+.responsive-img {
+  @apply max-w-full h-auto;
+}
+
+/* Better button styling for accessibility */
+.accessible-button {
+  @apply px-4 py-2 rounded-md font-medium transition-colors focus:outline-2 focus:outline-primary focus:outline-offset-2;
+}
+
+/* Input styling for accessibility */
+.accessible-input {
+  @apply w-full px-3 py-2 border border-input rounded-md focus:outline-2 focus:outline-primary focus:outline-offset-2;
+}
+
+/* Alert styling for accessibility */
+.alert {
+  @apply p-4 rounded-lg mb-4;
+}
+
+.alert-info {
+  @apply bg-blue-50 text-blue-800 border border-blue-200;
+}
+
+.alert-success {
+  @apply bg-green-50 text-green-800 border border-green-200;
+}
+
+.alert-warning {
+  @apply bg-yellow-50 text-yellow-800 border border-yellow-200;
+}
+
+.alert-error {
+  @apply bg-red-50 text-red-800 border border-red-200;
+}
+

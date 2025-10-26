@@ -2,8 +2,10 @@ import type { Metadata } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import "./globals.css"
+import "../styles/accessibility.css"
 import { ThemeProvider } from "../components/theme-provider"
 import Script from "next/script"
+import A11ySkipLink from "../components/A11ySkipLink"
 
 export const metadata: Metadata = {
   title: "Adventurers Guild",
@@ -15,7 +17,16 @@ export const metadata: Metadata = {
     apple: "/pwa/icon-192x192.png",
   },
   generator: "Adventurers",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=5",
+  viewport: {
+    width: "device-width",
+    initialScale: 1,
+    maximumScale: 5,
+    userScalable: true,
+  },
+  // Accessibility metadata
+  other: {
+    "color-scheme": "light dark",
+  }
 }
 
 export default function RootLayout({
@@ -24,22 +35,34 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html 
+      lang="en" 
+      suppressHydrationWarning
+      className="scroll-smooth"
+      style={{ scrollBehavior: 'smooth' }}
+    >
       <head>
         <meta
           name="viewport"
-          content="width=device-width, initial-scale=1, maximum-scale=5"
+          content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes"
         />
         <link rel="manifest" href="/manifest.json" />
         <link rel="icon" href="/pwa/icon-192x192.png" type="image/png" />
         <link rel="apple-touch-icon" href="/pwa/icon-192x192.png" />
         <meta name="theme-color" content="#ffffff" />
+        
+        {/* Accessibility additions */}
+        <meta name="color-scheme" content="light dark" />
       </head>
       <body
         className={`${GeistSans.variable} ${GeistMono.variable} font-sans antialiased`}
       >
+        <A11ySkipLink />
+        
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          {children}
+          <div id="main-content" className="min-h-screen flex flex-col">
+            {children}
+          </div>
         </ThemeProvider>
 
         {/* Show scrollbar during scroll; hide 2s after idle */}

@@ -76,9 +76,73 @@ The Adventurers Guild is being built with modern, scalable technologies. We welc
 * **Frontend:** React, Next.js, Tailwind CSS
 * **Backend:** Node.js (Express.js), Python (Flask/Django)
 * **Database:** PostgreSQL, MongoDB, Firebase/Firestore
-* **Deployment:** Vercel, AWS
+* **Deployment:** Vercel, AWS, Docker
 * **Version Control:** Git, GitHub
 * **Communication:** Discord
+
+## 📦 Deployment
+
+### Environment Variables
+To run this project in production, you'll need to set the following environment variables:
+
+```bash
+# Database
+DATABASE_URL=your_database_url
+
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
+
+# Email (SMTP)
+SMTP_HOST=smtp.your-provider.com
+SMTP_PORT=587
+SMTP_USER=your-email@domain.com
+SMTP_PASS=your-app-password
+ADMIN_EMAIL=your-admin-email@domain.com
+```
+
+### Vercel Deployment
+The project is configured for Vercel deployment. You can deploy it in one click:
+
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/your-username/adventurers-guild)
+
+### Docker Deployment
+To deploy using Docker:
+
+1. Build the image:
+```bash
+docker build -t adventurers-guild .
+```
+
+2. Run the container:
+```bash
+docker run -p 3000:3000 \
+  -e DATABASE_URL="your_db_url" \
+  -e NEXT_PUBLIC_SUPABASE_URL="your_supabase_url" \
+  -e NEXT_PUBLIC_SUPABASE_ANON_KEY="your_supabase_anon_key" \
+  -e SUPABASE_SERVICE_ROLE_KEY="your_service_role_key" \
+  -e SMTP_HOST="smtp.your-provider.com" \
+  -e SMTP_PORT=587 \
+  -e SMTP_USER="your-email@domain.com" \
+  -e SMTP_PASS="your-app-password" \
+  -e ADMIN_EMAIL="your-admin-email@domain.com" \
+  adventurers-guild
+```
+
+Or use docker-compose:
+```bash
+docker-compose up -d
+```
+
+### CI/CD Pipeline
+The project includes a GitHub Actions workflow that:
+- Runs linting, type checking, and tests on every push/PR
+- Builds the application
+- Deploys to Vercel when changes are merged to the main branch
+- Performs security scanning
+
+The workflow configuration is in `.github/workflows/ci-cd.yml`.
 
 ---
 
