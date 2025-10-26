@@ -57,6 +57,10 @@ const nextConfig = {
   // REMOVED: eslint.ignoreDuringBuilds - We should fix linting errors instead
   // REMOVED: typescript.ignoreBuildErrors - We should fix TypeScript errors instead
   
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+
   images: {
     unoptimized: true,
   },

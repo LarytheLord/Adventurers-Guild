@@ -653,4 +653,21 @@ Errors  Files
     31  __tests__/unit/analytics-utils.test.ts:9
     38  __tests__/unit/quest-utils.test.ts:10
 
-    
+vercel deployment
+
+     ✓ Compiled successfully
+   Linting and checking validity of types ...
+ ⨯ ESLint: Converting circular structure to JSON     --> starting at object with constructor 'Object'     |     property 'configs' -> object with constructor 'Object'     |     property 'flat' -> object with constructor 'Object'     |     ...     |     property 'plugins' -> object with constructor 'Object'     --- property 'react' closes the circle Referenced from: /vercel/path0/.eslintrc.json
+Failed to compile.
+./app/page.tsx:4:60
+Type error: Cannot find module 'framer-motion' or its corresponding type declarations.
+  2 |
+  3 | import { useState, useRef } from "react";
+> 4 | import { motion, useInView, useScroll, useTransform } from "framer-motion";
+    |                                                            ^
+  5 | import { Button } from "@/components/ui/button";
+  6 | import { Input } from "@/components/ui/input";
+  7 | import { Label } from "@/components/ui/label"; // I've added this import
+Next.js build worker exited with code: 1 and signal: null
+ ELIFECYCLE  Command failed with exit code 1.
+Error: Command "pnpm run build" exited with 1
