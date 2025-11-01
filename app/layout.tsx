@@ -4,6 +4,7 @@ import { GeistMono } from "geist/font/mono"
 import "./globals.css"
 import "../styles/accessibility.css"
 import { ThemeProvider } from "../components/theme-provider"
+import { SessionProvider } from "../components/session-provider"
 import Script from "next/script"
 import A11ySkipLink from "../components/A11ySkipLink"
 
@@ -59,11 +60,13 @@ export default function RootLayout({
       >
         <A11ySkipLink />
         
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <div id="main-content" className="min-h-screen flex flex-col">
-            {children}
-          </div>
-        </ThemeProvider>
+        <SessionProvider>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <div id="main-content" className="min-h-screen flex flex-col">
+              {children}
+            </div>
+          </ThemeProvider>
+        </SessionProvider>
 
         {/* Show scrollbar during scroll; hide 2s after idle */}
         <Script id="scrollbar-handler" strategy="afterInteractive">
