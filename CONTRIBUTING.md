@@ -36,10 +36,10 @@ First, you'll need your own copy of the guild's archives (the repository).
 
 ### 2. Prepare Your Tools (Installation)
 
-The guild uses `pnpm` for managing dependencies. Prepare your development environment with a single command:
+The guild uses `npm` for managing dependencies. Prepare your development environment with a single command:
 
 ```bash
-pnpm install
+npm install
 ```
 
 This will install all the necessary tools and libraries for the project.
@@ -110,7 +110,7 @@ git checkout -b your-branch-name
 Now you're ready to start the local development server and see the website in action.
 
 ```bash
-pnpm dev
+npm run dev
 ```
 
 This will start the website on `http://localhost:3000`. The server will automatically reload as you make changes to the code.
