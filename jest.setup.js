@@ -4,6 +4,10 @@
 
 // Used for __tests__/testing-library.js
 // Learn more: https://github.com/testing-library/jest-dom
+import '@testing-library/jest-dom';
+
+// Extend expect with testing-library/jest-dom matchers
+import { expect, jest } from '@jest/globals';
 import '@testing-library/jest-dom/extend-expect';
 
 // Mock window.matchMedia

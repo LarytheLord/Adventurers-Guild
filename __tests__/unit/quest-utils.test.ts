@@ -53,12 +53,20 @@ describe('Quest Utils', () => {
           id: '1',
           title: 'Test Quest',
           description: 'Test Description',
+          detailed_description: 'Detailed description',
+          quest_type: 'commission',
+          status: 'available',
           difficulty: 'D',
           xp_reward: 500,
           skill_points_reward: 100,
+          required_skills: ['javascript'],
           quest_category: 'frontend',
           company_id: 'company-1',
-          status: 'available'
+          created_at: '2023-01-01T00:00:00Z',
+          users: {
+            name: 'Test Company',
+            email: 'test@example.com'
+          }
         }
       ];
 
@@ -84,8 +92,9 @@ describe('Quest Utils', () => {
         id: 'assignment-1',
         quest_id: 'quest-1',
         user_id: 'user-1',
+        assigned_at: new Date().toISOString(),
         status: 'assigned',
-        assigned_at: new Date().toISOString()
+        progress: 0
       };
 
       (assignToQuest as jest.MockedFunction<typeof assignToQuest>)

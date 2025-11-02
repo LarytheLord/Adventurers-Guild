@@ -1,6 +1,6 @@
 // __tests__/components/QuestList.test.tsx
-import { render, screen, waitFor } from '@testing-library/react';
-import { describe, it, expect, jest } from '@jest/globals';
+import { render, screen } from '@testing-library/react';
+import { describe, it, expect } from '@jest/globals';
 
 // Mock child components and dependencies
 jest.mock('@/components/QuestList', () => () => (
@@ -27,7 +27,9 @@ describe('QuestList Component', () => {
       <div data-testid="quest-list">Mock Quest List</div>
     );
     
-    expect(container).toBeInTheDocument();
+    // Instead of direct DOM query, just look for the element in the document
+    const element = container.querySelector('[data-testid="quest-list"]');
+    expect(element).not.toBeNull();
   });
 
   it('displays loading state initially', () => {
@@ -37,7 +39,7 @@ describe('QuestList Component', () => {
     
     // With our mocked component, we expect the static text
     const questListElement = screen.getByTestId('quest-list');
-    expect(questListElement).toHaveTextContent('Mock Quest List');
+    expect(questListElement.textContent).toBe('Mock Quest List');
   });
 
   it('matches snapshot', () => {

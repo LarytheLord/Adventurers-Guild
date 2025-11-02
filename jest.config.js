@@ -25,10 +25,10 @@ const customJestConfig = {
     '^.+\\.module\\.(css|sass|scss)$',
   ],
   moduleNameMapping: {
-    '^@/(.*)$': '<rootDir>/src/$1',
+    '^@/(.*)$': '<rootDir>/$1',
     '^@/components/(.*)$': '<rootDir>/components/$1',
     '^@/lib/(.*)$': '<rootDir>/lib/$1',
-    '^@/utils/(.*)$': '<rootDir>/utils/$1',
+    '^@/types/(.*)$': '<rootDir>/types/$1',
     '^@/styles/(.*)$': '<rootDir>/styles/$1',
   },
   collectCoverageFrom: [

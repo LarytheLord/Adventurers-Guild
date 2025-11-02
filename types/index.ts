@@ -34,18 +34,37 @@ export interface Quest {
   id: string;
   title: string;
   description: string;
-  difficulty: QuestDifficulty;
-  xpReward: number;
-  status: QuestStatus;
-  companyId: string;
-  company?: User;
-  assignedTo?: string;
-  assignedUser?: User;
-  requiredSkills?: string[];
-  tags?: string[];
-  createdAt: Date;
-  updatedAt: Date;
-  deadline?: Date;
+  detailed_description?: string;
+  quest_type: string;
+  status: string;
+  difficulty: string;
+  xp_reward: number;
+  skill_points_reward: number;
+  monetary_reward?: number;
+  required_skills: string[];
+  required_rank?: string;
+  max_participants?: number;
+  quest_category: string;
+  company_id: string;
+  created_at: string;
+  deadline?: string;
+  users?: {
+    name: string;
+    email: string;
+  };
+}
+
+export interface QuestAssignment {
+  id: string;
+  quest_id: string;
+  user_id: string;
+  status: 'assigned' | 'started' | 'in_progress' | 'submitted' | 'completed' | 'cancelled';
+  assigned_at: string;
+  started_at?: string;
+  completed_at?: string;
+  progress?: number;
+  quest?: Quest;
+  user?: User;
 }
 
 export interface QuestSubmission {
