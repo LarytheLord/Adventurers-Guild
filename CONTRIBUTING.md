@@ -143,4 +143,4 @@ In your PR description, please include:
 *   Any screenshots or GIFs that demonstrate your work, if applicable.
 
 A guild master will review your PR, provide feedback, and, once approved, merge your contribution into the main codebase. Congratulations, adventurer—your legend grows!
-Guild Master will be actively developing the site together with members.
+Guild Master will be actively developing the platform together with members.
