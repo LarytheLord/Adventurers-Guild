@@ -1,4 +1,4 @@
-// app/register/page.tsx
+// app/register-company/page.tsx
 'use client';
 
 import { useState } from 'react';
@@ -10,26 +10,18 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter }
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
-export default function RegisterPage() {
+export default function RegisterCompanyPage() {
   const [name, setName] = useState('');
+  const [companyName, setCompanyName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState<'adventurer' | 'company'>('adventurer');
-  const [companyName, setCompanyName] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -67,7 +59,7 @@ export default function RegisterPage() {
       } else if (data.user) {
         setSuccess(true);
         
-        // Add user to our users table
+        // Add user to our users table with company role
         const { error: insertError } = await supabase
           .from('users')
           .insert([
@@ -75,7 +67,7 @@ export default function RegisterPage() {
               id: data.user.id,
               name,
               email,
-              role,
+              role: 'company',
               rank: 'F',
               xp: 0,
               skill_points: 0,
@@ -87,21 +79,19 @@ export default function RegisterPage() {
           console.error('Error inserting user:', insertError);
         }
 
-        // If user is a company, create company profile
-        if (role === 'company') {
-          const { error: companyProfileError } = await supabase
-            .from('company_profiles')
-            .insert([
-              {
-                user_id: data.user.id,
-                company_name: companyName || name,
-                is_verified: false,
-              },
-            ]);
+        // Create company profile
+        const { error: companyProfileError } = await supabase
+          .from('company_profiles')
+          .insert([
+            {
+              user_id: data.user.id,
+              company_name: companyName,
+              is_verified: false,
+            },
+          ]);
 
-          if (companyProfileError) {
-            console.error('Error creating company profile:', companyProfileError);
-          }
+        if (companyProfileError) {
+          console.error('Error creating company profile:', companyProfileError);
         }
 
         // Redirect to login after 3 seconds
@@ -121,9 +111,9 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Join the Guild</CardTitle>
+          <CardTitle className="text-2xl">Register Company</CardTitle>
           <CardDescription>
-            Create your Adventurers Guild account
+            Create your company account to post quests
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -147,7 +137,7 @@ export default function RegisterPage() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="name">Contact Name</Label>
                 <Input
                   id="name"
                   type="text"
@@ -159,42 +149,28 @@ export default function RegisterPage() {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="companyName">Company Name</Label>
                 <Input
-                  id="email"
-                  type="email"
-                  placeholder="your@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  id="companyName"
+                  type="text"
+                  placeholder="Your company name"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
                   required
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="role">Account Type</Label>
-                <Select value={role} onValueChange={(value: 'adventurer' | 'company') => setRole(value)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="adventurer">Adventurer (Student)</SelectItem>
-                    <SelectItem value="company">Company</SelectItem>
-                  </SelectContent>
-                </Select>
+                <Label htmlFor="email">Email</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="company@domain.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
               </div>
-
-              {role === 'company' && (
-                <div className="space-y-2">
-                  <Label htmlFor="companyName">Company Name</Label>
-                  <Input
-                    id="companyName"
-                    type="text"
-                    placeholder="Your company name"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                  />
-                </div>
-              )}
               
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
@@ -213,7 +189,7 @@ export default function RegisterPage() {
                 <Input
                   id="confirmPassword"
                   type="password"
-                  placeholder="••••••"
+                  placeholder="•••••"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
@@ -221,7 +197,7 @@ export default function RegisterPage() {
               </div>
               
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Creating Account...' : 'Create Account'}
+                {loading ? 'Creating Account...' : 'Create Company Account'}
               </Button>
             </form>
           )}
@@ -234,6 +210,15 @@ export default function RegisterPage() {
               className="text-primary hover:underline"
             >
               Sign in
+            </button>
+          </p>
+          <p className="text-sm text-muted-foreground text-center">
+            Are you an adventurer?{' '}
+            <button 
+              onClick={() => router.push('/register')} 
+              className="text-primary hover:underline"
+            >
+              Register as adventurer
             </button>
           </p>
         </CardFooter>

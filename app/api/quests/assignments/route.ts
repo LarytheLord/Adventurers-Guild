@@ -1,6 +1,9 @@
 // app/api/quests/assignments/route.ts
 import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
+import { NextResponse } from 'next/server';
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -9,14 +12,23 @@ const supabase = createClient(
 );
 
 export async function GET(request: NextRequest) {
+  // Check authentication
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user) {
+    return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
+  }
+
   try {
     // Parse query parameters
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('user_id');
+    const requestedUserId = searchParams.get('user_id');
     const questId = searchParams.get('quest_id');
     const status = searchParams.get('status');
     const limit = searchParams.get('limit') || '10';
     const offset = searchParams.get('offset') || '0';
+
+    const currentUserId = session.user.id;
+    const currentUserRole = session.user.role;
 
     // Build query
     let query = supabase
@@ -46,9 +58,36 @@ export async function GET(request: NextRequest) {
       `)
       .range(parseInt(offset), parseInt(offset) + parseInt(limit) - 1);
 
-    // Add filters if provided
-    if (userId) {
-      query = query.eq('user_id', userId);
+    // Apply permissions based on user role
+    if (currentUserRole === 'adventurer') {
+      // Adventurers can only see their own assignments
+      query = query.eq('user_id', currentUserId);
+    } else if (currentUserRole === 'company') {
+      // Companies can see assignments for their quests
+      // First get the company's quests
+      const { data: companyQuests, error: questsError } = await supabase
+        .from('quests')
+        .select('id')
+        .eq('company_id', currentUserId);
+
+      if (questsError) {
+        throw new Error(questsError.message);
+      }
+
+      const questIds = companyQuests?.map(q => q.id) || [];
+      query = query.in('quest_id', questIds);
+    } else if (currentUserRole === 'admin') {
+      // Admins can see all assignments
+      // No additional filter needed
+    } else {
+      // Other roles are not allowed
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 403 });
+    }
+
+    // Add filters if provided (respecting permissions)
+    if (requestedUserId && currentUserRole === 'admin') {
+      // Only admins can request assignments for a specific user
+      query = query.eq('user_id', requestedUserId);
     }
     if (questId) {
       query = query.eq('quest_id', questId);
@@ -63,21 +102,28 @@ export async function GET(request: NextRequest) {
       throw new Error(error.message);
     }
 
-    return Response.json({ assignments: data, success: true });
+    return NextResponse.json({ assignments: data, success: true });
   } catch (error) {
     console.error('Error fetching quest assignments:', error);
-    return Response.json({ error: 'Failed to fetch quest assignments', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch quest assignments', success: false }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
+  // Check authentication
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user) {
+    return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
-    const { quest_id, user_id } = body;
+    const { quest_id } = body;
+    const user_id = session.user.id; // Use authenticated user's ID
 
     // Validate required fields
-    if (!quest_id || !user_id) {
-      return Response.json({ error: 'Missing required fields', success: false }, { status: 400 });
+    if (!quest_id) {
+      return NextResponse.json({ error: 'Missing required fields', success: false }, { status: 400 });
     }
 
     // Check if the quest exists and is available
@@ -88,7 +134,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (questError || !quest || quest.status !== 'available') {
-      return Response.json({ error: 'Quest not available', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Quest not available', success: false }, { status: 400 });
     }
 
     // Check if the max number of participants has been reached
@@ -104,8 +150,20 @@ export async function POST(request: NextRequest) {
       }
 
       if (count && count >= quest.max_participants) {
-        return Response.json({ error: 'Maximum participants reached for this quest', success: false }, { status: 400 });
+        return NextResponse.json({ error: 'Maximum participants reached for this quest', success: false }, { status: 400 });
       }
+    }
+
+    // Check if user is already assigned to this quest
+    const { data: existingAssignment, error: existingError } = await supabase
+      .from('quest_assignments')
+      .select('id')
+      .eq('quest_id', quest_id)
+      .eq('user_id', user_id)
+      .single();
+
+    if (existingAssignment) {
+      return NextResponse.json({ error: 'You are already assigned to this quest', success: false }, { status: 400 });
     }
 
     // Create the assignment
@@ -131,21 +189,44 @@ export async function POST(request: NextRequest) {
         .eq('id', quest_id);
     }
 
-    return Response.json({ assignment: data, success: true }, { status: 201 });
+    return NextResponse.json({ assignment: data, success: true }, { status: 201 });
   } catch (error) {
     console.error('Error creating quest assignment:', error);
-    return Response.json({ error: 'Failed to create quest assignment', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to create quest assignment', success: false }, { status: 500 });
   }
 }
 
 export async function PUT(request: NextRequest) {
+  // Check authentication
+  const session = await getServerSession(authOptions);
+  if (!session || !session.user) {
+    return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
+  }
+
   try {
     const body = await request.json();
     const { assignment_id, status, progress } = body;
+    const user_id = session.user.id; // Use authenticated user's ID
 
     // Validate required fields
     if (!assignment_id || !status) {
-      return Response.json({ error: 'Missing required fields', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Missing required fields', success: false }, { status: 400 });
+    }
+
+    // Check if the user has permission to update this assignment
+    // Only the assigned user or an admin can update the assignment
+    const { data: assignment, error: assignmentError } = await supabase
+      .from('quest_assignments')
+      .select('user_id')
+      .eq('id', assignment_id)
+      .single();
+
+    if (assignmentError || !assignment) {
+      return NextResponse.json({ error: 'Assignment not found', success: false }, { status: 404 });
+    }
+
+    if (assignment.user_id !== user_id && session.user.role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized to update this assignment', success: false }, { status: 403 });
     }
 
     // Update the assignment
@@ -165,9 +246,9 @@ export async function PUT(request: NextRequest) {
       throw new Error(error.message);
     }
 
-    return Response.json({ assignment: data, success: true });
+    return NextResponse.json({ assignment: data, success: true });
   } catch (error) {
     console.error('Error updating quest assignment:', error);
-    return Response.json({ error: 'Failed to update quest assignment', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to update quest assignment', success: false }, { status: 500 });
   }
 }

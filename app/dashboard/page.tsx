@@ -1,78 +1,125 @@
 'use client';
 
-import { useSession } from 'next-auth/react';
 import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Trophy, Target, Users, TrendingUp, ArrowRight, Zap } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { Trophy, Target, Users, TrendingUp, Zap } from 'lucide-react';
 import Link from 'next/link';
-
-interface UserStats {
-  xp: number;
-  level: number;
-  rank: string;
-  questsCompleted: number;
-  activeQuests: number;
-  skillPoints: number;
-}
 
 interface Quest {
   id: string;
   title: string;
+  description: string;
   difficulty: string;
   xp_reward: number;
   status: string;
 }
 
-export default function DashboardPage() {
-  const { data: session } = useSession();
+interface UserStats {
+  xp: number;
+  level: number;
+ rank: string;
+  questsCompleted: number;
+  activeQuests: number;
+  skillPoints: number;
+}
+
+export default function AdventurerDashboard() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
   const [stats, setStats] = useState<UserStats | null>(null);
-  const [activeQuests, setActiveQuests] = useState<Quest[]>([]);
+  const [quests, setQuests] = useState<Quest[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
-      try {
-        // Fetch user stats
-        const statsRes = await fetch('/api/users/me/stats');
-        if (statsRes.ok) {
-          const statsData = await statsRes.json();
-          setStats(statsData);
-        }
+    // Check if user is authenticated and has appropriate role
+    if (status === 'unauthenticated') {
+      router.push('/login');
+      return;
+    }
+    
+    if (status === 'authenticated' && session?.user?.role === 'company') {
+      // Redirect companies to their dashboard
+      router.push('/dashboard/company');
+      return;
+    } else if (status === 'authenticated' && session?.user?.role === 'admin') {
+      // Redirect admins to their dashboard
+      router.push('/admin');
+      return;
+    }
 
-        // Fetch active quests
-        const questsRes = await fetch('/api/users/me/quests?status=active&limit=3');
-        if (questsRes.ok) {
-          const questsData = await questsRes.json();
-          setActiveQuests(questsData.quests || []);
-        }
+    // Fetch user stats and quests
+    const fetchData = async () => {
+      try {
+        // In a real implementation, this would fetch from an API
+        // For now, using mock data
+        const mockStats: UserStats = {
+          xp: 2450,
+          level: 5,
+          rank: 'C',
+          questsCompleted: 12,
+          activeQuests: 3,
+          skillPoints: 150
+        };
+
+        const mockQuests: Quest[] = [
+          {
+            id: '1',
+            title: 'Build Authentication System',
+            description: 'Create a secure authentication system with OAuth integration',
+            difficulty: 'B',
+            xp_reward: 1200,
+            status: 'in_progress'
+          },
+          {
+            id: '2',
+            title: 'API Documentation',
+            description: 'Document existing REST API endpoints with examples',
+            difficulty: 'C',
+            xp_reward: 600,
+            status: 'assigned'
+          },
+          {
+            id: '3',
+            title: 'UI Redesign',
+            description: 'Redesign the user dashboard with modern UX principles',
+            difficulty: 'A',
+            xp_reward: 2000,
+            status: 'completed'
+          }
+        ];
+        
+        setStats(mockStats);
+        setQuests(mockQuests);
       } catch (error) {
-        console.error('Error fetching dashboard data:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    if (session) {
-      fetchDashboardData();
+    if (status === 'authenticated') {
+      fetchData();
     }
-  }, [session]);
+  }, [status, session, router]);
 
-  if (loading) {
+  if (status === 'loading' || loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
   }
 
   const xpToNextLevel = stats ? (stats.level + 1) * 1000 : 1000;
-  const xpProgress = stats ? (stats.xp % 1000) / 10 : 0;
+ const xpProgress = stats ? ((stats.xp % 1000) / 10) : 0;
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto py-6 space-y-6">
       {/* Welcome Section */}
       <div>
         <h1 className="text-3xl font-bold">
@@ -162,13 +209,13 @@ export default function DashboardPage() {
             <Button asChild variant="outline" size="sm">
               <Link href="/dashboard/my-quests">
                 View All
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <Target className="ml-2 h-4 w-4" />
               </Link>
             </Button>
           </div>
         </CardHeader>
         <CardContent>
-          {activeQuests.length === 0 ? (
+          {quests.filter(q => q.status === 'in_progress' || q.status === 'assigned').length === 0 ? (
             <div className="text-center py-8">
               <Target className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <p className="text-muted-foreground mb-4">
@@ -180,28 +227,33 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="space-y-4">
-              {activeQuests.map((quest) => (
-                <div
-                  key={quest.id}
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors"
-                >
-                  <div className="flex-1">
-                    <h4 className="font-medium">{quest.title}</h4>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="outline">{quest.difficulty}</Badge>
-                      <span className="text-sm text-muted-foreground">
-                        {quest.xp_reward} XP
-                      </span>
+              {quests
+                .filter(q => q.status === 'in_progress' || q.status === 'assigned')
+                .map((quest) => (
+                  <div
+                    key={quest.id}
+                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors"
+                  >
+                    <div className="flex-1">
+                      <h4 className="font-medium">{quest.title}</h4>
+                      <p className="text-sm text-muted-foreground truncate max-w-md">
+                        {quest.description}
+                      </p>
+                      <div className="flex items-center gap-2 mt-2">
+                        <Badge variant="outline">{quest.difficulty}-Rank</Badge>
+                        <Badge variant="outline">{quest.status}</Badge>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-medium">{quest.xp_reward} XP</div>
+                      <Button asChild variant="ghost" size="sm" className="h-auto p-0 mt-1">
+                        <Link href={`/dashboard/quests/${quest.id}`}>
+                          View Quest
+                        </Link>
+                      </Button>
                     </div>
                   </div>
-                  <Button asChild variant="ghost" size="sm">
-                    <Link href={`/dashboard/quests/${quest.id}`}>
-                      View
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Link>
-                  </Button>
-                </div>
-              ))}
+                ))}
             </div>
           )}
         </CardContent>
@@ -222,12 +274,12 @@ export default function DashboardPage() {
         </Card>
 
         <Card className="hover:border-primary transition-colors cursor-pointer">
-          <Link href="/dashboard/teams">
+          <Link href="/dashboard/skill-tree">
             <CardHeader>
-              <Users className="h-8 w-8 mb-2 text-primary" />
-              <CardTitle>Join a Team</CardTitle>
+              <Zap className="h-8 w-8 mb-2 text-primary" />
+              <CardTitle>Skill Tree</CardTitle>
               <CardDescription>
-                Collaborate with other adventurers
+                Develop your abilities and expertise
               </CardDescription>
             </CardHeader>
           </Link>

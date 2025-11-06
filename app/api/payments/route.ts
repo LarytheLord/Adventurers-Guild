@@ -1,11 +1,12 @@
-// app/api/payments/route.ts
 import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { env } from '@/lib/env';
+import { validatePaymentInfo } from '@/lib/payment-utils';
 
 // Initialize Supabase client
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  env.NEXT_PUBLIC_SUPABASE_URL,
+  env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 );
 
 export async function GET(request: NextRequest) {
@@ -13,20 +14,18 @@ export async function GET(request: NextRequest) {
     // Parse query parameters
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('user_id');
-    const questId = searchParams.get('quest_id');
-    const type = searchParams.get('type'); // 'incoming' for payments to user, 'outgoing' for payments by company
+    const type = searchParams.get('type'); // 'incoming' or 'outgoing'
     const status = searchParams.get('status');
     const limit = searchParams.get('limit') || '10';
     const offset = searchParams.get('offset') || '0';
 
-    // Validate user ID is provided
     if (!userId) {
       return Response.json({ error: 'User ID is required', success: false }, { status: 400 });
     }
 
-    // Build query
+    // Build query based on type
     let query = supabase
-      .from('transactions') // Assuming we have a transactions table
+      .from('transactions')
       .select(`
         id,
         from_user_id,
@@ -37,8 +36,10 @@ export async function GET(request: NextRequest) {
         status,
         payment_method,
         transaction_id,
+        description,
         created_at,
         updated_at,
+        completed_at,
         from_user:users!from_user_id (
           name,
           email
@@ -63,9 +64,6 @@ export async function GET(request: NextRequest) {
       query = query.or(`from_user_id.eq.${userId},to_user_id.eq.${userId}`);
     }
 
-    if (questId) {
-      query = query.eq('quest_id', questId);
-    }
     if (status) {
       query = query.eq('status', status);
     }
@@ -86,7 +84,7 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     // Validate required fields
     const requiredFields = ['from_user_id', 'to_user_id', 'quest_id', 'amount', 'currency'];
     for (const field of requiredFields) {
@@ -95,32 +93,49 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // In a real implementation, you would integrate with a payment processor like Stripe
-    // For this example, we'll simulate the payment process
-    
-    // Check if the quest exists and is completed
+    // Validate payment information
+    if (body.payment_info) {
+      const validation = validatePaymentInfo(
+        body.payment_info.card_number,
+        body.payment_info.expiry,
+        body.payment_info.cvc
+      );
+      
+      if (!validation.isValid) {
+        return Response.json({ error: validation.error, success: false }, { status: 400 });
+      }
+    }
+
+    // Verify that the quest exists and is completed
     const { data: quest, error: questError } = await supabase
       .from('quests')
-      .select('title, status, monetary_reward')
+      .select('title, status, xp_reward, skill_points_reward')
       .eq('id', body.quest_id)
       .single();
 
-    if (questError || !quest || quest.status !== 'completed') {
-      return Response.json({ error: 'Quest is not completed or does not exist', success: false }, { status: 400 });
+    if (questError || !quest) {
+      return Response.json({ error: 'Quest not found', success: false }, { status: 404 });
     }
 
-    // Check if payment already exists for this quest
-    const { data: existingTransaction, error: existingError } = await supabase
+    if (quest.status !== 'completed') {
+      return Response.json({ error: 'Quest must be completed before payment', success: false }, { status: 400 });
+    }
+
+    // Check if a payment already exists for this quest
+    const { data: existingPayment } = await supabase
       .from('transactions')
       .select('id')
       .eq('quest_id', body.quest_id)
+      .eq('to_user_id', body.to_user_id)
       .single();
 
-    if (existingTransaction) {
-      return Response.json({ error: 'Payment already processed for this quest', success: false }, { status: 400 });
+    if (existingPayment) {
+      return Response.json({ error: 'Payment already exists for this quest', success: false }, { status: 400 });
     }
 
-    // Create a pending transaction
+    // In a real implementation, you would integrate with a payment processor like Stripe
+    // For now, we'll simulate the payment and create a transaction record
+    
     const { data: transaction, error: transactionError } = await supabase
       .from('transactions')
       .insert([{
@@ -129,9 +144,10 @@ export async function POST(request: NextRequest) {
         quest_id: body.quest_id,
         amount: body.amount,
         currency: body.currency,
-        status: 'pending',
-        payment_method: body.payment_method || 'stripe',
-        description: body.description || `Payment for quest completion: ${quest.title}`
+        status: 'pending', // Initially pending until payment processor confirms
+        payment_method: body.payment_method || 'credit_card',
+        description: body.description || `Payment for quest completion: ${quest.title}`,
+        transaction_id: `txn_${Date.now()}` // In real implementation, this would come from payment processor
       }])
       .select()
       .single();
@@ -140,17 +156,13 @@ export async function POST(request: NextRequest) {
       throw new Error(transactionError.message);
     }
 
-    // In a real implementation, you would now process the payment with a payment processor
-    // Here we'll just simulate and update the status to completed
-    // After integration with Stripe, you would update the status based on the payment result
-    
-    // For simulation purposes, let's complete the transaction
+    // Simulate payment processing (in a real app, this would be handled by a webhook from the payment processor)
+    // For now, we'll immediately update the status to completed
     const { data: completedTransaction, error: updateError } = await supabase
       .from('transactions')
       .update({ 
         status: 'completed',
-        completed_at: new Date().toISOString(),
-        transaction_id: `mock_txn_${Date.now()}` // In real implementation, this would be the payment processor's transaction ID
+        completed_at: new Date().toISOString()
       })
       .eq('id', transaction.id)
       .select()
@@ -160,8 +172,34 @@ export async function POST(request: NextRequest) {
       throw new Error(updateError.message);
     }
 
+    // Update user's XP and skill points
+    const xpGain = quest.xp_reward || 0;
+    const skillPointsGain = quest.skill_points_reward || 0;
+    
+    const { error: userUpdateError } = await supabase.rpc('update_user_xp_and_skills', {
+      user_id_input: body.to_user_id,
+      xp_gained: xpGain,
+      skill_points_gained: skillPointsGain
+    });
+
+    if (userUpdateError) {
+      console.error('Error updating user XP and skills:', userUpdateError);
+      // Don't fail the transaction if this fails, just log it
+    }
+
+    // Update company's spending
+    const { error: companyUpdateError } = await supabase.rpc('update_company_spending', {
+      company_id_input: body.from_user_id,
+      amount_spent: body.amount
+    });
+
+    if (companyUpdateError) {
+      console.error('Error updating company spending:', companyUpdateError);
+      // Don't fail the transaction if this fails, just log it
+    }
+
     // Send notification to receiving user
-    const { error: notificationError } = await supabase
+    await supabase
       .from('notifications')
       .insert([{
         user_id: body.to_user_id,
@@ -175,56 +213,13 @@ export async function POST(request: NextRequest) {
         }
       }]);
 
-    if (notificationError) {
-      console.error('Error sending payment notification:', notificationError);
-    }
-
-    // Update company profile to track spending
-    // First get current total_spent
-    const { data: companyProfile } = await supabase
-      .from('company_profiles')
-      .select('total_spent')
-      .eq('user_id', body.from_user_id)
-      .single();
-    
-    const currentSpent = companyProfile?.total_spent || 0;
-    const { error: companyUpdateError } = await supabase
-      .from('company_profiles')
-      .update({ 
-        total_spent: currentSpent + body.amount
-      })
-      .eq('user_id', body.from_user_id);
-
-    if (companyUpdateError) {
-      console.error('Error updating company profile:', companyUpdateError);
-    }
-
-    return Response.json({ transaction: completedTransaction, success: true });
+    return Response.json({ 
+      transaction: completedTransaction, 
+      success: true,
+      message: 'Payment processed successfully'
+    });
   } catch (error) {
     console.error('Error processing payment:', error);
     return Response.json({ error: 'Failed to process payment', success: false }, { status: 500 });
-  }
-}
-
-// Webhook endpoint for payment processor (e.g., Stripe)
-export async function PUT(request: NextRequest) {
-  try {
-    // This would handle webhooks from payment processors
-    // In a real implementation, you would verify the webhook signature
-    // and update the transaction status accordingly
-    
-    const body = await request.json();
-    
-    // For demonstration purposes, we'll just return success
-    // In a real implementation, you would:
-    // 1. Verify the webhook signature
-    // 2. Extract the transaction ID from the webhook
-    // 3. Update the transaction status in the database
-    // 4. Send notifications
-    
-    return Response.json({ received: true, success: true });
-  } catch (error) {
-    console.error('Error processing webhook:', error);
-    return Response.json({ error: 'Failed to process webhook', success: false }, { status: 500 });
   }
 }

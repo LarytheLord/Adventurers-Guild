@@ -1,0 +1,234 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle, Target, Zap, Users, Clock, Search, ExternalLink, Plus } from 'lucide-react';
+import Link from 'next/link';
+
+interface Quest {
+  id: string;
+  title: string;
+  description: string;
+  quest_type: string;
+  status: string;
+  difficulty: string;
+  xp_reward: number;
+  skill_points_reward: number;
+  monetary_reward?: number;
+  required_skills: string[];
+  required_rank?: string;
+  max_participants?: number;
+  quest_category: string;
+  company_id: string;
+  created_at: string;
+  deadline?: string;
+  users: {
+    name: string;
+    email: string;
+  };
+}
+
+export default function CompanyQuestsPage() {
+  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [quests, setQuests] = useState<Quest[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/login');
+      return;
+    }
+
+    if (status === 'authenticated' && session?.user?.role !== 'company' && session.user.role !== 'admin') {
+      // Only companies and admins can access this page
+      router.push('/dashboard');
+      return;
+    }
+
+    const fetchCompanyQuests = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Fetch quests for the current company
+        const response = await fetch('/api/company/quests');
+        const data = await response.json();
+
+        if (!data.success) {
+          setError(data.error || 'Failed to fetch quests');
+          return;
+        }
+
+        setQuests(data.quests || data.quest);
+      } catch (err) {
+        console.error('Error fetching company quests:', err);
+        setError('An error occurred while fetching quests');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (status === 'authenticated' && session?.user) {
+      fetchCompanyQuests();
+    }
+  }, [status, session, router]);
+
+  const filteredQuests = quests.filter(quest =>
+    quest.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    quest.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    quest.quest_category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    quest.status.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (status === 'loading' || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container mx-auto py-6">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
+  return (
+    <div className="container mx-auto py-6 max-w-6xl">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold">Your Quests</h1>
+        <p className="text-muted-foreground mt-1">
+          Manage and track the quests you've posted for adventurers
+        </p>
+      </div>
+
+      <div className="mb-6">
+        <div className="flex flex-col sm:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Input
+              placeholder="Search quests by title, category, or status..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={() => router.push('/dashboard/company')}>
+              ← Back to Dashboard
+            </Button>
+            <Button onClick={() => router.push('/dashboard/company/create-quest')}>
+              <Plus className="w-4 h-4 mr-2" />
+              Create Quest
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {filteredQuests.length === 0 ? (
+        <div className="text-center py-12">
+          <Target className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-xl font-medium mb-2">No quests yet</h3>
+          <p className="text-muted-foreground mb-4">
+            You haven't posted any quests yet. Create your first quest to get started.
+          </p>
+          <Button onClick={() => router.push('/dashboard/company/create-quest')}>
+            <Plus className="w-4 h-4 mr-2" />
+            Create Your First Quest
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredQuests.map((quest) => (
+            <Card key={quest.id} className="flex flex-col h-full">
+              <CardHeader>
+                <div className="flex items-start justify-between">
+                  <div>
+                    <CardTitle className="text-xl">{quest.title}</CardTitle>
+                    <CardDescription>
+                      Created on {new Date(quest.created_at).toLocaleDateString()}
+                    </CardDescription>
+                  </div>
+                  <Badge className={`
+                    ${quest.status === 'available' ? 'bg-green-500' : 
+                      quest.status === 'in_progress' ? 'bg-yellow-500' : 
+                      quest.status === 'completed' ? 'bg-blue-500' : 
+                      quest.status === 'draft' ? 'bg-gray-500' : 
+                      quest.status === 'cancelled' ? 'bg-red-500' : 
+                      'bg-gray-500'}
+                  `}>
+                    {quest.status.charAt(0).toUpperCase() + quest.status.slice(1)}
+                  </Badge>
+                </div>
+                <div className="flex flex-wrap gap-2 mt-2">
+                  <Badge variant="secondary">{quest.quest_category}</Badge>
+                  <Badge variant="outline">{quest.difficulty}-Rank</Badge>
+                </div>
+              </CardHeader>
+              <CardContent className="flex flex-col flex-grow">
+                <p className="text-muted-foreground mb-4 line-clamp-2">
+                  {quest.description}
+                </p>
+                
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="flex items-center">
+                    <Zap className="w-4 h-4 mr-2 text-yellow-500" />
+                    <span className="text-sm">{quest.xp_reward} XP</span>
+                  </div>
+                  <div className="flex items-center">
+                    <Target className="w-4 h-4 mr-2 text-blue-500" />
+                    <span className="text-sm">{quest.skill_points_reward} SP</span>
+                  </div>
+                  {quest.monetary_reward && (
+                    <div className="flex items-center col-span-2">
+                      <span className="text-sm font-medium">${quest.monetary_reward}</span>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="mb-4">
+                  <p className="text-xs text-muted-foreground mb-1">Applicants</p>
+                  <div className="flex items-center">
+                    <Users className="w-4 h-4 mr-2 text-green-500" />
+                    <span className="text-sm">0/{quest.max_participants || 1}</span>
+                  </div>
+                </div>
+                
+                {quest.deadline && (
+                  <div className="flex items-center text-sm text-muted-foreground mb-4">
+                    <Clock className="w-4 h-4 mr-2" />
+                    <span>Due: {new Date(quest.deadline).toLocaleDateString()}</span>
+                  </div>
+                )}
+                
+                <div className="mt-auto">
+                  <Link href={`/dashboard/company/quests/${quest.id}`} className="w-full">
+                    <Button variant="outline" className="w-full">
+                      View Details
+                      <ExternalLink className="w-4 h-4 ml-2" />
+                    </Button>
+                  </Link>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

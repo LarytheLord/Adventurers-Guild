@@ -7,6 +7,7 @@ import { ThemeProvider } from "../components/theme-provider"
 import { SessionProvider } from "../components/session-provider"
 import Script from "next/script"
 import A11ySkipLink from "../components/A11ySkipLink"
+import Navigation from "../components/Navigation"
 
 export const metadata: Metadata = {
   title: "Adventurers Guild",
@@ -62,7 +63,8 @@ export default function RootLayout({
         
         <SessionProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <div id="main-content" className="min-h-screen flex flex-col">
+            <div id="main-content" className="min-h-screen flex-col">
+              <Navigation />
               {children}
             </div>
           </ThemeProvider>
