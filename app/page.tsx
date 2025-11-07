@@ -255,7 +255,7 @@ export default function AdventurersGuildLanding() {
         {/* Background Image with Parallax */}
         <motion.div style={{ y: yParallax }} className="absolute inset-0 z-0">
           <Image
-            src="/images/hero-bg.png"
+            src="/images/hero-bg.svg"
             alt="Digital Adventure Landscape"
             fill
             className="object-cover"
@@ -1043,21 +1043,21 @@ export default function AdventurersGuildLanding() {
               aria-label="Supported Payment Methods"
             >
               <Image
-                src="/images/visa.png"
+                src="/images/visa.svg"
                 alt="Visa payment option"
                 width={60}
                 height={20}
                 className="object-contain"
               />
               <Image
-                src="/images/mastercard.png"
+                src="/images/mastercard.svg"
                 alt="Mastercard payment option"
                 width={60}
                 height={20}
                 className="object-contain"
               />
               <Image
-                src="/images/Paypal.png"
+                src="/images/paypal.svg"
                 alt="PayPal payment option"
                 width={60}
                 height={20}

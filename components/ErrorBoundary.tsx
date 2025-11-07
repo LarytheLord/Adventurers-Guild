@@ -8,6 +8,7 @@ import { Component, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertTriangle } from 'lucide-react';
+import { logError, getErrorSeverity } from '@/lib/error-logger';
 
 interface Props {
   children: ReactNode;
@@ -41,8 +42,17 @@ export class ErrorBoundary extends Component<Props, State> {
     // Call custom error handler if provided
     this.props.onError?.(error, errorInfo);
 
-    // TODO: Log to error tracking service (Sentry, LogRocket, etc.)
-    // logErrorToService(error, errorInfo);
+    // Log to error tracking service
+    const severity = getErrorSeverity(error);
+    logError(
+      error,
+      { componentStack: errorInfo.componentStack || undefined },
+      {
+        boundary: 'ErrorBoundary',
+        props: this.props,
+      },
+      severity
+    );
 
     this.setState({ errorInfo });
   }
