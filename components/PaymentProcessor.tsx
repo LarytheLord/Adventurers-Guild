@@ -182,6 +182,7 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
                   <Target className="w-5 h-5 mr-2 text-blue-500" />
                   <span>{quest.xp_reward} XP</span>
                 </div>
+              </div>
               <p className="text-muted-foreground">
                 The adventurer has been notified of the payment.
               </p>

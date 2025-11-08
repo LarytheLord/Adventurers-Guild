@@ -1,4 +1,4 @@
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import "./globals.css"
@@ -12,23 +12,24 @@ import Navigation from "../components/Navigation"
 export const metadata: Metadata = {
   title: "Adventurers Guild",
   description: "Created with Adventure",
-  themeColor: "#ffffff",
   manifest: "/manifest.json",
   icons: {
-    icon: "/pwa/icon-192x192.png",
-    apple: "/pwa/icon-192x192.png",
+    icon: "/pwa/icon-192x192.svg",
+    apple: "/pwa/icon-192x192.svg",
   },
   generator: "Adventurers",
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 5,
-    userScalable: true,
-  },
   // Accessibility metadata
   other: {
     "color-scheme": "light dark",
   }
+}
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: "#ffffff",
 }
 
 export default function RootLayout({
@@ -49,8 +50,8 @@ export default function RootLayout({
           content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes"
         />
         <link rel="manifest" href="/manifest.json" />
-        <link rel="icon" href="/pwa/icon-192x192.png" type="image/png" />
-        <link rel="apple-touch-icon" href="/pwa/icon-192x192.png" />
+        <link rel="icon" href="/pwa/icon-192x192.svg" type="image/svg+xml" />
+        <link rel="apple-touch-icon" href="/pwa/icon-192x192.svg" />
         <meta name="theme-color" content="#ffffff" />
         
         {/* Accessibility additions */}
