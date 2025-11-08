@@ -8,6 +8,7 @@ import { SessionProvider } from "../components/session-provider"
 import Script from "next/script"
 import A11ySkipLink from "../components/A11ySkipLink"
 import Navigation from "../components/Navigation"
+import ErrorBoundary from "../components/ErrorBoundary"
 
 export const metadata: Metadata = {
   title: "Adventurers Guild",
@@ -66,7 +67,9 @@ export default function RootLayout({
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <div id="main-content" className="min-h-screen flex-col">
               <Navigation />
-              {children}
+              <ErrorBoundary>
+                {children}
+              </ErrorBoundary>
             </div>
           </ThemeProvider>
         </SessionProvider>

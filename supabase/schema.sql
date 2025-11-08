@@ -222,6 +222,23 @@ create table if not exists public.quest_completions (
     unique(quest_id, user_id)
 );
 
+-- Transactions table for payments
+create table if not exists public.transactions (
+    id uuid default uuid_generate_v4() primary key,
+    from_user_id uuid references public.users,
+    to_user_id uuid references public.users,
+    quest_id uuid references public.quests,
+    amount decimal(10,2) not null,
+    currency text default 'USD',
+    status text default 'pending',
+    payment_method text default 'credit_card',
+    transaction_id text unique,
+    description text,
+    created_at timestamp with time zone default timezone('utc'::text, now()),
+    updated_at timestamp with time zone default timezone('utc'::text, now()),
+    completed_at timestamp with time zone
+);
+
 -- Enable Row Level Security (RLS) for all tables
 alter table public.users enable row level security;
 alter table public.adventurer_profiles enable row level security;
@@ -237,6 +254,7 @@ alter table public.skills enable row level security;
 alter table public.skill_progress enable row level security;
 alter table public.notifications enable row level security;
 alter table public.verification_requests enable row level security;
+alter table public.transactions enable row level security;
 
 -- Create profiles view for easier access
 create or replace view public.user_profiles as
@@ -280,15 +298,28 @@ left join public.company_profiles cp on u.id = cp.user_id;
 create index if not exists idx_users_email on public.users(email);
 create index if not exists idx_users_role on public.users(role);
 create index if not exists idx_users_rank on public.users(rank);
+create index if not exists idx_users_is_active on public.users(is_active);
 create index if not exists idx_quests_company_id on public.quests(company_id);
 create index if not exists idx_quests_status on public.quests(status);
 create index if not exists idx_quests_category on public.quests(quest_category);
+create index if not exists idx_quests_difficulty on public.quests(difficulty);
+create index if not exists idx_quests_created_at on public.quests(created_at);
 create index if not exists idx_quest_assignments_user_id on public.quest_assignments(user_id);
 create index if not exists idx_quest_assignments_quest_id on public.quest_assignments(quest_id);
+create index if not exists idx_quest_assignments_status on public.quest_assignments(status);
 create index if not exists idx_quest_submissions_assignment_id on public.quest_submissions(assignment_id);
+create index if not exists idx_quest_submissions_status on public.quest_submissions(status);
 create index if not exists idx_notifications_user_id on public.notifications(user_id);
+create index if not exists idx_notifications_created_at on public.notifications(created_at);
+create index if not exists idx_notifications_type on public.notifications(type);
 create index if not exists idx_skill_progress_user_id on public.skill_progress(user_id);
 create index if not exists idx_skill_progress_skill_id on public.skill_progress(skill_id);
+create index if not exists idx_transactions_from_user_id on public.transactions(from_user_id);
+create index if not exists idx_transactions_to_user_id on public.transactions(to_user_id);
+create index if not exists idx_transactions_quest_id on public.transactions(quest_id);
+create index if not exists idx_transactions_status on public.transactions(status);
+create index if not exists idx_transactions_created_at on public.transactions(created_at);
+create index if not exists idx_transactions_completed_at on public.transactions(completed_at);
 
 -- RLS Policies
 
@@ -328,6 +359,10 @@ create policy "Users can view own notifications" on public.notifications
 create policy "Users can update own notifications" on public.notifications
     for update using (auth.uid() = user_id);
 
+-- Transactions policies
+create policy "Users can view own transactions" on public.transactions
+    for select using (auth.uid() = from_user_id or auth.uid() = to_user_id);
+
 -- Handle new user creation
 create or replace function public.handle_new_user()
 returns trigger
@@ -364,6 +399,9 @@ create trigger update_quests_updated_at before update on public.quests
     for each row execute procedure update_updated_at_column();
 
 create trigger update_verification_requests_updated_at before update on public.verification_requests
+    for each row execute procedure update_updated_at_column();
+
+create trigger update_transactions_updated_at before update on public.transactions
     for each row execute procedure update_updated_at_column();
 
 -- Grant permissions
@@ -408,6 +446,9 @@ grant all privileges on public.notifications to authenticated;
 
 grant all privileges on public.verification_requests to anon;
 grant all privileges on public.verification_requests to authenticated;
+
+grant all privileges on public.transactions to anon;
+grant all privileges on public.transactions to authenticated;
 
 -- Grant usage on UUID extension
 grant usage on schema public to anon;

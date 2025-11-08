@@ -1,46 +1,44 @@
 'use client';
 
-/**
- * Error Boundary component to catch and handle React errors
- */
-
-import { Component, ReactNode } from 'react';
+import { Component, ErrorInfo, ReactNode } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { AlertTriangle } from 'lucide-react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Bug, RotateCcw, Home } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { logError, getErrorSeverity } from '@/lib/error-logger';
 
-interface Props {
+interface ErrorBoundaryProps {
   children: ReactNode;
-  fallback?: ReactNode;
-  onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
 }
 
-interface State {
+interface ErrorBoundaryState {
   hasError: boolean;
-  error?: Error;
-  errorInfo?: React.ErrorInfo;
+  error: Error | null;
+  errorInfo: ErrorInfo | null;
 }
 
-export class ErrorBoundary extends Component<Props, State> {
-  constructor(props: Props) {
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  constructor(props: ErrorBoundaryProps) {
     super(props);
-    this.state = { hasError: false };
+    this.state = { 
+      hasError: false, 
+      error: null, 
+      errorInfo: null 
+    };
   }
 
-  static getDerivedStateFromError(error: Error): State {
-    return { hasError: true, error };
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState {
+    // Update state so the next render will show the fallback UI.
+    return { hasError: true, error, errorInfo: null };
   }
 
-  componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
+  componentDidCatch(error: Error, errorInfo: ErrorInfo): void {
     // Log error to console in development
     if (process.env.NODE_ENV === 'development') {
       console.error('Error caught by boundary:', error);
       console.error('Error info:', errorInfo);
     }
-
-    // Call custom error handler if provided
-    this.props.onError?.(error, errorInfo);
 
     // Log to error tracking service
     const severity = getErrorSeverity(error);
@@ -54,63 +52,66 @@ export class ErrorBoundary extends Component<Props, State> {
       severity
     );
 
-    this.setState({ errorInfo });
+    this.setState({
+      error,
+      errorInfo
+    });
   }
 
   handleReset = () => {
-    this.setState({ hasError: false, error: undefined, errorInfo: undefined });
+    // Reset the error state
+    this.setState({ hasError: false, error: null, errorInfo: null });
   };
 
-  render() {
-    if (this.state.hasError) {
-      // Custom fallback UI
-      if (this.props.fallback) {
-        return this.props.fallback;
-      }
+  render(): ReactNode {
+    const { hasError, error, errorInfo } = this.state;
+    const { children } = this.props;
+    const router = useRouter();
 
-      // Default error UI
+    if (hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-background">
-          <Card className="max-w-lg w-full">
+        <div className="min-h-screen flex items-center justify-center p-4">
+          <Card className="max-w-2xl w-full">
             <CardHeader>
-              <div className="flex items-center gap-3">
-                <AlertTriangle className="h-6 w-6 text-destructive" />
-                <CardTitle>Something went wrong</CardTitle>
+              <div className="flex items-center space-x-2 mb-2">
+                <Bug className="w-6 h-6 text-red-500" />
+                <CardTitle className="text-xl">Something went wrong</CardTitle>
               </div>
+              <CardDescription>
+                We encountered an error while rendering this page
+              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-muted-foreground">
-                We're sorry, but something unexpected happened. Please try again.
-              </p>
-
-              {process.env.NODE_ENV === 'development' && this.state.error && (
-                <div className="mt-4 p-4 bg-destructive/10 rounded-lg">
-                  <p className="font-mono text-sm text-destructive">
-                    {this.state.error.message}
-                  </p>
-                  {this.state.errorInfo && (
-                    <details className="mt-2">
-                      <summary className="cursor-pointer text-sm text-muted-foreground">
-                        Stack trace
-                      </summary>
-                      <pre className="mt-2 text-xs overflow-auto">
-                        {this.state.errorInfo.componentStack}
+            <CardContent>
+              <Alert variant="destructive" className="mb-6">
+                <AlertTitle>Error Details</AlertTitle>
+                <AlertDescription>
+                  <p className="font-mono text-sm break-all">{error?.toString()}</p>
+                  {errorInfo && (
+                    <details className="mt-2 text-sm">
+                      <summary className="cursor-pointer">Error details</summary>
+                      <pre className="mt-2 p-2 bg-muted rounded text-xs overflow-auto">
+                        {errorInfo.componentStack}
                       </pre>
                     </details>
                   )}
-                </div>
-              )}
-
-              <div className="flex gap-2">
-                <Button onClick={this.handleReset} className="flex-1">
-                  Try again
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => window.location.href = '/'}
-                  className="flex-1"
+                </AlertDescription>
+              </Alert>
+              
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button 
+                  onClick={this.handleReset}
+                  className="flex items-center justify-center"
                 >
-                  Go home
+                  <RotateCcw className="w-4 h-4 mr-2" />
+                  Try Again
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => router.push('/dashboard')}
+                  className="flex items-center justify-center"
+                >
+                  <Home className="w-4 h-4 mr-2" />
+                  Return to Dashboard
                 </Button>
               </div>
             </CardContent>
@@ -119,20 +120,8 @@ export class ErrorBoundary extends Component<Props, State> {
       );
     }
 
-    return this.props.children;
+    return children;
   }
 }
 
-/**
- * Usage example:
- * 
- * <ErrorBoundary>
- *   <YourComponent />
- * </ErrorBoundary>
- * 
- * Or with custom fallback:
- * 
- * <ErrorBoundary fallback={<CustomErrorUI />}>
- *   <YourComponent />
- * </ErrorBoundary>
- */
+export default ErrorBoundary;
