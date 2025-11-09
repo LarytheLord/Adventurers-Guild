@@ -28,6 +28,10 @@ const envSchema = z.object({
   // Application
   NEXT_PUBLIC_APP_URL: z.string().url().optional(),
 
+  // DevSync Integration
+  NEXT_PUBLIC_DEVSYNC_API_URL: z.string().url().optional(),
+  DEVSYNC_API_KEY: z.string().optional(),
+
   // Optional: Analytics
   NEXT_PUBLIC_GA_ID: z.string().optional(),
 
