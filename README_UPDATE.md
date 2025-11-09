@@ -1,9 +1,5 @@
 # The Adventurers Guild - Enhanced README
 
-[![GitHub contributors](https://img.shields.io/github/contributors/LarytheLord/adventurers-guild?style=flat-square)](https://github.com/LarytheLord/adventurers-guild/graphs/contributors)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Discord](https://img.shields.io/discord/7hQYkEx5?label=Discord&logo=discord&style=flat-square)](https://discord.gg/7hQYkEx5)
-[![Website](https://img.shields.io/badge/Website-Live-blue?style=flat-square)](https://adventurersguild.vercel.app)
-
 ## 🎮 Revolutionizing Computer Science Education
 
 **The Adventurers Guild** is an innovative educational platform that gamifies computer science learning by connecting students with real-world projects from companies. Students (called "Adventurers") progress through skill trees, earn experience points (XP), and advance through a ranking system (F to S rank) by completing "Quests" - which are actual digital projects commissioned by companies.
