@@ -9,6 +9,7 @@ import Script from "next/script"
 import A11ySkipLink from "../components/A11ySkipLink"
 import Navigation from "../components/Navigation"
 import ErrorBoundary from "../components/ErrorBoundary"
+import { Toaster } from "@/components/ui/sonner"
 
 export const metadata: Metadata = {
   title: "Adventurers Guild",
@@ -19,7 +20,6 @@ export const metadata: Metadata = {
     apple: "/pwa/icon-192x192.svg",
   },
   generator: "Adventurers",
-  // Accessibility metadata
   other: {
     "color-scheme": "light dark",
   }
@@ -39,8 +39,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html 
-      lang="en" 
+    <html
+      lang="en"
       suppressHydrationWarning
       className="scroll-smooth"
       style={{ scrollBehavior: 'smooth' }}
@@ -54,15 +54,13 @@ export default function RootLayout({
         <link rel="icon" href="/pwa/icon-192x192.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/pwa/icon-192x192.svg" />
         <meta name="theme-color" content="#ffffff" />
-        
-        {/* Accessibility additions */}
         <meta name="color-scheme" content="light dark" />
       </head>
       <body
         className={`${GeistSans.variable} ${GeistMono.variable} font-sans antialiased`}
       >
         <A11ySkipLink />
-        
+
         <SessionProvider>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <div id="main-content" className="min-h-screen flex-col">
@@ -71,10 +69,10 @@ export default function RootLayout({
                 {children}
               </ErrorBoundary>
             </div>
+            <Toaster />
           </ThemeProvider>
         </SessionProvider>
 
-        {/* Show scrollbar during scroll; hide 2s after idle */}
         <Script id="scrollbar-handler" strategy="afterInteractive">
           {`
             (function () {
@@ -92,17 +90,14 @@ export default function RootLayout({
                 document.body.classList.remove('show-scrollbar');
               }
 
-              // show on any scroll-like interaction
               window.addEventListener('scroll', show, { passive: true });
               window.addEventListener('wheel', show, { passive: true });
               window.addEventListener('touchmove', show, { passive: true });
               window.addEventListener('keydown', function (e) {
-                // keys that can scroll the page
                 var keys = ['ArrowUp','ArrowDown','PageUp','PageDown','Home','End',' '];
                 if (keys.includes(e.key)) show();
               });
 
-              // ensure hidden on load
               hide();
             })();
           `}
