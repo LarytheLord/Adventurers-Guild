@@ -7,9 +7,7 @@ const nextConfig = {
     unoptimized: true,
   },
   reactStrictMode: true,
-  compiler: {
-    styledComponents: true,
-  },
+  transpilePackages: ['next-auth'],
 };
 
 export default nextConfig;

@@ -10,6 +10,7 @@ import { logError, getErrorSeverity } from '@/lib/error-logger';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
+  router: any; // Injected by wrapper
 }
 
 interface ErrorBoundaryState {
@@ -18,13 +19,13 @@ interface ErrorBoundaryState {
   errorInfo: ErrorInfo | null;
 }
 
-class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+class ErrorBoundaryClass extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
     super(props);
-    this.state = { 
-      hasError: false, 
-      error: null, 
-      errorInfo: null 
+    this.state = {
+      hasError: false,
+      error: null,
+      errorInfo: null
     };
   }
 
@@ -65,8 +66,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
   render(): ReactNode {
     const { hasError, error, errorInfo } = this.state;
-    const { children } = this.props;
-    const router = useRouter();
+    const { children, router } = this.props;
 
     if (hasError) {
       return (
@@ -96,16 +96,16 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
                   )}
                 </AlertDescription>
               </Alert>
-              
+
               <div className="flex flex-col sm:flex-row gap-3">
-                <Button 
+                <Button
                   onClick={this.handleReset}
                   className="flex items-center justify-center"
                 >
                   <RotateCcw className="w-4 h-4 mr-2" />
                   Try Again
                 </Button>
-                <Button 
+                <Button
                   variant="outline"
                   onClick={() => router.push('/dashboard')}
                   className="flex items-center justify-center"
@@ -124,4 +124,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
   }
 }
 
-export default ErrorBoundary;
+export default function ErrorBoundary({ children }: { children: ReactNode }) {
+  const router = useRouter();
+  return <ErrorBoundaryClass router={router}>{children}</ErrorBoundaryClass>;
+}
