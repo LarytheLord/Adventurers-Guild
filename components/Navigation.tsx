@@ -143,11 +143,12 @@ export default function Navigation() {
       className={cn(
         "fixed top-0 w-full z-50 transition-all duration-300 border-b",
         scrolled || !isHome
-          ? "bg-black/60 backdrop-blur-xl border-white/5 py-3"
+          ? "bg-black/60 backdrop-blur-xl border-white/5 py-3 shadow-lg shadow-purple-500/5"
           : "bg-transparent border-transparent py-5"
       )}
     >
-      <div className="container mx-auto px-6 flex items-center justify-between">
+      <div className="absolute inset-0 bg-noise opacity-5 pointer-events-none" />
+      <div className="container mx-auto px-6 flex items-center justify-between relative z-10">
         <Link href="/" className="flex items-center gap-2 font-bold text-xl tracking-tight group">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white group-hover:scale-110 transition-transform">
             <Code2 className="w-5 h-5" />
