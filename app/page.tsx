@@ -3,18 +3,16 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   ArrowRight,
   Trophy,
   Zap,
   Target,
-  User,
-  Terminal,
-  Github,
-  Globe,
-  Cpu
+  Code2,
+  Rocket,
+  Users,
+  Star
 } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
@@ -63,361 +61,168 @@ export default function LandingPage() {
 
   if (!mounted) return null;
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1
-      }
-    }
-  };
-
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1
-    }
-  };
-
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground overflow-hidden">
+    <div className="flex flex-col min-h-screen bg-background text-foreground overflow-hidden selection:bg-primary/30">
+
+      {/* Background Effects */}
+      <div className="fixed inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/10 blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-600/10 blur-[120px]" />
+      </div>
+
       {/* Hero Section */}
-      <section className="relative py-20 md:py-32 overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl opacity-30 animate-pulse" />
-          <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-secondary/20 rounded-full blur-3xl opacity-30 animate-pulse delay-1000" />
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-3xl opacity-20" />
-        </div>
-
-        <div className="container relative z-10 px-4 md:px-6 mx-auto">
+      <section className="relative pt-32 pb-20 md:pt-48 md:pb-32 z-10">
+        <div className="container px-4 mx-auto text-center">
           <motion.div
-            className="flex flex-col items-center text-center space-y-8"
-            initial="hidden"
-            animate="visible"
-            variants={containerVariants}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-sm font-medium mb-8"
           >
-            <motion.div variants={itemVariants}>
-              <Badge variant="outline" className="px-4 py-1 text-sm border-primary/50 text-primary bg-primary/10 mb-4">
-                <Terminal className="w-3 h-3 mr-2 inline-block" />
-                v1.0 Beta Access
-              </Badge>
-            </motion.div>
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+            </span>
+            Accepting New Adventurers
+          </motion.div>
 
-            <motion.h1
-              className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tighter bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-500 to-secondary max-w-4xl"
-              variants={itemVariants}
-            >
-              Level Up Your Coding Journey with Real Quests
-            </motion.h1>
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight mb-6"
+          >
+            Code Real <span className="text-gradient">Quests</span>.<br />
+            Get Paid. Level Up.
+          </motion.h1>
 
-            <motion.p
-              className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed"
-              variants={itemVariants}
-            >
-              The Adventurers Guild connects ambitious students with real-world company projects. Earn XP, climb the ranks, and get paid to learn.
-            </motion.p>
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed"
+          >
+            Stop building to-do apps. Join the guild to work on real-world projects from top companies, earn XP, and build a career-defining portfolio.
+          </motion.p>
 
-            <motion.div
-              className="flex flex-col sm:flex-row gap-4 w-full max-w-md mx-auto mt-8"
-              variants={itemVariants}
-            >
-              <form onSubmit={handleSubmit} className="flex w-full gap-2">
-                <Input
-                  type="email"
-                  placeholder="Enter your email to join..."
-                  className="bg-background/50 backdrop-blur-sm border-primary/20 h-12"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-                <Button type="submit" size="lg" className="h-12 px-8" disabled={loading}>
-                  {loading ? (
-                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                  ) : (
-                    <>
-                      Join <ArrowRight className="ml-2 w-4 h-4" />
-                    </>
-                  )}
-                </Button>
-              </form>
-            </motion.div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            className="flex flex-col sm:flex-row gap-4 justify-center max-w-md mx-auto"
+          >
+            <form onSubmit={handleSubmit} className="flex w-full gap-2 p-1 bg-white/5 border border-white/10 rounded-xl backdrop-blur-sm">
+              <Input
+                type="email"
+                placeholder="Enter your email..."
+                className="bg-transparent border-none focus-visible:ring-0 h-12 text-base"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+              <Button type="submit" size="lg" className="h-12 px-6 bg-primary hover:bg-primary/90 text-white shadow-[0_0_20px_rgba(124,58,237,0.3)]" disabled={loading}>
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  <>
+                    Join <ArrowRight className="ml-2 w-4 h-4" />
+                  </>
+                )}
+              </Button>
+            </form>
+          </motion.div>
 
-            <motion.p className="text-sm text-muted-foreground" variants={itemVariants}>
-              Join 500+ adventurers waiting for their first quest.
-            </motion.p>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 1, delay: 0.5 }}
+            className="mt-12 flex items-center justify-center gap-8 opacity-50 grayscale hover:grayscale-0 transition-all duration-500"
+          >
+            {/* Partner Logos Placeholder */}
+            <div className="text-sm font-semibold tracking-widest uppercase">Trusted by Industry Leaders</div>
           </motion.div>
         </div>
       </section>
 
       {/* Features Grid */}
-      <section className="py-20 bg-muted/30">
-        <div className="container px-4 md:px-6 mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold mb-4">Why Join The Guild?</h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Stop building to-do apps. Start solving real problems for real companies.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="bg-background/50 backdrop-blur-sm border-primary/10 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 group">
-              <CardHeader>
-                <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Target className="w-6 h-6 text-primary" />
-                </div>
-                <CardTitle>Real World Quests</CardTitle>
-                <CardDescription>
-                  Work on actual tickets from partner companies. Fix bugs, build features, and ship code that matters.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card className="bg-background/50 backdrop-blur-sm border-primary/10 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 group">
-              <CardHeader>
-                <div className="w-12 h-12 bg-purple-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Trophy className="w-6 h-6 text-purple-500" />
-                </div>
-                <CardTitle>Rank Up System</CardTitle>
-                <CardDescription>
-                  Progress from F-Rank to S-Rank based on your performance. Unlock harder quests and higher rewards as you level up.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-
-            <Card className="bg-background/50 backdrop-blur-sm border-primary/10 hover:border-primary/30 transition-all duration-300 hover:shadow-lg hover:shadow-primary/5 group">
-              <CardHeader>
-                <div className="w-12 h-12 bg-secondary/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300">
-                  <Zap className="w-6 h-6 text-secondary" />
-                </div>
-                <CardTitle>Earn While Learning</CardTitle>
-                <CardDescription>
-                  Get paid for completed quests. Build your portfolio and your bank account simultaneously.
-                </CardDescription>
-              </CardHeader>
-            </Card>
+      <section className="py-24 relative z-10">
+        <div className="container px-4 mx-auto">
+          <div className="grid md:grid-cols-3 gap-6">
+            <FeatureCard
+              icon={<Target className="w-6 h-6 text-blue-400" />}
+              title="Real World Quests"
+              description="Work on actual tickets from partner companies. Fix bugs, build features, and ship code that matters."
+            />
+            <FeatureCard
+              icon={<Trophy className="w-6 h-6 text-yellow-400" />}
+              title="Rank Up System"
+              description="Progress from F-Rank to S-Rank. Unlock exclusive quests, higher pay rates, and mentorship as you level up."
+            />
+            <FeatureCard
+              icon={<Zap className="w-6 h-6 text-purple-400" />}
+              title="Earn While Learning"
+              description="Get paid for every completed quest. Build your portfolio and your bank account simultaneously."
+            />
           </div>
         </div>
       </section>
 
-      {/* How It Works */}
-      <section className="py-20">
-        <div className="container px-4 md:px-6 mx-auto">
-          <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8">
-              <h2 className="text-3xl md:text-5xl font-bold">Your Journey to S-Rank</h2>
-              <div className="space-y-6">
-                <div className="flex gap-4">
-                  <div className="flex-none w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">1</div>
-                  <div>
-                    <h3 className="text-xl font-bold mb-2">Create Your Profile</h3>
-                    <p className="text-muted-foreground">Showcase your skills, GitHub stats, and areas of interest.</p>
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <div className="flex-none w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">2</div>
-                  <div>
-                    <h3 className="text-xl font-bold mb-2">Accept a Quest</h3>
-                    <p className="text-muted-foreground">Browse the quest board and pick a task that matches your rank and skills.</p>
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <div className="flex-none w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">3</div>
-                  <div>
-                    <h3 className="text-xl font-bold mb-2">Submit & Get Reviewed</h3>
-                    <p className="text-muted-foreground">Submit your PR. Get code review from senior devs and company mentors.</p>
-                  </div>
-                </div>
-                <div className="flex gap-4">
-                  <div className="flex-none w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">4</div>
-                  <div>
-                    <h3 className="text-xl font-bold mb-2">Get Paid & Level Up</h3>
-                    <p className="text-muted-foreground">Receive payment and XP upon approval. Unlock better quests.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-primary to-secondary opacity-20 blur-3xl rounded-full" />
-              <div className="relative bg-card border border-border rounded-xl p-6 shadow-2xl">
-                <div className="flex items-center justify-between mb-6">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                      <User className="w-6 h-6 text-primary" />
-                    </div>
-                    <div>
-                      <div className="font-bold">Adventurer #42</div>
-                      <div className="text-xs text-muted-foreground">Level 5 • B-Rank</div>
-                    </div>
-                  </div>
-                  <Badge>Online</Badge>
-                </div>
-                <div className="space-y-4">
-                  <div className="h-2 bg-secondary/20 rounded-full overflow-hidden">
-                    <div className="h-full w-3/4 bg-secondary rounded-full" />
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span>XP Progress</span>
-                    <span>750 / 1000</span>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 mt-4">
-                    <div className="bg-muted/50 p-3 rounded-lg text-center">
-                      <div className="text-2xl font-bold text-primary">12</div>
-                      <div className="text-xs text-muted-foreground">Quests Done</div>
-                    </div>
-                    <div className="bg-muted/50 p-3 rounded-lg text-center">
-                      <div className="text-2xl font-bold text-green-500">$450</div>
-                      <div className="text-xs text-muted-foreground">Earned</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+      {/* Stats / Social Proof */}
+      <section className="py-24 border-y border-white/5 bg-white/[0.02]">
+        <div className="container px-4 mx-auto">
+          <div className="grid md:grid-cols-4 gap-8 text-center">
+            <StatItem value="500+" label="Active Adventurers" />
+            <StatItem value="$50k+" label="Paid to Students" />
+            <StatItem value="120+" label="Quests Completed" />
+            <StatItem value="15" label="Partner Companies" />
           </div>
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-20 bg-muted/30">
-        <div className="container px-4 md:px-6 mx-auto">
-          <h2 className="text-3xl md:text-5xl font-bold text-center mb-16">Guild Stories</h2>
-          <div className="grid md:grid-cols-3 gap-8">
-            <Card className="bg-background/50 backdrop-blur-sm">
-              <CardContent className="pt-6">
-                <div className="flex gap-1 mb-4">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <Zap key={i} className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                  ))}
-                </div>
-                <p className="text-muted-foreground mb-6">
-                  "I learned more in 2 weeks of doing quests than I did in a whole semester of college. The code reviews are brutal but incredibly helpful."
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/20" />
-                  <div>
-                    <div className="font-bold">Sarah J.</div>
-                    <div className="text-xs text-muted-foreground">A-Rank Adventurer</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="bg-background/50 backdrop-blur-sm">
-              <CardContent className="pt-6">
-                <div className="flex gap-1 mb-4">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <Zap key={i} className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                  ))}
-                </div>
-                <p className="text-muted-foreground mb-6">
-                  "Finally a way to get real experience without needing 5 years of experience first. The payment system is just the cherry on top."
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/20" />
-                  <div>
-                    <div className="font-bold">Mike T.</div>
-                    <div className="text-xs text-muted-foreground">B-Rank Adventurer</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-            <Card className="bg-background/50 backdrop-blur-sm">
-              <CardContent className="pt-6">
-                <div className="flex gap-1 mb-4">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <Zap key={i} className="w-4 h-4 text-yellow-500 fill-yellow-500" />
-                  ))}
-                </div>
-                <p className="text-muted-foreground mb-6">
-                  "As a startup, we get our backlog cleared and help students learn. It's a win-win. The quality of work has been surprisingly high."
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/20" />
-                  <div>
-                    <div className="font-bold">TechCorp Inc.</div>
-                    <div className="text-xs text-muted-foreground">Guild Partner</div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="py-20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-primary/5" />
-        <div className="container px-4 md:px-6 mx-auto relative z-10 text-center">
-          <h2 className="text-3xl md:text-5xl font-bold mb-6">Ready to Start Your Adventure?</h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto mb-8">
+      {/* CTA */}
+      <section className="py-32 relative z-10 text-center">
+        <div className="container px-4 mx-auto max-w-3xl">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6">Ready to Start Your Adventure?</h2>
+          <p className="text-xl text-muted-foreground mb-10">
             The Guild is accepting new members. Claim your spot and start your journey today.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button size="lg" className="h-14 px-8 text-lg" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-              Join the Waitlist
-            </Button>
-            <Button size="lg" variant="outline" className="h-14 px-8 text-lg" asChild>
-              <Link href="/login">
-                Member Login
-              </Link>
-            </Button>
-          </div>
+          <Button asChild size="lg" className="h-14 px-8 text-lg rounded-full bg-white text-black hover:bg-gray-200">
+            <Link href="/register">
+              Create Your Account
+            </Link>
+          </Button>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-12 border-t bg-muted/10">
-        <div className="container px-4 md:px-6 mx-auto">
-          <div className="grid md:grid-cols-4 gap-8 mb-8">
-            <div className="space-y-4">
-              <div className="flex items-center space-x-2">
-                <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                  <span className="text-primary-foreground font-bold">AG</span>
-                </div>
-                <span className="font-bold">The Adventurers Guild</span>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                Empowering the next generation of developers through gamified real-world experience.
-              </p>
-            </div>
-            <div>
-              <h3 className="font-bold mb-4">Platform</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="#" className="hover:text-primary">Quests</Link></li>
-                <li><Link href="#" className="hover:text-primary">Rankings</Link></li>
-                <li><Link href="#" className="hover:text-primary">Companies</Link></li>
-                <li><Link href="#" className="hover:text-primary">Pricing</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-bold mb-4">Resources</h3>
-              <ul className="space-y-2 text-sm text-muted-foreground">
-                <li><Link href="#" className="hover:text-primary">Documentation</Link></li>
-                <li><Link href="#" className="hover:text-primary">Blog</Link></li>
-                <li><Link href="#" className="hover:text-primary">Community</Link></li>
-                <li><Link href="#" className="hover:text-primary">Help Center</Link></li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-bold mb-4">Connect</h3>
-              <div className="flex space-x-4">
-                <Link href="#" className="text-muted-foreground hover:text-primary">
-                  <Github className="w-5 h-5" />
-                </Link>
-                <Link href="#" className="text-muted-foreground hover:text-primary">
-                  <Globe className="w-5 h-5" />
-                </Link>
-                <Link href="#" className="text-muted-foreground hover:text-primary">
-                  <Cpu className="w-5 h-5" />
-                </Link>
-              </div>
-            </div>
-          </div>
-          <div className="border-t pt-8 text-center text-sm text-muted-foreground">
-            © 2025 The Adventurers Guild. All rights reserved.
-          </div>
+      <footer className="py-12 border-t border-white/10 bg-black/20">
+        <div className="container px-4 mx-auto text-center text-muted-foreground text-sm">
+          <p>© 2025 The Adventurers Guild. All rights reserved.</p>
         </div>
       </footer>
+    </div>
+  );
+}
+
+function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
+  return (
+    <div className="glass-card p-8 rounded-2xl hover:bg-white/5 transition-colors group">
+      <div className="w-12 h-12 rounded-lg bg-white/5 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 border border-white/10">
+        {icon}
+      </div>
+      <h3 className="text-xl font-bold mb-3">{title}</h3>
+      <p className="text-muted-foreground leading-relaxed">
+        {description}
+      </p>
+    </div>
+  );
+}
+
+function StatItem({ value, label }: { value: string, label: string }) {
+  return (
+    <div>
+      <div className="text-4xl font-bold text-white mb-2">{value}</div>
+      <div className="text-sm text-muted-foreground uppercase tracking-wider">{label}</div>
     </div>
   );
 }

@@ -6,9 +6,8 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Code2, CheckCircle2 } from 'lucide-react';
 import { createClient } from '@supabase/supabase-js';
 import {
   Select,
@@ -17,6 +16,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import Link from 'next/link';
+import { motion } from 'framer-motion';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -37,7 +38,7 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -66,7 +67,7 @@ export default function RegisterPage() {
         setError(signUpError.message);
       } else if (data.user) {
         setSuccess(true);
-        
+
         // Add user to our users table
         const { error: insertError } = await supabase
           .from('users')
@@ -118,36 +119,54 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
-          <CardTitle className="text-2xl">Join the Guild</CardTitle>
-          <CardDescription>
-            Create your Adventurers Guild account
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+    <div className="min-h-screen flex items-center justify-center p-4 bg-background relative overflow-hidden">
+      {/* Background Effects */}
+      <div className="absolute inset-0 z-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/10 blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-600/10 blur-[120px]" />
+      </div>
+
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        className="w-full max-w-md relative z-10"
+      >
+        <div className="mb-8 text-center">
+          <Link href="/" className="inline-flex items-center gap-2 font-bold text-2xl tracking-tight mb-2 group">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white group-hover:scale-110 transition-transform shadow-lg shadow-primary/20">
+              <Code2 className="w-6 h-6" />
+            </div>
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-white/80">Adventurers Guild</span>
+          </Link>
+          <p className="text-muted-foreground">Begin your journey.</p>
+        </div>
+
+        <div className="glass-card p-8 rounded-2xl border border-white/10 shadow-2xl backdrop-blur-xl bg-black/40">
           {error && (
-            <Alert variant="destructive" className="mb-4">
+            <Alert variant="destructive" className="mb-6 bg-red-500/10 border-red-500/20 text-red-400">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          
+
           {success ? (
             <div className="text-center py-8">
-              <h3 className="text-lg font-medium mb-2">Registration Successful!</h3>
-              <p className="text-muted-foreground mb-4">
+              <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4 text-green-500">
+                <CheckCircle2 className="w-8 h-8" />
+              </div>
+              <h3 className="text-xl font-bold mb-2 text-white">Registration Successful!</h3>
+              <p className="text-muted-foreground mb-6">
                 Please check your email to verify your account.
               </p>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-primary animate-pulse">
                 Redirecting to login...
               </p>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
+                <Label htmlFor="name" className="text-sm font-medium text-gray-300">Full Name</Label>
                 <Input
                   id="name"
                   type="text"
@@ -155,11 +174,12 @@ export default function RegisterPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
+                  className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-primary/50 focus:ring-primary/20 h-11"
                 />
               </div>
-              
+
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-sm font-medium text-gray-300">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -167,16 +187,17 @@ export default function RegisterPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
+                  className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-primary/50 focus:ring-primary/20 h-11"
                 />
               </div>
-              
+
               <div className="space-y-2">
-                <Label htmlFor="role">Account Type</Label>
+                <Label htmlFor="role" className="text-sm font-medium text-gray-300">Account Type</Label>
                 <Select value={role} onValueChange={(value: 'adventurer' | 'company') => setRole(value)}>
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-white/5 border-white/10 text-white h-11">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-black/90 border-white/10 text-white">
                     <SelectItem value="adventurer">Adventurer (Student)</SelectItem>
                     <SelectItem value="company">Company</SelectItem>
                   </SelectContent>
@@ -185,59 +206,66 @@ export default function RegisterPage() {
 
               {role === 'company' && (
                 <div className="space-y-2">
-                  <Label htmlFor="companyName">Company Name</Label>
+                  <Label htmlFor="companyName" className="text-sm font-medium text-gray-300">Company Name</Label>
                   <Input
                     id="companyName"
                     type="text"
                     placeholder="Your company name"
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
+                    className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-primary/50 focus:ring-primary/20 h-11"
                   />
                 </div>
               )}
-              
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-sm font-medium text-gray-300">Password</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-primary/50 focus:ring-primary/20 h-11"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-300">Confirm</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    placeholder="••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-primary/50 focus:ring-primary/20 h-11"
+                  />
+                </div>
               </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="••••••"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                />
-              </div>
-              
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Creating Account...' : 'Create Account'}
+
+              <Button type="submit" className="w-full h-11 bg-primary hover:bg-primary/90 text-white font-semibold shadow-lg shadow-primary/20" disabled={loading}>
+                {loading ? (
+                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                ) : (
+                  'Create Account'
+                )}
               </Button>
             </form>
           )}
-        </CardContent>
-        <CardFooter className="flex flex-col space-y-2">
-          <p className="text-sm text-muted-foreground text-center">
-            Already have an account?{' '}
-            <button 
-              onClick={() => router.push('/login')} 
-              className="text-primary hover:underline"
-            >
-              Sign in
-            </button>
-          </p>
-        </CardFooter>
-      </Card>
+
+          <div className="mt-6 pt-6 border-t border-white/10 text-center">
+            <p className="text-sm text-muted-foreground">
+              Already have an account?{' '}
+              <Link href="/login" className="text-primary hover:text-primary/80 font-medium transition-colors">
+                Sign in
+              </Link>
+            </p>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 }
