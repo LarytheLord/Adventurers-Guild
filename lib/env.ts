@@ -18,11 +18,11 @@ const envSchema = z.object({
   NEXTAUTH_URL: z.string().url().optional(),
   NEXTAUTH_SECRET: z.string().min(32, 'NEXTAUTH_SECRET must be at least 32 characters'),
 
-  // Email
-  SMTP_HOST: z.string().min(1),
-  SMTP_PORT: z.string().regex(/^\d+$/, 'SMTP_PORT must be a number'),
-  SMTP_USER: z.string().email('SMTP_USER must be a valid email'),
-  SMTP_PASS: z.string().min(1),
+  // Email (optional — only needed for /api/send-email)
+  SMTP_HOST: z.string().optional().default(''),
+  SMTP_PORT: z.string().optional().default('587'),
+  SMTP_USER: z.string().optional().default(''),
+  SMTP_PASS: z.string().optional().default(''),
   ADMIN_EMAIL: z.string().email().optional(),
 
   // Application
