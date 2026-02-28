@@ -25,6 +25,10 @@ import {
   Menu,
   X,
   Briefcase,
+  Zap,
+  Plus,
+  BarChart3,
+  Building2,
 } from 'lucide-react';
 import Link from 'next/link';
 import { signOut } from 'next-auth/react';
@@ -66,13 +70,26 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     .join('')
     .toUpperCase() || 'U';
 
-  const navigation = [
+  const isCompany = user?.role === 'company';
+
+  const adventurerNav = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
     { name: 'Quests', href: '/dashboard/quests', icon: Target },
     { name: 'My Quests', href: '/dashboard/my-quests', icon: Briefcase },
+    { name: 'Skill Tree', href: '/dashboard/skill-tree', icon: Zap },
     { name: 'Teams', href: '/dashboard/teams', icon: Users },
     { name: 'Leaderboard', href: '/dashboard/leaderboard', icon: Trophy },
   ];
+
+  const companyNav = [
+    { name: 'Dashboard', href: '/dashboard/company', icon: Home },
+    { name: 'My Quests', href: '/dashboard/company/quests', icon: Target },
+    { name: 'Create Quest', href: '/dashboard/company/create-quest', icon: Plus },
+    { name: 'Analytics', href: '/dashboard/company/analytics', icon: BarChart3 },
+    { name: 'Company Profile', href: '/dashboard/company/profile', icon: Building2 },
+  ];
+
+  const navigation = isCompany ? companyNav : adventurerNav;
 
   return (
     <div className="min-h-screen bg-background">
