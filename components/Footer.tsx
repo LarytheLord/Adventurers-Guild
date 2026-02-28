@@ -35,9 +35,9 @@ export default function Footer() {
                     <div>
                         <h3 className="text-sm font-semibold text-slate-900 mb-4">Resources</h3>
                         <ul className="space-y-2.5">
-                            <FooterLink href="#">Documentation</FooterLink>
-                            <FooterLink href="#">Community</FooterLink>
-                            <FooterLink href="#">Help Center</FooterLink>
+                            <FooterLink href="https://github.com/LarytheLord/Adventurers-Guild">GitHub</FooterLink>
+                            <FooterLink href="https://discord.gg/7hQYkEx5">Community</FooterLink>
+                            <FooterLink href="/register">Get Started</FooterLink>
                         </ul>
                     </div>
 
