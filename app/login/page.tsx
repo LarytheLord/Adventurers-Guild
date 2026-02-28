@@ -1,4 +1,3 @@
-// app/login/page.tsx
 'use client';
 
 import { useState } from 'react';
@@ -8,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Code2, ArrowLeft } from 'lucide-react';
+import { AlertCircle, Code2 } from 'lucide-react';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 
@@ -46,40 +45,34 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background relative overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/10 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-600/10 blur-[120px]" />
-      </div>
-
+    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md relative z-10"
+        transition={{ duration: 0.4 }}
+        className="w-full max-w-md"
       >
         <div className="mb-8 text-center">
           <Link href="/" className="inline-flex items-center gap-2 font-bold text-2xl tracking-tight mb-2 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white group-hover:scale-110 transition-transform shadow-lg shadow-primary/20">
-              <Code2 className="w-6 h-6" />
+            <div className="w-9 h-9 rounded-lg bg-slate-900 flex items-center justify-center text-white group-hover:bg-slate-800 transition-colors">
+              <Code2 className="w-5 h-5" />
             </div>
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-white/80">Adventurers Guild</span>
+            <span className="text-slate-900">Adventurers Guild</span>
           </Link>
-          <p className="text-muted-foreground">Welcome back, Adventurer.</p>
+          <p className="text-slate-500 mt-1">Welcome back, Adventurer.</p>
         </div>
 
-        <div className="glass-card p-8 rounded-2xl border border-white/10 shadow-2xl backdrop-blur-xl bg-black/40">
+        <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm">
           {error && (
-            <Alert variant="destructive" className="mb-6 bg-red-500/10 border-red-500/20 text-red-400">
+            <Alert variant="destructive" className="mb-6">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium text-gray-300">Email</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -87,27 +80,31 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-primary/50 focus:ring-primary/20 h-11"
+                className="h-11"
               />
             </div>
             <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-sm font-medium text-gray-300">Password</Label>
-                <Link href="/forgot-password" className="text-xs text-primary hover:text-primary/80 transition-colors">
+                <Label htmlFor="password">Password</Label>
+                <Link href="/forgot-password" className="text-xs text-indigo-600 hover:text-indigo-500 transition-colors">
                   Forgot password?
                 </Link>
               </div>
               <Input
                 id="password"
                 type="password"
-                placeholder="••••••••"
+                placeholder="Enter your password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-primary/50 focus:ring-primary/20 h-11"
+                className="h-11"
               />
             </div>
-            <Button type="submit" className="w-full h-11 bg-primary hover:bg-primary/90 text-white font-semibold shadow-lg shadow-primary/20" disabled={loading}>
+            <Button
+              type="submit"
+              className="w-full h-11 bg-slate-900 hover:bg-slate-800 text-white font-semibold"
+              disabled={loading}
+            >
               {loading ? (
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
@@ -116,10 +113,10 @@ export default function LoginPage() {
             </Button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-white/10 text-center">
-            <p className="text-sm text-muted-foreground">
-              Don't have an account?{' '}
-              <Link href="/register" className="text-primary hover:text-primary/80 font-medium transition-colors">
+          <div className="mt-6 pt-6 border-t border-slate-100 text-center">
+            <p className="text-sm text-slate-500">
+              Don&apos;t have an account?{' '}
+              <Link href="/register" className="text-indigo-600 hover:text-indigo-500 font-medium transition-colors">
                 Join the Guild
               </Link>
             </p>

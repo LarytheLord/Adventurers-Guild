@@ -1,6 +1,8 @@
 // app/api/rankings/route.ts
 import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { getAuthUser } from '@/lib/api-auth';
+import { getRankForXp } from '@/lib/ranks';
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -98,6 +100,11 @@ export async function GET(request: NextRequest) {
 // Calculate user rank based on XP
 export async function POST(request: NextRequest) {
   try {
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+    }
+
     const body = await request.json();
     const { userId } = body;
 
@@ -120,23 +127,8 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: 'User not found', success: false }, { status: 404 });
     }
 
-    // Calculate rank based on XP thresholds
-    const rankThresholds = [
-      { rank: 'F', threshold: 0 },
-      { rank: 'E', threshold: 1000 },
-      { rank: 'D', threshold: 3000 },
-      { rank: 'C', threshold: 6000 },
-      { rank: 'B', threshold: 10000 },
-      { rank: 'A', threshold: 15000 },
-      { rank: 'S', threshold: 25000 }
-    ];
-
-    // Find the appropriate rank for the user's XP
-    const userRank = [...rankThresholds]
-      .reverse()
-      .find(r => user.xp >= r.threshold);
-
-    const newRank = userRank ? userRank.rank : 'F';
+    // Calculate rank using centralized thresholds
+    const newRank = getRankForXp(user.xp);
 
     // If rank has changed, update it
     if (newRank !== user.rank) {

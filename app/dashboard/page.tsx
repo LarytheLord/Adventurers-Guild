@@ -52,49 +52,38 @@ export default function AdventurerDashboard() {
       return;
     }
 
-    // Fetch user stats and quests
+    // Fetch user stats and quests from real API
     const fetchData = async () => {
       try {
-        // In a real implementation, this would fetch from an API
-        // For now, using mock data
-        const mockStats: UserStats = {
-          xp: 2450,
-          level: 5,
-          rank: 'C',
-          questsCompleted: 12,
-          activeQuests: 3,
-          skillPoints: 150
-        };
+        const [statsRes, questsRes] = await Promise.all([
+          fetch('/api/users/me/stats'),
+          fetch('/api/users/me/quests?status=assigned&limit=5'),
+        ]);
 
-        const mockQuests: Quest[] = [
-          {
-            id: '1',
-            title: 'Build Authentication System',
-            description: 'Create a secure authentication system with OAuth integration',
-            difficulty: 'B',
-            xp_reward: 1200,
-            status: 'in_progress'
-          },
-          {
-            id: '2',
-            title: 'API Documentation',
-            description: 'Document existing REST API endpoints with examples',
-            difficulty: 'C',
-            xp_reward: 600,
-            status: 'assigned'
-          },
-          {
-            id: '3',
-            title: 'UI Redesign',
-            description: 'Redesign the user dashboard with modern UX principles',
-            difficulty: 'A',
-            xp_reward: 2000,
-            status: 'completed'
-          }
-        ];
-        
-        setStats(mockStats);
-        setQuests(mockQuests);
+        if (statsRes.ok) {
+          const statsData = await statsRes.json();
+          setStats({
+            xp: statsData.xp ?? 0,
+            level: statsData.level ?? 1,
+            rank: statsData.rank ?? 'F',
+            questsCompleted: statsData.questsCompleted ?? 0,
+            activeQuests: statsData.activeQuests ?? 0,
+            skillPoints: statsData.skillPoints ?? 0,
+          });
+        }
+
+        if (questsRes.ok) {
+          const questsData = await questsRes.json();
+          const mapped = (questsData.quests || []).map((a: any) => ({
+            id: a.quest_id || a.quests?.id || a.id,
+            title: a.quests?.title || 'Untitled Quest',
+            description: a.quests?.description || '',
+            difficulty: a.quests?.difficulty || 'F',
+            xp_reward: a.quests?.xp_reward || 0,
+            status: a.status,
+          }));
+          setQuests(mapped);
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
       } finally {

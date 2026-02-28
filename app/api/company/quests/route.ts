@@ -1,6 +1,7 @@
 // app/api/company/quests/route.ts
 import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireAuth } from '@/lib/api-auth';
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -10,20 +11,21 @@ const supabase = createClient(
 
 export async function GET(request: NextRequest) {
   try {
+    const authUser = await requireAuth('company', 'admin');
+    if (!authUser) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+    }
+
     // Parse query parameters
     const { searchParams } = new URL(request.url);
-    const companyId = searchParams.get('company_id');
+    // Use authenticated user's ID as company_id (override any query param to prevent spoofing)
+    const companyId = authUser.role === 'admin' ? (searchParams.get('company_id') || authUser.id) : authUser.id;
     const status = searchParams.get('status');
     const questType = searchParams.get('quest_type');
     const difficulty = searchParams.get('difficulty');
     const search = searchParams.get('search');
     const limit = searchParams.get('limit') || '10';
     const offset = searchParams.get('offset') || '0';
-
-    // Validate company ID is provided
-    if (!companyId) {
-      return Response.json({ error: 'Company ID is required', success: false }, { status: 400 });
-    }
 
     // Build query
     let query = supabase
@@ -85,8 +87,15 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const authUser = await requireAuth('company', 'admin');
+    if (!authUser) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+    }
+
     const body = await request.json();
-    
+    // Force company_id to authenticated user
+    body.company_id = authUser.role === 'admin' ? (body.company_id || authUser.id) : authUser.id;
+
     // Validate required fields
     const requiredFields = ['title', 'description', 'quest_type', 'difficulty', 'xp_reward', 'company_id', 'quest_category'];
     for (const field of requiredFields) {
@@ -130,8 +139,14 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    const authUser = await requireAuth('company', 'admin');
+    if (!authUser) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+    }
+
     const body = await request.json();
-    const { quest_id, company_id, ...updateFields } = body;
+    const { quest_id, company_id: _ignored, ...updateFields } = body;
+    const company_id = authUser.role === 'admin' ? (body.company_id || authUser.id) : authUser.id;
 
     // Validate required fields
     if (!quest_id || !company_id) {
@@ -170,8 +185,14 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const authUser = await requireAuth('company', 'admin');
+    if (!authUser) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+    }
+
     const body = await request.json();
-    const { quest_id, company_id } = body;
+    const { quest_id } = body;
+    const company_id = authUser.role === 'admin' ? (body.company_id || authUser.id) : authUser.id;
 
     // Validate required fields
     if (!quest_id || !company_id) {

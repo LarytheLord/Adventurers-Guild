@@ -1,6 +1,7 @@
 // app/api/admin/users/route.ts
 import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireAuth } from '@/lib/api-auth';
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -10,6 +11,11 @@ const supabase = createClient(
 
 export async function GET(request: NextRequest) {
   try {
+    const user = await requireAuth('admin');
+    if (!user) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+    }
+
     // Parse query parameters
     const { searchParams } = new URL(request.url);
     const role = searchParams.get('role');
@@ -82,6 +88,11 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    const authUser = await requireAuth('admin');
+    if (!authUser) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+    }
+
     const body = await request.json();
     const { user_id, role, is_verified, is_active } = body;
 
@@ -116,6 +127,11 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const authUser = await requireAuth('admin');
+    if (!authUser) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+    }
+
     const body = await request.json();
     const { user_id } = body;
 

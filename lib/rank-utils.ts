@@ -133,60 +133,23 @@ export async function getUserRank(userId: string): Promise<{ position: number; t
   }
 }
 
+// Re-export centralized rank utilities
+export { getRankForXp as getNextRankFn, getNextRankThreshold, getRankProgressPercent } from './ranks';
+import { getNextRankThreshold, getRankProgressPercent } from './ranks';
+
 // Calculate the next rank based on current XP
 export function getNextRank(currentXp: number): { rank: string; nextRankXp: number } {
-  const rankThresholds = [
-    { rank: 'F', threshold: 0 },
-    { rank: 'E', threshold: 1000 },
-    { rank: 'D', threshold: 3000 },
-    { rank: 'C', threshold: 6000 },
-    { rank: 'B', threshold: 10000 },
-    { rank: 'A', threshold: 15000 },
-    { rank: 'S', threshold: 25000 }
-  ];
-
-  // Find the current rank
-  const currentRankInfo = [...rankThresholds]
-    .reverse()
-    .find(r => currentXp >= r.threshold);
-
-  // Find the next rank
-  const nextRankIndex = rankThresholds.findIndex(r => r.rank === currentRankInfo?.rank) + 1;
-  const nextRank = nextRankIndex < rankThresholds.length ? rankThresholds[nextRankIndex] : null;
-
-  return {
-    rank: currentRankInfo?.rank || 'F',
-    nextRankXp: nextRank ? nextRank.threshold : -1
-  };
+  const { currentRank, nextRankXp } = getNextRankThreshold(currentXp);
+  return { rank: currentRank, nextRankXp };
 }
 
 // Calculate XP needed for next rank
 export function getXpToNextRank(currentXp: number): number {
-  const { nextRankXp } = getNextRank(currentXp);
+  const { nextRankXp } = getNextRankThreshold(currentXp);
   return nextRankXp > 0 ? nextRankXp - currentXp : 0;
 }
 
 // Calculate rank progress percentage
 export function getRankProgress(currentXp: number): number {
-  const { rank, nextRankXp } = getNextRank(currentXp);
-  
-  if (rank === 'S') return 100; // S rank is max
-  
-  const rankThresholds: Record<string, number> = {
-    'F': 0,
-    'E': 1000,
-    'D': 3000,
-    'C': 6000,
-    'B': 10000,
-    'A': 15000,
-    'S': 25000
-  };
-  
-  const currentRankThreshold = rankThresholds[rank] || 0;
-  const nextRankThreshold = nextRankXp;
-  
-  if (nextRankThreshold <= 0) return 0;
-  
-  const progress = ((currentXp - currentRankThreshold) / (nextRankThreshold - currentRankThreshold)) * 100;
-  return Math.min(100, Math.max(0, progress));
+  return getRankProgressPercent(currentXp);
 }

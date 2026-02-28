@@ -14,10 +14,10 @@ interface Quest {
   id: string;
   title: string;
   description: string;
- difficulty: string;
- xp_reward: number;
+  difficulty: string;
+  xp_reward: number;
   skill_points_reward: number;
- monetary_reward?: number;
+  monetary_reward?: number;
   status: string;
   applicants: number;
 }
@@ -45,47 +45,25 @@ export default function CompanyDashboard() {
       return;
     }
 
-    // Fetch company quests
+    // Fetch company quests from real API
     const fetchQuests = async () => {
       try {
-        // In a real implementation, this would fetch from an API
-        // For now, using mock data
-        const mockQuests: Quest[] = [
-          {
-            id: '1',
-            title: 'Build Authentication System',
-            description: 'Create a secure authentication system with OAuth integration',
-            difficulty: 'B',
-            xp_reward: 1200,
-            skill_points_reward: 200,
-            monetary_reward: 500,
-            status: 'active',
-            applicants: 3
-          },
-          {
-            id: '2',
-            title: 'API Documentation',
-            description: 'Document existing REST API endpoints with examples',
-            difficulty: 'C',
-            xp_reward: 600,
-            skill_points_reward: 100,
-            status: 'draft',
-            applicants: 0
-          },
-          {
-            id: '3',
-            title: 'UI Redesign',
-            description: 'Redesign the user dashboard with modern UX principles',
-            difficulty: 'A',
-            xp_reward: 2000,
-            skill_points_reward: 300,
-            monetary_reward: 1200,
-            status: 'completed',
-            applicants: 1
-          }
-        ];
-        
-        setQuests(mockQuests);
+        const res = await fetch('/api/company/quests');
+        if (res.ok) {
+          const data = await res.json();
+          const mapped = (data.quests || []).map((q: any) => ({
+            id: q.id,
+            title: q.title,
+            description: q.description,
+            difficulty: q.difficulty || 'D',
+            xp_reward: q.xp_reward || 0,
+            skill_points_reward: q.skill_points_reward || 0,
+            monetary_reward: q.monetary_reward,
+            status: q.status,
+            applicants: 0, // Assignment count not in this query
+          }));
+          setQuests(mapped);
+        }
       } catch (error) {
         console.error('Error fetching quests:', error);
       } finally {
@@ -106,11 +84,12 @@ export default function CompanyDashboard() {
     );
   }
 
-  // Calculate company stats
- const totalQuests = quests.length;
-  const activeQuests = quests.filter(q => q.status === 'active').length;
+  // Calculate company stats from real data
+  const totalQuests = quests.length;
+  const activeQuests = quests.filter(q => q.status === 'available' || q.status === 'in_progress').length;
   const completedQuests = quests.filter(q => q.status === 'completed').length;
   const totalSpent = quests.reduce((sum, quest) => sum + (quest.monetary_reward || 0), 0);
+  const completionRate = totalQuests > 0 ? Math.round((completedQuests / totalQuests) * 100) : 0;
 
   return (
     <div className="container mx-auto py-6 space-y-6">
@@ -260,16 +239,16 @@ export default function CompanyDashboard() {
             <div>
               <div className="flex justify-between mb-1">
                 <span className="text-sm font-medium">Completion Rate</span>
-                <span className="text-sm font-medium">76%</span>
+                <span className="text-sm font-medium">{completionRate}%</span>
               </div>
-              <Progress value={76} className="h-2" />
+              <Progress value={completionRate} className="h-2" />
             </div>
             <div>
               <div className="flex justify-between mb-1">
-                <span className="text-sm font-medium">Average Response Time</span>
-                <span className="text-sm font-medium">2.3 days</span>
+                <span className="text-sm font-medium">Active vs Total</span>
+                <span className="text-sm font-medium">{activeQuests} / {totalQuests}</span>
               </div>
-              <Progress value={65} className="h-2" />
+              <Progress value={totalQuests > 0 ? Math.round((activeQuests / totalQuests) * 100) : 0} className="h-2" />
             </div>
           </div>
         </CardContent>

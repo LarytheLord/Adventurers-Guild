@@ -315,29 +315,9 @@ export async function updateAssignmentStatus(
   return data;
 }
 
-// Calculate the next rank based on current XP
+// Delegate to centralized rank module
+import { getNextRankThreshold } from './ranks';
 export function getNextRank(currentXp: number): { rank: string; nextRankXp: number } {
-  const rankThresholds = [
-    { rank: 'F', threshold: 0 },
-    { rank: 'E', threshold: 1000 },
-    { rank: 'D', threshold: 3000 },
-    { rank: 'C', threshold: 6000 },
-    { rank: 'B', threshold: 10000 },
-    { rank: 'A', threshold: 15000 },
-    { rank: 'S', threshold: 25000 }
-  ];
-
-  // Find the current rank
-  const currentRankInfo = [...rankThresholds]
-    .reverse()
-    .find(r => currentXp >= r.threshold);
-
-  // Find the next rank
-  const nextRankIndex = rankThresholds.findIndex(r => r.rank === currentRankInfo?.rank) + 1;
-  const nextRank = nextRankIndex < rankThresholds.length ? rankThresholds[nextRankIndex] : null;
-
-  return {
-    rank: currentRankInfo?.rank || 'F',
-    nextRankXp: nextRank ? nextRank.threshold : -1
-  };
+  const { currentRank, nextRankXp } = getNextRankThreshold(currentXp);
+  return { rank: currentRank, nextRankXp };
 }

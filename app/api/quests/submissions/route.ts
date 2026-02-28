@@ -226,8 +226,9 @@ export async function PUT(request: NextRequest) {
     }
 
     // Check permissions
+    const questData = Array.isArray(assignment.quests) ? assignment.quests[0] : assignment.quests;
     if (session.user.role !== 'admin' &&
-        (session.user.role !== 'company' || !assignment.quests || assignment.quests[0].company_id !== session.user.id)) {
+        (session.user.role !== 'company' || !questData || questData.company_id !== session.user.id)) {
       return NextResponse.json({ error: 'Unauthorized to review this submission', success: false }, { status: 403 });
     }
 

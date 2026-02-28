@@ -1,4 +1,3 @@
-// app/register/page.tsx
 'use client';
 
 import { useState } from 'react';
@@ -88,7 +87,7 @@ export default function RegisterPage() {
           console.error('Error inserting user:', insertError);
         }
 
-        // If user is a company, create company profile
+        // Create role-specific profile
         if (role === 'company') {
           const { error: companyProfileError } = await supabase
             .from('company_profiles')
@@ -102,6 +101,24 @@ export default function RegisterPage() {
 
           if (companyProfileError) {
             console.error('Error creating company profile:', companyProfileError);
+          }
+        } else {
+          // Create adventurer profile
+          const { error: adventurerProfileError } = await supabase
+            .from('adventurer_profiles')
+            .insert([
+              {
+                user_id: data.user.id,
+                availability_status: 'available',
+                quest_completion_rate: 0,
+                total_quests_completed: 0,
+                current_streak: 0,
+                max_streak: 0,
+              },
+            ]);
+
+          if (adventurerProfileError) {
+            console.error('Error creating adventurer profile:', adventurerProfileError);
           }
         }
 
@@ -119,32 +136,26 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-background relative overflow-hidden">
-      {/* Background Effects */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-primary/10 blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] rounded-full bg-purple-600/10 blur-[120px]" />
-      </div>
-
+    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="w-full max-w-md relative z-10"
+        transition={{ duration: 0.4 }}
+        className="w-full max-w-md"
       >
         <div className="mb-8 text-center">
           <Link href="/" className="inline-flex items-center gap-2 font-bold text-2xl tracking-tight mb-2 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center text-white group-hover:scale-110 transition-transform shadow-lg shadow-primary/20">
-              <Code2 className="w-6 h-6" />
+            <div className="w-9 h-9 rounded-lg bg-slate-900 flex items-center justify-center text-white group-hover:bg-slate-800 transition-colors">
+              <Code2 className="w-5 h-5" />
             </div>
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-white to-white/80">Adventurers Guild</span>
+            <span className="text-slate-900">Adventurers Guild</span>
           </Link>
-          <p className="text-muted-foreground">Begin your journey.</p>
+          <p className="text-slate-500 mt-1">Begin your journey.</p>
         </div>
 
-        <div className="glass-card p-8 rounded-2xl border border-white/10 shadow-2xl backdrop-blur-xl bg-black/40">
+        <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm">
           {error && (
-            <Alert variant="destructive" className="mb-6 bg-red-500/10 border-red-500/20 text-red-400">
+            <Alert variant="destructive" className="mb-6">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{error}</AlertDescription>
             </Alert>
@@ -152,21 +163,21 @@ export default function RegisterPage() {
 
           {success ? (
             <div className="text-center py-8">
-              <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4 text-green-500">
+              <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4 text-green-600">
                 <CheckCircle2 className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-bold mb-2 text-white">Registration Successful!</h3>
-              <p className="text-muted-foreground mb-6">
+              <h3 className="text-xl font-bold mb-2 text-slate-900">Registration Successful!</h3>
+              <p className="text-slate-500 mb-6">
                 Please check your email to verify your account.
               </p>
-              <p className="text-sm text-primary animate-pulse">
+              <p className="text-sm text-indigo-600 animate-pulse">
                 Redirecting to login...
               </p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-sm font-medium text-gray-300">Full Name</Label>
+                <Label htmlFor="name">Full Name</Label>
                 <Input
                   id="name"
                   type="text"
@@ -174,12 +185,12 @@ export default function RegisterPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-primary/50 focus:ring-primary/20 h-11"
+                  className="h-11"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium text-gray-300">Email</Label>
+                <Label htmlFor="email">Email</Label>
                 <Input
                   id="email"
                   type="email"
@@ -187,17 +198,17 @@ export default function RegisterPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-primary/50 focus:ring-primary/20 h-11"
+                  className="h-11"
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="role" className="text-sm font-medium text-gray-300">Account Type</Label>
+                <Label htmlFor="role">Account Type</Label>
                 <Select value={role} onValueChange={(value: 'adventurer' | 'company') => setRole(value)}>
-                  <SelectTrigger className="bg-white/5 border-white/10 text-white h-11">
+                  <SelectTrigger className="h-11">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-black/90 border-white/10 text-white">
+                  <SelectContent>
                     <SelectItem value="adventurer">Adventurer (Student)</SelectItem>
                     <SelectItem value="company">Company</SelectItem>
                   </SelectContent>
@@ -206,21 +217,21 @@ export default function RegisterPage() {
 
               {role === 'company' && (
                 <div className="space-y-2">
-                  <Label htmlFor="companyName" className="text-sm font-medium text-gray-300">Company Name</Label>
+                  <Label htmlFor="companyName">Company Name</Label>
                   <Input
                     id="companyName"
                     type="text"
                     placeholder="Your company name"
                     value={companyName}
                     onChange={(e) => setCompanyName(e.target.value)}
-                    className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-primary/50 focus:ring-primary/20 h-11"
+                    className="h-11"
                   />
                 </div>
               )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm font-medium text-gray-300">Password</Label>
+                  <Label htmlFor="password">Password</Label>
                   <Input
                     id="password"
                     type="password"
@@ -228,12 +239,12 @@ export default function RegisterPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-primary/50 focus:ring-primary/20 h-11"
+                    className="h-11"
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-300">Confirm</Label>
+                  <Label htmlFor="confirmPassword">Confirm</Label>
                   <Input
                     id="confirmPassword"
                     type="password"
@@ -241,12 +252,16 @@ export default function RegisterPage() {
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     required
-                    className="bg-white/5 border-white/10 text-white placeholder:text-gray-500 focus:border-primary/50 focus:ring-primary/20 h-11"
+                    className="h-11"
                   />
                 </div>
               </div>
 
-              <Button type="submit" className="w-full h-11 bg-primary hover:bg-primary/90 text-white font-semibold shadow-lg shadow-primary/20" disabled={loading}>
+              <Button
+                type="submit"
+                className="w-full h-11 bg-slate-900 hover:bg-slate-800 text-white font-semibold"
+                disabled={loading}
+              >
                 {loading ? (
                   <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
@@ -256,10 +271,10 @@ export default function RegisterPage() {
             </form>
           )}
 
-          <div className="mt-6 pt-6 border-t border-white/10 text-center">
-            <p className="text-sm text-muted-foreground">
+          <div className="mt-6 pt-6 border-t border-slate-100 text-center">
+            <p className="text-sm text-slate-500">
               Already have an account?{' '}
-              <Link href="/login" className="text-primary hover:text-primary/80 font-medium transition-colors">
+              <Link href="/login" className="text-indigo-600 hover:text-indigo-500 font-medium transition-colors">
                 Sign in
               </Link>
             </p>

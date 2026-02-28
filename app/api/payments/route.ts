@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import { env } from '@/lib/env';
 import { validatePaymentInfo } from '@/lib/payment-utils';
+import { getAuthUser } from '@/lib/api-auth';
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -11,9 +12,15 @@ const supabase = createClient(
 
 export async function GET(request: NextRequest) {
   try {
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+    }
+
     // Parse query parameters
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('user_id');
+    // Users can only view their own transactions (unless admin)
+    const userId = authUser.role === 'admin' ? (searchParams.get('user_id') || authUser.id) : authUser.id;
     const type = searchParams.get('type'); // 'incoming' or 'outgoing'
     const status = searchParams.get('status');
     const limit = searchParams.get('limit') || '10';
@@ -83,6 +90,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+    }
+
     const body = await request.json();
 
     // Validate required fields

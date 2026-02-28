@@ -1,6 +1,7 @@
 // app/api/admin/quests/route.ts
 import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { requireAuth } from '@/lib/api-auth';
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -10,6 +11,11 @@ const supabase = createClient(
 
 export async function GET(request: NextRequest) {
   try {
+    const user = await requireAuth('admin');
+    if (!user) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+    }
+
     // Parse query parameters
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
@@ -78,6 +84,11 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    const user = await requireAuth('admin');
+    if (!user) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+    }
+
     const body = await request.json();
     const { quest_id, status, required_rank, max_participants } = body;
 
@@ -112,6 +123,11 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const user = await requireAuth('admin');
+    if (!user) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+    }
+
     const body = await request.json();
     const { quest_id } = body;
 

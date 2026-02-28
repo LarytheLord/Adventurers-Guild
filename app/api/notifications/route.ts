@@ -1,6 +1,7 @@
 // app/api/notifications/route.ts
 import { NextRequest } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import { getAuthUser } from '@/lib/api-auth';
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -10,18 +11,19 @@ const supabase = createClient(
 
 export async function GET(request: NextRequest) {
   try {
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+    }
+
     // Parse query parameters
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('user_id');
+    // Users can only see their own notifications
+    const userId = authUser.id;
     const type = searchParams.get('type');
     const isRead = searchParams.get('is_read');
     const limit = searchParams.get('limit') || '10';
     const offset = searchParams.get('offset') || '0';
-
-    // Validate user ID is provided
-    if (!userId) {
-      return Response.json({ error: 'User ID is required', success: false }, { status: 400 });
-    }
 
     // Build query
     let query = supabase
@@ -71,8 +73,13 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+    }
+
     const body = await request.json();
-    
+
     // Validate required fields
     const requiredFields = ['user_id', 'title', 'message', 'type'];
     for (const field of requiredFields) {
@@ -107,8 +114,14 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+    }
+
     const body = await request.json();
-    const { notification_id, user_id, is_read } = body;
+    const { notification_id, is_read } = body;
+    const user_id = authUser.id;
 
     // Validate required fields
     if (!notification_id || !user_id) {
@@ -153,8 +166,14 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+    }
+
     const body = await request.json();
-    const { notification_id, user_id } = body;
+    const { notification_id } = body;
+    const user_id = authUser.id;
 
     // Validate required fields
     if (!notification_id || !user_id) {
@@ -196,13 +215,12 @@ export async function DELETE(request: NextRequest) {
 // API to mark all notifications as read
 export async function PATCH(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { user_id } = body;
-
-    // Validate required field
-    if (!user_id) {
-      return Response.json({ error: 'User ID is required', success: false }, { status: 400 });
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
+
+    const user_id = authUser.id;
 
     // Mark all notifications for user as read
     const { error } = await supabase
