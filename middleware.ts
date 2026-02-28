@@ -8,12 +8,16 @@ const protectedRoutes: { [key: string]: UserRole[] } = {
   '/dashboard/quests': ['adventurer', 'company'],
   '/dashboard/my-quests': ['adventurer'],
   '/dashboard/completed-quests': ['adventurer'],
+  '/dashboard/skill-tree': ['adventurer'],
+  '/dashboard/teams': ['adventurer', 'company'],
+  '/dashboard/leaderboard': ['adventurer', 'company'],
+  '/dashboard/profile': ['adventurer', 'company'],
   '/dashboard/company': ['company'],
   '/dashboard/company/quests': ['company'],
+  '/dashboard/company/create-quest': ['company'],
+  '/dashboard/company/analytics': ['company'],
+  '/dashboard/company/profile': ['company'],
   '/admin': ['admin'],
-  '/company': ['company'],
-  '/company/quests': ['company'],
-  '/company/create-quest': ['company'],
 };
 
 export async function middleware(request: NextRequest) {
