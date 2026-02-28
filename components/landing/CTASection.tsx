@@ -7,42 +7,43 @@ import { ArrowRight } from 'lucide-react';
 
 export default function CTASection() {
     return (
-        <section className="py-32 relative z-10 text-center overflow-hidden">
-            {/* Background Glow */}
-            <div className="absolute inset-0 bg-noise opacity-10 pointer-events-none" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-purple-500/10 rounded-full blur-[100px] pointer-events-none" />
-
-            <div className="container px-4 mx-auto max-w-4xl relative z-10">
+        <section className="py-20 md:py-28">
+            <div className="container px-6 mx-auto max-w-3xl text-center">
                 <motion.h2
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 12 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.5 }}
-                    className="text-5xl md:text-7xl font-bold mb-8 tracking-tight"
+                    transition={{ duration: 0.4 }}
+                    className="text-3xl md:text-4xl font-bold tracking-[-0.02em] text-slate-900 mb-4"
                 >
-                    Ready to Start Your <br />
-                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400">Adventure?</span>
+                    Ready to start your adventure?
                 </motion.h2>
 
                 <motion.p
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 12 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: 0.1 }}
-                    className="text-xl text-muted-foreground mb-12 max-w-2xl mx-auto"
+                    transition={{ duration: 0.4, delay: 0.08 }}
+                    className="text-lg text-slate-500 mb-10 max-w-xl mx-auto"
                 >
-                    The Guild is accepting new members. Claim your spot, start coding real projects, and level up your career today.
+                    Join the guild, start coding real projects, and build a portfolio that opens doors.
                 </motion.p>
 
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 12 }}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
-                    transition={{ duration: 0.5, delay: 0.2 }}
+                    transition={{ duration: 0.4, delay: 0.16 }}
+                    className="flex flex-col sm:flex-row items-center justify-center gap-3"
                 >
-                    <Button asChild size="lg" className="h-16 px-10 text-lg rounded-full bg-white text-black hover:bg-gray-200 transition-all duration-300 shadow-[0_0_40px_rgba(255,255,255,0.3)] hover:shadow-[0_0_60px_rgba(255,255,255,0.5)] hover:scale-105">
+                    <Button asChild size="lg" className="h-12 px-7 text-sm font-semibold rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition-colors">
                         <Link href="/register" className="flex items-center gap-2">
-                            Create Your Account <ArrowRight className="w-5 h-5" />
+                            Create your account <ArrowRight className="w-4 h-4" />
+                        </Link>
+                    </Button>
+                    <Button asChild variant="outline" size="lg" className="h-12 px-7 text-sm font-medium rounded-lg border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
+                        <Link href="/register-company">
+                            Post quests as a company
                         </Link>
                     </Button>
                 </motion.div>

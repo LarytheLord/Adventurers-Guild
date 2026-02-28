@@ -13,7 +13,7 @@ import { Toaster } from "@/components/ui/sonner"
 
 export const metadata: Metadata = {
   title: "Adventurers Guild",
-  description: "Created with Adventure",
+  description: "Take on real coding quests from companies, earn money and XP, and rank up from F to S.",
   manifest: "/manifest.json",
   icons: {
     icon: "/pwa/icon-192x192.svg",
@@ -62,7 +62,7 @@ export default function RootLayout({
         <A11ySkipLink />
 
         <SessionProvider>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
             <div id="main-content" className="min-h-screen flex-col">
               <Navigation />
               <ErrorBoundary>

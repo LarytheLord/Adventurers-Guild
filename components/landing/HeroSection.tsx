@@ -2,152 +2,244 @@
 
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { ArrowRight, Sparkles } from 'lucide-react';
-import { useState } from 'react';
-import { toast } from 'sonner';
+import { ArrowRight, Star, Compass, Code2 } from 'lucide-react';
+import Link from 'next/link';
 
 export default function HeroSection() {
-    const [email, setEmail] = useState('');
-    const [loading, setLoading] = useState(false);
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!email) return;
-
-        setLoading(true);
-        try {
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            toast.success("You've joined the guild! Check your email.");
-            setEmail('');
-        } catch (error) {
-            toast.error("Something went wrong. Please try again later.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
     return (
-        <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-20">
-            {/* Dynamic Background */}
-            {/* Dynamic Background */}
-            <div className="absolute inset-0 z-0 bg-black">
-                <div className="absolute inset-0 bg-noise opacity-20 mix-blend-overlay pointer-events-none" />
-                <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/30 rounded-full blur-[128px] animate-pulse-subtle mix-blend-screen" />
-                <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-600/30 rounded-full blur-[128px] animate-pulse-subtle delay-1000 mix-blend-screen" />
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-white/5 rounded-full blur-[100px] animate-pulse-subtle delay-500" />
-            </div>
-
-            <div className="container px-4 mx-auto relative z-10 text-center">
+        <section className="relative pt-32 pb-20 md:pt-40 md:pb-28 overflow-hidden">
+            {/* Floating background elements — desktop only */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden hidden lg:block">
+                {/* XP Badge - top left */}
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6 }}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 backdrop-blur-md text-sm font-medium mb-8 hover:bg-white/10 transition-colors cursor-default"
+                    animate={{ y: [-8, 8, -8] }}
+                    transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+                    className="absolute top-[18%] left-[6%] flex items-center gap-2 px-3 py-2 rounded-xl bg-violet-50 border border-violet-200 shadow-sm rotate-[-6deg]"
                 >
-                    <Sparkles className="w-4 h-4 text-yellow-400" />
-                    <span className="bg-gradient-to-r from-yellow-200 to-yellow-500 bg-clip-text text-transparent">
-                        New Quests Available
-                    </span>
+                    <div className="w-7 h-7 rounded-lg bg-violet-500 flex items-center justify-center">
+                        <span className="text-[10px] font-bold text-white">XP</span>
+                    </div>
+                    <span className="text-xs font-bold text-violet-600">+800</span>
                 </motion.div>
 
-                <motion.h1
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.1 }}
-                    className="text-6xl md:text-8xl font-bold tracking-tight mb-8 bg-clip-text text-transparent bg-gradient-to-b from-white to-white/60"
-                >
-                    Code Real <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-blue-400 animate-shine bg-[length:200%_auto]">Quests</span>.
-                    <br />
-                    Get Paid. Level Up.
-                </motion.h1>
-
-                <motion.p
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.2 }}
-                    className="text-xl text-muted-foreground max-w-2xl mx-auto mb-12 leading-relaxed"
-                >
-                    Stop building to-do apps. Join the guild to work on real-world projects from top companies, earn XP, and build a career-defining portfolio.
-                </motion.p>
-
+                {/* S-RANK Badge - top right */}
                 <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.3 }}
-                    className="flex flex-col items-center gap-6"
+                    animate={{ y: [6, -6, 6] }}
+                    transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1 }}
+                    className="absolute top-[14%] right-[8%] px-4 py-3 rounded-xl bg-amber-50 border border-amber-200 shadow-sm rotate-[6deg] text-center"
                 >
-                    <form onSubmit={handleSubmit} className="flex w-full max-w-md gap-2 p-2 bg-white/5 border border-white/10 rounded-2xl backdrop-blur-xl shadow-2xl shadow-purple-500/10">
-                        <Input
-                            type="email"
-                            placeholder="Enter your email..."
-                            className="bg-transparent border-none focus-visible:ring-0 h-12 text-base placeholder:text-muted-foreground/50"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            required
-                        />
-                        <Button
-                            type="submit"
-                            size="lg"
-                            className="h-12 px-8 rounded-xl bg-white text-black hover:bg-gray-200 transition-all duration-300 font-medium"
-                            disabled={loading}
-                        >
-                            {loading ? (
-                                <div className="w-5 h-5 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-                            ) : (
-                                <>
-                                    Join <ArrowRight className="ml-2 w-4 h-4" />
-                                </>
-                            )}
+                    <Star className="w-5 h-5 text-amber-500 mx-auto mb-1" />
+                    <span className="text-xs font-bold text-amber-700 tracking-wide">S-RANK</span>
+                </motion.div>
+
+                {/* Compass - left mid */}
+                <motion.div
+                    animate={{ y: [5, -5, 5], rotate: [0, 5, 0] }}
+                    transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
+                    className="absolute top-[45%] left-[3%] w-12 h-12 rounded-full bg-slate-100 border border-slate-200 shadow-sm flex items-center justify-center"
+                >
+                    <Compass className="w-5 h-5 text-slate-400" />
+                </motion.div>
+
+                {/* Code tag - bottom right */}
+                <motion.div
+                    animate={{ y: [-5, 5, -5] }}
+                    transition={{ duration: 5.5, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+                    className="absolute bottom-[25%] right-[5%] px-4 py-2 rounded-lg bg-emerald-50 border border-emerald-200 shadow-sm rotate-[4deg]"
+                >
+                    <code className="text-xs font-mono font-medium text-emerald-600">{'<adventure />'}</code>
+                </motion.div>
+
+                {/* EST badge - bottom left */}
+                <motion.div
+                    animate={{ y: [4, -4, 4] }}
+                    transition={{ duration: 6, repeat: Infinity, ease: "easeInOut", delay: 1.5 }}
+                    className="absolute bottom-[30%] left-[8%] w-16 h-16 rounded-full border-2 border-slate-200 bg-white shadow-sm flex flex-col items-center justify-center rotate-[-4deg]"
+                >
+                    <span className="text-[8px] font-medium text-slate-400 uppercase tracking-wider">Est</span>
+                    <span className="text-sm font-bold text-slate-700">2025</span>
+                </motion.div>
+            </div>
+
+            <div className="container px-6 mx-auto max-w-6xl relative z-10">
+                <div className="max-w-3xl mx-auto text-center">
+                    {/* Badge */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.4 }}
+                        className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-slate-200 bg-white text-xs font-medium text-slate-600 mb-8 shadow-sm"
+                    >
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                        Season 1 is live &mdash; 12 open quests
+                    </motion.div>
+
+                    {/* Headline */}
+                    <motion.h1
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.08 }}
+                        className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-[-0.03em] text-slate-900 leading-[1.08] mb-6"
+                    >
+                        Real coding quests.
+                        <br />
+                        Real companies.
+                        <br />
+                        <span className="text-indigo-600">Real rewards.</span>
+                    </motion.h1>
+
+                    {/* Subtitle */}
+                    <motion.p
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.16 }}
+                        className="text-lg text-slate-500 max-w-xl mx-auto mb-10 leading-relaxed"
+                    >
+                        Take on development tasks from real companies, earn money
+                        and XP, rank up from F to S, and build a portfolio that matters.
+                    </motion.p>
+
+                    {/* CTAs */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 12 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5, delay: 0.24 }}
+                        className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-12"
+                    >
+                        <Button asChild size="lg" className="h-12 px-7 text-sm font-semibold rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition-colors shadow-sm">
+                            <Link href="/register" className="flex items-center gap-2">
+                                Start your adventure
+                                <ArrowRight className="w-4 h-4" />
+                            </Link>
                         </Button>
-                    </form>
+                        <Button asChild variant="outline" size="lg" className="h-12 px-7 text-sm font-medium rounded-lg border-slate-200 text-slate-600 hover:bg-slate-50 transition-colors">
+                            <Link href="/dashboard/quests">
+                                Browse quests
+                            </Link>
+                        </Button>
+                    </motion.div>
 
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <div className="flex -space-x-2">
-                            {[1, 2, 3, 4].map((i) => (
-                                <div key={i} className="w-8 h-8 rounded-full bg-white/10 border border-black flex items-center justify-center text-xs font-medium">
-                                    {String.fromCharCode(64 + i)}
+                    {/* Social proof */}
+                    <motion.p
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.5, delay: 0.4 }}
+                        className="text-sm text-slate-400"
+                    >
+                        500+ developers already leveling up
+                    </motion.p>
+                </div>
+
+                {/* Product visual — quest board */}
+                <motion.div
+                    initial={{ opacity: 0, y: 24 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.7, delay: 0.35 }}
+                    className="mt-16 md:mt-20 max-w-5xl mx-auto"
+                >
+                    <div className="rounded-xl border border-slate-200 bg-white shadow-lg shadow-slate-200/50 overflow-hidden">
+                        {/* Window chrome */}
+                        <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100 bg-slate-50/60">
+                            <div className="flex items-center gap-2">
+                                <div className="flex gap-1.5">
+                                    <div className="w-2.5 h-2.5 rounded-full bg-slate-200" />
+                                    <div className="w-2.5 h-2.5 rounded-full bg-slate-200" />
+                                    <div className="w-2.5 h-2.5 rounded-full bg-slate-200" />
                                 </div>
-                            ))}
+                                <span className="text-xs text-slate-400 ml-2 font-mono">guild / quest-board</span>
+                            </div>
+                            <div className="flex items-center gap-1.5">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                                <span className="text-xs text-slate-400">3 available</span>
+                            </div>
                         </div>
-                        <p>Join 500+ other adventurers</p>
-                    </div>
-                </motion.div>
-            </div>
 
-            {/* Floating Elements 3D Effect */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                <motion.div
-                    animate={{ y: [-20, 20, -20] }}
-                    transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-                    className="absolute top-1/4 left-[10%] w-64 h-40 bg-black/40 backdrop-blur-md border border-white/10 rounded-xl p-4 hidden lg:block rotate-[-6deg]"
-                >
-                    <div className="flex items-center gap-2 mb-3">
-                        <div className="w-3 h-3 rounded-full bg-red-500" />
-                        <div className="w-3 h-3 rounded-full bg-yellow-500" />
-                        <div className="w-3 h-3 rounded-full bg-green-500" />
+                        {/* Quest rows */}
+                        <div className="divide-y divide-slate-100">
+                            <QuestRow
+                                rank="D"
+                                rankColor="bg-blue-50 text-blue-600 border-blue-200"
+                                title="Fix authentication redirect bug"
+                                company="TechCorp"
+                                tags={['React', 'Auth']}
+                                xp={800}
+                                reward={150}
+                            />
+                            <QuestRow
+                                rank="C"
+                                rankColor="bg-violet-50 text-violet-600 border-violet-200"
+                                title="Build REST API endpoint for user analytics"
+                                company="StartupX"
+                                tags={['Node.js', 'Express', 'PostgreSQL']}
+                                xp={1500}
+                                reward={350}
+                                active
+                            />
+                            <QuestRow
+                                rank="B"
+                                rankColor="bg-amber-50 text-amber-700 border-amber-200"
+                                title="Optimize database query performance"
+                                company="DataFlow"
+                                tags={['PostgreSQL', 'Performance']}
+                                xp={3000}
+                                reward={600}
+                            />
+                            <QuestRow
+                                rank="E"
+                                rankColor="bg-emerald-50 text-emerald-600 border-emerald-200"
+                                title="Add responsive layout to dashboard"
+                                company="PixelCraft"
+                                tags={['CSS', 'Tailwind']}
+                                xp={400}
+                                reward={80}
+                            />
+                        </div>
                     </div>
-                    <div className="space-y-2">
-                        <div className="h-2 w-3/4 bg-white/10 rounded" />
-                        <div className="h-2 w-1/2 bg-white/10 rounded" />
-                        <div className="h-2 w-full bg-white/10 rounded" />
-                    </div>
-                </motion.div>
-
-                <motion.div
-                    animate={{ y: [20, -20, 20] }}
-                    transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                    className="absolute bottom-1/4 right-[10%] w-56 h-auto bg-black/40 backdrop-blur-md border border-white/10 rounded-xl p-4 hidden lg:block rotate-[6deg]"
-                >
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-medium text-green-400">+$500.00</span>
-                        <span className="text-[10px] text-muted-foreground">Just now</span>
-                    </div>
-                    <div className="text-sm font-medium">Quest Completed</div>
-                    <div className="text-xs text-muted-foreground">API Integration Fix</div>
                 </motion.div>
             </div>
         </section>
+    );
+}
+
+function QuestRow({
+    rank,
+    rankColor,
+    title,
+    company,
+    tags,
+    xp,
+    reward,
+    active,
+}: {
+    rank: string;
+    rankColor: string;
+    title: string;
+    company: string;
+    tags: string[];
+    xp: number;
+    reward: number;
+    active?: boolean;
+}) {
+    return (
+        <div className={`flex items-center gap-4 px-5 py-4 transition-colors hover:bg-slate-50/60 ${active ? 'bg-indigo-50/40' : ''}`}>
+            <span className={`text-[11px] font-bold px-2 py-0.5 rounded border ${rankColor} shrink-0`}>
+                {rank}
+            </span>
+            <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-slate-800 truncate">{title}</p>
+                <p className="text-xs text-slate-400 mt-0.5">{company}</p>
+            </div>
+            <div className="hidden md:flex items-center gap-1.5 shrink-0">
+                {tags.map((tag) => (
+                    <span key={tag} className="text-[10px] px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 font-medium">
+                        {tag}
+                    </span>
+                ))}
+            </div>
+            <div className="hidden sm:flex items-center gap-4 shrink-0 text-xs">
+                <span className="text-indigo-600 font-semibold">{xp.toLocaleString()} XP</span>
+                <span className="text-emerald-600 font-semibold">${reward}</span>
+            </div>
+        </div>
     );
 }
