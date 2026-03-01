@@ -10,6 +10,7 @@ import A11ySkipLink from "../components/A11ySkipLink"
 import Navigation from "../components/Navigation"
 import ErrorBoundary from "../components/ErrorBoundary"
 import { Toaster } from "@/components/ui/sonner"
+import { SiteFooter } from "@/components/site-footer"
 
 export const metadata: Metadata = {
   title: "Adventurers Guild",
@@ -68,6 +69,7 @@ export default function RootLayout({
               <ErrorBoundary>
                 {children}
               </ErrorBoundary>
+              <SiteFooter />
             </div>
             <Toaster />
           </ThemeProvider>

@@ -1,230 +1,114 @@
-'use client';
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { prisma } from "@/lib/db";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { QuestSubmissionDialog } from "@/components/quest-submission-dialog";
+import { Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import Link from "next/link";
 
-import { useEffect, useState } from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Target, Zap, Clock, ExternalLink, CheckCircle, XCircle } from 'lucide-react';
-import Link from 'next/link';
+export default async function MyQuestsPage() {
+  const session = await getServerSession(authOptions);
 
-interface Quest {
-  id: string;
-  title: string;
-  description: string;
-  questType: string;
-  status: string;
-  difficulty: string;
-  xpReward: number;
-  skillPointsReward: number;
-  monetaryReward?: number;
-  requiredSkills: string[];
-  requiredRank?: string;
-  maxParticipants?: number;
-  questCategory: string;
-  companyId: string;
-  createdAt: string;
-  deadline?: string;
-  users: {
-    name: string;
-    email: string;
-  };
-}
-
-interface Assignment {
-  id: string;
-  questId: string;
-  userId: string;
-  status: string;
-  assignedAt: string;
-  startedAt?: string;
-  completedAt?: string;
-  progress?: number;
-  quest: Quest;
-}
-
-export default function MyQuestsPage() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login');
-      return;
-    }
-
-    if (status === 'authenticated' && session?.user?.role === 'company') {
-      // Companies shouldn't access this page
-      router.push('/dashboard/company');
-      return;
-    }
-
-    const fetchMyAssignments = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        if (!session?.user?.id) {
-          setError('User ID not found');
-          return;
-        }
-
-        const response = await fetch(`/api/quests/assignments?userId=${session.user.id}`);
-        const data = await response.json();
-
-        if (!data.success) {
-          setError(data.error || 'Failed to fetch assignments');
-          return;
-        }
-
-        setAssignments(data.assignments || []);
-      } catch (err) {
-        console.error('Error fetching assignments:', err);
-        setError('An error occurred while fetching assignments');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (status === 'authenticated') {
-      fetchMyAssignments();
-    }
-  }, [status, session, router]);
-
-  if (status === 'loading' || loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
+  if (!session) {
+    redirect("/login");
   }
 
-  if (error) {
-    return (
-      <div className="container mx-auto py-6">
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      </div>
-    );
-  }
+  // Fetch user's assignments
+  const assignments = await prisma.questAssignment.findMany({
+    where: {
+      userId: session.user.id,
+    },
+    include: {
+      quest: {
+        include: {
+          company: true,
+        },
+      },
+    },
+    orderBy: {
+      updatedAt: 'desc',
+    },
+  });
 
   return (
-    <div className="container mx-auto py-6 max-w-6xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">My Quests</h1>
-        <p className="text-muted-foreground mt-1">
-          Track the quests you've accepted and their current status
-        </p>
-      </div>
+    <div className="container py-8">
+      <h1 className="text-3xl font-bold mb-2">My Quests</h1>
+      <p className="text-muted-foreground mb-8">Manage your active quests and view your history.</p>
 
-      <div className="mb-6">
-        <Button onClick={() => router.push('/dashboard')}>
-          ← Back to Dashboard
-        </Button>
-      </div>
-
-      {assignments.length === 0 ? (
-        <div className="text-center py-12">
-          <Target className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-xl font-medium mb-2">No active quests</h3>
-          <p className="text-muted-foreground mb-4">
-            You haven't accepted any quests yet. Browse available quests to get started.
-          </p>
-          <Button onClick={() => router.push('/dashboard/quests')}>
-            Browse Available Quests
-          </Button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {assignments.map((assignment) => (
-            <Card key={assignment.id} className="flex flex-col h-full">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="text-xl">{assignment.quest.title}</CardTitle>
-                    <CardDescription>
-                      {assignment.quest.users?.name || 'Unknown Company'}
-                    </CardDescription>
+      <div className="grid gap-6">
+        {assignments.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <div className="rounded-full bg-muted p-4 mb-4">
+                <AlertCircle className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-semibold mb-2">No quests found</h3>
+              <p className="text-muted-foreground mb-4">You haven't accepted any quests yet.</p>
+              <Button asChild>
+                <Link href="/quests">Find Quests</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          assignments.map((assignment) => (
+            <Card key={assignment.id} className="flex flex-col md:flex-row overflow-hidden">
+              <div className={`w-2 md:w-2 ${
+                assignment.status === 'completed' ? 'bg-green-500' :
+                assignment.status === 'accepted' ? 'bg-blue-500' :
+                assignment.status === 'submitted' ? 'bg-yellow-500' :
+                'bg-gray-300'
+              }`} />
+              <div className="flex-1 flex flex-col md:flex-row">
+                <div className="flex-1 p-6">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Badge variant={
+                      assignment.status === 'completed' ? 'default' :
+                      assignment.status === 'accepted' ? 'secondary' :
+                      'outline'
+                    }>
+                      {assignment.status.charAt(0).toUpperCase() + assignment.status.slice(1)}
+                    </Badge>
+                    <span className="text-sm text-muted-foreground">
+                      {assignment.quest.company?.name}
+                    </span>
                   </div>
-                  <Badge className={`
-                    ${assignment.status === 'assigned' ? 'bg-blue-500' : 
-                      assignment.status === 'started' ? 'bg-yellow-500' : 
-                      assignment.status === 'in_progress' ? 'bg-yellow-500' : 
-                      assignment.status === 'submitted' ? 'bg-purple-500' : 
-                      assignment.status === 'completed' ? 'bg-green-500' : 
-                      assignment.status === 'cancelled' ? 'bg-red-500' : 
-                      'bg-gray-500'}
-                  `}>
-                    {assignment.status.charAt(0).toUpperCase() + assignment.status.slice(1)}
-                  </Badge>
+                  <h3 className="text-xl font-bold mb-2">{assignment.quest.title}</h3>
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-4 w-4" />
+                      Due {assignment.quest.deadline ? new Date(assignment.quest.deadline).toLocaleDateString() : 'No deadline'}
+                    </span>
+                    <span>{assignment.quest.xpReward} XP</span>
+                    {assignment.quest.monetaryReward && <span>${Number(assignment.quest.monetaryReward)}</span>}
+                  </div>
                 </div>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  <Badge variant="secondary">{assignment.quest.questCategory}</Badge>
-                  <Badge variant="outline">{assignment.quest.difficulty}-Rank</Badge>
-                </div>
-              </CardHeader>
-              <CardContent className="flex flex-col flex-grow">
-                <p className="text-muted-foreground mb-4 line-clamp-2">
-                  {assignment.quest.description}
-                </p>
-                
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div className="flex items-center">
-                    <Zap className="w-4 h-4 mr-2 text-yellow-500" />
-                    <span className="text-sm">{assignment.quest.xpReward} XP</span>
-                  </div>
-                  <div className="flex items-center">
-                    <Target className="w-4 h-4 mr-2 text-blue-500" />
-                    <span className="text-sm">{assignment.quest.skillPointsReward} SP</span>
-                  </div>
-                  {assignment.quest.monetaryReward && (
-                    <div className="flex items-center col-span-2">
-                      <span className="text-sm font-medium">${assignment.quest.monetaryReward}</span>
-                    </div>
+                <div className="p-6 bg-muted/30 flex items-center justify-end gap-3 border-t md:border-t-0 md:border-l">
+                  <Button variant="outline" asChild>
+                    <Link href={`/quests/${assignment.quest.id}`}>View Details</Link>
+                  </Button>
+                  
+                  {assignment.status === 'accepted' && (
+                    <QuestSubmissionDialog 
+                      questId={assignment.quest.id} 
+                      questTitle={assignment.quest.title} 
+                    />
+                  )}
+                  
+                  {assignment.status === 'submitted' && (
+                    <Button disabled variant="secondary">
+                      <CheckCircle2 className="mr-2 h-4 w-4" />
+                      Under Review
+                    </Button>
                   )}
                 </div>
-                
-                {assignment.quest.deadline && (
-                  <div className="flex items-center text-sm text-muted-foreground mb-4">
-                    <Clock className="w-4 h-4 mr-2" />
-                    <span>Due: {new Date(assignment.quest.deadline).toLocaleDateString()}</span>
-                  </div>
-                )}
-                
-                <div className="mt-auto">
-                  <Link href={`/dashboard/quests/${assignment.quest.id}`} className="w-full">
-                    <Button className="w-full">
-                      {assignment.status === 'completed' ? (
-                        <>
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          Completed
-                        </>
-                      ) : assignment.status === 'submitted' ? (
-                        <>
-                          <CheckCircle className="w-4 h-4 mr-2" />
-                          Submitted
-                        </>
-                      ) : (
-                        <>
-                          Continue Quest
-                          <ExternalLink className="w-4 h-4 ml-2" />
-                        </>
-                      )}
-                    </Button>
-                  </Link>
-                </div>
-              </CardContent>
+              </div>
             </Card>
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
     </div>
   );
 }

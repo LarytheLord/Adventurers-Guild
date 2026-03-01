@@ -1,40 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 
 export async function GET(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  req: NextRequest,
+  props: { params: Promise<{ id: string }> }
 ) {
+  const params = await props.params;
   try {
-    const { id } = await context.params;
-
     const quest = await prisma.quest.findUnique({
-      where: { id },
+      where: { id: params.id },
       include: {
         company: {
           select: {
+            id: true,
             name: true,
+            image: true,
             email: true,
           },
         },
+        assignments: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                image: true,
+                rank: true,
+                xp: true
+              }
+            }
+          }
+        }
       },
     });
 
     if (!quest) {
-      return NextResponse.json({ error: 'Quest not found', success: false }, { status: 404 });
+      return NextResponse.json({ success: false, error: 'Quest not found' }, { status: 404 });
     }
 
-    // Transform to match previous response shape (company data was under "users" key)
-    const transformedQuest = {
-      ...quest,
-      users: quest.company || { name: '', email: '' },
-    };
-
-    return NextResponse.json({ quest: transformedQuest, quests: [transformedQuest], success: true });
+    return NextResponse.json({ success: true, quest });
   } catch (error) {
-    console.error('Error fetching quest:', error);
-    return NextResponse.json({ error: 'Failed to fetch quest', success: false }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Failed to fetch quest' }, { status: 500 });
   }
 }

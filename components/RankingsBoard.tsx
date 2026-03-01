@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -38,6 +39,7 @@ interface RankingsBoardProps {
 }
 
 export default function RankingsBoard({ showUserPosition = false, limit = 10 }: RankingsBoardProps) {
+  const { data: session } = useSession();
   const [rankings, setRankings] = useState<RankingUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [userRank, setUserRank] = useState<{ position: number; totalUsers: number } | null>(null);
@@ -55,11 +57,8 @@ export default function RankingsBoard({ showUserPosition = false, limit = 10 }: 
         });
         setRankings(data);
         
-        if (showUserPosition) {
-          // In a real implementation, you would get the current user's ID from the session
-          // For now, we'll simulate with a mock user ID
-          const mockUserId = 'mock-user-id'; // This should come from the session
-          const userRankData = await getUserRank(mockUserId);
+        if (showUserPosition && session?.user?.id) {
+          const userRankData = await getUserRank(session.user.id);
           setUserRank(userRankData);
         }
       } catch (error) {
@@ -71,7 +70,7 @@ export default function RankingsBoard({ showUserPosition = false, limit = 10 }: 
     };
 
     loadRankings();
-  }, [selectedRank, limit, showUserPosition]);
+  }, [selectedRank, limit, showUserPosition, session?.user?.id]);
 
   const getRankColor = (rank: string) => {
     switch (rank) {

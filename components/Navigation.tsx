@@ -13,10 +13,11 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import { Menu, X, User, LogOut, Code2 } from 'lucide-react';
+import { Menu, X, User, LogOut, Code2, ShieldAlert } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
+import NotificationBell from './NotificationBell';
 
 export default function Navigation() {
   const { data: session, status } = useSession();
@@ -52,6 +53,7 @@ export default function Navigation() {
     if (status === 'authenticated' && session?.user) {
       return (
         <div className="flex items-center space-x-3">
+          <NotificationBell userId={session.user.id} />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-9 w-9 rounded-full ring-1 ring-slate-200 hover:ring-slate-300 transition-all">
@@ -82,6 +84,17 @@ export default function Navigation() {
                   <span>Profile</span>
                 </Link>
               </DropdownMenuItem>
+              {userRole === 'admin' && (
+                <>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild className="cursor-pointer">
+                    <Link href="/dashboard/admin">
+                      <ShieldAlert className="mr-2 h-4 w-4" />
+                      <span>Admin Dashboard</span>
+                    </Link>
+                  </DropdownMenuItem>
+                </>
+              )}
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={handleLogout} className="cursor-pointer text-red-600 focus:text-red-600">
                 <LogOut className="mr-2 h-4 w-4" />
@@ -120,6 +133,9 @@ export default function Navigation() {
           )}
           {userRole === 'company' && (
             <NavLink href="/dashboard/company/create-quest">Create Quest</NavLink>
+          )}
+          {userRole === 'admin' && (
+            <NavLink href="/dashboard/admin">Admin</NavLink>
           )}
         </div>
       );

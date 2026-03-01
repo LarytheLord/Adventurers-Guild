@@ -239,9 +239,8 @@ const skillCategories: SkillCategory[] = [
   }
 ]
 
-export function SkillTree() {
+export function SkillTreeVisualization() {
   const [selectedCategory, setSelectedCategory] = useState<SkillCategory | null>(null)
-  const [isOpen, setIsOpen] = useState(false)
 
   const totalSkillPoints = skillCategories.reduce((sum, category) => sum + category.totalSkillPoints, 0)
   const maxTotalSkillPoints = skillCategories.reduce((sum, category) => sum + category.maxSkillPoints, 0)
@@ -254,23 +253,7 @@ export function SkillTree() {
   const totalSkills = skillCategories.flatMap(category => category.skills).length
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button 
-          className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 sm:px-8 py-2 sm:py-3 text-base sm:text-lg font-bold transition-all duration-300 ease-out shadow-lg hover:shadow-xl"
-          onClick={() => setIsOpen(true)}
-        >
-          <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
-          View Skill Tree
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="max-w-4xl sm:max-w-5xl lg:max-w-6xl max-h-[85vh] sm:max-h-[90vh] overflow-y-auto mx-4">
-        <DialogHeader>
-          <DialogTitle className="text-2xl sm:text-3xl font-bold text-center mb-4 sm:mb-6">
-            🎮 Developer Skill Tree
-          </DialogTitle>
-        </DialogHeader>
-
+    <div className="space-y-6">
         {/* Overall Progress */}
         <div className="mb-6 sm:mb-8">
           <Card className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950 dark:to-blue-950 border-2 border-purple-200 dark:border-purple-800">
@@ -424,6 +407,31 @@ export function SkillTree() {
             ))}
           </div>
         </div>
+    </div>
+  )
+}
+
+export function SkillTree() {
+  const [isOpen, setIsOpen] = useState(false)
+
+  return (
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger asChild>
+        <Button 
+          className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 sm:px-8 py-2 sm:py-3 text-base sm:text-lg font-bold transition-all duration-300 ease-out shadow-lg hover:shadow-xl"
+          onClick={() => setIsOpen(true)}
+        >
+          <Sparkles className="w-4 h-4 sm:w-5 sm:h-5 mr-2" />
+          View Skill Tree
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-4xl sm:max-w-5xl lg:max-w-6xl max-h-[85vh] sm:max-h-[90vh] overflow-y-auto mx-4">
+        <DialogHeader>
+          <DialogTitle className="text-2xl sm:text-3xl font-bold text-center mb-4 sm:mb-6">
+            🎮 Developer Skill Tree
+          </DialogTitle>
+        </DialogHeader>
+        <SkillTreeVisualization />
       </DialogContent>
     </Dialog>
   )
