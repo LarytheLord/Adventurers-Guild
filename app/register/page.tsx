@@ -7,7 +7,6 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, Code2, CheckCircle2 } from 'lucide-react';
-import { createClient } from '@supabase/supabase-js';
 import {
   Select,
   SelectContent,
@@ -17,11 +16,6 @@ import {
 } from '@/components/ui/select';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 export default function RegisterPage() {
   const [name, setName] = useState('');
@@ -52,77 +46,18 @@ export default function RegisterPage() {
     setError('');
 
     try {
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name,
-          },
-        },
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password, role, companyName }),
       });
 
-      if (signUpError) {
-        setError(signUpError.message);
-      } else if (data.user) {
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || 'Registration failed');
+      } else {
         setSuccess(true);
-
-        // Add user to our users table
-        const { error: insertError } = await supabase
-          .from('users')
-          .insert([
-            {
-              id: data.user.id,
-              name,
-              email,
-              role,
-              rank: 'F',
-              xp: 0,
-              skill_points: 0,
-              level: 1,
-            },
-          ]);
-
-        if (insertError) {
-          console.error('Error inserting user:', insertError);
-        }
-
-        // Create role-specific profile
-        if (role === 'company') {
-          const { error: companyProfileError } = await supabase
-            .from('company_profiles')
-            .insert([
-              {
-                user_id: data.user.id,
-                company_name: companyName || name,
-                is_verified: false,
-              },
-            ]);
-
-          if (companyProfileError) {
-            console.error('Error creating company profile:', companyProfileError);
-          }
-        } else {
-          // Create adventurer profile
-          const { error: adventurerProfileError } = await supabase
-            .from('adventurer_profiles')
-            .insert([
-              {
-                user_id: data.user.id,
-                availability_status: 'available',
-                quest_completion_rate: 0,
-                total_quests_completed: 0,
-                current_streak: 0,
-                max_streak: 0,
-              },
-            ]);
-
-          if (adventurerProfileError) {
-            console.error('Error creating adventurer profile:', adventurerProfileError);
-          }
-        }
-
-        // Redirect to login after 3 seconds
         setTimeout(() => {
           router.push('/login');
         }, 3000);
@@ -168,7 +103,7 @@ export default function RegisterPage() {
               </div>
               <h3 className="text-xl font-bold mb-2 text-slate-900">Registration Successful!</h3>
               <p className="text-slate-500 mb-6">
-                Please check your email to verify your account.
+                Your account has been created. You can now sign in.
               </p>
               <p className="text-sm text-indigo-600 animate-pulse">
                 Redirecting to login...

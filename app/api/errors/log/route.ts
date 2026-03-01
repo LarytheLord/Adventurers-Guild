@@ -31,8 +31,9 @@ export async function POST(request: NextRequest) {
       userAgent: errorLog.userAgent,
     });
 
-    // TODO: Store in database
-    // await supabase.from('error_logs').insert([errorLog]);
+    // TODO: Store in database using Prisma
+    // import { prisma } from '@/lib/db';
+    // await prisma.errorLog.create({ data: errorLog });
 
     // TODO: Send to error tracking service
     // if (process.env.SENTRY_DSN) {

@@ -29,13 +29,13 @@ import { toast } from 'sonner';
 // Types
 interface Notification {
   id: string;
-  user_id: string;
+  userId: string;
   title: string;
   message: string;
   type: string;
   data?: any;
   read_at?: string;
-  created_at: string;
+  createdAt: string;
 }
 
 interface NotificationBellProps {
@@ -55,7 +55,7 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
       
       try {
         setLoading(true);
-        const response = await fetch(`/api/notifications?user_id=${userId}&limit=10`);
+        const response = await fetch(`/api/notifications?userId=${userId}&limit=10`);
         const data = await response.json();
         
         if (data.success) {
@@ -96,7 +96,7 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
         },
         body: JSON.stringify({
           notification_id: notificationId,
-          user_id: userId,
+          userId: userId,
           is_read: true
         }),
       });
@@ -128,7 +128,7 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          user_id: userId
+          userId: userId
         }),
       });
 
@@ -159,7 +159,7 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
         },
         body: JSON.stringify({
           notification_id: notificationId,
-          user_id: userId
+          userId: userId
         }),
       });
 
@@ -273,7 +273,7 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
                         {notification.title}
                       </p>
                       <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        {formatNotificationTime(notification.created_at)}
+                        {formatNotificationTime(notification.createdAt)}
                       </span>
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">

@@ -15,7 +15,7 @@ interface Quest {
   title: string;
   description: string;
   difficulty: string;
-  xp_reward: number;
+  xpReward: number;
   status: string;
 }
 
@@ -75,11 +75,11 @@ export default function AdventurerDashboard() {
         if (questsRes.ok) {
           const questsData = await questsRes.json();
           const mapped = (questsData.quests || []).map((a: any) => ({
-            id: a.quest_id || a.quests?.id || a.id,
+            id: a.questId || a.quests?.id || a.id,
             title: a.quests?.title || 'Untitled Quest',
             description: a.quests?.description || '',
             difficulty: a.quests?.difficulty || 'F',
-            xp_reward: a.quests?.xp_reward || 0,
+            xpReward: a.quests?.xpReward || 0,
             status: a.status,
           }));
           setQuests(mapped);
@@ -234,7 +234,7 @@ export default function AdventurerDashboard() {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-medium">{quest.xp_reward} XP</div>
+                      <div className="font-medium">{quest.xpReward} XP</div>
                       <Button asChild variant="ghost" size="sm" className="h-auto p-0 mt-1">
                         <Link href={`/dashboard/quests/${quest.id}`}>
                           View Quest

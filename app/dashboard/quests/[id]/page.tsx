@@ -18,19 +18,19 @@ interface Quest {
   id: string;
   title: string;
   description: string;
-  detailed_description?: string;
-  quest_type: string;
+  detailedDescription?: string;
+  questType: string;
   status: string;
   difficulty: string;
-  xp_reward: number;
-  skill_points_reward: number;
-  monetary_reward?: number;
-  required_skills: string[];
-  required_rank?: string;
-  max_participants?: number;
-  quest_category: string;
-  company_id: string;
-  created_at: string;
+  xpReward: number;
+  skillPointsReward: number;
+  monetaryReward?: number;
+  requiredSkills: string[];
+  requiredRank?: string;
+  maxParticipants?: number;
+  questCategory: string;
+  companyId: string;
+  createdAt: string;
   deadline?: string;
   users: {
     name: string;
@@ -40,12 +40,12 @@ interface Quest {
 
 interface Assignment {
   id: string;
-  quest_id: string;
-  user_id: string;
+  questId: string;
+  userId: string;
   status: string;
-  assigned_at: string;
-  started_at?: string;
-  completed_at?: string;
+  assignedAt: string;
+  startedAt?: string;
+  completedAt?: string;
   progress?: number;
 }
 
@@ -92,7 +92,7 @@ export default function QuestDetailPage() {
 
         // Fetch user's assignment for this quest
         if (session?.user?.id) {
-          const assignmentResponse = await fetch(`/api/quests/assignments?user_id=${session.user.id}&quest_id=${id}`);
+          const assignmentResponse = await fetch(`/api/quests/assignments?userId=${session.user.id}&questId=${id}`);
           const assignmentData = await assignmentResponse.json();
 
           if (assignmentData.success && assignmentData.assignments.length > 0) {
@@ -126,8 +126,8 @@ export default function QuestDetailPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          quest_id: id,
-          user_id: session.user.id,
+          questId: id,
+          userId: session.user.id,
         }),
       });
 
@@ -166,10 +166,10 @@ export default function QuestDetailPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          assignment_id: assignment.id,
-          submission_content: submissionContent,
-          submission_notes: submissionNotes,
-          user_id: session.user.id,
+          assignmentId: assignment.id,
+          submissionContent: submissionContent,
+          submissionNotes: submissionNotes,
+          userId: session.user.id,
         }),
       });
 
@@ -243,8 +243,8 @@ export default function QuestDetailPage() {
               </CardDescription>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Badge variant="secondary">{quest.quest_category}</Badge>
-              <Badge variant="outline">{quest.quest_type}</Badge>
+              <Badge variant="secondary">{quest.questCategory}</Badge>
+              <Badge variant="outline">{quest.questType}</Badge>
             </div>
           </div>
         </CardHeader>
@@ -252,23 +252,23 @@ export default function QuestDetailPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div className="text-center p-3 bg-muted rounded-lg">
               <Zap className="w-6 h-6 mx-auto text-yellow-500 mb-1" />
-              <div className="font-bold">{quest.xp_reward} XP</div>
+              <div className="font-bold">{quest.xpReward} XP</div>
               <div className="text-xs text-muted-foreground">Reward</div>
             </div>
             <div className="text-center p-3 bg-muted rounded-lg">
               <Target className="w-6 h-6 mx-auto text-blue-500 mb-1" />
-              <div className="font-bold">{quest.skill_points_reward} SP</div>
+              <div className="font-bold">{quest.skillPointsReward} SP</div>
               <div className="text-xs text-muted-foreground">Skill Points</div>
             </div>
-            {quest.monetary_reward && (
+            {quest.monetaryReward && (
               <div className="text-center p-3 bg-muted rounded-lg">
-                <div className="font-bold">${quest.monetary_reward}</div>
+                <div className="font-bold">${quest.monetaryReward}</div>
                 <div className="text-xs text-muted-foreground">Monetary</div>
               </div>
             )}
             <div className="text-center p-3 bg-muted rounded-lg">
               <Users className="w-6 h-6 mx-auto text-green-500 mb-1" />
-              <div className="font-bold">{quest.max_participants || 1}</div>
+              <div className="font-bold">{quest.maxParticipants || 1}</div>
               <div className="text-xs text-muted-foreground">Participants</div>
             </div>
           </div>
@@ -279,20 +279,20 @@ export default function QuestDetailPage() {
               <p className="text-muted-foreground">{quest.description}</p>
             </div>
 
-            {quest.detailed_description && (
+            {quest.detailedDescription && (
               <div>
                 <h3 className="font-semibold mb-2">Detailed Requirements</h3>
                 <div className="prose prose-sm max-w-none">
-                  <p className="text-muted-foreground whitespace-pre-line">{quest.detailed_description}</p>
+                  <p className="text-muted-foreground whitespace-pre-line">{quest.detailedDescription}</p>
                 </div>
               </div>
             )}
 
-            {quest.required_skills && quest.required_skills.length > 0 && (
+            {quest.requiredSkills && quest.requiredSkills.length > 0 && (
               <div>
                 <h3 className="font-semibold mb-2">Required Skills</h3>
                 <div className="flex flex-wrap gap-2">
-                  {quest.required_skills.map((skill, index) => (
+                  {quest.requiredSkills.map((skill, index) => (
                     <Badge key={index} variant="secondary">{skill}</Badge>
                   ))}
                 </div>
@@ -338,7 +338,7 @@ export default function QuestDetailPage() {
                   {assignment.status === 'cancelled' && 'Cancelled'}
                 </Badge>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Assigned on {new Date(assignment.assigned_at).toLocaleDateString()}
+                  Assigned on {new Date(assignment.assignedAt).toLocaleDateString()}
                 </p>
               </div>
               {assignment.status === 'completed' && (
@@ -360,7 +360,7 @@ export default function QuestDetailPage() {
           <CardContent>
             <Button
               onClick={handleAssignQuest}
-              disabled={!!(quest.max_participants && quest.max_participants <= 0)}
+              disabled={!!(quest.maxParticipants && quest.maxParticipants <= 0)}
             >
               Accept Quest
             </Button>

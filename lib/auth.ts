@@ -1,12 +1,7 @@
 import NextAuth, { AuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { createClient } from '@supabase/supabase-js';
-import { env } from './env';
-
-const supabase = createClient(
-  env.NEXT_PUBLIC_SUPABASE_URL,
-  env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+import bcrypt from 'bcryptjs';
+import { prisma } from './db';
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -21,40 +16,33 @@ export const authOptions: AuthOptions = {
           return null;
         }
 
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: credentials.email,
-          password: credentials.password
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email },
         });
 
-        if (error) {
-          console.error('Auth error:', error);
+        if (!user) {
           return null;
         }
 
-        if (data.user) {
-          // Get additional user data from our users table
-          const { data: userData, error: userError } = await supabase
-            .from('users')
-            .select('*')
-            .eq('id', data.user.id)
-            .single();
-
-          if (userError) {
-            console.error('User data error:', userError);
-            return null;
-          }
-
-          return {
-            id: data.user.id,
-            email: data.user.email,
-            name: userData.name,
-            role: userData.role,
-            rank: userData.rank,
-            xp: userData.xp
-          };
+        const isValidPassword = await bcrypt.compare(credentials.password, user.passwordHash);
+        if (!isValidPassword) {
+          return null;
         }
 
-        return null;
+        // Update last login
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { lastLoginAt: new Date() },
+        });
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          role: user.role,
+          rank: user.rank,
+          xp: user.xp,
+        };
       }
     })
   ],
@@ -85,7 +73,7 @@ export const authOptions: AuthOptions = {
     strategy: 'jwt' as const,
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  secret: env.NEXTAUTH_SECRET,
+  secret: process.env.NEXTAUTH_SECRET,
 };
 
 export default NextAuth(authOptions);

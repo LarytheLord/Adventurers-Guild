@@ -1,13 +1,7 @@
 // app/api/admin/quests/route.ts
 import { NextRequest } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { prisma } from '@/lib/db';
 import { requireAuth } from '@/lib/api-auth';
-
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,61 +13,63 @@ export async function GET(request: NextRequest) {
     // Parse query parameters
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
-    const questType = searchParams.get('quest_type');
+    const questType = searchParams.get('questType');
     const difficulty = searchParams.get('difficulty');
     const search = searchParams.get('search');
     const limit = searchParams.get('limit') || '10';
     const offset = searchParams.get('offset') || '0';
 
-    // Build query
-    let query = supabase
-      .from('quests')
-      .select(`
-        id,
-        title,
-        description,
-        quest_type,
-        status,
-        difficulty,
-        xp_reward,
-        skill_points_reward,
-        monetary_reward,
-        required_skills,
-        required_rank,
-        max_participants,
-        quest_category,
-        company_id,
-        created_at,
-        updated_at,
-        deadline,
-        users!quests_company_id_fkey (
-          name,
-          email,
-          is_verified
-        )
-      `)
-      .range(parseInt(offset), parseInt(offset) + parseInt(limit) - 1)
-      .order('created_at', { ascending: false });
+    // Build where clause
+    const where: any = {};
 
-    // Add filters if provided
     if (status) {
-      query = query.eq('status', status);
+      where.status = status;
     }
     if (questType) {
-      query = query.eq('quest_type', questType);
+      where.questType = questType;
     }
     if (difficulty) {
-      query = query.eq('difficulty', difficulty);
+      where.difficulty = difficulty;
     }
     if (search) {
-      query = query.or(`title.ilike.%${search}%,description.ilike.%${search}%`);
+      where.OR = [
+        { title: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+      ];
     }
 
-    const { data, error } = await query;
-
-    if (error) {
-      throw new Error(error.message);
-    }
+    const data = await prisma.quest.findMany({
+      where,
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        questType: true,
+        status: true,
+        difficulty: true,
+        xpReward: true,
+        skillPointsReward: true,
+        monetaryReward: true,
+        requiredSkills: true,
+        requiredRank: true,
+        maxParticipants: true,
+        questCategory: true,
+        companyId: true,
+        createdAt: true,
+        updatedAt: true,
+        deadline: true,
+        company: {
+          select: {
+            name: true,
+            email: true,
+            isVerified: true,
+          },
+        },
+      },
+      skip: parseInt(offset),
+      take: parseInt(limit),
+      orderBy: { createdAt: 'desc' },
+    });
 
     return Response.json({ quests: data, success: true });
   } catch (error) {
@@ -90,29 +86,23 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { quest_id, status, required_rank, max_participants } = body;
+    const { questId, status, requiredRank, maxParticipants } = body;
 
     // Validate required fields
-    if (!quest_id) {
+    if (!questId) {
       return Response.json({ error: 'Quest ID is required', success: false }, { status: 400 });
     }
 
     // Update the quest
     const updateData: any = {};
     if (status !== undefined) updateData.status = status;
-    if (required_rank !== undefined) updateData.required_rank = required_rank;
-    if (max_participants !== undefined) updateData.max_participants = max_participants;
+    if (requiredRank !== undefined) updateData.requiredRank = requiredRank;
+    if (maxParticipants !== undefined) updateData.maxParticipants = maxParticipants;
 
-    const { data, error } = await supabase
-      .from('quests')
-      .update(updateData)
-      .eq('id', quest_id)
-      .select()
-      .single();
-
-    if (error) {
-      throw new Error(error.message);
-    }
+    const data = await prisma.quest.update({
+      where: { id: questId },
+      data: updateData,
+    });
 
     return Response.json({ quest: data, success: true });
   } catch (error) {
@@ -129,22 +119,18 @@ export async function DELETE(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { quest_id } = body;
+    const { questId } = body;
 
     // Validate required field
-    if (!quest_id) {
+    if (!questId) {
       return Response.json({ error: 'Quest ID is required', success: false }, { status: 400 });
     }
 
     // Delete the quest (in reality, you'd want to archive rather than hard delete)
-    const { error } = await supabase
-      .from('quests')
-      .update({ status: 'cancelled' })
-      .eq('id', quest_id);
-
-    if (error) {
-      throw new Error(error.message);
-    }
+    await prisma.quest.update({
+      where: { id: questId },
+      data: { status: 'cancelled' },
+    });
 
     return Response.json({ message: 'Quest cancelled successfully', success: true });
   } catch (error) {

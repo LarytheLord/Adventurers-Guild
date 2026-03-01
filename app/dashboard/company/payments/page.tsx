@@ -8,35 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, CreditCard, DollarSign, TrendingUp, Wallet, Calendar, Search, Filter, Download } from 'lucide-react';
-import { formatCurrency } from '@/lib/payment-utils';
-import { getPaymentHistory } from '@/lib/payment-utils';
-
-interface Transaction {
-  id: string;
-  from_user_id: string;
-  to_user_id: string;
-  quest_id: string;
-  amount: number;
-  currency: string;
-  status: string;
-  payment_method: string;
-  transaction_id?: string;
-  description?: string;
-  created_at: string;
-  updated_at: string;
-  completed_at?: string;
-  from_user: {
-    name: string;
-    email: string;
-  };
-  to_user: {
-    name: string;
-    email: string;
-  };
-  quests: {
-    title: string;
-  };
-}
+import { formatCurrency, getPaymentHistory, Transaction } from '@/lib/payment-utils';
 
 export default function CompanyPaymentsPage() {
   const { data: session, status } = useSession();
@@ -96,8 +68,8 @@ export default function CompanyPaymentsPage() {
   }, [status, session, statusFilter, router]);
 
   const filteredTransactions = transactions.filter(transaction =>
-    transaction.quests?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    transaction.to_user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    transaction.quest?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    transaction.toUser?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     transaction.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     transaction.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -238,16 +210,16 @@ export default function CompanyPaymentsPage() {
             <Card key={transaction.id}>
               <CardHeader className="sm:grid sm:grid-cols-3 sm:items-center">
                 <div>
-                  <CardTitle className="text-lg">{transaction.quests?.title || 'Quest Payment'}</CardTitle>
+                  <CardTitle className="text-lg">{transaction.quest?.title || 'Quest Payment'}</CardTitle>
                   <CardDescription>
-                    To {transaction.to_user?.name || 'Unknown Adventurer'}
+                    To {transaction.toUser?.name || 'Unknown Adventurer'}
                   </CardDescription>
                 </div>
                 <div className="sm:mt-0 mt-2">
                   <div className="font-bold text-lg">{formatCurrency(transaction.amount, transaction.currency)}</div>
                   <div className="text-sm text-muted-foreground flex items-center">
                     <Calendar className="w-4 h-4 mr-1" />
-                    {new Date(transaction.created_at).toLocaleDateString()}
+                    {new Date(transaction.createdAt).toLocaleDateString()}
                   </div>
                 </div>
                 <div className="flex sm:justify-end sm:mt-0 mt-2">
@@ -265,7 +237,7 @@ export default function CompanyPaymentsPage() {
               <CardContent>
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                   <div className="text-sm">
-                    <p className="font-medium">Transaction ID: {transaction.transaction_id || transaction.id}</p>
+                    <p className="font-medium">Transaction ID: {transaction.transactionId || transaction.id}</p>
                     <p className="text-muted-foreground">{transaction.description || 'Payment for quest completion'}</p>
                   </div>
                   <div className="flex gap-2">
@@ -276,7 +248,7 @@ export default function CompanyPaymentsPage() {
                     <Button 
                       variant="outline" 
                       size="sm" 
-                      onClick={() => router.push(`/dashboard/company/quests/${transaction.quest_id}`)}
+                      onClick={() => router.push(`/dashboard/company/quests/${transaction.questId}`)}
                     >
                       View Quest
                     </Button>

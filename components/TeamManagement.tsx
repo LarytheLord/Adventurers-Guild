@@ -38,21 +38,21 @@ interface TeamMember {
   rank: string;
   avatar?: string;
   role: string;
-  joined_at: string;
+  joinedAt: string;
 }
 
 interface Team {
   id: string;
   name: string;
   description?: string;
-  avatar_url?: string;
-  max_members: number;
-  created_at: string;
-  updated_at: string;
-  is_active: boolean;
-  owner_user_id: string;
-  user_role: string;
-  joined_at: string;
+  avatarUrl?: string;
+  maxMembers: number;
+  createdAt: string;
+  updatedAt: string;
+  isActive: boolean;
+  ownerUserId: string;
+  userRole: string;
+  joinedAt: string;
   members: TeamMember[];
 }
 
@@ -67,7 +67,7 @@ export default function TeamManagement({ userId }: TeamManagementProps) {
   const [newTeam, setNewTeam] = useState({
     name: '',
     description: '',
-    max_members: 5
+    maxMembers: 5
   });
   const [showCreateTeam, setShowCreateTeam] = useState(false);
   const [invitingToTeam, setInvitingToTeam] = useState<string | null>(null);
@@ -78,7 +78,7 @@ export default function TeamManagement({ userId }: TeamManagementProps) {
     const fetchTeams = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/teams?user_id=${userId}`);
+        const response = await fetch(`/api/teams?userId=${userId}`);
         const data = await response.json();
         
         if (data.success) {
@@ -109,8 +109,8 @@ export default function TeamManagement({ userId }: TeamManagementProps) {
         body: JSON.stringify({
           name: newTeam.name,
           description: newTeam.description,
-          max_members: newTeam.max_members,
-          owner_user_id: userId
+          max_members: newTeam.maxMembers,
+          owner_userId: userId
         }),
       });
 
@@ -119,10 +119,10 @@ export default function TeamManagement({ userId }: TeamManagementProps) {
       if (data.success) {
         toast.success('Team created successfully');
         setShowCreateTeam(false);
-        setNewTeam({ name: '', description: '', max_members: 5 });
+        setNewTeam({ name: '', description: '', maxMembers: 5 });
         
         // Refresh the team list
-        const updatedTeamsResponse = await fetch(`/api/teams?user_id=${userId}`);
+        const updatedTeamsResponse = await fetch(`/api/teams?userId=${userId}`);
         const updatedTeamsData = await updatedTeamsResponse.json();
         
         if (updatedTeamsData.success) {
@@ -155,9 +155,9 @@ export default function TeamManagement({ userId }: TeamManagementProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          team_id: teamId,
-          user_id: mockUserId, // In real app, this would be the actual user ID
-          invited_by: userId
+          teamId: teamId,
+          userId: mockUserId, // In real app, this would be the actual user ID
+          invitedBy: userId
         }),
       });
 
@@ -169,7 +169,7 @@ export default function TeamManagement({ userId }: TeamManagementProps) {
         setInvitingToTeam(null);
         
         // Refresh the team data to show the new member
-        const updatedTeamsResponse = await fetch(`/api/teams?user_id=${userId}`);
+        const updatedTeamsResponse = await fetch(`/api/teams?userId=${userId}`);
         const updatedTeamsData = await updatedTeamsResponse.json();
         
         if (updatedTeamsData.success) {
@@ -195,7 +195,7 @@ export default function TeamManagement({ userId }: TeamManagementProps) {
       toast.success('Successfully left the team');
       
       // Refresh the team list
-      const updatedTeamsResponse = await fetch(`/api/teams?user_id=${userId}`);
+      const updatedTeamsResponse = await fetch(`/api/teams?userId=${userId}`);
       const updatedTeamsData = await updatedTeamsResponse.json();
       
       if (updatedTeamsData.success) {
@@ -218,7 +218,7 @@ export default function TeamManagement({ userId }: TeamManagementProps) {
       toast.success('Member removed from team');
       
       // Refresh the team data to show the updated member list
-      const updatedTeamsResponse = await fetch(`/api/teams?user_id=${userId}`);
+      const updatedTeamsResponse = await fetch(`/api/teams?userId=${userId}`);
       const updatedTeamsData = await updatedTeamsResponse.json();
       
       if (updatedTeamsData.success) {
@@ -303,8 +303,8 @@ export default function TeamManagement({ userId }: TeamManagementProps) {
                 <label className="text-sm font-medium">Max Members</label>
                 <Input
                   type="number"
-                  value={newTeam.max_members}
-                  onChange={(e) => setNewTeam({...newTeam, max_members: parseInt(e.target.value) || 5})}
+                  value={newTeam.maxMembers}
+                  onChange={(e) => setNewTeam({...newTeam, maxMembers: parseInt(e.target.value) || 5})}
                   min="2"
                   max="10"
                 />
@@ -347,12 +347,12 @@ export default function TeamManagement({ userId }: TeamManagementProps) {
                   <div>
                     <CardTitle className="text-lg">{team.name}</CardTitle>
                     <div className="flex items-center text-sm text-muted-foreground">
-                      {team.members.length}/{team.max_members} members
+                      {team.members.length}/{team.maxMembers} members
                     </div>
                   </div>
                 </div>
-                <Badge variant={getUserRoleBadgeVariant(team.user_role)}>
-                  {team.user_role.charAt(0).toUpperCase() + team.user_role.slice(1)}
+                <Badge variant={getUserRoleBadgeVariant(team.userRole)}>
+                  {team.userRole.charAt(0).toUpperCase() + team.userRole.slice(1)}
                 </Badge>
               </CardHeader>
               <CardContent>
@@ -385,14 +385,14 @@ export default function TeamManagement({ userId }: TeamManagementProps) {
                           </div>
                         </div>
                         
-                        {team.user_role === 'owner' || team.user_role === 'admin' || member.id === userId ? (
+                        {team.userRole === 'owner' || team.userRole === 'admin' || member.id === userId ? (
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => {
                               if (member.id === userId) {
                                 handleLeaveTeam(team.id);
-                              } else if (team.user_role === 'owner' || team.user_role === 'admin') {
+                              } else if (team.userRole === 'owner' || team.userRole === 'admin') {
                                 handleRemoveMember(team.id, member.id);
                               }
                             }}
@@ -411,7 +411,7 @@ export default function TeamManagement({ userId }: TeamManagementProps) {
                 </div>
 
                 <div className="flex space-x-2">
-                  {team.user_role === 'owner' && (
+                  {team.userRole === 'owner' && (
                     <Dialog 
                       open={invitingToTeam === team.id} 
                       onOpenChange={(open) => setInvitingToTeam(open ? team.id : null)}

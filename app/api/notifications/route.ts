@@ -1,13 +1,7 @@
 // app/api/notifications/route.ts
 import { NextRequest } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { getAuthUser } from '@/lib/api-auth';
-
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { prisma } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {
@@ -25,44 +19,36 @@ export async function GET(request: NextRequest) {
     const limit = searchParams.get('limit') || '10';
     const offset = searchParams.get('offset') || '0';
 
-    // Build query
-    let query = supabase
-      .from('notifications')
-      .select(`
-        id,
-        user_id,
-        title,
-        message,
-        type,
-        data,
-        read_at,
-        created_at,
-        users (
-          name,
-          email
-        )
-      `)
-      .eq('user_id', userId)
-      .range(parseInt(offset), parseInt(offset) + parseInt(limit) - 1)
-      .order('created_at', { ascending: false });
+    // Build where clause
+    const where: Record<string, unknown> = {
+      userId,
+    };
 
-    // Add filters if provided
     if (type) {
-      query = query.eq('type', type);
+      where.type = type;
     }
     if (isRead !== null) {
       if (isRead === 'true') {
-        query = query.not('read_at', 'is', null);
+        where.readAt = { not: null };
       } else if (isRead === 'false') {
-        query = query.is('read_at', null);
+        where.readAt = null;
       }
     }
 
-    const { data, error } = await query;
-
-    if (error) {
-      throw new Error(error.message);
-    }
+    const data = await prisma.notification.findMany({
+      where,
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+      },
+      skip: parseInt(offset),
+      take: parseInt(limit),
+      orderBy: { createdAt: 'desc' },
+    });
 
     return Response.json({ notifications: data, success: true });
   } catch (error) {
@@ -81,7 +67,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Validate required fields
-    const requiredFields = ['user_id', 'title', 'message', 'type'];
+    const requiredFields = ['userId', 'title', 'message', 'type'];
     for (const field of requiredFields) {
       if (!body[field]) {
         return Response.json({ error: `${field} is required`, success: false }, { status: 400 });
@@ -89,21 +75,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the notification
-    const { data, error } = await supabase
-      .from('notifications')
-      .insert([{
-        user_id: body.user_id,
+    const data = await prisma.notification.create({
+      data: {
+        userId: body.userId,
         title: body.title,
         message: body.message,
         type: body.type,
-        data: body.data || null
-      }])
-      .select()
-      .single();
-
-    if (error) {
-      throw new Error(error.message);
-    }
+        data: body.data || null,
+      },
+    });
 
     return Response.json({ notification: data, success: true }, { status: 201 });
   } catch (error) {
@@ -121,41 +101,34 @@ export async function PUT(request: NextRequest) {
 
     const body = await request.json();
     const { notification_id, is_read } = body;
-    const user_id = authUser.id;
+    const userId = authUser.id;
 
     // Validate required fields
-    if (!notification_id || !user_id) {
+    if (!notification_id || !userId) {
       return Response.json({ error: 'Notification ID and User ID are required', success: false }, { status: 400 });
     }
 
     // Check if notification belongs to user
-    const { data: notification, error: notificationError } = await supabase
-      .from('notifications')
-      .select('user_id')
-      .eq('id', notification_id)
-      .single();
+    const notification = await prisma.notification.findUnique({
+      where: { id: notification_id },
+      select: { userId: true },
+    });
 
-    if (notificationError || !notification) {
+    if (!notification) {
       return Response.json({ error: 'Notification not found', success: false }, { status: 404 });
     }
 
-    if (notification.user_id !== user_id) {
+    if (notification.userId !== userId) {
       return Response.json({ error: 'Unauthorized', success: false }, { status: 403 });
     }
 
     // Update the notification
-    const { data, error } = await supabase
-      .from('notifications')
-      .update({
-        read_at: is_read ? new Date().toISOString() : null
-      })
-      .eq('id', notification_id)
-      .select()
-      .single();
-
-    if (error) {
-      throw new Error(error.message);
-    }
+    const data = await prisma.notification.update({
+      where: { id: notification_id },
+      data: {
+        readAt: is_read ? new Date() : null,
+      },
+    });
 
     return Response.json({ notification: data, success: true });
   } catch (error) {
@@ -173,37 +146,31 @@ export async function DELETE(request: NextRequest) {
 
     const body = await request.json();
     const { notification_id } = body;
-    const user_id = authUser.id;
+    const userId = authUser.id;
 
     // Validate required fields
-    if (!notification_id || !user_id) {
+    if (!notification_id || !userId) {
       return Response.json({ error: 'Notification ID and User ID are required', success: false }, { status: 400 });
     }
 
     // Check if notification belongs to user
-    const { data: notification, error: notificationError } = await supabase
-      .from('notifications')
-      .select('user_id')
-      .eq('id', notification_id)
-      .single();
+    const notification = await prisma.notification.findUnique({
+      where: { id: notification_id },
+      select: { userId: true },
+    });
 
-    if (notificationError || !notification) {
+    if (!notification) {
       return Response.json({ error: 'Notification not found', success: false }, { status: 404 });
     }
 
-    if (notification.user_id !== user_id) {
+    if (notification.userId !== userId) {
       return Response.json({ error: 'Unauthorized', success: false }, { status: 403 });
     }
 
     // Delete the notification
-    const { error } = await supabase
-      .from('notifications')
-      .delete()
-      .eq('id', notification_id);
-
-    if (error) {
-      throw new Error(error.message);
-    }
+    await prisma.notification.delete({
+      where: { id: notification_id },
+    });
 
     return Response.json({ message: 'Notification deleted successfully', success: true });
   } catch (error) {
@@ -220,18 +187,16 @@ export async function PATCH(request: NextRequest) {
       return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
-    const user_id = authUser.id;
+    const userId = authUser.id;
 
     // Mark all notifications for user as read
-    const { error } = await supabase
-      .from('notifications')
-      .update({ read_at: new Date().toISOString() })
-      .eq('user_id', user_id)
-      .is('read_at', null);
-
-    if (error) {
-      throw new Error(error.message);
-    }
+    await prisma.notification.updateMany({
+      where: {
+        userId,
+        readAt: null,
+      },
+      data: { readAt: new Date() },
+    });
 
     return Response.json({ message: 'All notifications marked as read', success: true });
   } catch (error) {

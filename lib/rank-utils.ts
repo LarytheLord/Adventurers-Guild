@@ -1,11 +1,5 @@
 // lib/rank-utils.ts
-import { createClient } from '@supabase/supabase-js';
-import { env } from './env';
-
-const supabase = createClient(
-  env.NEXT_PUBLIC_SUPABASE_URL,
-  env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+import { prisma } from './db';
 
 // Types
 export interface RankingUser {
@@ -14,18 +8,18 @@ export interface RankingUser {
   email: string;
   rank: string;
   xp: number;
-  skill_points: number;
+  skillPoints: number;
   level: number;
   position: number;
-  adventurer_profiles?: {
+  adventurerProfile?: {
     specialization?: string;
-    quest_completion_rate?: number;
-    total_quests_completed?: number;
+    questCompletionRate?: number;
+    totalQuestsCompleted?: number;
   };
 }
 
 export interface RankingsParams {
-  sort?: 'xp' | 'level' | 'skill_points';
+  sort?: 'xp' | 'level' | 'skillPoints';
   order?: 'asc' | 'desc';
   limit?: string;
   rank?: string;
@@ -34,99 +28,63 @@ export interface RankingsParams {
 // Fetch rankings
 export async function fetchRankings(params: RankingsParams = {}): Promise<RankingUser[]> {
   const { sort = 'xp', order = 'desc', limit = '20', rank } = params;
-  
-  let query = supabase
-    .from('users')
-    .select(`
-      id,
-      name,
-      email,
-      rank,
-      xp,
-      skill_points,
-      level,
-      adventurer_profiles (
-        specialization,
-        quest_completion_rate,
-        total_quests_completed
-      )
-    `)
-    .eq('role', 'adventurer')
-    .eq('is_active', true)
-    .order(sort, { ascending: order === 'asc' });
 
-  if (rank) {
-    query = query.eq('rank', rank);
-  }
+  const where: any = { role: 'adventurer', isActive: true };
+  if (rank) where.rank = rank;
 
-  if (limit) {
-    query = query.limit(parseInt(limit));
-  }
-
-  const { data, error } = await query;
-
-  if (error) {
-    console.error('Error fetching rankings:', error);
-    throw new Error('Failed to fetch rankings');
-  }
-
-  // Add position to the data and handle array access issues
-  const rankedData = data.map((user: any, index) => {
-    const profileData = Array.isArray(user.adventurer_profiles) ? user.adventurer_profiles[0] : user.adventurer_profiles;
-    return {
-      ...user,
-      adventurer_profiles: profileData || {},
-      position: index + 1
-    };
+  const users = await prisma.user.findMany({
+    where,
+    include: {
+      adventurerProfile: {
+        select: {
+          specialization: true,
+          questCompletionRate: true,
+          totalQuestsCompleted: true,
+        },
+      },
+    },
+    orderBy: { [sort]: order },
+    take: parseInt(limit),
   });
 
-  return rankedData as RankingUser[];
+  return users.map((user, index) => ({
+    id: user.id,
+    name: user.name ?? '',
+    email: user.email,
+    rank: user.rank,
+    xp: user.xp,
+    skillPoints: user.skillPoints,
+    level: user.level,
+    position: index + 1,
+    adventurerProfile: user.adventurerProfile
+      ? {
+          specialization: user.adventurerProfile.specialization ?? undefined,
+          questCompletionRate: Number(user.adventurerProfile.questCompletionRate),
+          totalQuestsCompleted: user.adventurerProfile.totalQuestsCompleted,
+        }
+      : undefined,
+  }));
 }
 
-// Calculate user's current rank based on XP
+// Calculate user's current rank position
 export async function getUserRank(userId: string): Promise<{ position: number; totalUsers: number } | null> {
   try {
-    // First get the user's XP
-    const { data: user, error: userError } = await supabase
-      .from('users')
-      .select('xp')
-      .eq('id', userId)
-      .single();
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { xp: true },
+    });
 
-    if (userError || !user) {
-      console.error('Error fetching user:', userError);
-      return null;
-    }
+    if (!user) return null;
 
-    // Get total number of active adventurers
-    const { count: totalUsers, error: countError } = await supabase
-      .from('users')
-      .select('*', { count: 'exact', head: true })
-      .eq('role', 'adventurer')
-      .eq('is_active', true);
+    const totalUsers = await prisma.user.count({
+      where: { role: 'adventurer', isActive: true },
+    });
 
-    if (countError) {
-      console.error('Error fetching user count:', countError);
-      return null;
-    }
+    const position = await prisma.user.count({
+      where: { role: 'adventurer', isActive: true, xp: { gt: user.xp } },
+    });
 
-    // Get user's position by counting users with higher XP
-    const { count: position, error: positionError } = await supabase
-      .from('users')
-      .select('*', { count: 'exact', head: true })
-      .eq('role', 'adventurer')
-      .eq('is_active', true)
-      .gt('xp', user.xp);
-
-    if (positionError) {
-      console.error('Error fetching position:', positionError);
-      return null;
-    }
-
-    return {
-      position: (position || 0) + 1, // +1 because position is 1-indexed
-      totalUsers: totalUsers || 0
-    };
+    return { position: position + 1, totalUsers };
   } catch (error) {
     console.error('Error calculating user rank:', error);
     return null;

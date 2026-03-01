@@ -40,20 +40,20 @@ interface Quest {
   id: string;
   title: string;
   description: string;
-  detailed_description?: string;
-  quest_type: string;
+  detailedDescription?: string;
+  questType: string;
   status: string;
   difficulty: string;
-  xp_reward: number;
-  skill_points_reward: number;
-  monetary_reward?: number;
-  required_skills: string[];
-  required_rank?: string;
-  max_participants?: number;
-  quest_category: string;
+  xpReward: number;
+  skillPointsReward: number;
+  monetaryReward?: number;
+  requiredSkills: string[];
+  requiredRank?: string;
+  maxParticipants?: number;
+  questCategory: string;
   company_id: string;
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
   deadline?: string;
 }
 
@@ -68,16 +68,16 @@ export default function CompanyPortal({ companyId }: CompanyPortalProps) {
   const [newQuest, setNewQuest] = useState({
     title: '',
     description: '',
-    detailed_description: '',
-    quest_type: 'commission',
+    detailedDescription: '',
+    questType: 'commission',
     difficulty: 'D',
-    xp_reward: 500,
-    skill_points_reward: 0,
-    monetary_reward: 0,
-    required_skills: [] as string[],
-    required_rank: 'F',
-    max_participants: 1,
-    quest_category: 'frontend',
+    xpReward: 500,
+    skillPointsReward: 0,
+    monetaryReward: 0,
+    requiredSkills: [] as string[],
+    requiredRank: 'F',
+    maxParticipants: 1,
+    questCategory: 'frontend',
     deadline: ''
   });
   const [skillInput, setSkillInput] = useState('');
@@ -120,7 +120,7 @@ export default function CompanyPortal({ companyId }: CompanyPortalProps) {
         body: JSON.stringify({
           ...newQuest,
           company_id: companyId,
-          required_skills: newQuest.required_skills.filter(skill => skill.trim() !== '')
+          requiredSkills: newQuest.requiredSkills.filter(skill => skill.trim() !== '')
         }),
       });
 
@@ -131,16 +131,16 @@ export default function CompanyPortal({ companyId }: CompanyPortalProps) {
         setNewQuest({
           title: '',
           description: '',
-          detailed_description: '',
-          quest_type: 'commission',
+          detailedDescription: '',
+          questType: 'commission',
           difficulty: 'D',
-          xp_reward: 500,
-          skill_points_reward: 0,
-          monetary_reward: 0,
-          required_skills: [],
-          required_rank: 'F',
-          max_participants: 1,
-          quest_category: 'frontend',
+          xpReward: 500,
+          skillPointsReward: 0,
+          monetaryReward: 0,
+          requiredSkills: [],
+          requiredRank: 'F',
+          maxParticipants: 1,
+          questCategory: 'frontend',
           deadline: ''
         });
         
@@ -168,7 +168,7 @@ export default function CompanyPortal({ companyId }: CompanyPortalProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          quest_id: questId,
+          questId: questId,
           company_id: companyId,
           ...updates
         }),
@@ -206,7 +206,7 @@ export default function CompanyPortal({ companyId }: CompanyPortalProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          quest_id: questId,
+          questId: questId,
           company_id: companyId
         }),
       });
@@ -227,21 +227,21 @@ export default function CompanyPortal({ companyId }: CompanyPortalProps) {
   };
 
   const addSkill = () => {
-    if (skillInput.trim() && !newQuest.required_skills.includes(skillInput.trim())) {
+    if (skillInput.trim() && !newQuest.requiredSkills.includes(skillInput.trim())) {
       setNewQuest({
         ...newQuest,
-        required_skills: [...newQuest.required_skills, skillInput.trim()]
+        requiredSkills: [...newQuest.requiredSkills, skillInput.trim()]
       });
       setSkillInput('');
     }
   };
 
   const removeSkill = (index: number) => {
-    const updatedSkills = [...newQuest.required_skills];
+    const updatedSkills = [...newQuest.requiredSkills];
     updatedSkills.splice(index, 1);
     setNewQuest({
       ...newQuest,
-      required_skills: updatedSkills
+      requiredSkills: updatedSkills
     });
   };
 
@@ -276,7 +276,7 @@ export default function CompanyPortal({ companyId }: CompanyPortalProps) {
     q.status === 'available' || q.status === 'in_progress'
   ).length;
   const completedQuests = companyQuests.filter(q => q.status === 'completed').length;
-  const totalSpent = companyQuests.reduce((sum, quest) => sum + (quest.monetary_reward || 0), 0);
+  const totalSpent = companyQuests.reduce((sum, quest) => sum + (quest.monetaryReward || 0), 0);
 
   return (
     <div className="container mx-auto py-6">
@@ -389,24 +389,24 @@ export default function CompanyPortal({ companyId }: CompanyPortalProps) {
                         </TableCell>
                         <TableCell>
                           <div className="text-sm">
-                            <div>XP: {quest.xp_reward}</div>
-                            {quest.skill_points_reward > 0 && (
-                              <div>SP: {quest.skill_points_reward}</div>
+                            <div>XP: {quest.xpReward}</div>
+                            {quest.skillPointsReward > 0 && (
+                              <div>SP: {quest.skillPointsReward}</div>
                             )}
-                            {quest.monetary_reward && (
-                              <div>${quest.monetary_reward}</div>
+                            {quest.monetaryReward && (
+                              <div>${quest.monetaryReward}</div>
                             )}
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center">
                             <Users className="h-4 w-4 mr-1 text-muted-foreground" />
-                            <span>1/{quest.max_participants || 1}</span>
+                            <span>1/{quest.maxParticipants || 1}</span>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="text-sm">
-                            {new Date(quest.created_at).toLocaleDateString()}
+                            {new Date(quest.createdAt).toLocaleDateString()}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -501,24 +501,24 @@ export default function CompanyPortal({ companyId }: CompanyPortalProps) {
                         </TableCell>
                         <TableCell>
                           <div className="text-sm">
-                            <div>XP: {quest.xp_reward}</div>
-                            {quest.skill_points_reward > 0 && (
-                              <div>SP: {quest.skill_points_reward}</div>
+                            <div>XP: {quest.xpReward}</div>
+                            {quest.skillPointsReward > 0 && (
+                              <div>SP: {quest.skillPointsReward}</div>
                             )}
-                            {quest.monetary_reward && (
-                              <div>${quest.monetary_reward}</div>
+                            {quest.monetaryReward && (
+                              <div>${quest.monetaryReward}</div>
                             )}
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center">
                             <Users className="h-4 w-4 mr-1 text-muted-foreground" />
-                            <span>1/{quest.max_participants || 1}</span>
+                            <span>1/{quest.maxParticipants || 1}</span>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="text-sm">
-                            {new Date(quest.created_at).toLocaleDateString()}
+                            {new Date(quest.createdAt).toLocaleDateString()}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -588,8 +588,8 @@ export default function CompanyPortal({ companyId }: CompanyPortalProps) {
                 <div>
                   <label className="text-sm font-medium">Detailed Description</label>
                   <Textarea
-                    value={newQuest.detailed_description}
-                    onChange={(e) => setNewQuest({...newQuest, detailed_description: e.target.value})}
+                    value={newQuest.detailedDescription}
+                    onChange={(e) => setNewQuest({...newQuest, detailedDescription: e.target.value})}
                     placeholder="Detailed requirements, specifications, etc...."
                     rows={5}
                   />
@@ -599,8 +599,8 @@ export default function CompanyPortal({ companyId }: CompanyPortalProps) {
                   <div>
                     <label className="text-sm font-medium">Quest Type</label>
                     <Select 
-                      value={newQuest.quest_type} 
-                      onValueChange={(value) => setNewQuest({...newQuest, quest_type: value})}
+                      value={newQuest.questType} 
+                      onValueChange={(value) => setNewQuest({...newQuest, questType: value})}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -641,8 +641,8 @@ export default function CompanyPortal({ companyId }: CompanyPortalProps) {
                     <label className="text-sm font-medium">XP Reward</label>
                     <Input
                       type="number"
-                      value={newQuest.xp_reward}
-                      onChange={(e) => setNewQuest({...newQuest, xp_reward: parseInt(e.target.value) || 0})}
+                      value={newQuest.xpReward}
+                      onChange={(e) => setNewQuest({...newQuest, xpReward: parseInt(e.target.value) || 0})}
                       placeholder="XP to reward"
                     />
                   </div>
@@ -651,8 +651,8 @@ export default function CompanyPortal({ companyId }: CompanyPortalProps) {
                     <label className="text-sm font-medium">Skill Points Reward</label>
                     <Input
                       type="number"
-                      value={newQuest.skill_points_reward}
-                      onChange={(e) => setNewQuest({...newQuest, skill_points_reward: parseInt(e.target.value) || 0})}
+                      value={newQuest.skillPointsReward}
+                      onChange={(e) => setNewQuest({...newQuest, skillPointsReward: parseInt(e.target.value) || 0})}
                       placeholder="Skill Points to reward"
                     />
                   </div>
@@ -661,8 +661,8 @@ export default function CompanyPortal({ companyId }: CompanyPortalProps) {
                     <label className="text-sm font-medium">Monetary Reward ($)</label>
                     <Input
                       type="number"
-                      value={newQuest.monetary_reward}
-                      onChange={(e) => setNewQuest({...newQuest, monetary_reward: parseFloat(e.target.value) || 0})}
+                      value={newQuest.monetaryReward}
+                      onChange={(e) => setNewQuest({...newQuest, monetaryReward: parseFloat(e.target.value) || 0})}
                       placeholder="0.00"
                     />
                   </div>
@@ -672,8 +672,8 @@ export default function CompanyPortal({ companyId }: CompanyPortalProps) {
                   <div>
                     <label className="text-sm font-medium">Required Rank</label>
                     <Select 
-                      value={newQuest.required_rank} 
-                      onValueChange={(value) => setNewQuest({...newQuest, required_rank: value})}
+                      value={newQuest.requiredRank} 
+                      onValueChange={(value) => setNewQuest({...newQuest, requiredRank: value})}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -694,8 +694,8 @@ export default function CompanyPortal({ companyId }: CompanyPortalProps) {
                     <label className="text-sm font-medium">Max Participants</label>
                     <Input
                       type="number"
-                      value={newQuest.max_participants}
-                      onChange={(e) => setNewQuest({...newQuest, max_participants: parseInt(e.target.value) || 1})}
+                      value={newQuest.maxParticipants}
+                      onChange={(e) => setNewQuest({...newQuest, maxParticipants: parseInt(e.target.value) || 1})}
                       placeholder="Max participants (1 for solo quests)"
                     />
                   </div>
@@ -704,8 +704,8 @@ export default function CompanyPortal({ companyId }: CompanyPortalProps) {
                 <div>
                   <label className="text-sm font-medium">Quest Category</label>
                   <Select 
-                    value={newQuest.quest_category} 
-                    onValueChange={(value) => setNewQuest({...newQuest, quest_category: value})}
+                    value={newQuest.questCategory} 
+                    onValueChange={(value) => setNewQuest({...newQuest, questCategory: value})}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -742,9 +742,9 @@ export default function CompanyPortal({ companyId }: CompanyPortalProps) {
                     <Button type="button" onClick={addSkill}>Add</Button>
                   </div>
                   
-                  {newQuest.required_skills.length > 0 && (
+                  {newQuest.requiredSkills.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-2">
-                      {newQuest.required_skills.map((skill, index) => (
+                      {newQuest.requiredSkills.map((skill, index) => (
                         <Badge key={index} variant="secondary" className="flex items-center">
                           {skill}
                           <button 

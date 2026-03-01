@@ -15,9 +15,9 @@ interface Quest {
   title: string;
   description: string;
   difficulty: string;
-  xp_reward: number;
-  skill_points_reward: number;
-  monetary_reward?: number;
+  xpReward: number;
+  skillPointsReward: number;
+  monetaryReward?: number;
   status: string;
   applicants: number;
 }
@@ -56,9 +56,9 @@ export default function CompanyDashboard() {
             title: q.title,
             description: q.description,
             difficulty: q.difficulty || 'D',
-            xp_reward: q.xp_reward || 0,
-            skill_points_reward: q.skill_points_reward || 0,
-            monetary_reward: q.monetary_reward,
+            xpReward: q.xpReward || 0,
+            skillPointsReward: q.skillPointsReward || 0,
+            monetaryReward: q.monetaryReward,
             status: q.status,
             applicants: 0, // Assignment count not in this query
           }));
@@ -88,7 +88,7 @@ export default function CompanyDashboard() {
   const totalQuests = quests.length;
   const activeQuests = quests.filter(q => q.status === 'available' || q.status === 'in_progress').length;
   const completedQuests = quests.filter(q => q.status === 'completed').length;
-  const totalSpent = quests.reduce((sum, quest) => sum + (quest.monetary_reward || 0), 0);
+  const totalSpent = quests.reduce((sum, quest) => sum + (quest.monetaryReward || 0), 0);
   const completionRate = totalQuests > 0 ? Math.round((completedQuests / totalQuests) * 100) : 0;
 
   return (
@@ -211,13 +211,13 @@ export default function CompanyDashboard() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-medium">{quest.xp_reward} XP</div>
+                    <div className="font-medium">{quest.xpReward} XP</div>
                     <div className="text-sm text-muted-foreground">
-                      {quest.skill_points_reward} SP
+                      {quest.skillPointsReward} SP
                     </div>
-                    {quest.monetary_reward && (
+                    {quest.monetaryReward && (
                       <div className="text-sm font-medium text-primary">
-                        ${quest.monetary_reward}
+                        ${quest.monetaryReward}
                       </div>
                     )}
                   </div>

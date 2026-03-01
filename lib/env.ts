@@ -6,13 +6,9 @@
 import { z } from 'zod';
 
 const envSchema = z.object({
-  // Database
-  DATABASE_URL: z.string().url().optional(),
-
-  // Supabase
-  NEXT_PUBLIC_SUPABASE_URL: z.string().url(),
-  NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().min(1),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
+  // Database (Neon)
+  DATABASE_URL: z.string().min(1),
+  DATABASE_URL_UNPOOLED: z.string().optional(),
 
   // Authentication
   NEXTAUTH_URL: z.string().url().optional(),
@@ -54,7 +50,7 @@ function validateEnv() {
   } catch (error) {
     if (error instanceof z.ZodError) {
       const missingVars = error.errors.map(err => `${err.path.join('.')}: ${err.message}`);
-      console.error('❌ Invalid environment variables:');
+      console.error('Invalid environment variables:');
       console.error(missingVars.join('\n'));
       throw new Error('Environment validation failed. Check your .env.local file.');
     }

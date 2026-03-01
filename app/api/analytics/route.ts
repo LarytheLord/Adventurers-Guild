@@ -1,22 +1,16 @@
 // app/api/analytics/route.ts
 import { NextRequest } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { prisma } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {
     // Parse query parameters
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('user_id');
+    const userId = searchParams.get('userId');
     const reportType = searchParams.get('type'); // 'user', 'quest', 'platform'
     const timeRange = searchParams.get('time_range') || '30d'; // 7d, 30d, 90d, 1y
-    const startDate = searchParams.get('start_date');
-    const endDate = searchParams.get('end_date');
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
 
     // Validate user ID if report type requires it
     if (reportType !== 'platform' && !userId) {
@@ -41,129 +35,129 @@ export async function GET(request: NextRequest) {
 // Get user-specific analytics
 async function getUserAnalytics(userId: string, timeRange: string, startDate?: string, endDate?: string) {
   // Get user profile
-  const { data: user, error: userError } = await supabase
-    .from('users')
-    .select(`
-      id,
-      name,
-      role,
-      rank,
-      xp,
-      skill_points,
-      level,
-      created_at,
-      last_login_at,
-      adventurer_profiles (
-        specialization,
-        primary_skills,
-        quest_completion_rate,
-        total_quests_completed,
-        current_streak,
-        max_streak
-      )
-    `)
-    .eq('id', userId)
-    .single();
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      name: true,
+      role: true,
+      rank: true,
+      xp: true,
+      skillPoints: true,
+      level: true,
+      createdAt: true,
+      lastLoginAt: true,
+      adventurerProfile: {
+        select: {
+          specialization: true,
+          primarySkills: true,
+          questCompletionRate: true,
+          totalQuestsCompleted: true,
+          currentStreak: true,
+          maxStreak: true,
+        },
+      },
+    },
+  });
 
-  if (userError) {
-    throw new Error(userError.message);
+  if (!user) {
+    throw new Error('User not found');
   }
 
   // Get user's quest statistics
-  const { count: totalQuests, error: totalQuestsError } = await supabase
-    .from('quest_assignments')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', userId)
-    .gte('assigned_at', getStartDate(timeRange, startDate))
-    .lte('assigned_at', getEndDate(endDate));
+  const totalQuests = await prisma.questAssignment.count({
+    where: {
+      userId,
+      assignedAt: {
+        gte: new Date(getStartDate(timeRange, startDate)),
+        lte: new Date(getEndDate(endDate)),
+      },
+    },
+  });
 
-  if (totalQuestsError) {
-    throw new Error(totalQuestsError.message);
-  }
-
-  const { count: completedQuests, error: completedQuestsError } = await supabase
-    .from('quest_completions')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', userId)
-    .gte('completion_date', getStartDate(timeRange, startDate))
-    .lte('completion_date', getEndDate(endDate));
-
-  if (completedQuestsError) {
-    throw new Error(completedQuestsError.message);
-  }
+  const completedQuests = await prisma.questCompletion.count({
+    where: {
+      userId,
+      completionDate: {
+        gte: new Date(getStartDate(timeRange, startDate)),
+        lte: new Date(getEndDate(endDate)),
+      },
+    },
+  });
 
   // Get recent activity
-  const { data: recentActivity, error: activityError } = await supabase
-    .from('quest_completions')
-    .select(`
-      id,
-      quest_id,
-      completion_date,
-      xp_earned,
-      skill_points_earned,
-      quality_score,
-      quests (
-        title,
-        difficulty,
-        quest_category
-      )
-    `)
-    .eq('user_id', userId)
-    .gte('completion_date', getStartDate(timeRange, startDate))
-    .lte('completion_date', getEndDate(endDate))
-    .order('completion_date', { ascending: false })
-    .limit(10);
-
-  if (activityError) {
-    throw new Error(activityError.message);
-  }
+  const recentActivity = await prisma.questCompletion.findMany({
+    where: {
+      userId,
+      completionDate: {
+        gte: new Date(getStartDate(timeRange, startDate)),
+        lte: new Date(getEndDate(endDate)),
+      },
+    },
+    select: {
+      id: true,
+      questId: true,
+      completionDate: true,
+      xpEarned: true,
+      skillPointsEarned: true,
+      qualityScore: true,
+      quest: {
+        select: {
+          title: true,
+          difficulty: true,
+          questCategory: true,
+        },
+      },
+    },
+    orderBy: { completionDate: 'desc' },
+    take: 10,
+  });
 
   // Calculate progress over time
   const progressData = await getProgressData(userId, timeRange, startDate, endDate);
 
-  const profile: any = Array.isArray(user.adventurer_profiles) ? user.adventurer_profiles[0] : user.adventurer_profiles;
-  
+  const profile: any = Array.isArray(user.adventurerProfile) ? user.adventurerProfile[0] : user.adventurerProfile;
+
   return Response.json({
     user: {
       id: user.id,
       name: user.name,
       rank: user.rank,
       xp: user.xp,
-      skill_points: user.skill_points,
+      skillPoints: user.skillPoints,
       level: user.level,
       specialization: profile?.specialization,
-      primary_skills: profile?.primary_skills,
-      quest_completion_rate: profile?.quest_completion_rate,
-      total_quests_completed: profile?.total_quests_completed,
-      current_streak: profile?.current_streak,
-      max_streak: profile?.max_streak,
-      join_date: user.created_at,
-      last_login: user.last_login_at
+      primarySkills: profile?.primarySkills,
+      questCompletionRate: profile?.questCompletionRate,
+      totalQuestsCompleted: profile?.totalQuestsCompleted,
+      currentStreak: profile?.currentStreak,
+      maxStreak: profile?.maxStreak,
+      joinDate: user.createdAt,
+      lastLogin: user.lastLoginAt,
     },
     stats: {
-      total_quests: totalQuests || 0,
-      completed_quests: completedQuests || 0,
-      completion_rate: totalQuests ? (completedQuests || 0) / totalQuests * 100 : 0,
-      xp_gained: recentActivity.reduce((sum, item) => sum + item.xp_earned, 0),
-      skill_points_gained: recentActivity.reduce((sum, item) => sum + item.skill_points_earned, 0)
+      totalQuests: totalQuests || 0,
+      completedQuests: completedQuests || 0,
+      completionRate: totalQuests ? (completedQuests || 0) / totalQuests * 100 : 0,
+      xpGained: recentActivity.reduce((sum, item) => sum + (item.xpEarned || 0), 0),
+      skillPointsGained: recentActivity.reduce((sum, item) => sum + (item.skillPointsEarned || 0), 0),
     },
-    recent_activity: recentActivity,
-    progress_over_time: progressData,
-    success: true
+    recentActivity,
+    progressOverTime: progressData,
+    success: true,
   });
 }
 
 // Get quest-specific analytics
 async function getQuestAnalytics(userId: string, timeRange: string, startDate?: string, endDate?: string) {
   // Get quests created by the user (if company) or assigned to user (if adventurer)
-  const { data: user, error: userError } = await supabase
-    .from('users')
-    .select('role')
-    .eq('id', userId)
-    .single();
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  });
 
-  if (userError) {
-    throw new Error(userError.message);
+  if (!user) {
+    throw new Error('User not found');
   }
 
   let quests;
@@ -171,82 +165,88 @@ async function getQuestAnalytics(userId: string, timeRange: string, startDate?: 
 
   if (user.role === 'company') {
     // Get quests posted by company
-    const { data: companyQuests, error: questsError } = await supabase
-      .from('quests')
-      .select(`
-        id,
-        title,
-        description,
-        quest_type,
-        status,
-        difficulty,
-        xp_reward,
-        skill_points_reward,
-        monetary_reward,
-        required_skills,
-        max_participants,
-        quest_category,
-        created_at,
-        deadline,
-        assigned_count:quest_assignments(count),
-        completed_count:quest_completions(count)
-      `)
-      .eq('company_id', userId)
-      .gte('created_at', getStartDate(timeRange, startDate))
-      .lte('created_at', getEndDate(endDate))
-      .order('created_at', { ascending: false });
-
-    if (questsError) {
-      throw new Error(questsError.message);
-    }
+    const companyQuests = await prisma.quest.findMany({
+      where: {
+        companyId: userId,
+        createdAt: {
+          gte: new Date(getStartDate(timeRange, startDate)),
+          lte: new Date(getEndDate(endDate)),
+        },
+      },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        questType: true,
+        status: true,
+        difficulty: true,
+        xpReward: true,
+        skillPointsReward: true,
+        monetaryReward: true,
+        requiredSkills: true,
+        maxParticipants: true,
+        questCategory: true,
+        createdAt: true,
+        deadline: true,
+        _count: {
+          select: {
+            assignments: true,
+            completions: true,
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
 
     quests = companyQuests;
 
     // Calculate company quest statistics
-    const totalReward = companyQuests.reduce((sum, quest) => sum + (quest.monetary_reward || 0), 0);
-    const totalAssigned = companyQuests.reduce((sum, quest) => sum + (quest.assigned_count[0]?.count || 0), 0);
-    const totalCompleted = companyQuests.reduce((sum, quest) => sum + (quest.completed_count[0]?.count || 0), 0);
+    const totalReward = companyQuests.reduce((sum, quest) => sum + Number(quest.monetaryReward || 0), 0);
+    const totalAssigned = companyQuests.reduce((sum, quest) => sum + (quest._count.assignments || 0), 0);
+    const totalCompleted = companyQuests.reduce((sum, quest) => sum + (quest._count.completions || 0), 0);
 
     questStats = {
-      total_quests: companyQuests.length,
-      total_reward_spent: totalReward,
-      total_assigned: totalAssigned,
-      total_completed: totalCompleted,
-      completion_rate: totalAssigned ? (totalCompleted / totalAssigned) * 100 : 0
+      totalQuests: companyQuests.length,
+      totalRewardSpent: totalReward,
+      totalAssigned,
+      totalCompleted,
+      completionRate: totalAssigned ? (totalCompleted / totalAssigned) * 100 : 0,
     };
   } else {
     // Get quests assigned to adventurer
-    const { data: adventurerQuests, error: questsError } = await supabase
-      .from('quest_assignments')
-      .select(`
-        id,
-        quest_id,
-        status,
-        assigned_at,
-        started_at,
-        completed_at,
-        progress,
-        quests (
-          id,
-          title,
-          description,
-          quest_type,
-          status,
-          difficulty,
-          xp_reward,
-          skill_points_reward,
-          required_skills,
-          quest_category
-        )
-      `)
-      .eq('user_id', userId)
-      .gte('assigned_at', getStartDate(timeRange, startDate))
-      .lte('assigned_at', getEndDate(endDate))
-      .order('assigned_at', { ascending: false });
-
-    if (questsError) {
-      throw new Error(questsError.message);
-    }
+    const adventurerQuests = await prisma.questAssignment.findMany({
+      where: {
+        userId,
+        assignedAt: {
+          gte: new Date(getStartDate(timeRange, startDate)),
+          lte: new Date(getEndDate(endDate)),
+        },
+      },
+      select: {
+        id: true,
+        questId: true,
+        status: true,
+        assignedAt: true,
+        startedAt: true,
+        completedAt: true,
+        progress: true,
+        quest: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            questType: true,
+            status: true,
+            difficulty: true,
+            xpReward: true,
+            skillPointsReward: true,
+            requiredSkills: true,
+            questCategory: true,
+          },
+        },
+      },
+      orderBy: { assignedAt: 'desc' },
+    });
 
     quests = adventurerQuests;
 
@@ -254,108 +254,78 @@ async function getQuestAnalytics(userId: string, timeRange: string, startDate?: 
     const completed = adventurerQuests.filter(q => q.status === 'completed').length;
     const inProgress = adventurerQuests.filter(q => q.status === 'in_progress').length;
     const xpEarned = adventurerQuests.reduce((sum, quest) => {
-      if (quest.status === 'completed' && quest.quests) {
-        const questData: any = Array.isArray(quest.quests) ? quest.quests[0] : quest.quests;
-        return sum + (questData?.xp_reward || 0);
+      if (quest.status === 'completed' && quest.quest) {
+        return sum + (quest.quest.xpReward || 0);
       }
       return sum;
     }, 0);
 
     questStats = {
-      total_quests: adventurerQuests.length,
-      completed_quests: completed,
-      in_progress_quests: inProgress,
-      xp_earned: xpEarned,
-      completion_rate: adventurerQuests.length ? (completed / adventurerQuests.length) * 100 : 0
+      totalQuests: adventurerQuests.length,
+      completedQuests: completed,
+      inProgressQuests: inProgress,
+      xpEarned,
+      completionRate: adventurerQuests.length ? (completed / adventurerQuests.length) * 100 : 0,
     };
   }
 
   return Response.json({
     quests,
     stats: questStats,
-    success: true
+    success: true,
   });
 }
 
 // Get platform-wide analytics
 async function getPlatformAnalytics(timeRange: string, startDate?: string, endDate?: string) {
+  const dateRange = {
+    gte: new Date(getStartDate(timeRange, startDate)),
+    lte: new Date(getEndDate(endDate)),
+  };
+
   // Get overall platform statistics
-  const { count: totalUsers, error: usersError } = await supabase
-    .from('users')
-    .select('*', { count: 'exact', head: true })
-    .gte('created_at', getStartDate(timeRange, startDate))
-    .lte('created_at', getEndDate(endDate));
+  const totalUsers = await prisma.user.count({
+    where: { createdAt: dateRange },
+  });
 
-  if (usersError) {
-    throw new Error(usersError.message);
-  }
+  const totalQuests = await prisma.quest.count({
+    where: { createdAt: dateRange },
+  });
 
-  const { count: totalQuests, error: questsError } = await supabase
-    .from('quests')
-    .select('*', { count: 'exact', head: true })
-    .gte('created_at', getStartDate(timeRange, startDate))
-    .lte('created_at', getEndDate(endDate));
+  const totalAssignments = await prisma.questAssignment.count({
+    where: { assignedAt: dateRange },
+  });
 
-  if (questsError) {
-    throw new Error(questsError.message);
-  }
-
-  const { count: totalAssignments, error: assignmentsError } = await supabase
-    .from('quest_assignments')
-    .select('*', { count: 'exact', head: true })
-    .gte('assigned_at', getStartDate(timeRange, startDate))
-    .lte('assigned_at', getEndDate(endDate));
-
-  if (assignmentsError) {
-    throw new Error(assignmentsError.message);
-  }
-
-  const { count: totalCompletions, error: completionsError } = await supabase
-    .from('quest_completions')
-    .select('*', { count: 'exact', head: true })
-    .gte('completion_date', getStartDate(timeRange, startDate))
-    .lte('completion_date', getEndDate(endDate));
-
-  if (completionsError) {
-    throw new Error(completionsError.message);
-  }
+  const totalCompletions = await prisma.questCompletion.count({
+    where: { completionDate: dateRange },
+  });
 
   // Get active users in the time period
-  const { data: activeUsers, error: activeError } = await supabase
-    .from('users')
-    .select('id')
-    .gte('last_login_at', getStartDate(timeRange, startDate))
-    .lte('last_login_at', getEndDate(endDate));
+  const activeUsersCount = await prisma.user.count({
+    where: { lastLoginAt: dateRange },
+  });
 
-  if (activeError) {
-    throw new Error(activeError.message);
-  }
+  // Get top quest categories using Prisma groupBy
+  const categoryGroups = await prisma.quest.groupBy({
+    by: ['questCategory'],
+    _count: true,
+    where: { createdAt: dateRange },
+    orderBy: { _count: { questCategory: 'desc' } },
+    take: 10,
+  });
+  const topCategories = categoryGroups.map((g) => ({ category: g.questCategory, count: g._count }));
 
-  // Get top categories
-  const { data: topCategories, error: categoryError } = await supabase
-    .rpc('get_top_quest_categories', { 
-      start_date: getStartDate(timeRange, startDate),
-      end_date: getEndDate(endDate)
-    });
-
-  if (categoryError) {
-    throw new Error(categoryError.message);
-  }
-
-  // Get rank distribution - Supabase doesn't support group(), so we'll fetch and group in JS
-  const { data: allUsers, error: rankError } = await supabase
-    .from('users')
-    .select('rank')
-    .eq('role', 'adventurer')
-    .gte('created_at', getStartDate(timeRange, startDate))
-    .lte('created_at', getEndDate(endDate));
-
-  if (rankError) {
-    throw new Error(rankError.message);
-  }
+  // Get rank distribution
+  const allUsers = await prisma.user.findMany({
+    where: {
+      role: 'adventurer',
+      createdAt: dateRange,
+    },
+    select: { rank: true },
+  });
 
   // Group by rank manually
-  const rankDistribution = allUsers?.reduce((acc: any[], user: any) => {
+  const rankDistribution = allUsers.reduce((acc: any[], user: any) => {
     const existing = acc.find(item => item.rank === user.rank);
     if (existing) {
       existing.count++;
@@ -366,17 +336,17 @@ async function getPlatformAnalytics(timeRange: string, startDate?: string, endDa
   }, []);
 
   return Response.json({
-    platform_stats: {
-      total_users: totalUsers || 0,
-      total_quests: totalQuests || 0,
-      total_assignments: totalAssignments || 0,
-      total_completions: totalCompletions || 0,
-      active_users: activeUsers ? activeUsers.length : 0,
-      completion_rate: totalAssignments ? (totalCompletions || 0) / totalAssignments * 100 : 0
+    platformStats: {
+      totalUsers: totalUsers || 0,
+      totalQuests: totalQuests || 0,
+      totalAssignments: totalAssignments || 0,
+      totalCompletions: totalCompletions || 0,
+      activeUsers: activeUsersCount,
+      completionRate: totalAssignments ? (totalCompletions || 0) / totalAssignments * 100 : 0,
     },
-    top_categories: topCategories,
-    rank_distribution: rankDistribution,
-    success: true
+    topCategories,
+    rankDistribution,
+    success: true,
   });
 }
 
@@ -418,31 +388,32 @@ function getEndDate(endDate?: string): string {
 // Function to calculate progress over time
 async function getProgressData(userId: string, timeRange: string, startDate?: string, endDate?: string) {
   // Get daily XP gains over the period
-  const { data, error } = await supabase
-    .from('quest_completions')
-    .select(`
-      completion_date,
-      xp_earned,
-      skill_points_earned
-    `)
-    .eq('user_id', userId)
-    .gte('completion_date', getStartDate(timeRange, startDate))
-    .lte('completion_date', getEndDate(endDate))
-    .order('completion_date', { ascending: true });
-
-  if (error) {
-    throw new Error(error.message);
-  }
+  const data = await prisma.questCompletion.findMany({
+    where: {
+      userId,
+      completionDate: {
+        gte: new Date(getStartDate(timeRange, startDate)),
+        lte: new Date(getEndDate(endDate)),
+      },
+    },
+    select: {
+      completionDate: true,
+      xpEarned: true,
+      skillPointsEarned: true,
+    },
+    orderBy: { completionDate: 'asc' },
+  });
 
   // Group by date and sum up XP/Skill Points
   const progressByDate: Record<string, { xp: number; sp: number }> = {};
   data.forEach(item => {
-    const date = item.completion_date.split('T')[0]; // Get just the date part
+    if (!item.completionDate) return;
+    const date = item.completionDate.toISOString().split('T')[0]; // Get just the date part
     if (!progressByDate[date]) {
       progressByDate[date] = { xp: 0, sp: 0 };
     }
-    progressByDate[date].xp += item.xp_earned;
-    progressByDate[date].sp += item.skill_points_earned;
+    progressByDate[date].xp += item.xpEarned || 0;
+    progressByDate[date].sp += item.skillPointsEarned || 0;
   });
 
   // Convert to array format for charting
@@ -450,7 +421,7 @@ async function getProgressData(userId: string, timeRange: string, startDate?: st
     .map(([date, values]) => ({
       date,
       xp: values.xp,
-      sp: values.sp
+      sp: values.sp,
     }))
     .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 }

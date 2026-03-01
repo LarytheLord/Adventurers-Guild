@@ -16,11 +16,11 @@ interface Quest {
   description: string;
   status: string;
   difficulty: string;
-  xp_reward: number;
-  skill_points_reward: number;
-  monetary_reward?: number;
+  xpReward: number;
+  skillPointsReward: number;
+  monetaryReward?: number;
   company_id: string;
-  created_at: string;
+  createdAt: string;
   deadline?: string;
 }
 
@@ -315,11 +315,11 @@ export default function CompanyIntegrationsPage() {
                       </p>
                       <div className="flex items-center text-xs text-muted-foreground mt-2">
                         <Users className="w-3 h-3 mr-1" />
-                        <span>{quest.xp_reward} XP</span>
-                        {quest.monetary_reward && (
+                        <span>{quest.xpReward} XP</span>
+                        {quest.monetaryReward && (
                           <>
                             <span className="mx-2">•</span>
-                            <span>${quest.monetary_reward}</span>
+                            <span>${quest.monetaryReward}</span>
                           </>
                         )}
                         {quest.deadline && (

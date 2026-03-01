@@ -14,18 +14,18 @@ interface Quest {
   id: string;
   title: string;
   description: string;
-  quest_type: string;
+  questType: string;
   status: string;
   difficulty: string;
-  xp_reward: number;
-  skill_points_reward: number;
-  monetary_reward?: number;
-  required_skills: string[];
-  required_rank?: string;
-  max_participants?: number;
-  quest_category: string;
-  company_id: string;
-  created_at: string;
+  xpReward: number;
+  skillPointsReward: number;
+  monetaryReward?: number;
+  requiredSkills: string[];
+  requiredRank?: string;
+  maxParticipants?: number;
+  questCategory: string;
+  companyId: string;
+  createdAt: string;
   deadline?: string;
   users: {
     name: string;
@@ -35,12 +35,12 @@ interface Quest {
 
 interface Assignment {
   id: string;
-  quest_id: string;
-  user_id: string;
+  questId: string;
+  userId: string;
   status: string;
-  assigned_at: string;
-  started_at?: string;
-  completed_at?: string;
+  assignedAt: string;
+  startedAt?: string;
+  completedAt?: string;
   progress?: number;
   quest: Quest;
 }
@@ -74,7 +74,7 @@ export default function MyQuestsPage() {
           return;
         }
 
-        const response = await fetch(`/api/quests/assignments?user_id=${session.user.id}`);
+        const response = await fetch(`/api/quests/assignments?userId=${session.user.id}`);
         const data = await response.json();
 
         if (!data.success) {
@@ -166,7 +166,7 @@ export default function MyQuestsPage() {
                   </Badge>
                 </div>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  <Badge variant="secondary">{assignment.quest.quest_category}</Badge>
+                  <Badge variant="secondary">{assignment.quest.questCategory}</Badge>
                   <Badge variant="outline">{assignment.quest.difficulty}-Rank</Badge>
                 </div>
               </CardHeader>
@@ -178,15 +178,15 @@ export default function MyQuestsPage() {
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div className="flex items-center">
                     <Zap className="w-4 h-4 mr-2 text-yellow-500" />
-                    <span className="text-sm">{assignment.quest.xp_reward} XP</span>
+                    <span className="text-sm">{assignment.quest.xpReward} XP</span>
                   </div>
                   <div className="flex items-center">
                     <Target className="w-4 h-4 mr-2 text-blue-500" />
-                    <span className="text-sm">{assignment.quest.skill_points_reward} SP</span>
+                    <span className="text-sm">{assignment.quest.skillPointsReward} SP</span>
                   </div>
-                  {assignment.quest.monetary_reward && (
+                  {assignment.quest.monetaryReward && (
                     <div className="flex items-center col-span-2">
-                      <span className="text-sm font-medium">${assignment.quest.monetary_reward}</span>
+                      <span className="text-sm font-medium">${assignment.quest.monetaryReward}</span>
                     </div>
                   )}
                 </div>

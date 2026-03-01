@@ -8,35 +8,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, Coins, TrendingDown, TrendingUp, Calendar, ExternalLink, Search, Download } from 'lucide-react';
-import { formatCurrency } from '@/lib/payment-utils';
-import { getPaymentHistory } from '@/lib/payment-utils';
-
-interface Transaction {
-  id: string;
-  from_user_id: string;
-  to_user_id: string;
-  quest_id: string;
-  amount: number;
-  currency: string;
-  status: string;
-  payment_method: string;
-  transaction_id?: string;
-  description?: string;
-  created_at: string;
-  updated_at: string;
-  completed_at?: string;
-  from_user: {
-    name: string;
-    email: string;
-  };
-  to_user: {
-    name: string;
-    email: string;
-  };
-  quests: {
-    title: string;
-  };
-}
+import { formatCurrency, getPaymentHistory, Transaction } from '@/lib/payment-utils';
 
 export default function MyPaymentsPage() {
   const { data: session, status } = useSession();
@@ -91,9 +63,9 @@ export default function MyPaymentsPage() {
   }, [status, session, typeFilter, statusFilter, router]);
 
   const filteredTransactions = transactions.filter(transaction => 
-    transaction.quests?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    transaction.quest?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     transaction.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    transaction.from_user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    transaction.fromUser?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     transaction.id.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -120,11 +92,11 @@ export default function MyPaymentsPage() {
   }
 
   const totalEarned = filteredTransactions
-    .filter(t => t.status === 'completed' && t.to_user_id === session?.user?.id)
+    .filter(t => t.status === 'completed' && t.toUserId === session?.user?.id)
     .reduce((sum, transaction) => sum + transaction.amount, 0);
 
   const totalSpent = filteredTransactions
-    .filter(t => t.status === 'completed' && t.from_user_id === session?.user?.id)
+    .filter(t => t.status === 'completed' && t.fromUserId === session?.user?.id)
     .reduce((sum, transaction) => sum + transaction.amount, 0);
 
   return (
@@ -273,11 +245,11 @@ export default function MyPaymentsPage() {
                 >
                   <div className="flex items-center space-x-4">
                     <div className={`p-2 rounded-full ${
-                      transaction.to_user_id === session?.user?.id 
+                      transaction.toUserId === session?.user?.id 
                         ? 'bg-green-100 text-green-800' 
                         : 'bg-red-100 text-red-800'
                     }`}>
-                      {transaction.to_user_id === session?.user?.id ? (
+                      {transaction.toUserId === session?.user?.id ? (
                         <TrendingUp className="w-5 h-5" />
                       ) : (
                         <TrendingDown className="w-5 h-5" />
@@ -285,28 +257,28 @@ export default function MyPaymentsPage() {
                     </div>
                     <div>
                       <h4 className="font-medium">
-                        {transaction.quests?.title || 'Quest Payment'}
+                        {transaction.quest?.title || 'Quest Payment'}
                       </h4>
                       <p className="text-sm text-muted-foreground">
                         {transaction.description || 
-                          (transaction.to_user_id === session?.user?.id 
-                            ? `Received from ${transaction.from_user?.name || 'Unknown'}` 
-                            : `Paid to ${transaction.to_user?.name || 'Unknown'}`)}
+                          (transaction.toUserId === session?.user?.id 
+                            ? `Received from ${transaction.fromUser?.name || 'Unknown'}` 
+                            : `Paid to ${transaction.toUser?.name || 'Unknown'}`)}
                       </p>
                       <div className="flex items-center text-xs text-muted-foreground mt-1">
                         <Calendar className="w-3 h-3 mr-1" />
-                        <span>{new Date(transaction.created_at).toLocaleDateString()}</span>
+                        <span>{new Date(transaction.createdAt).toLocaleDateString()}</span>
                       </div>
                     </div>
                   </div>
                   
                   <div className="text-right">
                     <div className={`font-medium ${
-                      transaction.to_user_id === session?.user?.id 
+                      transaction.toUserId === session?.user?.id 
                         ? 'text-green-600' 
                         : 'text-red-600'
                     }`}>
-                      {transaction.to_user_id === session?.user?.id ? '+' : '-'}{formatCurrency(transaction.amount)}
+                      {transaction.toUserId === session?.user?.id ? '+' : '-'}{formatCurrency(transaction.amount)}
                     </div>
                     <Badge 
                       variant="outline" 

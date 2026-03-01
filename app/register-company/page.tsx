@@ -9,12 +9,6 @@ import { Label } from '@/components/ui/label';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
 
 export default function RegisterCompanyPage() {
   const [name, setName] = useState('');
@@ -44,57 +38,18 @@ export default function RegisterCompanyPage() {
     setError('');
 
     try {
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name,
-          },
-        },
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password, role: 'company', companyName }),
       });
 
-      if (signUpError) {
-        setError(signUpError.message);
-      } else if (data.user) {
+      const data = await res.json();
+
+      if (!res.ok) {
+        setError(data.error || 'Registration failed');
+      } else {
         setSuccess(true);
-        
-        // Add user to our users table with company role
-        const { error: insertError } = await supabase
-          .from('users')
-          .insert([
-            {
-              id: data.user.id,
-              name,
-              email,
-              role: 'company',
-              rank: 'F',
-              xp: 0,
-              skill_points: 0,
-              level: 1,
-            },
-          ]);
-
-        if (insertError) {
-          console.error('Error inserting user:', insertError);
-        }
-
-        // Create company profile
-        const { error: companyProfileError } = await supabase
-          .from('company_profiles')
-          .insert([
-            {
-              user_id: data.user.id,
-              company_name: companyName,
-              is_verified: false,
-            },
-          ]);
-
-        if (companyProfileError) {
-          console.error('Error creating company profile:', companyProfileError);
-        }
-
-        // Redirect to login after 3 seconds
         setTimeout(() => {
           router.push('/login');
         }, 3000);

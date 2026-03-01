@@ -38,20 +38,20 @@ interface User {
   role: string;
   rank: string;
   xp: number;
-  skill_points: number;
+  skillPoints: number;
   level: number;
-  is_active: boolean;
-  is_verified: boolean;
-  created_at: string;
-  last_login_at?: string;
-  company_profiles?: {
-    company_name: string;
-    is_verified: boolean;
+  isActive: boolean;
+  isVerified: boolean;
+  createdAt: string;
+  lastLoginAt?: string;
+  companyProfiles?: {
+    companyName: string;
+    isVerified: boolean;
   };
-  adventurer_profiles?: {
+  adventurerProfiles?: {
     specialization?: string;
-    quest_completion_rate?: number;
-    total_quests_completed?: number;
+    questCompletionRate?: number;
+    totalQuestsCompleted?: number;
   };
 }
 
@@ -59,21 +59,21 @@ interface Quest {
   id: string;
   title: string;
   description: string;
-  quest_type: string;
+  questType: string;
   status: string;
   difficulty: string;
-  xp_reward: number;
-  skill_points_reward: number;
-  monetary_reward?: number;
-  required_rank?: string;
-  quest_category: string;
-  company_id: string;
-  created_at: string;
+  xpReward: number;
+  skillPointsReward: number;
+  monetaryReward?: number;
+  requiredRank?: string;
+  questCategory: string;
+  companyId: string;
+  createdAt: string;
   deadline?: string;
   users: {
     name: string;
     email: string;
-    is_verified: boolean;
+    isVerified: boolean;
   };
 }
 
@@ -147,9 +147,9 @@ export default function AdminDashboard() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          user_id: userId,
-          ...(action === 'verify' && { is_verified: true }),
-          ...(action === 'deactivate' && { is_active: false }),
+          userId: userId,
+          ...(action === 'verify' && { isVerified: true }),
+          ...(action === 'deactivate' && { isActive: false }),
           ...(action === 'setRole' && role && { role }),
         }),
       });
@@ -182,7 +182,7 @@ export default function AdminDashboard() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          quest_id: questId,
+          questId: questId,
           status: action === 'activate' ? 'available' : action === 'deactivate' ? 'draft' : 'cancelled',
         }),
       });
@@ -321,24 +321,24 @@ export default function AdminDashboard() {
                         <TableCell>
                           <div className="text-sm">
                             <div>XP: {user.xp.toLocaleString()}</div>
-                            <div>SP: {user.skill_points.toLocaleString()}</div>
+                            <div>SP: {user.skillPoints.toLocaleString()}</div>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center space-x-2">
-                            {user.is_verified ? (
+                            {user.isVerified ? (
                               <CheckCircle className="h-4 w-4 text-green-500" />
                             ) : (
                               <XCircle className="h-4 w-4 text-red-500" />
                             )}
                             <span className="capitalize">
-                              {user.is_active ? 'Active' : 'Inactive'}
+                              {user.isActive ? 'Active' : 'Inactive'}
                             </span>
                           </div>
                         </TableCell>
                         <TableCell>
                           <div className="text-sm">
-                            {new Date(user.created_at).toLocaleDateString()}
+                            {new Date(user.createdAt).toLocaleDateString()}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -347,15 +347,15 @@ export default function AdminDashboard() {
                               variant="outline" 
                               size="sm"
                               onClick={() => handleUserAction(user.id, 'verify')}
-                              disabled={user.is_verified}
+                              disabled={user.isVerified}
                             >
-                              {user.is_verified ? 'Verified' : 'Verify'}
+                              {user.isVerified ? 'Verified' : 'Verify'}
                             </Button>
                             <Button 
                               variant="outline" 
                               size="sm"
                               onClick={() => handleUserAction(user.id, 'deactivate')}
-                              disabled={!user.is_active}
+                              disabled={!user.isActive}
                             >
                               Deactivate
                             </Button>
@@ -424,23 +424,23 @@ export default function AdminDashboard() {
                         <TableCell>
                           <div className="font-medium">{quest.users.name}</div>
                           <div className="text-sm text-muted-foreground">
-                            {quest.users.is_verified ? 'Verified' : 'Not Verified'}
+                            {quest.users.isVerified ? 'Verified' : 'Not Verified'}
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline">{quest.quest_category}</Badge>
+                          <Badge variant="outline">{quest.questCategory}</Badge>
                         </TableCell>
                         <TableCell>
                           <span className={getRankColor(quest.difficulty)}>{quest.difficulty}</span>
                         </TableCell>
                         <TableCell>
                           <div className="text-sm">
-                            <div>XP: {quest.xp_reward}</div>
-                            {quest.skill_points_reward > 0 && (
-                              <div>SP: {quest.skill_points_reward}</div>
+                            <div>XP: {quest.xpReward}</div>
+                            {quest.skillPointsReward > 0 && (
+                              <div>SP: {quest.skillPointsReward}</div>
                             )}
-                            {quest.monetary_reward && (
-                              <div>${quest.monetary_reward}</div>
+                            {quest.monetaryReward && (
+                              <div>${quest.monetaryReward}</div>
                             )}
                           </div>
                         </TableCell>
@@ -451,7 +451,7 @@ export default function AdminDashboard() {
                         </TableCell>
                         <TableCell>
                           <div className="text-sm">
-                            {new Date(quest.created_at).toLocaleDateString()}
+                            {new Date(quest.createdAt).toLocaleDateString()}
                           </div>
                         </TableCell>
                         <TableCell>

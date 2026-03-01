@@ -22,13 +22,13 @@ interface RankingUser {
   email: string;
   rank: string;
   xp: number;
-  skill_points: number;
+  skillPoints: number;
   level: number;
   position: number;
-  adventurer_profiles?: {
+  adventurerProfiles?: {
     specialization?: string;
-    quest_completion_rate?: number;
-    total_quests_completed?: number;
+    questCompletionRate?: number;
+    totalQuestsCompleted?: number;
   };
 }
 
@@ -207,8 +207,8 @@ export default function RankingsBoard({ showUserPosition = false, limit = 10 }: 
                       <div className="font-medium">{user.name || user.email}</div>
                       <div className="text-sm text-muted-foreground flex items-center gap-2">
                         <span className={getRankColor(user.rank)}>{user.rank}-Rank</span>
-                        {user.adventurer_profiles?.specialization && (
-                          <span>• {user.adventurer_profiles.specialization}</span>
+                        {user.adventurerProfiles?.specialization && (
+                          <span>• {user.adventurerProfiles.specialization}</span>
                         )}
                       </div>
                     </div>
@@ -218,7 +218,7 @@ export default function RankingsBoard({ showUserPosition = false, limit = 10 }: 
                     <div className="flex items-center space-x-4">
                       <div className="text-right">
                         <div className="font-medium">{user.xp.toLocaleString()} XP</div>
-                        <div className="text-sm text-muted-foreground">{user.skill_points} SP</div>
+                        <div className="text-sm text-muted-foreground">{user.skillPoints} SP</div>
                       </div>
                       <div className="flex flex-col items-end min-w-[100px]">
                         <Badge className={getRankColor(user.rank)}>

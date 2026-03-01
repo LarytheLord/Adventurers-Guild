@@ -17,13 +17,13 @@ interface Quest {
   title: string;
   description: string;
   difficulty: string;
-  xp_reward: number;
-  skill_points_reward: number;
-  monetary_reward?: number;
-  required_rank?: string;
-  max_participants?: number;
-  quest_category: string;
-  company_id: string;
+  xpReward: number;
+  skillPointsReward: number;
+  monetaryReward?: number;
+  requiredRank?: string;
+  maxParticipants?: number;
+  questCategory: string;
+  companyId: string;
   deadline?: string;
   users?: {
     name: string;
@@ -56,7 +56,7 @@ export default function QuestList({ filter }: QuestListProps) {
         
         if (filter?.category) {
           filteredQuests = filteredQuests.filter(q => 
-            q.quest_category.toLowerCase() === filter.category?.toLowerCase()
+            q.questCategory.toLowerCase() === filter.category?.toLowerCase()
           );
         }
         
@@ -175,9 +175,9 @@ export default function QuestList({ filter }: QuestListProps) {
                 <Badge className={`${getDifficultyColor(quest.difficulty)} text-xs sm:text-sm`}>
                   {quest.difficulty}-Rank
                 </Badge>
-                {quest.required_rank && (
+                {quest.requiredRank && (
                   <Badge variant="outline" className="text-xs">
-                    Req: {quest.required_rank}
+                    Req: {quest.requiredRank}
                   </Badge>
                 )}
               </div>
@@ -193,25 +193,25 @@ export default function QuestList({ filter }: QuestListProps) {
               <div className="space-y-2 text-sm">
                 <div className="flex items-center text-muted-foreground">
                   <Target className="w-4 h-4 mr-2" />
-                  <span>{quest.xp_reward} XP</span>
-                  {quest.skill_points_reward > 0 && (
-                    <><span className="mx-1">•</span> <span>{quest.skill_points_reward} SP</span></>
+                  <span>{quest.xpReward} XP</span>
+                  {quest.skillPointsReward > 0 && (
+                    <><span className="mx-1">•</span> <span>{quest.skillPointsReward} SP</span></>
                   )}
                 </div>
                 
                 <div className="flex items-center text-muted-foreground">
                   <Coins className="w-4 h-4 mr-2" />
-                  {quest.monetary_reward ? (
-                    <span>${quest.monetary_reward} reward</span>
+                  {quest.monetaryReward ? (
+                    <span>${quest.monetaryReward} reward</span>
                   ) : (
                     <span>Experience reward</span>
                   )}
                 </div>
                 
-                {quest.max_participants && (
+                {quest.maxParticipants && (
                   <div className="flex items-center text-muted-foreground">
                     <Users className="w-4 h-4 mr-2" />
-                    <span>{quest.max_participants} max participants</span>
+                    <span>{quest.maxParticipants} max participants</span>
                   </div>
                 )}
                 
@@ -226,7 +226,7 @@ export default function QuestList({ filter }: QuestListProps) {
             
             <CardFooter className="p-4 sm:p-6 bg-card-foreground/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
               <div className="flex flex-wrap gap-2">
-                <Badge variant="secondary">{quest.quest_category}</Badge>
+                <Badge variant="secondary">{quest.questCategory}</Badge>
                 {quest.users?.name && (
                   <Badge variant="outline">By {quest.users.name}</Badge>
                 )}

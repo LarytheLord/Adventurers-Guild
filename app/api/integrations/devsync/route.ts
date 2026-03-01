@@ -1,15 +1,8 @@
 import { NextRequest } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { env } from '@/lib/env';
+import { prisma } from '@/lib/db';
 import { DevSyncService } from '@/lib/devsync-service';
-
-// Initialize Supabase client
-const supabase = createClient(
-  env.NEXT_PUBLIC_SUPABASE_URL,
-  env.SUPABASE_SERVICE_ROLE_KEY
-);
 
 const devsyncService = new DevSyncService();
 
@@ -51,7 +44,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const action = searchParams.get('action');
-    const questId = searchParams.get('quest_id');
+    const questId = searchParams.get('questId');
 
     if (action === 'project_status' && questId) {
       return handleGetProjectStatus(session.user.id, questId);
@@ -65,13 +58,13 @@ export async function GET(request: NextRequest) {
 }
 
 async function handleLinkAccount(userId: string, params: any) {
-  const { devsync_user_id, access_token, refresh_token } = params;
+  const { devsync_userId, access_token, refresh_token } = params;
 
-  if (!devsync_user_id || !access_token) {
+  if (!devsync_userId || !access_token) {
     return Response.json({ error: 'Missing required parameters', success: false }, { status: 400 });
   }
 
-  const success = await devsyncService.linkAccount(userId, devsync_user_id, access_token, refresh_token);
+  const success = await devsyncService.linkAccount(userId, devsync_userId, access_token, refresh_token);
 
   if (success) {
     return Response.json({ success: true });
@@ -81,28 +74,27 @@ async function handleLinkAccount(userId: string, params: any) {
 }
 
 async function handleCreateProject(userId: string, params: any) {
-  const { quest_id } = params;
+  const { questId } = params;
 
-  if (!quest_id) {
-    return Response.json({ error: 'Missing quest_id', success: false }, { status: 400 });
+  if (!questId) {
+    return Response.json({ error: 'Missing questId', success: false }, { status: 400 });
   }
 
   // Verify user has permission to create project for this quest
-  const { data: quest, error: questError } = await supabase
-    .from('quests')
-    .select('company_id')
-    .eq('id', quest_id)
-    .single();
+  const quest = await prisma.quest.findUnique({
+    where: { id: questId },
+    select: { companyId: true },
+  });
 
-  if (questError || !quest) {
+  if (!quest) {
     return Response.json({ error: 'Quest not found', success: false }, { status: 404 });
   }
 
-  if (userId !== quest.company_id) {
+  if (userId !== quest.companyId) {
     return Response.json({ error: 'Unauthorized to create project for this quest', success: false }, { status: 403 });
   }
 
-  const result = await devsyncService.createProjectFromQuest(quest_id, userId);
+  const result = await devsyncService.createProjectFromQuest(questId, userId);
 
   if (result.success) {
     return Response.json({ success: true, project_id: result.projectId });
@@ -112,13 +104,13 @@ async function handleCreateProject(userId: string, params: any) {
 }
 
 async function handleStartSession(userId: string, params: any) {
-  const { quest_id, session_type } = params;
+  const { questId, session_type } = params;
 
-  if (!quest_id) {
-    return Response.json({ error: 'Missing quest_id', success: false }, { status: 400 });
+  if (!questId) {
+    return Response.json({ error: 'Missing questId', success: false }, { status: 400 });
   }
 
-  const result = await devsyncService.startCollaborationSession(quest_id, userId, session_type);
+  const result = await devsyncService.startCollaborationSession(questId, userId, session_type);
 
   if (result.success) {
     return Response.json({ success: true, session_id: result.sessionId });
@@ -146,51 +138,31 @@ async function handleSyncQuestStatus(params: any) {
 async function handleGetProjectStatus(userId: string, questId: string) {
   try {
     // Check if user has access to this quest
-    const { data: quest, error: questError } = await supabase
-      .from('quests')
-      .select(`
-        id,
-        title,
-        status,
-        users!quests_company_id_fkey (
-          id
-        )
-      `)
-      .eq('id', questId)
-      .single();
+    const quest = await prisma.quest.findUnique({
+      where: { id: questId },
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        companyId: true,
+      },
+    });
 
-    if (questError || !quest) {
+    if (!quest) {
       return Response.json({ error: 'Quest not found', success: false }, { status: 404 });
     }
 
     // Verify user has permission to access this quest
-    const isCompany = userId === quest.users?.[0]?.id;
+    const isCompany = userId === quest.companyId;
     const isAdventurer = await checkUserAssignedToQuest(userId, questId);
 
     if (!isCompany && !isAdventurer) {
       return Response.json({ error: 'Unauthorized to access quest', success: false }, { status: 403 });
     }
 
-    // Get project mapping
-    const { data: mapping, error: mappingError } = await supabase
-      .from('quest_project_mappings')
-      .select('devsync_project_id')
-      .eq('quest_id', questId)
-      .single();
-
-    if (mappingError || !mapping) {
-      return Response.json({ error: 'No DevSync project linked to this quest', success: false }, { status: 404 });
-    }
-
-    // Get project activity from DevSync
-    const activity = await devsyncService.getProjectActivity(mapping.devsync_project_id);
-
-    return Response.json({ 
-      success: true, 
-      project_id: mapping.devsync_project_id,
-      quest: quest,
-      activity: activity
-    });
+    // DevSync project mappings not yet implemented in Prisma schema
+    // TODO: Add DevSyncProjectMapping model to schema when DevSync integration is ready
+    return Response.json({ error: 'No DevSync project linked to this quest', success: false }, { status: 404 });
   } catch (error) {
     console.error('Error getting project status:', error);
     return Response.json({ error: 'Failed to get project status', success: false }, { status: 500 });
@@ -199,14 +171,15 @@ async function handleGetProjectStatus(userId: string, questId: string) {
 
 async function checkUserAssignedToQuest(userId: string, questId: string): Promise<boolean> {
   try {
-    const { data, error } = await supabase
-      .from('quest_assignments')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('quest_id', questId)
-      .single();
+    const assignment = await prisma.questAssignment.findFirst({
+      where: {
+        userId: userId,
+        questId: questId,
+      },
+      select: { id: true },
+    });
 
-    return !error && !!data;
+    return !!assignment;
   } catch (error) {
     console.error('Error checking quest assignment:', error);
     return false;

@@ -15,19 +15,19 @@ interface Quest {
   id: string;
   title: string;
   description: string;
-  detailed_description?: string;
-  quest_type: string;
+  detailedDescription?: string;
+  questType: string;
   status: string;
   difficulty: string;
-  xp_reward: number;
-  skill_points_reward: number;
-  monetary_reward?: number;
-  required_skills: string[];
-  required_rank?: string;
-  max_participants?: number;
-  quest_category: string;
-  company_id: string;
-  created_at: string;
+  xpReward: number;
+  skillPointsReward: number;
+  monetaryReward?: number;
+  requiredSkills: string[];
+  requiredRank?: string;
+  maxParticipants?: number;
+  questCategory: string;
+  companyId: string;
+  createdAt: string;
   deadline?: string;
   users: {
     name: string;
@@ -37,12 +37,12 @@ interface Quest {
 
 interface Assignment {
   id: string;
-  quest_id: string;
-  user_id: string;
+  questId: string;
+  userId: string;
   status: string;
-  assigned_at: string;
-  started_at?: string;
-  completed_at?: string;
+  assignedAt: string;
+  startedAt?: string;
+  completedAt?: string;
   progress?: number;
   user: {
     name: string;
@@ -53,14 +53,14 @@ interface Assignment {
 
 interface Submission {
   id: string;
-  assignment_id: string;
-  user_id: string;
-  submission_content: string;
-  submission_notes?: string;
-  submitted_at: string;
+  assignmentId: string;
+  userId: string;
+  submissionContent: string;
+  submissionNotes?: string;
+  submittedAt: string;
   status: string;
-  review_notes?: string;
-  quality_score?: number;
+  reviewNotes?: string;
+  qualityScore?: number;
   user: {
     name: string;
     email: string;
@@ -106,7 +106,7 @@ export default function CompanyQuestDetailPage() {
         const questDetails = questData.quests[0] || questData.quest;
         
         // Verify this quest belongs to the current company (or user is admin)
-        if (session?.user?.role !== 'admin' && questDetails.company_id !== session?.user?.id) {
+        if (session?.user?.role !== 'admin' && questDetails.companyId !== session?.user?.id) {
           setError('Unauthorized to view this quest');
           return;
         }
@@ -114,7 +114,7 @@ export default function CompanyQuestDetailPage() {
         setQuest(questDetails);
 
         // Fetch assignments for this quest
-        const assignmentsResponse = await fetch(`/api/quests/assignments?quest_id=${id}`);
+        const assignmentsResponse = await fetch(`/api/quests/assignments?questId=${id}`);
         const assignmentsData = await assignmentsResponse.json();
         if (assignmentsData.success) {
           setAssignments(assignmentsData.assignments);
@@ -123,7 +123,7 @@ export default function CompanyQuestDetailPage() {
         // Fetch submissions for this quest
         // Actually, we need to fetch submissions for each assignment
         const submissionPromises = assignmentsData.assignments.map((assignment: Assignment) => 
-          fetch(`/api/quests/submissions?assignment_id=${assignment.id}`).then(res => res.json())
+          fetch(`/api/quests/submissions?assignmentId=${assignment.id}`).then(res => res.json())
         );
         
         const submissionsResults = await Promise.all(submissionPromises);
@@ -155,7 +155,7 @@ export default function CompanyQuestDetailPage() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          quest_id: quest.id,
+          questId: quest.id,
           status: newStatus,
         }),
       });
@@ -230,12 +230,12 @@ export default function CompanyQuestDetailPage() {
                 </Badge>
               </div>
               <CardDescription>
-                Posted on {new Date(quest.created_at).toLocaleDateString()}
+                Posted on {new Date(quest.createdAt).toLocaleDateString()}
               </CardDescription>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Badge variant="secondary">{quest.quest_category}</Badge>
-              <Badge variant="outline">{quest.quest_type}</Badge>
+              <Badge variant="secondary">{quest.questCategory}</Badge>
+              <Badge variant="outline">{quest.questType}</Badge>
             </div>
           </div>
         </CardHeader>
@@ -243,23 +243,23 @@ export default function CompanyQuestDetailPage() {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
             <div className="text-center p-3 bg-muted rounded-lg">
               <Zap className="w-6 h-6 mx-auto text-yellow-500 mb-1" />
-              <div className="font-bold">{quest.xp_reward} XP</div>
+              <div className="font-bold">{quest.xpReward} XP</div>
               <div className="text-xs text-muted-foreground">Reward</div>
             </div>
             <div className="text-center p-3 bg-muted rounded-lg">
               <Target className="w-6 h-6 mx-auto text-blue-500 mb-1" />
-              <div className="font-bold">{quest.skill_points_reward} SP</div>
+              <div className="font-bold">{quest.skillPointsReward} SP</div>
               <div className="text-xs text-muted-foreground">Skill Points</div>
             </div>
-            {quest.monetary_reward && (
+            {quest.monetaryReward && (
               <div className="text-center p-3 bg-muted rounded-lg">
-                <div className="font-bold">${quest.monetary_reward}</div>
+                <div className="font-bold">${quest.monetaryReward}</div>
                 <div className="text-xs text-muted-foreground">Monetary</div>
               </div>
             )}
             <div className="text-center p-3 bg-muted rounded-lg">
               <Users className="w-6 h-6 mx-auto text-green-500 mb-1" />
-              <div className="font-bold">{quest.max_participants || 1}/{quest.max_participants || 1}</div>
+              <div className="font-bold">{quest.maxParticipants || 1}/{quest.maxParticipants || 1}</div>
               <div className="text-xs text-muted-foreground">Participants</div>
             </div>
           </div>
@@ -270,20 +270,20 @@ export default function CompanyQuestDetailPage() {
               <p className="text-muted-foreground">{quest.description}</p>
             </div>
 
-            {quest.detailed_description && (
+            {quest.detailedDescription && (
               <div>
                 <h3 className="font-semibold mb-2">Detailed Requirements</h3>
                 <div className="prose prose-sm max-w-none">
-                  <p className="text-muted-foreground whitespace-pre-line">{quest.detailed_description}</p>
+                  <p className="text-muted-foreground whitespace-pre-line">{quest.detailedDescription}</p>
                 </div>
               </div>
             )}
 
-            {quest.required_skills && quest.required_skills.length > 0 && (
+            {quest.requiredSkills && quest.requiredSkills.length > 0 && (
               <div>
                 <h3 className="font-semibold mb-2">Required Skills</h3>
                 <div className="flex flex-wrap gap-2">
-                  {quest.required_skills.map((skill, index) => (
+                  {quest.requiredSkills.map((skill, index) => (
                     <Badge key={index} variant="secondary">{skill}</Badge>
                   ))}
                 </div>
@@ -412,13 +412,13 @@ export default function CompanyQuestDetailPage() {
                         `}>
                           {submission.status.charAt(0).toUpperCase() + submission.status.slice(1)}
                         </Badge>
-                        {submission.quality_score && (
-                          <Badge variant="outline">Score: {submission.quality_score}/10</Badge>
+                        {submission.qualityScore && (
+                          <Badge variant="outline">Score: {submission.qualityScore}/10</Badge>
                         )}
                       </div>
                       <div className="mt-2 text-sm">
                         <p className="font-medium">Submission:</p>
-                        <p className="text-muted-foreground line-clamp-2">{submission.submission_content}</p>
+                        <p className="text-muted-foreground line-clamp-2">{submission.submissionContent}</p>
                       </div>
                     </div>
                     <Button variant="outline" size="sm" onClick={() => router.push(`/dashboard/company/submissions/${submission.id}`)}>

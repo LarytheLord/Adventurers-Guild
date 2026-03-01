@@ -15,22 +15,22 @@ interface Quest {
   description: string;
   status: string;
   difficulty: string;
-  xp_reward: number;
-  skill_points_reward: number;
-  monetary_reward?: number;
+  xpReward: number;
+  skillPointsReward: number;
+  monetaryReward?: number;
   company_id: string;
 }
 
 interface DevSyncConnection {
   id: string;
-  user_id: string;
-  devsync_user_id: string;
+  userId: string;
+  devsync_userId: string;
   access_token: string;
   refresh_token?: string;
   expires_at?: string;
   scopes: string[];
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface DevSyncIntegrationCardProps {
@@ -113,7 +113,7 @@ export default function DevSyncIntegrationCard({ questId }: DevSyncIntegrationCa
         },
         body: JSON.stringify({
           action: 'create_project',
-          quest_id: questId
+          questId: questId
         }),
       });
 
@@ -148,7 +148,7 @@ export default function DevSyncIntegrationCard({ questId }: DevSyncIntegrationCa
         },
         body: JSON.stringify({
           action: 'start_session',
-          quest_id: questId,
+          questId: questId,
           session_type: 'coding'
         }),
       });
@@ -252,15 +252,15 @@ export default function DevSyncIntegrationCard({ questId }: DevSyncIntegrationCa
                 <div className="flex items-center gap-4 text-sm mb-4">
                   <div className="flex items-center">
                     <Zap className="w-4 h-4 mr-1 text-yellow-500" />
-                    <span>{quest.xp_reward} XP</span>
+                    <span>{quest.xpReward} XP</span>
                   </div>
                   <div className="flex items-center">
                     <Target className="w-4 h-4 mr-1 text-blue-500" />
-                    <span>{quest.skill_points_reward} SP</span>
+                    <span>{quest.skillPointsReward} SP</span>
                   </div>
-                  {quest.monetary_reward && (
+                  {quest.monetaryReward && (
                     <div className="flex items-center">
-                      <span>${quest.monetary_reward}</span>
+                      <span>${quest.monetaryReward}</span>
                     </div>
                   )}
                 </div>

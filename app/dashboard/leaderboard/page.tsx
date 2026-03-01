@@ -20,11 +20,11 @@ interface RankedUser {
   rank: string;
   xp: number;
   level: number;
-  skill_points: number;
+  skillPoints: number;
   position: number;
   adventurer_profiles?: {
     specialization?: string;
-    total_quests_completed?: number;
+    totalQuestsCompleted?: number;
   };
 }
 
@@ -90,7 +90,7 @@ export default function LeaderboardPage() {
           <SelectContent>
             <SelectItem value="xp">Sort by XP</SelectItem>
             <SelectItem value="level">Sort by Level</SelectItem>
-            <SelectItem value="skill_points">Sort by Skill Points</SelectItem>
+            <SelectItem value="skillPoints">Sort by Skill Points</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -164,7 +164,7 @@ export default function LeaderboardPage() {
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {profile?.specialization || 'Adventurer'} · Level {user.level}
-                        {profile?.total_quests_completed ? ` · ${profile.total_quests_completed} quests` : ''}
+                        {profile?.totalQuestsCompleted ? ` · ${profile.totalQuestsCompleted} quests` : ''}
                       </p>
                     </div>
                     <Badge className={`shrink-0 ${RANK_COLORS[user.rank] || ''}`} variant="outline">
@@ -172,7 +172,7 @@ export default function LeaderboardPage() {
                     </Badge>
                     <div className="text-right shrink-0 w-24">
                       <p className="text-sm font-semibold">{user.xp.toLocaleString()} XP</p>
-                      <p className="text-xs text-muted-foreground">{user.skill_points} SP</p>
+                      <p className="text-xs text-muted-foreground">{user.skillPoints} SP</p>
                     </div>
                   </div>
                 );

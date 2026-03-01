@@ -23,22 +23,22 @@ import { toast } from 'sonner';
 // Types
 interface Mentorship {
   id: string;
-  mentor_id: string;
-  mentee_id: string;
+  mentorId: string;
+  menteeId: string;
   status: string;
-  start_date?: string;
-  end_date?: string;
+  startDate?: string;
+  endDate?: string;
   goals: string[];
   progress: number;
-  created_at: string;
-  updated_at: string;
+  createdAt: string;
+  updatedAt: string;
   mentor: {
     id: string;
     name: string;
     email: string;
     rank: string;
     xp: number;
-    skill_points: number;
+    skillPoints: number;
   };
   mentee: {
     id: string;
@@ -46,7 +46,7 @@ interface Mentorship {
     email: string;
     rank: string;
     xp: number;
-    skill_points: number;
+    skillPoints: number;
   };
 }
 
@@ -71,7 +71,7 @@ export default function MentorshipManager({ userId, userRole }: MentorshipManage
       try {
         setLoading(true);
         const params = new URLSearchParams();
-        params.append('user_id', userId);
+        params.append('userId', userId);
         params.append('role', userRole);
         
         const response = await fetch(`/api/mentorship?${params.toString()}`);
@@ -108,8 +108,8 @@ export default function MentorshipManager({ userId, userRole }: MentorshipManage
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          mentor_id: userId, // Current user is the mentor
-          mentee_id: requestForm.menteeId,
+          mentorId: userId, // Current user is the mentor
+          menteeId: requestForm.menteeId,
           goals: [requestForm.goals]
         }),
       });
@@ -123,7 +123,7 @@ export default function MentorshipManager({ userId, userRole }: MentorshipManage
         
         // Refresh mentorships
         const params = new URLSearchParams();
-        params.append('user_id', userId);
+        params.append('userId', userId);
         params.append('role', 'mentor');
         
         const refreshResponse = await fetch(`/api/mentorship?${params.toString()}`);
@@ -149,8 +149,8 @@ export default function MentorshipManager({ userId, userRole }: MentorshipManage
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          mentorship_id: mentorshipId,
-          current_user_id: userId,
+          mentorshipId: mentorshipId,
+          current_userId: userId,
           action
         }),
       });
@@ -162,7 +162,7 @@ export default function MentorshipManager({ userId, userRole }: MentorshipManage
         
         // Refresh mentorships
         const params = new URLSearchParams();
-        params.append('user_id', userId);
+        params.append('userId', userId);
         params.append('role', userRole);
         
         const refreshResponse = await fetch(`/api/mentorship?${params.toString()}`);
@@ -359,12 +359,12 @@ export default function MentorshipManager({ userId, userRole }: MentorshipManage
                         <div className="text-xs text-muted-foreground space-y-1">
                           <div className="flex items-center">
                             <Calendar className="h-4 w-4 mr-1" />
-                            Started: {mentorship.start_date ? new Date(mentorship.start_date).toLocaleDateString() : 'N/A'}
+                            Started: {mentorship.startDate ? new Date(mentorship.startDate).toLocaleDateString() : 'N/A'}
                           </div>
-                          {mentorship.end_date && (
+                          {mentorship.endDate && (
                             <div className="flex items-center">
                               <Calendar className="h-4 w-4 mr-1" />
-                              Ended: {new Date(mentorship.end_date).toLocaleDateString()}
+                              Ended: {new Date(mentorship.endDate).toLocaleDateString()}
                             </div>
                           )}
                         </div>

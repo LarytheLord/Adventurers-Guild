@@ -1,13 +1,7 @@
 // app/api/admin/users/route.ts
 import { NextRequest } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { prisma } from '@/lib/db';
 import { requireAuth } from '@/lib/api-auth';
-
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,65 +13,69 @@ export async function GET(request: NextRequest) {
     // Parse query parameters
     const { searchParams } = new URL(request.url);
     const role = searchParams.get('role');
-    const isVerified = searchParams.get('is_verified');
+    const isVerified = searchParams.get('isVerified');
     const search = searchParams.get('search');
     const limit = searchParams.get('limit') || '10';
     const offset = searchParams.get('offset') || '0';
 
-    // Build query
-    let query = supabase
-      .from('users')
-      .select(`
-        id,
-        name,
-        email,
-        role,
-        rank,
-        xp,
-        skill_points,
-        level,
-        is_active,
-        is_verified,
-        created_at,
-        last_login_at,
-        bio,
-        location,
-        website,
-        discord,
-        github,
-        linkedin,
-        adventurer_profiles (
-          specialization,
-          primary_skills,
-          availability_status,
-          quest_completion_rate,
-          total_quests_completed
-        ),
-        company_profiles (
-          company_name,
-          company_website,
-          is_verified
-        )
-      `)
-      .range(parseInt(offset), parseInt(offset) + parseInt(limit) - 1)
-      .order('created_at', { ascending: false });
+    // Build where clause
+    const where: any = {};
 
-    // Add filters if provided
     if (role) {
-      query = query.eq('role', role);
+      where.role = role;
     }
     if (isVerified !== null) {
-      query = query.eq('is_verified', isVerified === 'true');
+      where.isVerified = isVerified === 'true';
     }
     if (search) {
-      query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%`);
+      where.OR = [
+        { name: { contains: search, mode: 'insensitive' } },
+        { email: { contains: search, mode: 'insensitive' } },
+      ];
     }
 
-    const { data, error } = await query;
-
-    if (error) {
-      throw new Error(error.message);
-    }
+    const data = await prisma.user.findMany({
+      where,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        rank: true,
+        xp: true,
+        skillPoints: true,
+        level: true,
+        isActive: true,
+        isVerified: true,
+        createdAt: true,
+        lastLoginAt: true,
+        bio: true,
+        location: true,
+        website: true,
+        discord: true,
+        github: true,
+        linkedin: true,
+        adventurerProfile: {
+          select: {
+            specialization: true,
+            primarySkills: true,
+            availabilityStatus: true,
+            questCompletionRate: true,
+            totalQuestsCompleted: true,
+          },
+        },
+        companyProfile: {
+          select: {
+            companyName: true,
+            companyWebsite: true,
+            isVerified: true,
+          },
+        },
+      },
+      skip: parseInt(offset),
+      take: parseInt(limit),
+      orderBy: { createdAt: 'desc' },
+    });
 
     return Response.json({ users: data, success: true });
   } catch (error) {
@@ -94,29 +92,23 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { user_id, role, is_verified, is_active } = body;
+    const { userId, role, isVerified, isActive } = body;
 
     // Validate required fields
-    if (!user_id) {
+    if (!userId) {
       return Response.json({ error: 'User ID is required', success: false }, { status: 400 });
     }
 
     // Update the user
     const updateData: any = {};
     if (role !== undefined) updateData.role = role;
-    if (is_verified !== undefined) updateData.is_verified = is_verified;
-    if (is_active !== undefined) updateData.is_active = is_active;
+    if (isVerified !== undefined) updateData.isVerified = isVerified;
+    if (isActive !== undefined) updateData.isActive = isActive;
 
-    const { data, error } = await supabase
-      .from('users')
-      .update(updateData)
-      .eq('id', user_id)
-      .select()
-      .single();
-
-    if (error) {
-      throw new Error(error.message);
-    }
+    const data = await prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+    });
 
     return Response.json({ user: data, success: true });
   } catch (error) {
@@ -133,22 +125,18 @@ export async function DELETE(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { user_id } = body;
+    const { userId } = body;
 
     // Validate required field
-    if (!user_id) {
+    if (!userId) {
       return Response.json({ error: 'User ID is required', success: false }, { status: 400 });
     }
 
     // Delete the user (in reality, you'd want to de-activate rather than hard delete)
-    const { error } = await supabase
-      .from('users')
-      .update({ is_active: false })
-      .eq('id', user_id);
-
-    if (error) {
-      throw new Error(error.message);
-    }
+    await prisma.user.update({
+      where: { id: userId },
+      data: { isActive: false },
+    });
 
     return Response.json({ message: 'User deactivated successfully', success: true });
   } catch (error) {
