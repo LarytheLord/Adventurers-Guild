@@ -233,6 +233,7 @@ model Quest {
   assignments      QuestAssignment[]
   completions      QuestCompletion[]
   transactions     Transaction[]
+  devSyncProject   DevSyncProjectMapping?
 
   @@index([companyId])
   @@index([status])
@@ -469,4 +470,30 @@ model PasswordResetToken {
 
   @@index([token])
   @@map("password_reset_tokens")
+}
+
+model ErrorLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  message   String
+  severity  String   @default("error")
+  url       String?
+  userAgent String?  @map("user_agent")
+  timestamp DateTime
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([severity])
+  @@index([timestamp])
+  @@map("error_logs")
+}
+
+model DevSyncProjectMapping {
+  id               String   @id @default(uuid()) @db.Uuid
+  questId          String   @unique @map("quest_id") @db.Uuid
+  devsyncProjectId String   @unique @map("devsync_project_id")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  quest Quest @relation(fields: [questId], references: [id], onDelete: Cascade)
+
+  @@map("devsync_project_mappings")
 }

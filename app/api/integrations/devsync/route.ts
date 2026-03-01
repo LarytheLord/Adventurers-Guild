@@ -160,9 +160,16 @@ async function handleGetProjectStatus(userId: string, questId: string) {
       return Response.json({ error: 'Unauthorized to access quest', success: false }, { status: 403 });
     }
 
-    // DevSync project mappings not yet implemented in Prisma schema
-    // TODO: Add DevSyncProjectMapping model to schema when DevSync integration is ready
-    return Response.json({ error: 'No DevSync project linked to this quest', success: false }, { status: 404 });
+    const mapping = await prisma.devSyncProjectMapping.findUnique({
+      where: { questId },
+    });
+
+    if (!mapping) {
+      return Response.json({ error: 'No DevSync project linked to this quest', success: false }, { status: 404 });
+    }
+
+    // In a real scenario, you might fetch live status from the DevSync API here using mapping.devsyncProjectId
+    return Response.json({ success: true, project_id: mapping.devsyncProjectId });
   } catch (error) {
     console.error('Error getting project status:', error);
     return Response.json({ error: 'Failed to get project status', success: false }, { status: 500 });

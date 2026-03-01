@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { sendEmail } from '@/lib/mail';
 import { randomBytes } from 'crypto';
 
 export async function POST(request: NextRequest) {
@@ -33,11 +34,18 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // TODO: Send email with reset link when SMTP is configured
-    // For now, log the token in development
+    const resetLink = `${process.env.NEXTAUTH_URL}/reset-password?token=${token}`;
+
+    await sendEmail({
+      to: email,
+      subject: 'Reset Your Password - The Adventurers Guild',
+      html: `<p>You requested a password reset. Click the link below to reset your password:</p><p><a href="${resetLink}">${resetLink}</a></p><p>This link expires in 1 hour.</p>`,
+    });
+
+    // Log the token in development for testing
     if (process.env.NODE_ENV === 'development') {
       console.log(`Password reset token for ${email}: ${token}`);
-      console.log(`Reset link: ${process.env.NEXTAUTH_URL}/reset-password?token=${token}`);
+      console.log(`Reset link: ${resetLink}`);
     }
 
     return NextResponse.json({ message: 'If an account exists, a reset link has been sent.' });

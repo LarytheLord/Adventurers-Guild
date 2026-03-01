@@ -2,6 +2,8 @@ import NextAuth, { AuthOptions } from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import { prisma } from './db';
+import { env } from '@/lib/env';
+import { UserRole, UserRank } from '@prisma/client';
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -16,16 +18,20 @@ export const authOptions: AuthOptions = {
           return null;
         }
 
+        // Find user by email
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
         });
 
         if (!user) {
+          if (process.env.NODE_ENV === 'development') console.log('[Auth] User not found:', credentials.email);
           return null;
         }
 
+        // Verify password
         const isValidPassword = await bcrypt.compare(credentials.password, user.passwordHash);
         if (!isValidPassword) {
+          if (process.env.NODE_ENV === 'development') console.log('[Auth] Invalid password for:', credentials.email);
           return null;
         }
 
@@ -39,8 +45,8 @@ export const authOptions: AuthOptions = {
           id: user.id,
           email: user.email,
           name: user.name,
-          role: user.role,
-          rank: user.rank,
+          role: user.role as UserRole,
+          rank: user.rank as UserRank,
           xp: user.xp,
         };
       }
@@ -50,7 +56,7 @@ export const authOptions: AuthOptions = {
     async jwt({ token, user }: { token: any; user: any }) {
       if (user) {
         token.id = user.id;
-        token.role = user.role;
+        token.role = user.role as UserRole;
         token.rank = user.rank;
         token.xp = user.xp;
       }
@@ -59,8 +65,8 @@ export const authOptions: AuthOptions = {
     async session({ session, token }: { session: any; token: any }) {
       if (token && session.user) {
         session.user.id = token.id as string;
-        session.user.role = token.role as string;
-        session.user.rank = token.rank as string;
+        session.user.role = token.role as UserRole;
+        session.user.rank = token.rank as UserRank;
         session.user.xp = token.xp as number;
       }
       return session;
@@ -73,7 +79,8 @@ export const authOptions: AuthOptions = {
     strategy: 'jwt' as const,
     maxAge: 30 * 24 * 60 * 60, // 30 days
   },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: env.NEXTAUTH_SECRET,
+  debug: process.env.NODE_ENV === 'development',
 };
 
 export default NextAuth(authOptions);

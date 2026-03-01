@@ -25,10 +25,8 @@ npm install
 Create a `.env.local` file in the root directory with the following required variables:
 
 ```bash
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
+# Database
+DATABASE_URL="postgresql://user:password@your-neon-host.neon.tech/neondb?sslmode=require"
 
 # Authentication
 NEXTAUTH_URL=http://localhost:3000
@@ -84,7 +82,7 @@ Key directories:
 - `components/` - React components including UI library
 - `lib/` - Utility functions and libraries
 - `types/` - TypeScript type definitions
-- `supabase/` - Database schema and configuration
+- `prisma/` - Database schema and migrations
 
 ## Contributing
 

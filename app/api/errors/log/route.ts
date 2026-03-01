@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
 
 /**
  * API endpoint for logging client-side errors
@@ -31,9 +32,16 @@ export async function POST(request: NextRequest) {
       userAgent: errorLog.userAgent,
     });
 
-    // TODO: Store in database using Prisma
-    // import { prisma } from '@/lib/db';
-    // await prisma.errorLog.create({ data: errorLog });
+    // Store in database
+    await prisma.errorLog.create({
+      data: {
+        message: errorLog.message,
+        severity: errorLog.severity || 'error',
+        url: errorLog.url,
+        userAgent: errorLog.userAgent,
+        timestamp: new Date(errorLog.timestamp),
+      },
+    });
 
     // TODO: Send to error tracking service
     // if (process.env.SENTRY_DSN) {

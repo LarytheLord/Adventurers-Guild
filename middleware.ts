@@ -24,17 +24,15 @@ export async function middleware(request: NextRequest) {
   // Check if the route is protected
   const pathname = request.nextUrl.pathname;
   
-  // Check for exact matches first
- const exactMatch = protectedRoutes[pathname];
-  if (exactMatch) {
-    return await checkAuthAndRole(request, exactMatch);
-  }
-  
-  // Check for partial matches (e.g., /dashboard/*)
-  const basePath = pathname.split('/')[1] ? `/${pathname.split('/')[1]}` : '/';
-  const partialMatch = protectedRoutes[basePath];
-  if (partialMatch) {
-    return await checkAuthAndRole(request, partialMatch);
+  // Find the most specific matching route (Longest Prefix Match)
+  // This prevents /dashboard (adventurer) from overriding /dashboard/company (company only)
+  const sortedRoutes = Object.keys(protectedRoutes).sort((a, b) => b.length - a.length);
+
+  for (const route of sortedRoutes) {
+    // Match if exact path OR if path starts with route + '/' (to avoid /dash matching /dashboard)
+    if (pathname === route || pathname.startsWith(`${route}/`)) {
+      return await checkAuthAndRole(request, protectedRoutes[route]);
+    }
   }
 
   // If not a protected route, continue
@@ -50,6 +48,9 @@ async function checkAuthAndRole(request: NextRequest, requiredRoles: UserRole[])
     });
     
     if (!token) {
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[Middleware] No token found, redirecting to login:', request.url);
+      }
       // Redirect to login if not authenticated
       const url = new URL('/login', request.url);
       url.searchParams.set('callbackUrl', request.url);
