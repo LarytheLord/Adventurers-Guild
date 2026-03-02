@@ -87,7 +87,7 @@ export default async function MyQuestsPage() {
                 </div>
                 <div className="p-6 bg-muted/30 flex items-center justify-end gap-3 border-t md:border-t-0 md:border-l">
                   <Button variant="outline" asChild>
-                    <Link href={`/quests/${assignment.quest.id}`}>View Details</Link>
+                    <Link href={`/dashboard/quests/${assignment.quest.id}`}>View Details</Link>
                   </Button>
                   
                   {assignment.status === 'assigned' && (

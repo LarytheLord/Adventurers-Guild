@@ -34,7 +34,7 @@ import {
 interface Applicant {
   id: string;
   userId: string;
-  status: 'pending' | 'accepted' | 'rejected' | 'completed';
+  status: 'assigned' | 'started' | 'in_progress' | 'submitted' | 'review' | 'completed' | 'cancelled';
   createdAt: string;
   user: {
     name: string;
@@ -95,24 +95,25 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
     }
   }, [id, status, router]);
 
-  const handleApplicantAction = async (assignmentId: string, newStatus: 'accepted' | 'rejected') => {
+  const handleApplicantAction = async (assignmentId: string, action: 'accepted' | 'rejected') => {
     setProcessingId(assignmentId);
+    // Map UI action to DB status
+    const dbStatus: Applicant['status'] = action === 'accepted' ? 'started' : 'cancelled';
     try {
       const response = await fetch(`/api/quests/${id}/assignments`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ assignmentId, status: newStatus }),
+        body: JSON.stringify({ assignmentId, status: action }),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        toast.success(`Applicant ${newStatus === 'accepted' ? 'accepted' : 'rejected'}`);
-        // Update local state
+        toast.success(`Applicant ${action === 'accepted' ? 'accepted' : 'rejected'}`);
         setQuest(prev => prev ? {
           ...prev,
-          assignments: prev.assignments.map(a => 
-            a.id === assignmentId ? { ...a, status: newStatus } : a
+          assignments: prev.assignments.map(a =>
+            a.id === assignmentId ? { ...a, status: dbStatus } : a
           )
         } : null);
       } else {
@@ -213,7 +214,7 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
                       </div>
 
                       <div className="flex items-center gap-2">
-                        {applicant.status === 'pending' ? (
+                        {applicant.status === 'assigned' ? (
                           <>
                             <Button 
                               size="sm" 
@@ -237,7 +238,7 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
                             </Button>
                           </>
                         ) : (
-                          <Badge variant={applicant.status === 'accepted' ? 'default' : 'destructive'}>
+                          <Badge variant={applicant.status === 'started' || applicant.status === 'completed' ? 'default' : 'destructive'}>
                             {applicant.status.charAt(0).toUpperCase() + applicant.status.slice(1)}
                           </Badge>
                         )}
@@ -295,13 +296,13 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Accepted</span>
                 <span className="font-bold text-green-600">
-                  {quest.assignments.filter(a => a.status === 'accepted').length}
+                  {quest.assignments.filter(a => a.status === 'started' || a.status === 'in_progress').length}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Pending</span>
+                <span className="text-muted-foreground">Pending Review</span>
                 <span className="font-bold text-yellow-600">
-                  {quest.assignments.filter(a => a.status === 'pending').length}
+                  {quest.assignments.filter(a => a.status === 'assigned').length}
                 </span>
               </div>
             </CardContent>
