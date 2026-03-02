@@ -2,6 +2,7 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireAuth } from '@/lib/api-auth';
+import { Prisma } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest) {
     const offset = searchParams.get('offset') || '0';
 
     // Build where clause
-    const where: any = {};
+    const where: Prisma.UserWhereInput = {};
 
     if (role) {
       where.role = role;
@@ -100,7 +101,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Update the user
-    const updateData: any = {};
+    const updateData: Prisma.UserUpdateInput = {};
     if (role !== undefined) updateData.role = role;
     if (isVerified !== undefined) updateData.isVerified = isVerified;
     if (isActive !== undefined) updateData.isActive = isActive;

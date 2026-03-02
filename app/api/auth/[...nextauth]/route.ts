@@ -1,5 +1,5 @@
 // app/api/auth/[...nextauth]/route.ts
-import NextAuth from 'next-auth';
+import NextAuth, { NextAuthOptions } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { NextRequest } from 'next/server';
 
@@ -8,12 +8,12 @@ const handler = NextAuth(authOptions);
 // Wrap handlers to support Next.js 15 async params
 async function GET(req: NextRequest, context: { params: Promise<{ nextauth: string[] }> }) {
   const params = await context.params;
-  return handler(req, { params } as any);
+  return handler(req, { params } as unknown as NextAuthOptions);
 }
 
 async function POST(req: NextRequest, context: { params: Promise<{ nextauth: string[] }> }) {
   const params = await context.params;
-  return handler(req, { params } as any);
+  return handler(req, { params } as unknown as NextAuthOptions);
 }
 
 export { GET, POST };

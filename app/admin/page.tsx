@@ -5,7 +5,6 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
   Users,
   Target,
@@ -29,6 +28,10 @@ interface UserItem {
   rank: string;
   xp: number;
   level: number;
+}
+
+interface QuestItem {
+  status: string;
 }
 
 export default function AdminDashboard() {
@@ -60,12 +63,12 @@ export default function AdminDashboard() {
 
         if (questsRes.ok) {
           const questsData = await questsRes.json();
-          const questList = questsData.quests || [];
+          const questList: QuestItem[] = questsData.quests || [];
           setStats(prev => ({
             ...prev,
             totalQuests: questList.length,
-            activeQuests: questList.filter((q: any) => q.status === 'available' || q.status === 'in_progress').length,
-            completedQuests: questList.filter((q: any) => q.status === 'completed').length,
+            activeQuests: questList.filter((q) => q.status === 'available' || q.status === 'in_progress').length,
+            completedQuests: questList.filter((q) => q.status === 'completed').length,
           }));
         }
       } catch (err) {

@@ -14,7 +14,7 @@ export async function GET(
           select: {
             id: true,
             name: true,
-            image: true,
+            avatar: true,
             email: true,
           },
         },
@@ -24,7 +24,7 @@ export async function GET(
               select: {
                 id: true,
                 name: true,
-                image: true,
+                avatar: true,
                 rank: true,
                 xp: true
               }

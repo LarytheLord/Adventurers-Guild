@@ -2,6 +2,7 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireAuth } from '@/lib/api-auth';
+import { Prisma } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest) {
     const offset = searchParams.get('offset') || '0';
 
     // Build where clause
-    const where: any = {};
+    const where: Prisma.QuestWhereInput = {};
 
     if (status) {
       where.status = status;
@@ -94,7 +95,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Update the quest
-    const updateData: any = {};
+    const updateData: Prisma.QuestUpdateInput = {};
     if (status !== undefined) updateData.status = status;
     if (requiredRank !== undefined) updateData.requiredRank = requiredRank;
     if (maxParticipants !== undefined) updateData.maxParticipants = maxParticipants;

@@ -1,10 +1,11 @@
 import { prisma } from '@/lib/db';
+import { NotificationType } from '@prisma/client';
 
 export async function createNotification(
   userId: string,
   title: string,
   message: string,
-  type: string,
+  type: NotificationType,
   data: any = {}
 ) {
   try {
@@ -15,7 +16,7 @@ export async function createNotification(
         message,
         type,
         data,
-        read_at: null,
+        readAt: null,
       },
     });
   } catch (error) {

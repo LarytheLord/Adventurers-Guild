@@ -4,6 +4,12 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { subDays, subYears } from 'date-fns';
 
+interface ProgressPoint {
+  date: string;
+  xp: number;
+  sp: number;
+}
+
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
   if (!session) {
@@ -50,7 +56,7 @@ export async function GET(req: Request) {
         where: {
           userId: userId,
           status: 'completed',
-          updatedAt: {
+          completedAt: {
             gte: startDate
           }
         },
@@ -58,7 +64,7 @@ export async function GET(req: Request) {
           quest: true
         },
         orderBy: {
-          updatedAt: 'desc'
+          completedAt: 'desc'
         }
       });
 
@@ -81,7 +87,7 @@ export async function GET(req: Request) {
       const recentActivity = completedAssignments.slice(0, 5).map(a => ({
         id: a.id,
         questId: a.questId,
-        completionDate: a.updatedAt.toISOString(),
+        completionDate: a.completedAt?.toISOString() ?? '',
         xpEarned: a.quest.xpReward,
         skillPointsEarned: a.quest.skillPointsReward,
         qualityScore: 0, 
@@ -94,15 +100,17 @@ export async function GET(req: Request) {
 
       const progressMap = new Map();
       completedAssignments.forEach(a => {
-        const date = a.updatedAt.toISOString().split('T')[0];
-        if (!progressMap.has(date)) {
-          progressMap.set(date, { date, xp: 0, sp: 0 });
+        if (a.completedAt) {
+          const date = a.completedAt.toISOString().split('T')[0];
+          if (!progressMap.has(date)) {
+            progressMap.set(date, { date, xp: 0, sp: 0 });
+          }
+          const entry = progressMap.get(date);
+          entry.xp += a.quest.xpReward;
+          entry.sp += a.quest.skillPointsReward;
         }
-        const entry = progressMap.get(date);
-        entry.xp += a.quest.xpReward;
-        entry.sp += a.quest.skillPointsReward;
       });
-      const progressOverTime = Array.from(progressMap.values()).sort((a: any, b: any) => a.date.localeCompare(b.date));
+      const progressOverTime: ProgressPoint[] = Array.from(progressMap.values()).sort((a: ProgressPoint, b: ProgressPoint) => a.date.localeCompare(b.date));
 
       return NextResponse.json({
         success: true,
@@ -199,7 +207,7 @@ export async function GET(req: Request) {
       });
 
       const activeQuests = await prisma.quest.count({
-        where: { companyId, status: 'open' }
+        where: { companyId, status: 'available' }
       });
 
       const assignments = await prisma.questAssignment.findMany({

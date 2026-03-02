@@ -29,7 +29,7 @@ export default async function MyQuestsPage() {
       },
     },
     orderBy: {
-      updatedAt: 'desc',
+      assignedAt: 'desc',
     },
   });
 
@@ -57,7 +57,7 @@ export default async function MyQuestsPage() {
             <Card key={assignment.id} className="flex flex-col md:flex-row overflow-hidden">
               <div className={`w-2 md:w-2 ${
                 assignment.status === 'completed' ? 'bg-green-500' :
-                assignment.status === 'accepted' ? 'bg-blue-500' :
+                assignment.status === 'assigned' ? 'bg-blue-500' :
                 assignment.status === 'submitted' ? 'bg-yellow-500' :
                 'bg-gray-300'
               }`} />
@@ -66,7 +66,7 @@ export default async function MyQuestsPage() {
                   <div className="flex items-center gap-2 mb-2">
                     <Badge variant={
                       assignment.status === 'completed' ? 'default' :
-                      assignment.status === 'accepted' ? 'secondary' :
+                      assignment.status === 'assigned' ? 'secondary' :
                       'outline'
                     }>
                       {assignment.status.charAt(0).toUpperCase() + assignment.status.slice(1)}
@@ -90,7 +90,7 @@ export default async function MyQuestsPage() {
                     <Link href={`/quests/${assignment.quest.id}`}>View Details</Link>
                   </Button>
                   
-                  {assignment.status === 'accepted' && (
+                  {assignment.status === 'assigned' && (
                     <QuestSubmissionDialog 
                       questId={assignment.quest.id} 
                       questTitle={assignment.quest.title} 
