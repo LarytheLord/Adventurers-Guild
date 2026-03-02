@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     const offset = searchParams.get('offset') || '0';
 
     // Build where clause
-    const whereClause: any = {};
+    const whereClause: Record<string, unknown> = {};
 
     if (submissionId) {
       whereClause.id = submissionId;

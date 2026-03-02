@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build where clause based on role
-    let whereClause: any = {};
+    const whereClause: Record<string, unknown> = {};
 
     if (role === 'mentor') {
       whereClause.mentorId = userId;
@@ -217,7 +217,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Prepare the update based on action
-    let updateData: any = {};
+    let updateData: Record<string, unknown> = {};
 
     if (action === 'approve') {
       updateData = { status: 'active', startDate: new Date() };

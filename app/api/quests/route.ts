@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
-import { Prisma } from '@prisma/client';
+import { Prisma, QuestStatus, QuestCategory, UserRank } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
   // Check authentication but don't require it - allow public access to available quests
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0');
 
     // Build where clause based on permissions
-    const where: any = {};
+    const where: Prisma.QuestWhereInput = {};
 
     if (session && session.user) {
       if (session.user.role === 'company') {
@@ -45,13 +45,13 @@ export async function GET(request: NextRequest) {
 
     // Add filters if provided
     if (status && (!session || !session.user || session.user.role !== 'company')) {
-      where.status = status;
+      where.status = status as QuestStatus;
     }
     if (category) {
-      where.questCategory = category;
+      where.questCategory = category as QuestCategory;
     }
     if (difficulty) {
-      where.difficulty = difficulty;
+      where.difficulty = difficulty as UserRank;
     }
     if (companyId && session && session.user && (session.user.role === 'admin' || session.user.id === companyId)) {
       where.companyId = companyId;

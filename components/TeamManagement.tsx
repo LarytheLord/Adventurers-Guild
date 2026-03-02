@@ -426,7 +426,7 @@ export default function TeamManagement({ userId }: TeamManagementProps) {
                         <DialogHeader>
                           <DialogTitle>Invite Member to {team.name}</DialogTitle>
                           <DialogDescription>
-                            Enter the email address of the adventurer you'd like to invite
+                            Enter the email address of the adventurer you&apos;d like to invite
                           </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4">

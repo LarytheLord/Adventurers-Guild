@@ -2,7 +2,7 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireAuth } from '@/lib/api-auth';
-import { Prisma } from '@prisma/client';
+import { Prisma, UserRole } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     const where: Prisma.UserWhereInput = {};
 
     if (role) {
-      where.role = role;
+      where.role = role as UserRole;
     }
     if (isVerified !== null) {
       where.isVerified = isVerified === 'true';

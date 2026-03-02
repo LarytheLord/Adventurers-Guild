@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build where clause for team memberships
-    const where: any = {
+    const where: Record<string, unknown> = {
       userId,
       isActive: true,
     };
@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
     });
 
     // Transform the data to group members per team
-    const teamsWithMembers = memberships.map((item: any) => {
+    const teamsWithMembers = memberships.map((item) => {
       return {
         id: item.team?.id,
         name: item.team?.name,
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest) {
         ownerUserId: item.team?.ownerUserId,
         userRole: item.role,
         joinedAt: item.joinedAt,
-        members: [] as any[], // We'll populate this in a separate query
+        members: [] as { id: string; name: string; email: string; rank: string; avatar: string; role: string; joinedAt: Date }[], // We'll populate this in a separate query
       };
     });
 
@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
         },
       });
 
-      team.members = membersData.map((member: any) => ({
+      team.members = membersData.map((member) => ({
         id: member.user?.id || '',
         name: member.user?.name || '',
         email: member.user?.email || '',

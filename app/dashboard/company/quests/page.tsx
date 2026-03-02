@@ -113,7 +113,7 @@ export default function CompanyQuestsPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Your Quests</h1>
         <p className="text-muted-foreground mt-1">
-          Manage and track the quests you've posted for adventurers
+          Manage and track the quests you&apos;ve posted for adventurers
         </p>
       </div>
 
@@ -145,7 +145,7 @@ export default function CompanyQuestsPage() {
           <Target className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-xl font-medium mb-2">No quests yet</h3>
           <p className="text-muted-foreground mb-4">
-            You haven't posted any quests yet. Create your first quest to get started.
+            You haven&apos;t posted any quests yet. Create your first quest to get started.
           </p>
           <Button onClick={() => router.push('/dashboard/company/create-quest')}>
             <Plus className="w-4 h-4 mr-2" />

@@ -36,6 +36,7 @@ export async function POST(request: NextRequest) {
             tls: {
                 rejectUnauthorized: false
             }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any)
 
         // Verify transporter configuration

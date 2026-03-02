@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { AssignmentStatus } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,7 +23,7 @@ export async function GET(request: NextRequest) {
     const assignments = await prisma.questAssignment.findMany({
       where: {
         userId,
-        ...(status ? { status: status as any } : {}),
+        ...(status ? { status: status as AssignmentStatus } : {}),
       },
       include: {
         quest: {

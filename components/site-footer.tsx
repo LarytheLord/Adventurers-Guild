@@ -1,62 +1,146 @@
-import Link from "next/link"
-import { Code2, Github, Twitter } from "lucide-react"
+'use client';
+
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Github, Twitter, Linkedin } from 'lucide-react';
+
+const footerLinks = {
+  platform: [
+    { label: 'Join as Adventurer', href: '/register' },
+    { label: 'Post Quests', href: '/register-company' },
+    { label: 'Sign In', href: '/login' },
+  ],
+  resources: [
+    { label: 'How It Works', href: '/#how-it-works' },
+    { label: 'Features', href: '/#features' },
+    { label: 'FAQ', href: '/faq' },
+  ],
+  legal: [
+    { label: 'Terms of Service', href: '/terms' },
+    { label: 'Privacy Policy', href: '/privacy' },
+  ],
+};
 
 export function SiteFooter() {
+  const pathname = usePathname();
+
+  // Dashboard and admin have their own layouts — no global footer needed
+  if (pathname?.startsWith('/dashboard') || pathname === '/admin') return null;
+
   return (
-    <footer className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex flex-col gap-8 py-8 md:py-12">
-        <div className="flex flex-col gap-6 md:flex-row md:justify-between">
-          <div className="flex flex-col gap-2">
-            <Link href="/" className="flex items-center gap-2 font-bold text-xl">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center text-primary-foreground">
-                <Code2 className="w-5 h-5" />
+    <footer className="bg-slate-900">
+      <div className="container max-w-6xl mx-auto px-6">
+        {/* Main grid */}
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-8 py-16 border-b border-slate-800">
+          {/* Brand */}
+          <div className="col-span-2">
+            <Link href="/home" className="flex items-center gap-2.5 group mb-4">
+              <div className="w-9 h-9 bg-orange-500 rounded-lg flex items-center justify-center shadow-lg shadow-orange-500/20 group-hover:bg-orange-600 transition-colors">
+                <span className="text-black font-bold text-sm">AG</span>
               </div>
-              <span>Adventurers Guild</span>
+              <span className="text-white font-bold text-lg">Adventurers Guild</span>
             </Link>
-            <p className="text-sm text-muted-foreground max-w-xs">
-              The premier quest board for student developers to earn XP, gold, and glory.
+            <p className="text-sm text-slate-400 max-w-xs leading-relaxed mb-6">
+              The quest board for ambitious developers. Earn XP, climb from F to S‑Rank,
+              and get paid for code that ships to production.
             </p>
+            <div className="flex items-center gap-4">
+              <SocialLink href="https://github.com" icon={<Github className="w-4 h-4" />} label="GitHub" />
+              <SocialLink href="https://twitter.com" icon={<Twitter className="w-4 h-4" />} label="Twitter" />
+              <SocialLink href="https://linkedin.com" icon={<Linkedin className="w-4 h-4" />} label="LinkedIn" />
+            </div>
           </div>
-          
-          <div className="grid grid-cols-2 gap-10 sm:grid-cols-3">
-            <div className="flex flex-col gap-2">
-              <h3 className="text-sm font-semibold">Guild</h3>
-              <Link href="/quests" className="text-sm text-muted-foreground hover:text-foreground">Quests</Link>
-              <Link href="/leaderboard" className="text-sm text-muted-foreground hover:text-foreground">Leaderboard</Link>
-              <Link href="/about" className="text-sm text-muted-foreground hover:text-foreground">About Us</Link>
-            </div>
-            <div className="flex flex-col gap-2">
-              <h3 className="text-sm font-semibold">Support</h3>
-              <Link href="/faq" className="text-sm text-muted-foreground hover:text-foreground">FAQ</Link>
-              <Link href="/terms" className="text-sm text-muted-foreground hover:text-foreground">Terms</Link>
-              <Link href="/privacy" className="text-sm text-muted-foreground hover:text-foreground">Privacy</Link>
-            </div>
-            <div className="flex flex-col gap-2">
-              <h3 className="text-sm font-semibold">Social</h3>
-              <Link href="https://github.com" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-2">
-                <Github className="w-4 h-4" /> GitHub
-              </Link>
-              <Link href="https://twitter.com" className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-2">
-                <Twitter className="w-4 h-4" /> Twitter
-              </Link>
-            </div>
+
+          {/* Platform */}
+          <div>
+            <h4 className="text-white text-sm font-semibold mb-5 uppercase tracking-wider">
+              Platform
+            </h4>
+            <ul className="space-y-3">
+              {footerLinks.platform.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-slate-400 hover:text-white transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Resources */}
+          <div>
+            <h4 className="text-white text-sm font-semibold mb-5 uppercase tracking-wider">
+              Resources
+            </h4>
+            <ul className="space-y-3">
+              {footerLinks.resources.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-slate-400 hover:text-white transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Legal */}
+          <div>
+            <h4 className="text-white text-sm font-semibold mb-5 uppercase tracking-wider">
+              Legal
+            </h4>
+            <ul className="space-y-3">
+              {footerLinks.legal.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-sm text-slate-400 hover:text-white transition-colors"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
-        
-        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-t pt-8">
-          <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} Adventurers Guild. All rights reserved.
+
+        {/* Bottom bar */}
+        <div className="py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-slate-500">
+            © {new Date().getFullYear()} The Adventurers Guild. All rights reserved.
           </p>
-          <div className="flex gap-4">
-            <Link href="/terms" className="text-xs text-muted-foreground hover:underline">
-              Terms of Service
-            </Link>
-            <Link href="/privacy" className="text-xs text-muted-foreground hover:underline">
-              Privacy Policy
-            </Link>
-          </div>
+          <p className="text-xs text-slate-600">
+            Built for developers who ship.
+          </p>
         </div>
       </div>
     </footer>
-  )
+  );
+}
+
+function SocialLink({
+  href,
+  icon,
+  label,
+}: {
+  href: string;
+  icon: React.ReactNode;
+  label: string;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={label}
+      className="w-8 h-8 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-white transition-all"
+    >
+      {icon}
+    </a>
+  );
 }

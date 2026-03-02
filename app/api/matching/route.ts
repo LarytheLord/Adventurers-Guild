@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
       let matchScore = 0;
 
       // Extract profile data once for use throughout
-      const profile: any = Array.isArray(user.adventurerProfile) ? user.adventurerProfile[0] : user.adventurerProfile;
+      const profile = Array.isArray(user.adventurerProfile) ? user.adventurerProfile[0] : user.adventurerProfile;
 
       // 1. Rank compatibility (0-25 points)
       if (quest.difficulty === user.rank) {
@@ -107,7 +107,7 @@ export async function GET(request: NextRequest) {
         // Count how many required skills the user has
         const userSkills = [
           ...(profile?.primarySkills || []),
-          ...((user.skillProgress || []).map((sp: any) => sp.skillId))
+          ...((user.skillProgress || []).map((sp: { skillId: string }) => sp.skillId))
         ];
 
         const matchingSkills = (quest.requiredSkills as string[]).filter((reqSkill: string) =>
@@ -211,7 +211,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user's completed quests to understand their preferences
-    let completedQuests: any[] | null = null;
+    let completedQuests: { questId: string; quest: { questCategory: string; requiredSkills: unknown } | null }[] | null = null;
     try {
       completedQuests = await prisma.questCompletion.findMany({
         where: { userId: userId },
@@ -236,7 +236,7 @@ export async function POST(request: NextRequest) {
     const skillCount: Record<string, number> = {};
 
     if (completedQuests) {
-      completedQuests.forEach((completion: any) => {
+      completedQuests.forEach((completion) => {
         const questData = completion.quest;
         if (questData?.questCategory) {
           categoryCount[questData.questCategory] =
@@ -285,10 +285,10 @@ export async function POST(request: NextRequest) {
 
       // Skill match
       if (quest.requiredSkills && Array.isArray(quest.requiredSkills)) {
-        const userProfile: any = Array.isArray(user.adventurerProfile) ? user.adventurerProfile[0] : user.adventurerProfile;
+        const userProfile = Array.isArray(user.adventurerProfile) ? user.adventurerProfile[0] : user.adventurerProfile;
         const userSkills = [
           ...(userProfile?.primarySkills || []),
-          ...((user.skillProgress || []).map((sp: any) => sp.skillId))
+          ...((user.skillProgress || []).map((sp: { skillId: string }) => sp.skillId))
         ];
 
         const matchingSkills = (quest.requiredSkills as string[]).filter((reqSkill: string) =>

@@ -6,11 +6,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Bug, RotateCcw, Home } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime';
 import { logError, getErrorSeverity } from '@/lib/error-logger';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
-  router: any; // Injected by wrapper
+  router: AppRouterInstance; // Injected by wrapper
 }
 
 interface ErrorBoundaryState {

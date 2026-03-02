@@ -1,9 +1,9 @@
 // app/api/quests/submissions/route.ts
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { AssignmentStatus } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
   // Check authentication
@@ -221,7 +221,7 @@ export async function PUT(request: NextRequest) {
     if (newAssignmentStatus) {
       await prisma.questAssignment.update({
         where: { id: submission.assignmentId },
-        data: { status: newAssignmentStatus as any },
+        data: { status: newAssignmentStatus as AssignmentStatus },
       });
     }
 

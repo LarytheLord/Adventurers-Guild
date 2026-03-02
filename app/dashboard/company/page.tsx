@@ -51,7 +51,7 @@ export default function CompanyDashboard() {
         const res = await fetch('/api/company/quests');
         if (res.ok) {
           const data = await res.json();
-          const mapped = (data.quests || []).map((q: any) => ({
+          const mapped = (data.quests || []).map((q: Record<string, unknown>) => ({
             id: q.id,
             title: q.title,
             description: q.description,

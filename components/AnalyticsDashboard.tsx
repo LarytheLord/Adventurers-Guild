@@ -88,8 +88,8 @@ interface AnalyticsData {
     rank: string;
     count: number;
   }>;
-  quests?: any[];
-  questsStats?: any;
+  quests?: Record<string, unknown>[];
+  questsStats?: Record<string, unknown>;
   success: boolean;
 }
 

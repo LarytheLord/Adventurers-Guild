@@ -15,24 +15,24 @@ export default function RegisterPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
 
-  async function onRegister(event: React.FormEvent<HTMLFormElement>, role: 'adventurer' | 'client') {
+  async function onRegister(event: React.FormEvent<HTMLFormElement>, role: 'adventurer' | 'company') {
     event.preventDefault();
     setIsLoading(true);
 
     const formData = new FormData(event.currentTarget);
-    const email = formData.get(role === 'client' ? "work-email" : "email") as string;
-    const password = formData.get(role === 'client' ? "client-password" : "password") as string;
-    const name = role === 'client' ? "" : formData.get("name") as string;
-    const companyName = role === 'client' ? formData.get("company") as string : "";
+    const email = formData.get(role === 'company' ? "work-email" : "email") as string;
+    const password = formData.get(role === 'company' ? "client-password" : "password") as string;
+    const name = role === 'company' ? "" : formData.get("name") as string;
+    const companyName = role === 'company' ? formData.get("company") as string : "";
 
     try {
-      const res = await fetch("/api/register", {
+      const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email,
           password,
-          name: role === 'client' ? companyName : name,
+          name: role === 'company' ? companyName : name,
           role,
           companyName
         }),
@@ -40,16 +40,16 @@ export default function RegisterPage() {
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.message || "Registration failed");
+        throw new Error(data.error || data.message || "Registration failed");
       }
 
       toast.success("Account created! Logging you in...");
-      
+
       // Auto login after registration
       await signIn("credentials", { email, password, callbackUrl: "/dashboard" });
-      
-    } catch (error: any) {
-      toast.error(error.message);
+
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Registration failed");
       setIsLoading(false);
     }
   }
@@ -89,7 +89,7 @@ export default function RegisterPage() {
             </TabsList>
             
             <TabsContent value="adventurer">
-              <form onSubmit={(e) => onRegister(e, 'adventurer')}>
+              <form onSubmit={(e) => onRegister(e, 'adventurer' as const)}>
                 <div className="grid gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="name">Full Name</Label>
@@ -112,7 +112,7 @@ export default function RegisterPage() {
             </TabsContent>
             
             <TabsContent value="client">
-              <form onSubmit={(e) => onRegister(e, 'client')}>
+              <form onSubmit={(e) => onRegister(e, 'company' as const)}>
                 <div className="grid gap-4">
                   <div className="grid gap-2">
                     <Label htmlFor="company">Company Name</Label>

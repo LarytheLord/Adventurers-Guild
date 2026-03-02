@@ -35,7 +35,7 @@ export interface QuestAssignment {
   startedAt?: string;
   completedAt?: string;
   progress: number;
-  quest?: any;
+  quest?: Quest;
 }
 
 export interface QuestSubmission {
@@ -84,7 +84,7 @@ export async function fetchAvailableQuests(): Promise<Quest[]> {
 }
 
 // Fetch quests for a specific user
-export async function fetchUserQuests(userId: string): Promise<QuestAssignment[]> {
+export async function fetchUserQuests(userId: string) {
   const assignments = await prisma.questAssignment.findMany({
     where: { userId },
     include: {
@@ -236,7 +236,7 @@ export async function updateAssignmentStatus(
   status: string,
   progress?: number
 ): Promise<QuestAssignment | null> {
-  const data: any = { status };
+  const data: Record<string, unknown> = { status };
   if (progress !== undefined) data.progress = progress;
   if (status === 'started') data.startedAt = new Date();
   if (status === 'completed') data.completedAt = new Date();

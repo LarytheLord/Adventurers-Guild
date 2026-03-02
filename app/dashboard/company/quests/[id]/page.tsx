@@ -138,7 +138,7 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
       <div className="container py-10">
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>Quest not found or you don't have permission to view it.</AlertDescription>
+          <AlertDescription>Quest not found or you don&apos;t have permission to view it.</AlertDescription>
         </Alert>
         <Button className="mt-4" onClick={() => router.back()}>Go Back</Button>
       </div>

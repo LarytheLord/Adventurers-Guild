@@ -164,7 +164,7 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
             </div>
             <CardTitle className="text-2xl mt-4">Payment Successful!</CardTitle>
             <CardDescription>
-              You've successfully paid for quest completion
+              You&apos;ve successfully paid for quest completion
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -287,7 +287,7 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
                 <CheckCircle className="w-12 h-12 mx-auto text-green-500 mb-3" />
                 <h3 className="text-lg font-medium mb-1">Non-monetary Quest</h3>
                 <p className="text-muted-foreground">
-                  This quest doesn't include a monetary reward, only XP and skill points.
+                  This quest doesn&apos;t include a monetary reward, only XP and skill points.
                 </p>
                 <Button className="mt-4" onClick={() => router.back()}>
                   Return to Dashboard

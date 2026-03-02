@@ -46,7 +46,7 @@ export default async function MyQuestsPage() {
                 <AlertCircle className="h-8 w-8 text-muted-foreground" />
               </div>
               <h3 className="text-lg font-semibold mb-2">No quests found</h3>
-              <p className="text-muted-foreground mb-4">You haven't accepted any quests yet.</p>
+              <p className="text-muted-foreground mb-4">You haven&apos;t accepted any quests yet.</p>
               <Button asChild>
                 <Link href="/quests">Find Quests</Link>
               </Button>

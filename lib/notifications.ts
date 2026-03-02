@@ -6,6 +6,7 @@ export async function createNotification(
   title: string,
   message: string,
   type: NotificationType,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   data: any = {}
 ) {
   try {

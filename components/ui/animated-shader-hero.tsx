@@ -162,12 +162,14 @@ void main(){gl_Position=position;}`;
       gl.enableVertexAttribArray(position);
       gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
 
+      /* eslint-disable @typescript-eslint/no-explicit-any */
       (program as any).resolution = gl.getUniformLocation(program, 'resolution');
       (program as any).time = gl.getUniformLocation(program, 'time');
       (program as any).move = gl.getUniformLocation(program, 'move');
       (program as any).touch = gl.getUniformLocation(program, 'touch');
       (program as any).pointerCount = gl.getUniformLocation(program, 'pointerCount');
       (program as any).pointers = gl.getUniformLocation(program, 'pointers');
+      /* eslint-enable @typescript-eslint/no-explicit-any */
     }
 
     render(now = 0) {
@@ -181,12 +183,14 @@ void main(){gl_Position=position;}`;
       gl.useProgram(program);
       gl.bindBuffer(gl.ARRAY_BUFFER, this.buffer);
       
+      /* eslint-disable @typescript-eslint/no-explicit-any */
       gl.uniform2f((program as any).resolution, this.canvas.width, this.canvas.height);
       gl.uniform1f((program as any).time, now * 1e-3);
       gl.uniform2f((program as any).move, this.mouseMove[0], this.mouseMove[1]);
       gl.uniform2f((program as any).touch, this.mouseCoords[0], this.mouseCoords[1]);
       gl.uniform1i((program as any).pointerCount, this.nbrOfPointers);
       gl.uniform2fv((program as any).pointers, this.pointerCoords);
+      /* eslint-enable @typescript-eslint/no-explicit-any */
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
     }
   }

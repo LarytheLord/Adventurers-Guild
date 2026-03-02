@@ -33,7 +33,7 @@ interface Notification {
   title: string;
   message: string;
   type: string;
-  data?: any;
+  data?: Record<string, unknown>;
   readAt?: string;
   createdAt: string;
 }

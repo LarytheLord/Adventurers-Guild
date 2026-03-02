@@ -30,8 +30,8 @@ export function QuestApplyButton({ questId, isApplied = false }: QuestApplyButto
 
       toast.success("Application submitted successfully!");
       router.refresh();
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to apply');
     } finally {
       setIsLoading(false);
     }

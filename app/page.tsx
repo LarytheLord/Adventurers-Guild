@@ -1,7 +1,5 @@
-"use client";
+import { redirect } from 'next/navigation';
 
-import QuestPage from "./_page";
-
-export default function Page(props: any) {
-  return <QuestPage {...props} />;
+export default function RootPage() {
+  redirect('/home');
 }

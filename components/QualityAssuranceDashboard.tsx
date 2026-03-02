@@ -357,7 +357,7 @@ export default function QualityAssuranceDashboard({ userId, userRole }: QualityA
                             {new Date(submission.submittedAt).toLocaleDateString()}
                           </TableCell>
                           <TableCell>
-                            <Badge variant={statusBadge.variant as any}>
+                            <Badge variant={statusBadge.variant as "default" | "secondary" | "destructive" | "outline"}>
                               {statusBadge.icon && <span className="mr-1">{statusBadge.icon}</span>}
                               {statusBadge.text}
                             </Badge>

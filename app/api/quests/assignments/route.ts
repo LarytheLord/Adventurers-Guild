@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     const currentUserRole = session.user.role;
 
     // Build where clause based on permissions
-    const where: any = {};
+    const where: Record<string, unknown> = {};
 
     if (currentUserRole === 'adventurer') {
       // Adventurers can only see their own assignments
@@ -198,7 +198,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // Build update data
-    const updateData: Record<string, any> = { status };
+    const updateData: Record<string, unknown> = { status };
     if (progress !== undefined) {
       updateData.progress = progress;
     }

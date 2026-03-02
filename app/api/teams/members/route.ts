@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Build where clause
-    const where: any = {
+    const where: Record<string, unknown> = {
       isActive: true,
     };
 

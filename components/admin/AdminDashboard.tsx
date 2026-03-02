@@ -550,7 +550,7 @@ export default function AdminDashboard() {
                 <div className="flex items-center">
                   <div className="ml-4 space-y-1">
                     <p className="text-sm font-medium">Quest completed</p>
-                    <p className="text-sm text-muted-foreground">"API Integration" completed by Jane Smith</p>
+                    <p className="text-sm text-muted-foreground">&quot;API Integration&quot; completed by Jane Smith</p>
                   </div>
                   <div className="ml-auto text-xs text-muted-foreground">
                     4 hours ago

@@ -2,7 +2,7 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireAuth } from '@/lib/api-auth';
-import { Prisma } from '@prisma/client';
+import { Prisma, QuestStatus, QuestType, UserRank } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
   try {
@@ -24,13 +24,13 @@ export async function GET(request: NextRequest) {
     const where: Prisma.QuestWhereInput = {};
 
     if (status) {
-      where.status = status;
+      where.status = status as QuestStatus;
     }
     if (questType) {
-      where.questType = questType;
+      where.questType = questType as QuestType;
     }
     if (difficulty) {
-      where.difficulty = difficulty;
+      where.difficulty = difficulty as UserRank;
     }
     if (search) {
       where.OR = [

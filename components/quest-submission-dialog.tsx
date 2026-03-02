@@ -53,8 +53,8 @@ export function QuestSubmissionDialog({ questId, questTitle }: QuestSubmissionDi
       toast.success("Work submitted successfully!");
       setOpen(false);
       router.refresh();
-    } catch (error: any) {
-      toast.error(error.message);
+    } catch (error: unknown) {
+      toast.error(error instanceof Error ? error.message : String(error));
     } finally {
       setIsLoading(false);
     }

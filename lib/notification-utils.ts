@@ -1,13 +1,13 @@
 // lib/notification-utils.ts
 import { prisma } from './db';
-import { NotificationType } from '@prisma/client';
+import { Prisma, NotificationType } from '@prisma/client';
 
 // Fetch notifications for a user
 export async function fetchNotifications(
   userId: string,
   options: { type?: string; isRead?: boolean; limit?: number; offset?: number } = {}
 ) {
-  const where: any = { userId };
+  const where: Prisma.NotificationWhereInput = { userId };
 
   if (options.type) {
     where.type = options.type as NotificationType;
@@ -30,7 +30,7 @@ export async function createNotification(
   title: string,
   message: string,
   type: string,
-  data?: any
+  data?: Record<string, unknown>
 ) {
   return prisma.notification.create({
     data: {
@@ -38,7 +38,7 @@ export async function createNotification(
       title,
       message,
       type: type as NotificationType,
-      data: data || undefined,
+      data: data as Prisma.InputJsonValue | undefined,
     },
   });
 }

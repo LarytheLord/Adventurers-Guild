@@ -1,17 +1,18 @@
 // lib/qa-utils.ts
 import { prisma } from './db';
+import { Prisma, SubmissionStatus } from '@prisma/client';
 
 // Fetch submissions for review
 export async function fetchSubmissionsForReview(
   _reviewerId: string,
   status: string | null = null
 ) {
-  const where: any = {
+  const where: Prisma.QuestSubmissionWhereInput = {
     status: { notIn: ['approved', 'rejected'] },
   };
 
   if (status) {
-    where.status = status;
+    where.status = status as SubmissionStatus;
   }
 
   const submissions = await prisma.questSubmission.findMany({
@@ -27,8 +28,8 @@ export async function fetchSubmissionsForReview(
 
 // Fetch submissions by a specific user
 export async function fetchUserSubmissions(userId: string, status?: string) {
-  const where: any = { userId };
-  if (status) where.status = status;
+  const where: Prisma.QuestSubmissionWhereInput = { userId };
+  if (status) where.status = status as Prisma.QuestSubmissionWhereInput['status'];
 
   return prisma.questSubmission.findMany({
     where,

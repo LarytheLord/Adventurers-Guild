@@ -7,12 +7,14 @@ const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
   email: z.string().email('Invalid email address'),
   password: z.string().min(8, 'Password must be at least 8 characters'),
+  role: z.enum(['adventurer', 'company']).default('adventurer'),
+  companyName: z.string().optional(),
 });
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    
+
     // Validate input
     const result = registerSchema.safeParse(body);
     if (!result.success) {
@@ -22,7 +24,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { name, email, password } = result.data;
+    const { name, email, password, role, companyName } = result.data;
+
+    // Company accounts require a company name
+    if (role === 'company' && !companyName) {
+      return NextResponse.json(
+        { error: 'Company name is required for company accounts' },
+        { status: 400 }
+      );
+    }
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
@@ -42,11 +52,19 @@ export async function POST(request: NextRequest) {
     // Create user and profile in transaction
     const user = await prisma.$transaction(async (tx) => {
       const newUser = await tx.user.create({
-        data: { name, email, passwordHash, role: 'adventurer' },
+        data: { name, email, passwordHash, role },
       });
 
-      // Create empty adventurer profile
-      await tx.adventurerProfile.create({ data: { userId: newUser.id } });
+      if (role === 'company') {
+        await tx.companyProfile.create({
+          data: {
+            userId: newUser.id,
+            companyName: companyName!,
+          },
+        });
+      } else {
+        await tx.adventurerProfile.create({ data: { userId: newUser.id } });
+      }
 
       return newUser;
     });

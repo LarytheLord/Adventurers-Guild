@@ -1,4 +1,6 @@
 import NextAuth, { AuthOptions } from 'next-auth';
+import type { Session, User } from 'next-auth';
+import type { JWT } from 'next-auth/jwt';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import bcrypt from 'bcryptjs';
 import { prisma } from './db';
@@ -13,7 +15,7 @@ export const authOptions: AuthOptions = {
         email: { label: 'Email', type: 'email' },
         password: { label: 'Password', type: 'password' }
       },
-      async authorize(credentials): Promise<any> {
+      async authorize(credentials): Promise<{ id: string; email: string; name: string; role: UserRole; rank: UserRank; xp: number } | null> {
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
@@ -44,7 +46,7 @@ export const authOptions: AuthOptions = {
         return {
           id: user.id,
           email: user.email,
-          name: user.name,
+          name: user.name ?? '',
           role: user.role as UserRole,
           rank: user.rank as UserRank,
           xp: user.xp,
@@ -53,7 +55,7 @@ export const authOptions: AuthOptions = {
     })
   ],
   callbacks: {
-    async jwt({ token, user }: { token: any; user: any }) {
+    async jwt({ token, user }: { token: JWT; user?: User }) {
       if (user) {
         token.id = user.id;
         token.role = user.role as UserRole;
@@ -62,7 +64,7 @@ export const authOptions: AuthOptions = {
       }
       return token;
     },
-    async session({ session, token }: { session: any; token: any }) {
+    async session({ session, token }: { session: Session; token: JWT }) {
       if (token && session.user) {
         session.user.id = token.id as string;
         session.user.role = token.role as UserRole;
