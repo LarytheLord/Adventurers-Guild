@@ -184,25 +184,25 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'quest_assigned':
-        return <Target className="h-4 w-4 text-blue-500" />;
+        return <Target className="h-4 w-4 text-orange-400" />;
       case 'quest_updated':
-        return <Edit className="h-4 w-4 text-yellow-500" />;
+        return <Edit className="h-4 w-4 text-amber-400" />;
       case 'quest_completed':
-        return <Check className="h-4 w-4 text-green-500" />;
+        return <Check className="h-4 w-4 text-emerald-500" />;
       case 'quest_reviewed':
-        return <Star className="h-4 w-4 text-purple-500" />;
+        return <Star className="h-4 w-4 text-amber-400" />;
       case 'new_message':
-        return <MessageCircle className="h-4 w-4 text-indigo-500" />;
+        return <MessageCircle className="h-4 w-4 text-slate-400" />;
       case 'rank_up':
-        return <Trophy className="h-4 w-4 text-yellow-500" />;
+        return <Trophy className="h-4 w-4 text-orange-400" />;
       case 'skill_unlocked':
-        return <Star className="h-4 w-4 text-purple-500" />;
+        return <Star className="h-4 w-4 text-orange-400" />;
       case 'team_invite':
-        return <UserCheck className="h-4 w-4 text-green-500" />;
+        return <UserCheck className="h-4 w-4 text-emerald-500" />;
       case 'payment_received':
         return <DollarSign className="h-4 w-4 text-emerald-500" />;
       default:
-        return <Mail className="h-4 w-4 text-gray-500" />;
+        return <Mail className="h-4 w-4 text-slate-400" />;
     }
   };
 

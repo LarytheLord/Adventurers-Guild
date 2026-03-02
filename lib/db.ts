@@ -1,6 +1,10 @@
 import { PrismaClient } from '@prisma/client';
 import { PrismaNeon } from '@prisma/adapter-neon';
-import { Pool } from '@neondatabase/serverless';
+import { Pool, neonConfig } from '@neondatabase/serverless';
+import ws from 'ws';
+
+// Required for @neondatabase/serverless Pool in Node.js runtime
+neonConfig.webSocketConstructor = ws;
 
 // Prevent multiple Prisma instances in development (hot-reload)
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
