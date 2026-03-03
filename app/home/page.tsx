@@ -9,6 +9,7 @@ import HowItWorks from '@/components/landing/HowItWorks';
 import StatsSection from '@/components/landing/StatsSection';
 import CTASection from '@/components/landing/CTASection';
 import QuestShowcase from '@/components/landing/QuestShowcase';
+import LogoMarquee from '@/components/landing/LogoMarquee';
 import { RankBadge } from '@/components/ui/rank-badge';
 
 const RANKS = ['F', 'E', 'D', 'C', 'B', 'A', 'S'] as const;
@@ -92,6 +93,8 @@ export default function HomePage() {
           <p className="text-[10px] text-white/25 tracking-wide">Everyone starts at F-Rank</p>
         </div>
       </div>
+
+      <LogoMarquee />
 
       <section id="features">
         <StatsSection />

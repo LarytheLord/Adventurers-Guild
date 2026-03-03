@@ -18,10 +18,10 @@ export function QuestCard({ id, rank, title, company, reward, xp, tags }: QuestC
     'F': 'bg-gray-500 hover:bg-gray-600',
     'E': 'bg-slate-500 hover:bg-slate-600',
     'D': 'bg-green-500 hover:bg-green-600',
-    'C': 'bg-blue-500 hover:bg-blue-600',
-    'B': 'bg-purple-500 hover:bg-purple-600',
-    'A': 'bg-red-500 hover:bg-red-600',
-    'S': 'bg-yellow-500 hover:bg-yellow-600',
+    'C': 'bg-emerald-500 hover:bg-emerald-600',
+    'B': 'bg-amber-500 hover:bg-amber-600',
+    'A': 'bg-orange-500 hover:bg-orange-600',
+    'S': 'bg-red-500 hover:bg-red-600',
   };
 
   return (
