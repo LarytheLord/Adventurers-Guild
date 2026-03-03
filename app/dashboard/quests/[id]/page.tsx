@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, Target, Zap, Users, Clock, CheckCircle, XCircle } from 'lucide-react';
@@ -132,7 +131,6 @@ export default function QuestDetailPage() {
         },
         body: JSON.stringify({
           questId: id,
-          userId: session.user.id,
         }),
       });
 
@@ -174,7 +172,6 @@ export default function QuestDetailPage() {
           assignmentId: assignment.id,
           submissionContent: submissionContent,
           submissionNotes: submissionNotes,
-          userId: session.user.id,
         }),
       });
 
@@ -225,7 +222,9 @@ export default function QuestDetailPage() {
   }
 
   const canAssign = quest.status === 'available' && !isAssigned;
-  const canSubmit = isAssigned && assignment?.status === 'assigned' || assignment?.status === 'started' || assignment?.status === 'in_progress';
+  const canSubmit =
+    !!isAssigned &&
+    ['assigned', 'started', 'in_progress'].includes(assignment?.status || '');
 
   return (
     <div className="container mx-auto py-6 max-w-4xl">
@@ -354,7 +353,7 @@ export default function QuestDetailPage() {
         </Card>
       )}
 
-      {!isAssigned && quest.status === 'available' && (
+      {canAssign && (
         <Card className="mb-6">
           <CardHeader>
             <CardTitle>Accept This Quest</CardTitle>

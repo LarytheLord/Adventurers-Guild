@@ -92,6 +92,20 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    if (
+      typeof body.from_userId !== 'string' ||
+      typeof body.to_userId !== 'string' ||
+      typeof body.questId !== 'string' ||
+      !body.from_userId.trim() ||
+      !body.to_userId.trim() ||
+      !body.questId.trim()
+    ) {
+      return Response.json(
+        { error: 'from_userId, to_userId, and questId must be non-empty strings', success: false },
+        { status: 400 }
+      );
+    }
+
     if (authUser.role !== 'admin' && body.from_userId !== authUser.id) {
       return Response.json(
         { error: 'You can only initiate payments from your own account', success: false },
@@ -121,7 +135,7 @@ export async function POST(request: NextRequest) {
     // Verify that the quest exists and is completed
     const quest = await prisma.quest.findUnique({
       where: { id: body.questId },
-      select: { title: true, status: true, xpReward: true, skillPointsReward: true },
+      select: { title: true, status: true, xpReward: true, skillPointsReward: true, companyId: true },
     });
 
     if (!quest) {
@@ -130,6 +144,50 @@ export async function POST(request: NextRequest) {
 
     if (quest.status !== 'completed') {
       return Response.json({ error: 'Quest must be completed before payment', success: false }, { status: 400 });
+    }
+
+    if (!quest.companyId) {
+      return Response.json({ error: 'Quest is not linked to a company', success: false }, { status: 400 });
+    }
+
+    if (authUser.role !== 'admin' && quest.companyId !== authUser.id) {
+      return Response.json(
+        { error: 'You can only pay for your own quests', success: false },
+        { status: 403 }
+      );
+    }
+
+    if (authUser.role !== 'admin' && body.from_userId !== quest.companyId) {
+      return Response.json(
+        { error: 'from_userId must match the quest owner', success: false },
+        { status: 403 }
+      );
+    }
+
+    const recipient = await prisma.user.findUnique({
+      where: { id: body.to_userId },
+      select: { role: true, isActive: true },
+    });
+
+    if (!recipient || !recipient.isActive || recipient.role !== 'adventurer') {
+      return Response.json({ error: 'Invalid adventurer account', success: false }, { status: 400 });
+    }
+
+    const completionRecord = await prisma.questCompletion.findUnique({
+      where: {
+        questId_userId: {
+          questId: body.questId,
+          userId: body.to_userId,
+        },
+      },
+      select: { id: true },
+    });
+
+    if (!completionRecord) {
+      return Response.json(
+        { error: 'Selected adventurer has not completed this quest', success: false },
+        { status: 400 }
+      );
     }
 
     // Check if a payment already exists for this quest

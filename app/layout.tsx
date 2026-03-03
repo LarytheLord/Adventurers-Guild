@@ -1,6 +1,5 @@
 import type { Metadata, Viewport } from "next"
 import { GeistSans } from "geist/font/sans"
-import { GeistMono } from "geist/font/mono"
 import "./globals.css"
 import "../styles/accessibility.css"
 import { ThemeProvider } from "../components/theme-provider"
@@ -58,7 +57,7 @@ export default function RootLayout({
         <meta name="color-scheme" content="light dark" />
       </head>
       <body
-        className={`${GeistSans.variable} ${GeistMono.variable} font-sans antialiased`}
+        className={`${GeistSans.variable} font-sans antialiased`}
       >
         <A11ySkipLink />
 

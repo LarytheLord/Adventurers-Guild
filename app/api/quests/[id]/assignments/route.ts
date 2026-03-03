@@ -3,12 +3,14 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { AssignmentStatus } from '@prisma/client';
+import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
 
 // GET /api/quests/[id]/assignments — list all assignments for a quest (company/admin only)
 export async function GET(
   req: NextRequest,
   props: { params: Promise<{ id: string }> }
 ) {
+  void req;
   const params = await props.params;
   const session = await getServerSession(authOptions);
   if (!session?.user) {
@@ -93,32 +95,37 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 403 });
     }
 
+    const existingAssignment = await prisma.questAssignment.findUnique({
+      where: { id: assignmentId },
+      select: { questId: true, status: true },
+    });
+
+    if (!existingAssignment || existingAssignment.questId !== params.id) {
+      return NextResponse.json({ error: 'Assignment not found for this quest', success: false }, { status: 404 });
+    }
+
+    if (existingAssignment.status !== 'assigned') {
+      return NextResponse.json(
+        { error: 'Only pending applicants can be accepted or rejected', success: false },
+        { status: 400 }
+      );
+    }
+
     // Map frontend status to DB enum
     const newStatus: AssignmentStatus = status === 'accepted' ? 'started' : 'cancelled';
 
-    const updated = await prisma.questAssignment.update({
-      where: { id: assignmentId },
-      data: {
-        status: newStatus,
-        ...(newStatus === 'started' ? { startedAt: new Date() } : {}),
-      },
-    });
-
-    // If rejected and no other active assignments, revert quest to available
-    if (newStatus === 'cancelled') {
-      const active = await prisma.questAssignment.count({
-        where: {
-          questId: params.id,
-          status: { notIn: ['cancelled', 'completed'] },
+    const updated = await prisma.$transaction(async (tx) => {
+      const assignment = await tx.questAssignment.update({
+        where: { id: assignmentId },
+        data: {
+          status: newStatus,
+          ...(newStatus === 'started' ? { startedAt: new Date() } : {}),
         },
       });
-      if (active === 0) {
-        await prisma.quest.update({
-          where: { id: params.id },
-          data: { status: 'available' },
-        });
-      }
-    }
+
+      await syncQuestLifecycleStatus(tx, params.id);
+      return assignment;
+    });
 
     return NextResponse.json({ assignment: updated, success: true });
   } catch (error) {

@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/api-auth';
 import { prisma } from '@/lib/db';
+import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
 
 const VALID_REVIEW_STATUSES = ['pending', 'under_review', 'approved', 'needs_rework', 'rejected'] as const;
 type ReviewStatus = (typeof VALID_REVIEW_STATUSES)[number];
@@ -200,12 +201,14 @@ export async function POST(request: NextRequest) {
         quest.skillPointsReward
       );
     }
-    else if (status === 'needs_rework') {
+    else if (status === 'needs_rework' || status === 'rejected') {
       await prisma.questAssignment.update({
         where: { id: existingSubmission.assignmentId },
         data: { status: 'in_progress' },
       });
     }
+
+    await syncQuestLifecycleStatus(prisma, existingSubmission.assignment.questId);
 
     return Response.json({ submission: data, success: true });
   } catch (error) {

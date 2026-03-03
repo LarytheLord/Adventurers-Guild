@@ -35,11 +35,11 @@ interface Applicant {
   id: string;
   userId: string;
   status: 'assigned' | 'started' | 'in_progress' | 'submitted' | 'review' | 'completed' | 'cancelled';
-  createdAt: string;
+  assignedAt: string;
   user: {
     name: string;
     email: string;
-    image?: string;
+    avatar?: string;
     rank: string;
     xp: number;
   };
@@ -65,10 +65,16 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
   const [quest, setQuest] = useState<QuestDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [isClosing, setIsClosing] = useState(false);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login');
+      return;
+    }
+
+    if (status === 'authenticated' && session?.user?.role !== 'company' && session.user.role !== 'admin') {
+      router.push('/dashboard');
       return;
     }
 
@@ -93,7 +99,7 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
     if (status === 'authenticated') {
       fetchQuestDetails();
     }
-  }, [id, status, router]);
+  }, [id, status, session, router]);
 
   const handleApplicantAction = async (assignmentId: string, action: 'accepted' | 'rejected') => {
     setProcessingId(assignmentId);
@@ -120,9 +126,37 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
         toast.error(data.error || 'Action failed');
       }
     } catch (error) {
+      console.error('Applicant action error:', error);
       toast.error('Something went wrong');
     } finally {
       setProcessingId(null);
+    }
+  };
+
+  const handleCloseQuest = async () => {
+    if (!quest) return;
+
+    try {
+      setIsClosing(true);
+      const response = await fetch('/api/company/quests', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ questId: quest.id }),
+      });
+
+      const data = await response.json();
+      if (!data.success) {
+        toast.error(data.error || 'Failed to close quest');
+        return;
+      }
+
+      toast.success('Quest closed successfully');
+      router.push('/dashboard/company/quests');
+    } catch (error) {
+      console.error('Close quest error:', error);
+      toast.error('Failed to close quest');
+    } finally {
+      setIsClosing(false);
     }
   };
 
@@ -159,7 +193,7 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
         <div>
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-3xl font-bold">{quest.title}</h1>
-            <Badge variant={quest.status === 'open' ? 'default' : 'secondary'}>
+            <Badge variant={quest.status === 'available' ? 'default' : 'secondary'}>
               {quest.status}
             </Badge>
           </div>
@@ -171,8 +205,16 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">Edit Quest</Button>
-          <Button variant="destructive">Close Quest</Button>
+          <Button variant="outline" onClick={() => toast.info('Quest editing is coming in a follow-up update')}>
+            Edit Quest
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={handleCloseQuest}
+            disabled={isClosing || ['completed', 'cancelled'].includes(quest.status)}
+          >
+            {isClosing ? 'Closing...' : 'Close Quest'}
+          </Button>
         </div>
       </div>
 
@@ -198,7 +240,7 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
                     <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                       <div className="flex items-center gap-4">
                         <Avatar className="h-12 w-12">
-                          <AvatarImage src={applicant.user.image} />
+                          <AvatarImage src={applicant.user.avatar} />
                           <AvatarFallback>{applicant.user.name[0]}</AvatarFallback>
                         </Avatar>
                         <div>
@@ -208,7 +250,7 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
                             <span>• {applicant.user.xp} XP</span>
                           </div>
                           <p className="text-xs text-muted-foreground mt-1">
-                            Applied {new Date(applicant.createdAt).toLocaleDateString()}
+                            Applied {new Date(applicant.assignedAt).toLocaleDateString()}
                           </p>
                         </div>
                       </div>
@@ -238,8 +280,16 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
                             </Button>
                           </>
                         ) : (
-                          <Badge variant={applicant.status === 'started' || applicant.status === 'completed' ? 'default' : 'destructive'}>
-                            {applicant.status.charAt(0).toUpperCase() + applicant.status.slice(1)}
+                          <Badge
+                            variant={
+                              ['started', 'in_progress', 'completed'].includes(applicant.status)
+                                ? 'default'
+                                : ['submitted', 'review'].includes(applicant.status)
+                                  ? 'secondary'
+                                  : 'destructive'
+                            }
+                          >
+                            {applicant.status.replace('_', ' ')}
                           </Badge>
                         )}
                         <DropdownMenu>
@@ -296,13 +346,13 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Accepted</span>
                 <span className="font-bold text-green-600">
-                  {quest.assignments.filter(a => a.status === 'started' || a.status === 'in_progress').length}
+                  {quest.assignments.filter(a => ['started', 'in_progress', 'completed'].includes(a.status)).length}
                 </span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="text-muted-foreground">Pending Review</span>
                 <span className="font-bold text-yellow-600">
-                  {quest.assignments.filter(a => a.status === 'assigned').length}
+                  {quest.assignments.filter(a => ['submitted', 'review'].includes(a.status)).length}
                 </span>
               </div>
             </CardContent>

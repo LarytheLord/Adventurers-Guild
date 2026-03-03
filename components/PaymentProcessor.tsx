@@ -34,6 +34,7 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
   const [error, setError] = useState<string | null>(null);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
+  const [selectedAdventurerId, setSelectedAdventurerId] = useState<string>('');
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -88,21 +89,29 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
   const handleMakePayment = () => {
     if (!quest || !session?.user?.id) return;
     
-    // In a real implementation, we would need the adventurer ID
-    // For now, we'll get it from the assignment
     const processPayment = async () => {
       try {
-        // Find the adventurer who completed this quest
         const assignmentResponse = await fetch(`/api/quests/assignments?questId=${questId}`);
         const assignmentData = await assignmentResponse.json();
         
-        if (!assignmentData.success || assignmentData.assignments.length === 0) {
+        const assignments = Array.isArray(assignmentData.assignments) ? assignmentData.assignments : [];
+        if (!assignmentData.success || assignments.length === 0) {
           setError('No adventurer assigned to this quest');
           return;
         }
-        
-        const adventurerId = assignmentData.assignments[0].userId;
-        
+
+        const preferredAssignment =
+          assignments.find((assignment: { status?: string }) => assignment.status === 'completed') ??
+          assignments.find((assignment: { status?: string }) =>
+            ['submitted', 'review', 'in_progress', 'started', 'assigned'].includes(assignment.status || '')
+          );
+
+        if (!preferredAssignment?.userId) {
+          setError('Could not determine adventurer for payment');
+          return;
+        }
+
+        setSelectedAdventurerId(preferredAssignment.userId);
         setShowPaymentForm(true);
       } catch (err) {
         console.error('Error finding adventurer:', err);
@@ -114,8 +123,10 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
   };
 
   const handlePaymentSuccess = (transactionId: string) => {
+    void transactionId;
     setPaymentSuccess(true);
     setShowPaymentForm(false);
+    setSelectedAdventurerId('');
     
     // Optionally, redirect or update the quest status
     setTimeout(() => {
@@ -125,6 +136,7 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
 
   const handleCancelPayment = () => {
     setShowPaymentForm(false);
+    setSelectedAdventurerId('');
   };
 
   if (status === 'loading' || loading) {
@@ -196,13 +208,13 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
     );
   }
 
-  if (showPaymentForm && quest.monetaryReward) {
+  if (showPaymentForm && quest.monetaryReward && selectedAdventurerId) {
     return (
       <div className="container mx-auto py-6">
         <PaymentForm
           questId={quest.id}
           companyId={session?.user?.id || ''}
-          adventurerId="" // Will be determined in the component
+          adventurerId={selectedAdventurerId}
           amount={quest.monetaryReward}
           currency="USD"
           onSuccess={handlePaymentSuccess}
