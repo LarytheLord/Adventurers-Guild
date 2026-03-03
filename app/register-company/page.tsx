@@ -162,7 +162,7 @@ export default function RegisterCompanyPage() {
             Already have an account?{' '}
             <button 
               onClick={() => router.push('/login')} 
-              className="text-primary hover:underline"
+              className="text-orange-500 hover:text-orange-400 hover:underline"
             >
               Sign in
             </button>
@@ -171,7 +171,7 @@ export default function RegisterCompanyPage() {
             Are you an adventurer?{' '}
             <button 
               onClick={() => router.push('/register')} 
-              className="text-primary hover:underline"
+              className="text-orange-500 hover:text-orange-400 hover:underline"
             >
               Register as adventurer
             </button>
