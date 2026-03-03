@@ -41,11 +41,26 @@ export async function middleware(request: NextRequest) {
 
 async function checkAuthAndRole(request: NextRequest, requiredRoles: UserRole[]) {
   try {
-    // Get the token from the request
-    const token = await getToken({ 
-      req: request,
-      secret: process.env.NEXTAUTH_SECRET,
-    });
+    const secret = process.env.NEXTAUTH_SECRET;
+    if (!secret) {
+      throw new Error('NEXTAUTH_SECRET is not configured');
+    }
+
+    // Try all common cookie modes to avoid secure-cookie mismatches on Edge.
+    const token =
+      (await getToken({ req: request, secret })) ??
+      (await getToken({ req: request, secret, secureCookie: true })) ??
+      (await getToken({ req: request, secret, secureCookie: false })) ??
+      (await getToken({
+        req: request,
+        secret,
+        cookieName: '__Secure-next-auth.session-token',
+      })) ??
+      (await getToken({
+        req: request,
+        secret,
+        cookieName: 'next-auth.session-token',
+      }));
     
     if (!token) {
       if (process.env.NODE_ENV === 'development') {
