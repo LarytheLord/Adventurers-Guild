@@ -32,7 +32,7 @@ interface Quest {
   companyId: string;
   createdAt: string;
   deadline?: string;
-  users: {
+  company?: {
     name: string;
     email: string;
   };
@@ -88,7 +88,12 @@ export default function QuestDetailPage() {
           return;
         }
 
-        setQuest(questData.quests[0] || questData.quest);
+        const normalizedQuest = questData.quest ?? questData.quests?.[0] ?? null;
+        if (!normalizedQuest) {
+          setError('Quest details not found');
+          return;
+        }
+        setQuest(normalizedQuest);
 
         // Fetch user's assignment for this quest
         if (session?.user?.id) {
@@ -239,7 +244,7 @@ export default function QuestDetailPage() {
                 <Badge variant="outline">{quest.difficulty}-Rank</Badge>
               </div>
               <CardDescription>
-                Posted by {quest.users?.name || 'Unknown Company'}
+                Posted by {quest.company?.name || 'Unknown Company'}
               </CardDescription>
             </div>
             <div className="flex flex-wrap gap-2">

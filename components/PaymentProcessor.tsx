@@ -54,16 +54,19 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
 
         const response = await fetch(`/api/quests/${questId}`);
         const data = await response.json();
+        const questData = data.quest ?? data.quests?.[0];
 
-        if (!data.success || !data.quests?.[0]) {
+        if (!data.success || !questData) {
           setError(data.error || 'Failed to fetch quest');
           return;
         }
-
-        const questData = data.quests[0];
         
         // Verify user has permission to pay for this quest
-        if (session?.user?.role !== 'admin' && questData.company_id !== session?.user?.id) {
+        if (
+          session?.user?.role !== 'admin' &&
+          questData.companyId !== session?.user?.id &&
+          questData.company_id !== session?.user?.id
+        ) {
           setError('Unauthorized to make payment for this quest');
           return;
         }

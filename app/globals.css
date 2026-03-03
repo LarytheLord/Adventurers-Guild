@@ -90,6 +90,63 @@
   .section-alt {
     @apply bg-slate-50/60;
   }
+
+  .guild-page {
+    @apply mx-auto w-full max-w-7xl space-y-6;
+  }
+
+  .guild-hero {
+    @apply relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_20px_40px_-30px_rgba(15,23,42,0.45)] sm:p-8;
+  }
+
+  .guild-panel {
+    @apply rounded-2xl border border-slate-200/80 bg-white/95 shadow-[0_20px_40px_-34px_rgba(15,23,42,0.55)];
+  }
+
+  .guild-kpi {
+    @apply rounded-xl border border-slate-200/80 bg-white p-4 shadow-[0_12px_30px_-24px_rgba(15,23,42,0.7)];
+  }
+
+  .guild-chip {
+    @apply inline-flex items-center gap-1 rounded-full border border-slate-300 bg-slate-100 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600;
+  }
+
+  .guild-list-item {
+    @apply rounded-xl border border-slate-200/80 bg-white/90 p-3 transition-colors hover:bg-slate-50;
+  }
+}
+
+.guild-shell {
+  position: relative;
+  background:
+    radial-gradient(circle at 12% 8%, rgba(251, 146, 60, 0.18), transparent 34%),
+    radial-gradient(circle at 90% 0%, rgba(14, 165, 233, 0.14), transparent 28%),
+    linear-gradient(180deg, #f8fafc 0%, #f8fafc 42%, #eef2ff 100%);
+  min-height: 100vh;
+}
+
+.guild-hero::before {
+  content: "";
+  position: absolute;
+  right: -90px;
+  top: -110px;
+  width: 260px;
+  height: 260px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(249, 115, 22, 0.2) 0%, rgba(249, 115, 22, 0) 72%);
+  pointer-events: none;
+}
+
+.guild-hero::after {
+  content: "";
+  position: absolute;
+  left: -80px;
+  bottom: -120px;
+  width: 240px;
+  height: 240px;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.14) 0%, rgba(59, 130, 246, 0) 72%);
+  pointer-events: none;
 }
 
 /* Scrollbar */
