@@ -11,8 +11,8 @@ const footerLinks = {
     { label: 'Sign In', href: '/login' },
   ],
   resources: [
-    { label: 'How It Works', href: '/#how-it-works' },
-    { label: 'Features', href: '/#features' },
+    { label: 'How It Works', href: '/home#how-it-works' },
+    { label: 'Features', href: '/home#features' },
     { label: 'FAQ', href: '/faq' },
   ],
   legal: [
