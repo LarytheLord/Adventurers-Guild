@@ -28,6 +28,12 @@ export default function Navigation() {
 
   const isHome = pathname === '/home' || pathname === '/';
   const isDashboard = pathname?.startsWith('/dashboard') || pathname === '/admin';
+  const isAuthPage =
+    pathname === '/login' ||
+    pathname === '/register' ||
+    pathname === '/register-company' ||
+    pathname === '/forgot-password' ||
+    pathname === '/reset-password';
 
   useEffect(() => {
     setMounted(true);
@@ -44,8 +50,8 @@ export default function Navigation() {
     setMobileMenuOpen(false);
   }, [pathname]);
 
-  // Dashboard and admin have their own navigation systems
-  if (isDashboard || !mounted) return null;
+  // Dashboard and auth screens have dedicated layouts
+  if (isDashboard || isAuthPage || !mounted) return null;
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: '/home' });

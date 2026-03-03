@@ -19,14 +19,15 @@ export const authOptions: AuthOptions = {
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
+        const normalizedEmail = credentials.email.trim().toLowerCase();
 
         // Find user by email
         const user = await prisma.user.findUnique({
-          where: { email: credentials.email },
+          where: { email: normalizedEmail },
         });
 
         if (!user) {
-          if (process.env.NODE_ENV === 'development') console.log('[Auth] User not found:', credentials.email);
+          if (process.env.NODE_ENV === 'development') console.log('[Auth] User not found:', normalizedEmail);
           return null;
         }
 

@@ -1,35 +1,71 @@
-// app/api/mentorship/route.ts
 import { NextRequest } from 'next/server';
+import { getAuthUser } from '@/lib/api-auth';
 import { prisma } from '@/lib/db';
+
+const MAX_LIMIT = 50;
+const VALID_STATUSES = ['active', 'pending', 'completed', 'cancelled'] as const;
+const VALID_ACTIONS = ['approve', 'reject', 'complete', 'terminate'] as const;
+
+type MentorshipStatus = (typeof VALID_STATUSES)[number];
+type MentorshipAction = (typeof VALID_ACTIONS)[number];
+
+function toSafeInt(rawValue: string | null, fallback: number, min = 0, max = MAX_LIMIT) {
+  const parsed = Number.parseInt(rawValue ?? '', 10);
+  if (Number.isNaN(parsed)) return fallback;
+  return Math.min(Math.max(parsed, min), max);
+}
+
+function parseDate(value: unknown) {
+  if (typeof value !== 'string') return null;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function parseGoals(value: unknown) {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((item): item is string => typeof item === 'string')
+    .map((goal) => goal.trim())
+    .filter((goal) => goal.length > 0);
+}
 
 export async function GET(request: NextRequest) {
   try {
-    // Parse query parameters
-    const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-    const role = searchParams.get('role'); // 'mentor' or 'mentee'
-    const status = searchParams.get('status'); // 'active', 'pending', 'completed', 'cancelled'
-    const limit = searchParams.get('limit') || '10';
-    const offset = searchParams.get('offset') || '0';
-
-    // Validate user ID is provided
-    if (!userId) {
-      return Response.json({ error: 'User ID is required', success: false }, { status: 400 });
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
-    // Build where clause based on role
+    const { searchParams } = new URL(request.url);
+    const requestedUserId = searchParams.get('userId');
+    const role = searchParams.get('role'); // mentor | mentee
+    const status = searchParams.get('status');
+    const limit = toSafeInt(searchParams.get('limit'), 10, 1, MAX_LIMIT);
+    const offset = toSafeInt(searchParams.get('offset'), 0, 0, 10000);
+
+    if (requestedUserId && authUser.role !== 'admin' && requestedUserId !== authUser.id) {
+      return Response.json({ error: 'Forbidden', success: false }, { status: 403 });
+    }
+
+    if (role && role !== 'mentor' && role !== 'mentee') {
+      return Response.json({ error: 'Invalid role filter', success: false }, { status: 400 });
+    }
+
+    if (status && !VALID_STATUSES.includes(status as MentorshipStatus)) {
+      return Response.json({ error: 'Invalid status filter', success: false }, { status: 400 });
+    }
+
+    const targetUserId =
+      authUser.role === 'admin' && requestedUserId ? requestedUserId : authUser.id;
+
     const whereClause: Record<string, unknown> = {};
 
     if (role === 'mentor') {
-      whereClause.mentorId = userId;
+      whereClause.mentorId = targetUserId;
     } else if (role === 'mentee') {
-      whereClause.menteeId = userId;
+      whereClause.menteeId = targetUserId;
     } else {
-      // If no role specified, show relationships where user is either mentor or mentee
-      whereClause.OR = [
-        { mentorId: userId },
-        { menteeId: userId },
-      ];
+      whereClause.OR = [{ mentorId: targetUserId }, { menteeId: targetUserId }];
     }
 
     if (status) {
@@ -71,8 +107,8 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: { createdAt: 'desc' },
-      skip: parseInt(offset),
-      take: parseInt(limit),
+      skip: offset,
+      take: limit,
     });
 
     return Response.json({ mentorships: data, success: true });
@@ -84,77 +120,96 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-
-    // Validate required fields
-    const requiredFields = ['mentorId', 'menteeId', 'goals'];
-    for (const field of requiredFields) {
-      if (!body[field]) {
-        return Response.json({ error: `${field} is required`, success: false }, { status: 400 });
-      }
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
-    // Check if users exist and validate roles
-    const mentor = await prisma.user.findUnique({
-      where: { id: body.mentorId },
-      select: { id: true, name: true, role: true, rank: true, xp: true },
-    });
+    const body = (await request.json()) as Record<string, unknown>;
+    const mentorId = typeof body.mentorId === 'string' ? body.mentorId : '';
+    const menteeId = typeof body.menteeId === 'string' ? body.menteeId : '';
+    const goals = parseGoals(body.goals);
 
+    if (!mentorId || !menteeId) {
+      return Response.json(
+        { error: 'mentorId and menteeId are required', success: false },
+        { status: 400 }
+      );
+    }
+    if (mentorId === menteeId) {
+      return Response.json(
+        { error: 'Mentor and mentee must be different users', success: false },
+        { status: 400 }
+      );
+    }
+    if (goals.length === 0) {
+      return Response.json({ error: 'At least one goal is required', success: false }, { status: 400 });
+    }
+    if (authUser.role !== 'admin' && authUser.id !== mentorId && authUser.id !== menteeId) {
+      return Response.json({ error: 'Forbidden', success: false }, { status: 403 });
+    }
+
+    const mentor = await prisma.user.findUnique({
+      where: { id: mentorId },
+      select: { id: true, name: true, role: true },
+    });
     if (!mentor || mentor.role !== 'adventurer') {
       return Response.json({ error: 'Invalid mentor user', success: false }, { status: 400 });
     }
 
     const mentee = await prisma.user.findUnique({
-      where: { id: body.menteeId },
-      select: { id: true, name: true, role: true, rank: true, xp: true },
+      where: { id: menteeId },
+      select: { id: true, role: true },
     });
-
     if (!mentee || mentee.role !== 'adventurer') {
       return Response.json({ error: 'Invalid mentee user', success: false }, { status: 400 });
     }
 
-    // Check if a mentorship already exists between these users
     const existingMentorship = await prisma.mentorship.findMany({
       where: {
         OR: [
-          { mentorId: body.mentorId, menteeId: body.menteeId },
-          { mentorId: body.menteeId, menteeId: body.mentorId },
+          { mentorId, menteeId },
+          { mentorId: menteeId, menteeId: mentorId },
         ],
         status: { in: ['active', 'pending'] },
       },
       select: { id: true },
     });
 
-    if (existingMentorship && existingMentorship.length > 0) {
-      return Response.json({
-        error: 'A mentorship already exists between these users',
-        success: false
-      }, { status: 400 });
+    if (existingMentorship.length > 0) {
+      return Response.json(
+        { error: 'A mentorship already exists between these users', success: false },
+        { status: 400 }
+      );
     }
 
-    // Create the mentorship request
+    const startDate = parseDate(body.startDate) ?? new Date();
+    const endDate = body.endDate === null ? null : parseDate(body.endDate);
+    if (body.endDate && !endDate) {
+      return Response.json({ error: 'Invalid endDate', success: false }, { status: 400 });
+    }
+
     const data = await prisma.mentorship.create({
       data: {
-        mentorId: body.mentorId,
-        menteeId: body.menteeId,
-        goals: body.goals,
-        status: 'pending', // Start as pending for mentee approval
-        startDate: body.startDate ? new Date(body.startDate) : new Date(),
-        endDate: body.endDate ? new Date(body.endDate) : null,
+        mentorId,
+        menteeId,
+        goals,
+        status: 'pending',
+        startDate,
+        endDate,
         progress: 0,
       },
     });
 
-    // Send notification to mentee about the mentorship request
     try {
       await prisma.notification.create({
         data: {
-          userId: body.menteeId,
+          userId: menteeId,
           title: 'Mentorship Request',
-          message: `${mentor.name} has requested to be your mentor. Review the request in your mentorship dashboard.`,
+          message: `${mentor.name ?? 'A user'} has requested to be your mentor. Review the request in your mentorship dashboard.`,
           type: 'mentorship_request',
           data: {
-            mentorId: body.mentorId,
+            mentorId,
             mentorName: mentor.name,
             mentorshipId: data.id,
           },
@@ -173,15 +228,22 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { mentorshipId, current_userId, action, ...updateFields } = body;
-
-    // Validate required fields
-    if (!mentorshipId || !current_userId) {
-      return Response.json({ error: 'Mentorship ID and User ID are required', success: false }, { status: 400 });
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
-    // Get current mentorship
+    const body = (await request.json()) as Record<string, unknown>;
+    const mentorshipId = typeof body.mentorshipId === 'string' ? body.mentorshipId : '';
+    const action =
+      typeof body.action === 'string' && VALID_ACTIONS.includes(body.action as MentorshipAction)
+        ? (body.action as MentorshipAction)
+        : null;
+
+    if (!mentorshipId) {
+      return Response.json({ error: 'Mentorship ID is required', success: false }, { status: 400 });
+    }
+
     const mentorship = await prisma.mentorship.findUnique({
       where: { id: mentorshipId },
       select: { mentorId: true, menteeId: true, status: true },
@@ -191,56 +253,70 @@ export async function PUT(request: NextRequest) {
       return Response.json({ error: 'Mentorship not found', success: false }, { status: 404 });
     }
 
-    // Check permissions based on action
-    let canUpdate = false;
-    if (action === 'approve') {
-      // Only mentee can approve a pending request
-      canUpdate = current_userId === mentorship.menteeId && mentorship.status === 'pending';
-    } else if (action === 'reject') {
-      // Only mentee can reject a pending request
-      canUpdate = current_userId === mentorship.menteeId && mentorship.status === 'pending';
-    } else if (action === 'complete') {
-      // Either mentor or mentee can complete an active mentorship
-      canUpdate = (current_userId === mentorship.mentorId || current_userId === mentorship.menteeId) &&
-                  mentorship.status === 'active';
-    } else if (action === 'terminate') {
-      // Either mentor or mentee can terminate an active mentorship
-      canUpdate = (current_userId === mentorship.mentorId || current_userId === mentorship.menteeId) &&
-                  mentorship.status === 'active';
-    } else {
-      // For general updates, only the mentor or mentee can update
-      canUpdate = current_userId === mentorship.mentorId || current_userId === mentorship.menteeId;
+    const currentUserId = authUser.id;
+    let canUpdate = authUser.role === 'admin';
+    if (!canUpdate) {
+      if (action === 'approve' || action === 'reject') {
+        canUpdate = currentUserId === mentorship.menteeId && mentorship.status === 'pending';
+      } else if (action === 'complete' || action === 'terminate') {
+        canUpdate =
+          (currentUserId === mentorship.mentorId || currentUserId === mentorship.menteeId) &&
+          mentorship.status === 'active';
+      } else {
+        canUpdate = currentUserId === mentorship.mentorId || currentUserId === mentorship.menteeId;
+      }
     }
 
     if (!canUpdate) {
-      return Response.json({ error: 'Unauthorized to perform this action', success: false }, { status: 403 });
+      return Response.json(
+        { error: 'Unauthorized to perform this action', success: false },
+        { status: 403 }
+      );
     }
 
-    // Prepare the update based on action
-    let updateData: Record<string, unknown> = {};
-
+    const updateData: Record<string, unknown> = {};
     if (action === 'approve') {
-      updateData = { status: 'active', startDate: new Date() };
+      updateData.status = 'active';
+      updateData.startDate = new Date();
     } else if (action === 'reject') {
-      updateData = { status: 'cancelled' };
+      updateData.status = 'cancelled';
     } else if (action === 'complete') {
-      updateData = { status: 'completed', endDate: new Date() };
+      updateData.status = 'completed';
+      updateData.endDate = new Date();
     } else if (action === 'terminate') {
-      updateData = { status: 'cancelled', endDate: new Date() };
+      updateData.status = 'cancelled';
+      updateData.endDate = new Date();
     } else {
-      // General updates
-      updateData = updateFields;
+      const goals = parseGoals(body.goals);
+      if (goals.length > 0) {
+        updateData.goals = goals;
+      }
+
+      if (typeof body.progress === 'number') {
+        updateData.progress = Math.min(Math.max(body.progress, 0), 100);
+      }
+
+      if (body.endDate === null) {
+        updateData.endDate = null;
+      } else if (body.endDate !== undefined) {
+        const parsedEndDate = parseDate(body.endDate);
+        if (!parsedEndDate) {
+          return Response.json({ error: 'Invalid endDate', success: false }, { status: 400 });
+        }
+        updateData.endDate = parsedEndDate;
+      }
     }
 
-    // Update the mentorship
+    if (Object.keys(updateData).length === 0) {
+      return Response.json({ error: 'No valid fields to update', success: false }, { status: 400 });
+    }
+
     const data = await prisma.mentorship.update({
       where: { id: mentorshipId },
       data: updateData,
     });
 
-    // If approving, notify the mentor
     if (action === 'approve') {
-      // Fetch mentee name for notification
       const menteeData = await prisma.user.findUnique({
         where: { id: mentorship.menteeId },
         select: { name: true },
@@ -274,15 +350,17 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { mentorshipId, current_userId } = body;
-
-    // Validate required fields
-    if (!mentorshipId || !current_userId) {
-      return Response.json({ error: 'Mentorship ID and User ID are required', success: false }, { status: 400 });
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
-    // Get current mentorship
+    const body = (await request.json()) as Record<string, unknown>;
+    const mentorshipId = typeof body.mentorshipId === 'string' ? body.mentorshipId : '';
+    if (!mentorshipId) {
+      return Response.json({ error: 'Mentorship ID is required', success: false }, { status: 400 });
+    }
+
     const mentorship = await prisma.mentorship.findUnique({
       where: { id: mentorshipId },
       select: { mentorId: true, menteeId: true, status: true },
@@ -292,20 +370,22 @@ export async function DELETE(request: NextRequest) {
       return Response.json({ error: 'Mentorship not found', success: false }, { status: 404 });
     }
 
-    // Only allow deletion for cancelled or completed mentorships
-    if (mentorship.status !== 'cancelled' && mentorship.status !== 'completed') {
-      return Response.json({
-        error: 'Can only delete cancelled or completed mentorships',
-        success: false
-      }, { status: 400 });
-    }
-
-    // Check if current user is part of the mentorship
-    if (current_userId !== mentorship.mentorId && current_userId !== mentorship.menteeId) {
+    const isParticipant = authUser.id === mentorship.mentorId || authUser.id === mentorship.menteeId;
+    if (authUser.role !== 'admin' && !isParticipant) {
       return Response.json({ error: 'Unauthorized', success: false }, { status: 403 });
     }
 
-    // Delete the mentorship
+    if (
+      authUser.role !== 'admin' &&
+      mentorship.status !== 'cancelled' &&
+      mentorship.status !== 'completed'
+    ) {
+      return Response.json(
+        { error: 'Can only delete cancelled or completed mentorships', success: false },
+        { status: 400 }
+      );
+    }
+
     await prisma.mentorship.delete({
       where: { id: mentorshipId },
     });

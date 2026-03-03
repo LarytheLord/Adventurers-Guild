@@ -3,9 +3,60 @@ export const runtime = 'nodejs';
 import { NextRequest, NextResponse } from 'next/server'
 import nodemailer from 'nodemailer'
 
+const RATE_LIMIT_WINDOW_MS = 60 * 1000
+const RATE_LIMIT_MAX_REQUESTS = 5
+
+type RateEntry = {
+    count: number
+    resetAt: number
+}
+
+const globalRateStore = globalThis as unknown as {
+    waitlistRateLimit?: Map<string, RateEntry>
+}
+
+const waitlistRateLimit = globalRateStore.waitlistRateLimit ?? new Map<string, RateEntry>()
+if (!globalRateStore.waitlistRateLimit) {
+    globalRateStore.waitlistRateLimit = waitlistRateLimit
+}
+
+function isRateLimited(key: string) {
+    const now = Date.now()
+    const entry = waitlistRateLimit.get(key)
+    if (!entry || now > entry.resetAt) {
+        waitlistRateLimit.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS })
+        return false
+    }
+    entry.count += 1
+    waitlistRateLimit.set(key, entry)
+    return entry.count > RATE_LIMIT_MAX_REQUESTS
+}
+
+function isValidEmail(email: string) {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+}
+
 export async function POST(request: NextRequest) {
     try {
         const { name, email } = await request.json()
+        const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : ''
+
+        if (!normalizedEmail || !isValidEmail(normalizedEmail)) {
+            return NextResponse.json({
+                message: 'A valid email is required',
+                success: false
+            }, { status: 400 })
+        }
+
+        const forwardedFor = request.headers.get('x-forwarded-for')
+        const ip = forwardedFor?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown'
+        const rateKey = `${ip}:${normalizedEmail}`
+        if (isRateLimited(rateKey)) {
+            return NextResponse.json({
+                message: 'Too many requests. Please try again later.',
+                success: false
+            }, { status: 429 })
+        }
 
         // Validate required environment variables
         if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
@@ -33,9 +84,13 @@ export async function POST(request: NextRequest) {
             greetingTimeout: 30000, // 30 seconds
             socketTimeout: 60000, // 60 seconds
             // Additional options for better reliability
-            tls: {
-                rejectUnauthorized: false
-            }
+            ...(process.env.SMTP_TLS_INSECURE === 'true'
+                ? {
+                    tls: {
+                        rejectUnauthorized: false
+                    }
+                }
+                : {})
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         } as any)
 
@@ -54,7 +109,7 @@ export async function POST(request: NextRequest) {
         // Welcome email to the user
         const welcomeEmail = {
             from: `"The Adventurers Guild" <${process.env.SMTP_USER}>`,
-            to: email,
+            to: normalizedEmail,
             replyTo: process.env.SMTP_USER,
             subject: '🛡️ You\'ve Joined the Waitlist – Your Quest Board Access is Near!',
             html: `
