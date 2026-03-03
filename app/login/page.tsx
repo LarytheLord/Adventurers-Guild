@@ -35,6 +35,7 @@ export default function LoginPage() {
       const result = await signIn('credentials', {
         email,
         password,
+        callbackUrl: '/dashboard',
         redirect: false,
       });
 
@@ -42,7 +43,11 @@ export default function LoginPage() {
         toast.error('Invalid email or password');
       } else {
         toast.success('Logged in successfully');
-        router.push('/dashboard');
+        if (result?.url) {
+          window.location.assign(result.url);
+          return;
+        }
+        router.replace('/dashboard');
         router.refresh();
       }
     } catch {
