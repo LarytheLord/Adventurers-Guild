@@ -26,14 +26,6 @@ export default function HomePage() {
     }
   }, [status, session, router]);
 
-  if (status === 'loading') {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-black">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-400" />
-      </div>
-    );
-  }
-
   return (
     <>
       {/* Hero with game HUD overlays */}
@@ -101,11 +93,21 @@ export default function HomePage() {
         </div>
       </div>
 
-      <StatsSection />
-      <QuestShowcase />
-      <BentoGrid />
-      <HowItWorks />
-      <CTASection />
+      <section id="features">
+        <StatsSection />
+      </section>
+      <section id="quests">
+        <QuestShowcase />
+      </section>
+      <section id="experience">
+        <BentoGrid />
+      </section>
+      <section id="how-it-works">
+        <HowItWorks />
+      </section>
+      <section id="join">
+        <CTASection />
+      </section>
     </>
   );
 }
