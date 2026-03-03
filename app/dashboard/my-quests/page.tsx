@@ -16,6 +16,10 @@ export default async function MyQuestsPage() {
     redirect("/login");
   }
 
+  if (session.user.role === 'company') {
+    redirect('/dashboard/company');
+  }
+
   // Fetch user's assignments
   const assignments = await prisma.questAssignment.findMany({
     where: {
@@ -48,7 +52,7 @@ export default async function MyQuestsPage() {
               <h3 className="text-lg font-semibold mb-2">No quests found</h3>
               <p className="text-muted-foreground mb-4">You haven&apos;t accepted any quests yet.</p>
               <Button asChild>
-                <Link href="/quests">Find Quests</Link>
+                <Link href="/dashboard/quests">Find Quests</Link>
               </Button>
             </CardContent>
           </Card>

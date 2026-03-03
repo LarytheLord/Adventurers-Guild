@@ -51,6 +51,11 @@ export async function GET(request: NextRequest) {
             email: true,
           },
         },
+        _count: {
+          select: {
+            assignments: true,
+          },
+        },
       },
       skip: parseInt(offset),
       take: parseInt(limit),

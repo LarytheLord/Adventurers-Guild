@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,18 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Target, Zap, Users, Clock, Search, ExternalLink, Plus } from 'lucide-react';
+import {
+  AlertCircle,
+  ArrowRight,
+  Briefcase,
+  Clock,
+  Plus,
+  Search,
+  Sparkles,
+  Target,
+  Users,
+  Zap,
+} from 'lucide-react';
 import Link from 'next/link';
 
 interface Quest {
@@ -28,10 +39,26 @@ interface Quest {
   companyId: string;
   createdAt: string;
   deadline?: string;
-  users: {
-    name: string;
-    email: string;
+  _count?: {
+    assignments?: number;
   };
+}
+
+function statusClass(status: string) {
+  switch (status) {
+    case 'available':
+      return 'bg-emerald-100 text-emerald-700 border-emerald-300';
+    case 'in_progress':
+      return 'bg-sky-100 text-sky-700 border-sky-300';
+    case 'review':
+      return 'bg-amber-100 text-amber-700 border-amber-300';
+    case 'completed':
+      return 'bg-violet-100 text-violet-700 border-violet-300';
+    case 'cancelled':
+      return 'bg-rose-100 text-rose-700 border-rose-300';
+    default:
+      return 'bg-slate-100 text-slate-700 border-slate-300';
+  }
 }
 
 export default function CompanyQuestsPage() {
@@ -49,7 +76,6 @@ export default function CompanyQuestsPage() {
     }
 
     if (status === 'authenticated' && session?.user?.role !== 'company' && session.user.role !== 'admin') {
-      // Only companies and admins can access this page
       router.push('/dashboard');
       return;
     }
@@ -59,8 +85,7 @@ export default function CompanyQuestsPage() {
         setLoading(true);
         setError(null);
 
-        // Fetch quests for the current company
-        const response = await fetch('/api/company/quests');
+        const response = await fetch('/api/company/quests?limit=80');
         const data = await response.json();
 
         if (!data.success) {
@@ -68,7 +93,7 @@ export default function CompanyQuestsPage() {
           return;
         }
 
-        setQuests(data.quests || data.quest);
+        setQuests(data.quests || []);
       } catch (err) {
         console.error('Error fetching company quests:', err);
         setError('An error occurred while fetching quests');
@@ -82,24 +107,30 @@ export default function CompanyQuestsPage() {
     }
   }, [status, session, router]);
 
-  const filteredQuests = quests.filter(quest =>
-    quest.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    quest.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    quest.questCategory.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    quest.status.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredQuests = useMemo(
+    () =>
+      quests.filter((quest) =>
+        [quest.title, quest.description, quest.questCategory, quest.status]
+          .join(' ')
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())
+      ),
+    [quests, searchTerm]
   );
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="guild-page">
+        <div className="guild-panel flex min-h-[320px] items-center justify-center">
+          <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary" />
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="container mx-auto py-6">
+      <div className="guild-page">
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
@@ -108,126 +139,157 @@ export default function CompanyQuestsPage() {
     );
   }
 
-  return (
-    <div className="container mx-auto py-6 max-w-6xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Your Quests</h1>
-        <p className="text-muted-foreground mt-1">
-          Manage and track the quests you&apos;ve posted for adventurers
-        </p>
-      </div>
+  const activeQuests = filteredQuests.filter((quest) => ['available', 'in_progress', 'review'].includes(quest.status)).length;
+  const completedQuests = filteredQuests.filter((quest) => quest.status === 'completed').length;
 
-      <div className="mb-6">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-            <Input
-              placeholder="Search quests by title, category, or status..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
+  return (
+    <div className="guild-page">
+      <section className="guild-hero">
+        <div className="relative z-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <Badge className="rounded-full border border-sky-300 bg-sky-100 text-sky-700">
+              Company Quest Operations
+            </Badge>
+            <h1 className="mt-3 text-3xl font-bold text-slate-900 sm:text-4xl">Your Quests</h1>
+            <p className="mt-2 max-w-2xl text-sm text-slate-600 sm:text-base">
+              Manage every quest lifecycle from posting to completion.
+            </p>
           </div>
-          <div className="flex gap-2">
-            <Button onClick={() => router.push('/dashboard/company')}>
-              ← Back to Dashboard
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" asChild>
+              <Link href="/dashboard/company">
+                Back to Dashboard
+                <ArrowRight className="h-4 w-4" />
+              </Link>
             </Button>
-            <Button onClick={() => router.push('/dashboard/company/create-quest')}>
-              <Plus className="w-4 h-4 mr-2" />
-              Create Quest
+            <Button asChild>
+              <Link href="/dashboard/company/create-quest">
+                <Plus className="h-4 w-4" />
+                Create Quest
+              </Link>
             </Button>
           </div>
         </div>
-      </div>
+      </section>
+
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <article className="guild-kpi sm:col-span-2 xl:col-span-1">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Total Quests</p>
+          <p className="mt-2 text-2xl font-bold text-slate-900">{filteredQuests.length}</p>
+          <p className="mt-1 text-xs text-slate-500">In your current workspace</p>
+        </article>
+        <article className="guild-kpi">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Active</p>
+            <Target className="h-4 w-4 text-emerald-500" />
+          </div>
+          <p className="mt-2 text-2xl font-bold text-slate-900">{activeQuests}</p>
+          <p className="mt-1 text-xs text-slate-500">Open, in progress, or review</p>
+        </article>
+        <article className="guild-kpi">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Completed</p>
+            <Sparkles className="h-4 w-4 text-violet-500" />
+          </div>
+          <p className="mt-2 text-2xl font-bold text-slate-900">{completedQuests}</p>
+          <p className="mt-1 text-xs text-slate-500">Delivered successfully</p>
+        </article>
+        <article className="guild-kpi">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Recruitment Focus</p>
+            <Briefcase className="h-4 w-4 text-sky-500" />
+          </div>
+          <p className="mt-2 text-2xl font-bold text-slate-900">
+            {filteredQuests.filter((quest) => (quest._count?.assignments ?? 0) === 0).length}
+          </p>
+          <p className="mt-1 text-xs text-slate-500">Quests needing applicants</p>
+        </article>
+      </section>
+
+      <section className="guild-panel p-4 sm:p-5">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+          <Input
+            placeholder="Search by title, category, or status"
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            className="pl-9"
+          />
+        </div>
+      </section>
 
       {filteredQuests.length === 0 ? (
-        <div className="text-center py-12">
-          <Target className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-xl font-medium mb-2">No quests yet</h3>
-          <p className="text-muted-foreground mb-4">
-            You haven&apos;t posted any quests yet. Create your first quest to get started.
-          </p>
-          <Button onClick={() => router.push('/dashboard/company/create-quest')}>
-            <Plus className="w-4 h-4 mr-2" />
-            Create Your First Quest
+        <section className="guild-panel p-12 text-center">
+          <Target className="mx-auto mb-4 h-14 w-14 text-slate-400" />
+          <h3 className="text-xl font-semibold text-slate-900">No quests found</h3>
+          <p className="mt-2 text-sm text-slate-500">Create your first quest to start attracting adventurers.</p>
+          <Button className="mt-4" asChild>
+            <Link href="/dashboard/company/create-quest">
+              <Plus className="h-4 w-4" />
+              Create Quest
+            </Link>
           </Button>
-        </div>
+        </section>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filteredQuests.map((quest) => (
-            <Card key={quest.id} className="flex flex-col h-full">
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div>
-                    <CardTitle className="text-xl">{quest.title}</CardTitle>
+            <Card key={quest.id} className="guild-panel border-slate-200/80">
+              <CardHeader className="space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <CardTitle className="line-clamp-2 text-lg">{quest.title}</CardTitle>
                     <CardDescription>
                       Created on {new Date(quest.createdAt).toLocaleDateString()}
                     </CardDescription>
                   </div>
-                  <Badge className={`
-                    ${quest.status === 'available' ? 'bg-green-500' : 
-                      quest.status === 'in_progress' ? 'bg-yellow-500' : 
-                      quest.status === 'completed' ? 'bg-blue-500' : 
-                      quest.status === 'draft' ? 'bg-gray-500' : 
-                      quest.status === 'cancelled' ? 'bg-red-500' : 
-                      'bg-gray-500'}
-                  `}>
-                    {quest.status.charAt(0).toUpperCase() + quest.status.slice(1)}
+                  <Badge variant="outline" className={statusClass(quest.status)}>
+                    {quest.status.replace('_', ' ')}
                   </Badge>
                 </div>
-                <div className="flex flex-wrap gap-2 mt-2">
-                  <Badge variant="secondary">{quest.questCategory}</Badge>
+                <div className="flex flex-wrap gap-2">
+                  <Badge variant="secondary" className="capitalize">{quest.questCategory}</Badge>
                   <Badge variant="outline">{quest.difficulty}-Rank</Badge>
                 </div>
               </CardHeader>
-              <CardContent className="flex flex-col flex-grow">
-                <p className="text-muted-foreground mb-4 line-clamp-2">
-                  {quest.description}
-                </p>
-                
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div className="flex items-center">
-                    <Zap className="w-4 h-4 mr-2 text-yellow-500" />
-                    <span className="text-sm">{quest.xpReward} XP</span>
+              <CardContent>
+                <p className="line-clamp-2 text-sm text-slate-600">{quest.description}</p>
+
+                <div className="mt-4 grid grid-cols-2 gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs">
+                  <div className="flex items-center gap-1 text-slate-700">
+                    <Zap className="h-3.5 w-3.5 text-amber-500" />
+                    {quest.xpReward} XP
                   </div>
-                  <div className="flex items-center">
-                    <Target className="w-4 h-4 mr-2 text-blue-500" />
-                    <span className="text-sm">{quest.skillPointsReward} SP</span>
-                  </div>
+                  <div className="text-slate-700">{quest.skillPointsReward} SP</div>
+                  {(quest._count?.assignments ?? 0) > 0 && (
+                    <div className="col-span-2 flex items-center gap-1 text-slate-600">
+                      <Users className="h-3.5 w-3.5" />
+                      {quest._count?.assignments} applicant(s)
+                    </div>
+                  )}
                   {quest.monetaryReward && (
-                    <div className="flex items-center col-span-2">
-                      <span className="text-sm font-medium">${quest.monetaryReward}</span>
+                    <div className="col-span-2 font-semibold text-emerald-600">
+                      ${Number(quest.monetaryReward)} budget
                     </div>
                   )}
                 </div>
-                
-                <div className="mb-4">
-                  <p className="text-xs text-muted-foreground mb-1">Applicants</p>
-                  <div className="flex items-center">
-                    <Users className="w-4 h-4 mr-2 text-green-500" />
-                    <span className="text-sm">0/{quest.maxParticipants || 1}</span>
-                  </div>
-                </div>
-                
+
                 {quest.deadline && (
-                  <div className="flex items-center text-sm text-muted-foreground mb-4">
-                    <Clock className="w-4 h-4 mr-2" />
-                    <span>Due: {new Date(quest.deadline).toLocaleDateString()}</span>
+                  <div className="mt-4 flex items-center gap-1 text-xs text-slate-500">
+                    <Clock className="h-3.5 w-3.5" />
+                    Due {new Date(quest.deadline).toLocaleDateString()}
                   </div>
                 )}
-                
-                <div className="mt-auto">
-                  <Link href={`/dashboard/company/quests/${quest.id}`} className="w-full">
-                    <Button variant="outline" className="w-full">
-                      View Details
-                      <ExternalLink className="w-4 h-4 ml-2" />
-                    </Button>
+
+                <Button className="mt-4 w-full" variant="outline" asChild>
+                  <Link href={`/dashboard/company/quests/${quest.id}`}>
+                    View Details
+                    <ArrowRight className="h-4 w-4" />
                   </Link>
-                </div>
+                </Button>
               </CardContent>
             </Card>
           ))}
-        </div>
+        </section>
       )}
     </div>
   );
