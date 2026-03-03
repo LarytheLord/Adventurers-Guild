@@ -7,7 +7,7 @@
     "dev": "next dev",
     "lint": "next lint",
     "start": "next start",
-    "type-check": "tsc --noEmit",
+    "type-check": "next typegen && tsc --noEmit",
     "deploy:vercel": "vercel --prod",
     "postinstall": "prisma generate",
     "db:push": "prisma db push",

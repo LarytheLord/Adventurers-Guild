@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, CreditCard, CheckCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle } from 'lucide-react';
 import { validatePaymentInfo, formatCurrency } from '@/lib/payment-utils';
 import { processPayment } from '@/lib/payment-utils';
 
@@ -79,6 +79,12 @@ export default function PaymentForm({
     const validation = validatePaymentInfo(cardNumber, expiry, cvc);
     if (!validation.isValid) {
       setError(validation.error || 'Invalid card information');
+      setLoading(false);
+      return;
+    }
+
+    if (!adventurerId) {
+      setError('No adventurer selected for payment');
       setLoading(false);
       return;
     }

@@ -25,15 +25,12 @@ export default function Navigation() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
+  const normalizedPath = pathname ? pathname.replace(/\/+$/, '') || '/' : null;
 
-  const isHome = pathname === '/home' || pathname === '/';
-  const isDashboard = pathname?.startsWith('/dashboard') || pathname === '/admin';
-  const isAuthPage =
-    pathname === '/login' ||
-    pathname === '/register' ||
-    pathname === '/register-company' ||
-    pathname === '/forgot-password' ||
-    pathname === '/reset-password';
+  const isHome = normalizedPath === '/home' || normalizedPath === '/';
+  const isDashboard = !!normalizedPath && (normalizedPath.startsWith('/dashboard') || normalizedPath.startsWith('/admin'));
+  const authRoutePrefixes = ['/login', '/register', '/register-company', '/forgot-password', '/reset-password'];
+  const isAuthPage = !!normalizedPath && authRoutePrefixes.some((prefix) => normalizedPath === prefix || normalizedPath.startsWith(`${prefix}/`));
 
   useEffect(() => {
     setMounted(true);

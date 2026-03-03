@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { AssignmentStatus } from '@prisma/client';
+import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
 
 export async function GET(request: NextRequest) {
   // Check authentication
@@ -107,7 +108,7 @@ export async function POST(request: NextRequest) {
     // Check if the assignment exists and belongs to the current user
     const assignment = await prisma.questAssignment.findUnique({
       where: { id: assignmentId },
-      select: { status: true, userId: true },
+      select: { status: true, userId: true, questId: true },
     });
 
     if (!assignment) {
@@ -123,20 +124,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid assignment state for submission', success: false }, { status: 400 });
     }
 
-    // Create the submission
-    const data = await prisma.questSubmission.create({
-      data: {
-        assignmentId: assignmentId,
-        userId,
-        submissionContent: submissionContent,
-        submissionNotes: submissionNotes || null,
-      },
-    });
+    const data = await prisma.$transaction(async (tx) => {
+      const submission = await tx.questSubmission.create({
+        data: {
+          assignmentId: assignmentId,
+          userId,
+          submissionContent: submissionContent,
+          submissionNotes: submissionNotes || null,
+        },
+      });
 
-    // Update assignment status to submitted
-    await prisma.questAssignment.update({
-      where: { id: assignmentId },
-      data: { status: 'submitted' },
+      await tx.questAssignment.update({
+        where: { id: assignmentId },
+        data: { status: 'submitted' },
+      });
+
+      await syncQuestLifecycleStatus(tx, assignment.questId);
+      return submission;
     });
 
     return NextResponse.json({ submission: data, success: true }, { status: 201 });
@@ -168,7 +172,7 @@ export async function PUT(request: NextRequest) {
     // First get the submission
     const submission = await prisma.questSubmission.findUnique({
       where: { id: submissionId },
-      select: { id: true, assignmentId: true },
+      select: { id: true, assignmentId: true, status: true },
     });
 
     if (!submission) {
@@ -180,6 +184,7 @@ export async function PUT(request: NextRequest) {
       where: { id: submission.assignmentId },
       select: {
         questId: true,
+        userId: true,
         quest: {
           select: {
             companyId: true,
@@ -198,76 +203,91 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized to review this submission', success: false }, { status: 403 });
     }
 
-    // Update the submission
-    const data = await prisma.questSubmission.update({
-      where: { id: submissionId },
-      data: {
-        status,
-        reviewNotes: review_notes || undefined,
-        qualityScore: quality_score || undefined,
-        reviewerId,
-        reviewedAt: status !== 'pending' ? new Date() : undefined,
-      },
-    });
+    const wasAlreadyApproved = submission.status === 'approved';
 
-    // Update assignment status based on submission status
-    let newAssignmentStatus = '';
-    if (status === 'approved') {
-      newAssignmentStatus = 'completed';
-    } else if (status === 'needs_rework' || status === 'rejected') {
-      newAssignmentStatus = 'in_progress'; // Allow rework
-    }
-
-    if (newAssignmentStatus) {
-      await prisma.questAssignment.update({
-        where: { id: submission.assignmentId },
-        data: { status: newAssignmentStatus as AssignmentStatus },
-      });
-    }
-
-    // If the submission was approved, record the quest completion
-    if (status === 'approved' && data.assignmentId) {
-      // Get assignment details to get the quest and user IDs
-      const approvedAssignment = await prisma.questAssignment.findUnique({
-        where: { id: data.assignmentId },
-        select: { questId: true, userId: true },
+    const reviewResult = await prisma.$transaction(async (tx) => {
+      const updatedSubmission = await tx.questSubmission.update({
+        where: { id: submissionId },
+        data: {
+          status,
+          reviewNotes: review_notes || undefined,
+          qualityScore: quality_score || undefined,
+          reviewerId,
+          reviewedAt: status !== 'pending' ? new Date() : undefined,
+        },
       });
 
-      if (!approvedAssignment) {
-        throw new Error('Assignment not found for completion recording');
+      let newAssignmentStatus: AssignmentStatus | null = null;
+      if (status === 'approved') {
+        newAssignmentStatus = 'completed';
+      } else if (status === 'needs_rework' || status === 'rejected') {
+        newAssignmentStatus = 'in_progress';
       }
 
-      // Get quest details to get the rewards
-      const quest = await prisma.quest.findUnique({
-        where: { id: approvedAssignment.questId },
-        select: { xpReward: true, skillPointsReward: true },
-      });
-
-      if (!quest) {
-        throw new Error('Quest not found for completion recording');
-      }
-
-      // Record the quest completion
-      try {
-        await prisma.questCompletion.create({
+      if (newAssignmentStatus) {
+        await tx.questAssignment.update({
+          where: { id: submission.assignmentId },
           data: {
-            questId: approvedAssignment.questId,
-            userId: approvedAssignment.userId,
+            status: newAssignmentStatus,
+            ...(newAssignmentStatus === 'completed' ? { completedAt: new Date() } : {}),
+          },
+        });
+      }
+
+      await syncQuestLifecycleStatus(tx, assignmentData.questId);
+
+      let rewardsPayload: { userId: string; xpReward: number; skillPointsReward: number } | null = null;
+      if (status === 'approved' && !wasAlreadyApproved) {
+        const quest = await tx.quest.findUnique({
+          where: { id: assignmentData.questId },
+          select: { xpReward: true, skillPointsReward: true },
+        });
+
+        if (!quest) {
+          throw new Error('Quest not found for completion recording');
+        }
+
+        await tx.questCompletion.upsert({
+          where: {
+            questId_userId: {
+              questId: assignmentData.questId,
+              userId: assignmentData.userId,
+            },
+          },
+          create: {
+            questId: assignmentData.questId,
+            userId: assignmentData.userId,
+            xpEarned: quest.xpReward,
+            skillPointsEarned: quest.skillPointsReward,
+            qualityScore: quality_score || null,
+          },
+          update: {
             xpEarned: quest.xpReward,
             skillPointsEarned: quest.skillPointsReward,
             qualityScore: quality_score || null,
           },
         });
-      } catch (completionError) {
-        console.error('Error recording quest completion:', completionError);
+
+        rewardsPayload = {
+          userId: assignmentData.userId,
+          xpReward: quest.xpReward,
+          skillPointsReward: quest.skillPointsReward,
+        };
       }
 
-      // Update user XP, level, rank, and skill points
+      return { submission: updatedSubmission, rewardsPayload };
+    });
+
+    if (reviewResult.rewardsPayload) {
       const { updateUserXpAndSkills } = await import('@/lib/xp-utils');
-      await updateUserXpAndSkills(approvedAssignment.userId, quest.xpReward, quest.skillPointsReward);
+      await updateUserXpAndSkills(
+        reviewResult.rewardsPayload.userId,
+        reviewResult.rewardsPayload.xpReward,
+        reviewResult.rewardsPayload.skillPointsReward
+      );
     }
 
-    return NextResponse.json({ submission: data, success: true });
+    return NextResponse.json({ submission: reviewResult.submission, success: true });
   } catch (error) {
     console.error('Error updating quest submission:', error);
     return NextResponse.json({ error: 'Failed to update quest submission', success: false }, { status: 500 });
