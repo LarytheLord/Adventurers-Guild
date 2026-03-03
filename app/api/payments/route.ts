@@ -1,14 +1,8 @@
+// app/api/payments/route.ts
 import { NextRequest } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { env } from '@/lib/env';
 import { validatePaymentInfo } from '@/lib/payment-utils';
 import { getAuthUser } from '@/lib/api-auth';
-
-// Initialize Supabase client
-const supabase = createClient(
-  env.NEXT_PUBLIC_SUPABASE_URL,
-  env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+import { prisma } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,7 +14,7 @@ export async function GET(request: NextRequest) {
     // Parse query parameters
     const { searchParams } = new URL(request.url);
     // Users can only view their own transactions (unless admin)
-    const userId = authUser.role === 'admin' ? (searchParams.get('user_id') || authUser.id) : authUser.id;
+    const userId = authUser.role === 'admin' ? (searchParams.get('userId') || authUser.id) : authUser.id;
     const type = searchParams.get('type'); // 'incoming' or 'outgoing'
     const status = searchParams.get('status');
     const limit = searchParams.get('limit') || '10';
@@ -30,56 +24,49 @@ export async function GET(request: NextRequest) {
       return Response.json({ error: 'User ID is required', success: false }, { status: 400 });
     }
 
-    // Build query based on type
-    let query = supabase
-      .from('transactions')
-      .select(`
-        id,
-        from_user_id,
-        to_user_id,
-        quest_id,
-        amount,
-        currency,
-        status,
-        payment_method,
-        transaction_id,
-        description,
-        created_at,
-        updated_at,
-        completed_at,
-        from_user:users!from_user_id (
-          name,
-          email
-        ),
-        to_user:users!to_user_id (
-          name,
-          email
-        ),
-        quests (
-          title
-        )
-      `)
-      .range(parseInt(offset), parseInt(offset) + parseInt(limit) - 1)
-      .order('created_at', { ascending: false });
+    // Build where clause based on type
+    const where: Record<string, unknown> = {};
 
-    // Add filters based on type
     if (type === 'incoming') {
-      query = query.eq('to_user_id', userId);
+      where.toUserId = userId;
     } else if (type === 'outgoing') {
-      query = query.eq('from_user_id', userId);
+      where.fromUserId = userId;
     } else {
-      query = query.or(`from_user_id.eq.${userId},to_user_id.eq.${userId}`);
+      where.OR = [
+        { fromUserId: userId },
+        { toUserId: userId },
+      ];
     }
 
     if (status) {
-      query = query.eq('status', status);
+      where.status = status;
     }
 
-    const { data, error } = await query;
-
-    if (error) {
-      throw new Error(error.message);
-    }
+    const data = await prisma.transaction.findMany({
+      where,
+      include: {
+        fromUser: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+        toUser: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+        quest: {
+          select: {
+            title: true,
+          },
+        },
+      },
+      skip: parseInt(offset),
+      take: parseInt(limit),
+      orderBy: { createdAt: 'desc' },
+    });
 
     return Response.json({ transactions: data, success: true });
   } catch (error) {
@@ -98,7 +85,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Validate required fields
-    const requiredFields = ['from_user_id', 'to_user_id', 'quest_id', 'amount', 'currency'];
+    const requiredFields = ['from_userId', 'to_userId', 'questId', 'amount', 'currency'];
     for (const field of requiredFields) {
       if (body[field] === undefined) {
         return Response.json({ error: `${field} is required`, success: false }, { status: 400 });
@@ -112,20 +99,19 @@ export async function POST(request: NextRequest) {
         body.payment_info.expiry,
         body.payment_info.cvc
       );
-      
+
       if (!validation.isValid) {
         return Response.json({ error: validation.error, success: false }, { status: 400 });
       }
     }
 
     // Verify that the quest exists and is completed
-    const { data: quest, error: questError } = await supabase
-      .from('quests')
-      .select('title, status, xp_reward, skill_points_reward')
-      .eq('id', body.quest_id)
-      .single();
+    const quest = await prisma.quest.findUnique({
+      where: { id: body.questId },
+      select: { title: true, status: true, xpReward: true, skillPointsReward: true },
+    });
 
-    if (questError || !quest) {
+    if (!quest) {
       return Response.json({ error: 'Quest not found', success: false }, { status: 404 });
     }
 
@@ -134,12 +120,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if a payment already exists for this quest
-    const { data: existingPayment } = await supabase
-      .from('transactions')
-      .select('id')
-      .eq('quest_id', body.quest_id)
-      .eq('to_user_id', body.to_user_id)
-      .single();
+    const existingPayment = await prisma.transaction.findFirst({
+      where: {
+        questId: body.questId,
+        toUserId: body.to_userId,
+      },
+      select: { id: true },
+    });
 
     if (existingPayment) {
       return Response.json({ error: 'Payment already exists for this quest', success: false }, { status: 400 });
@@ -147,86 +134,56 @@ export async function POST(request: NextRequest) {
 
     // In a real implementation, you would integrate with a payment processor like Stripe
     // For now, we'll simulate the payment and create a transaction record
-    
-    const { data: transaction, error: transactionError } = await supabase
-      .from('transactions')
-      .insert([{
-        from_user_id: body.from_user_id,
-        to_user_id: body.to_user_id,
-        quest_id: body.quest_id,
+
+    const transaction = await prisma.transaction.create({
+      data: {
+        fromUserId: body.from_userId,
+        toUserId: body.to_userId,
+        questId: body.questId,
         amount: body.amount,
         currency: body.currency,
         status: 'pending', // Initially pending until payment processor confirms
-        payment_method: body.payment_method || 'credit_card',
+        paymentMethod: body.paymentMethod || 'credit_card',
         description: body.description || `Payment for quest completion: ${quest.title}`,
-        transaction_id: `txn_${Date.now()}` // In real implementation, this would come from payment processor
-      }])
-      .select()
-      .single();
-
-    if (transactionError) {
-      throw new Error(transactionError.message);
-    }
+        transactionId: `txn_${Date.now()}`, // In real implementation, this would come from payment processor
+      },
+    });
 
     // Simulate payment processing (in a real app, this would be handled by a webhook from the payment processor)
     // For now, we'll immediately update the status to completed
-    const { data: completedTransaction, error: updateError } = await supabase
-      .from('transactions')
-      .update({ 
+    const completedTransaction = await prisma.transaction.update({
+      where: { id: transaction.id },
+      data: {
         status: 'completed',
-        completed_at: new Date().toISOString()
-      })
-      .eq('id', transaction.id)
-      .select()
-      .single();
-
-    if (updateError) {
-      throw new Error(updateError.message);
-    }
-
-    // Update user's XP and skill points
-    const xpGain = quest.xp_reward || 0;
-    const skillPointsGain = quest.skill_points_reward || 0;
-    
-    const { error: userUpdateError } = await supabase.rpc('update_user_xp_and_skills', {
-      user_id_input: body.to_user_id,
-      xp_gained: xpGain,
-      skill_points_gained: skillPointsGain
+        completedAt: new Date(),
+      },
     });
 
-    if (userUpdateError) {
-      console.error('Error updating user XP and skills:', userUpdateError);
-      // Don't fail the transaction if this fails, just log it
-    }
-
-    // Update company's spending
-    const { error: companyUpdateError } = await supabase.rpc('update_company_spending', {
-      company_id_input: body.from_user_id,
-      amount_spent: body.amount
-    });
-
-    if (companyUpdateError) {
-      console.error('Error updating company spending:', companyUpdateError);
-      // Don't fail the transaction if this fails, just log it
+    // Update company spending
+    const { updateCompanySpending } = await import('@/lib/xp-utils');
+    try {
+      await updateCompanySpending(body.from_userId, body.amount);
+    } catch (e) {
+      console.error('Error updating company spending:', e);
     }
 
     // Send notification to receiving user
-    await supabase
-      .from('notifications')
-      .insert([{
-        user_id: body.to_user_id,
+    await prisma.notification.create({
+      data: {
+        userId: body.to_userId,
         title: 'Payment Received',
         message: `You've received payment of ${body.amount} ${body.currency} for completing the quest "${quest.title}"`,
         type: 'payment_received',
         data: {
-          quest_id: body.quest_id,
+          questId: body.questId,
           amount: body.amount,
-          currency: body.currency
-        }
-      }]);
+          currency: body.currency,
+        },
+      },
+    });
 
-    return Response.json({ 
-      transaction: completedTransaction, 
+    return Response.json({
+      transaction: completedTransaction,
       success: true,
       message: 'Payment processed successfully'
     });

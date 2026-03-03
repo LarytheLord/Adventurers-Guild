@@ -1,286 +1,231 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Code2, CheckCircle2 } from 'lucide-react';
-import { createClient } from '@supabase/supabase-js';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import Link from 'next/link';
-import { motion } from 'framer-motion';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Briefcase, User, Loader2, Sword, Building2 } from 'lucide-react';
+import { useState } from 'react';
+import { signIn } from 'next-auth/react';
+import { toast } from 'sonner';
+import { RankBadge } from '@/components/ui/rank-badge';
 
 export default function RegisterPage() {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [role, setRole] = useState<'adventurer' | 'company'>('adventurer');
-  const [companyName, setCompanyName] = useState('');
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  async function onRegister(event: React.FormEvent<HTMLFormElement>, role: 'adventurer' | 'company') {
+    event.preventDefault();
+    setIsLoading(true);
 
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
-
-    setLoading(true);
-    setError('');
+    const formData = new FormData(event.currentTarget);
+    const email = formData.get(role === 'company' ? 'work-email' : 'email') as string;
+    const password = formData.get(role === 'company' ? 'client-password' : 'password') as string;
+    const name = role === 'company' ? '' : (formData.get('name') as string);
+    const companyName = role === 'company' ? (formData.get('company') as string) : '';
 
     try {
-      const { data, error: signUpError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name,
-          },
-        },
+      const res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email,
+          password,
+          name: role === 'company' ? companyName : name,
+          role,
+          companyName,
+        }),
       });
 
-      if (signUpError) {
-        setError(signUpError.message);
-      } else if (data.user) {
-        setSuccess(true);
-
-        // Add user to our users table
-        const { error: insertError } = await supabase
-          .from('users')
-          .insert([
-            {
-              id: data.user.id,
-              name,
-              email,
-              role,
-              rank: 'F',
-              xp: 0,
-              skill_points: 0,
-              level: 1,
-            },
-          ]);
-
-        if (insertError) {
-          console.error('Error inserting user:', insertError);
+      if (!res.ok) {
+        const data = await res.json();
+        // Extract specific Zod validation error if available
+        if (data.details?.fieldErrors) {
+          const firstErrors = Object.values(data.details.fieldErrors as Record<string, string[]>);
+          const firstMsg = firstErrors[0]?.[0];
+          if (firstMsg) throw new Error(firstMsg);
         }
-
-        // Create role-specific profile
-        if (role === 'company') {
-          const { error: companyProfileError } = await supabase
-            .from('company_profiles')
-            .insert([
-              {
-                user_id: data.user.id,
-                company_name: companyName || name,
-                is_verified: false,
-              },
-            ]);
-
-          if (companyProfileError) {
-            console.error('Error creating company profile:', companyProfileError);
-          }
-        } else {
-          // Create adventurer profile
-          const { error: adventurerProfileError } = await supabase
-            .from('adventurer_profiles')
-            .insert([
-              {
-                user_id: data.user.id,
-                availability_status: 'available',
-                quest_completion_rate: 0,
-                total_quests_completed: 0,
-                current_streak: 0,
-                max_streak: 0,
-              },
-            ]);
-
-          if (adventurerProfileError) {
-            console.error('Error creating adventurer profile:', adventurerProfileError);
-          }
-        }
-
-        // Redirect to login after 3 seconds
-        setTimeout(() => {
-          router.push('/login');
-        }, 3000);
+        throw new Error(data.error || data.message || 'Registration failed');
       }
-    } catch (err) {
-      setError('An unexpected error occurred');
-      console.error(err);
-    } finally {
-      setLoading(false);
+
+      toast.success('Account created! Logging you in...');
+      await signIn('credentials', { email, password, callbackUrl: '/dashboard' });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Registration failed');
+      setIsLoading(false);
     }
-  };
+  }
+
+  const inputClass =
+    'bg-slate-900 border-slate-700 text-white placeholder:text-slate-500 focus:border-orange-500/50 focus:ring-orange-500/20 h-11';
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-slate-50">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="w-full max-w-md"
-      >
-        <div className="mb-8 text-center">
-          <Link href="/" className="inline-flex items-center gap-2 font-bold text-2xl tracking-tight mb-2 group">
-            <div className="w-9 h-9 rounded-lg bg-slate-900 flex items-center justify-center text-white group-hover:bg-slate-800 transition-colors">
-              <Code2 className="w-5 h-5" />
-            </div>
-            <span className="text-slate-900">Adventurers Guild</span>
-          </Link>
-          <p className="text-slate-500 mt-1">Begin your journey.</p>
-        </div>
+    <div className="min-h-screen bg-slate-950 flex">
+      {/* Left panel — branding */}
+      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 bg-slate-900 border-r border-slate-800">
+        <Link href="/home" className="flex items-center gap-2.5 group w-fit">
+          <div className="w-9 h-9 bg-orange-500 rounded-lg flex items-center justify-center shadow-lg shadow-orange-500/20 group-hover:bg-orange-600 transition-colors">
+            <span className="text-black font-bold text-sm">AG</span>
+          </div>
+          <span className="text-white font-bold text-lg">Adventurers Guild</span>
+        </Link>
 
-        <div className="bg-white p-8 rounded-xl border border-slate-200 shadow-sm">
-          {error && (
-            <Alert variant="destructive" className="mb-6">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          {success ? (
-            <div className="text-center py-8">
-              <div className="w-16 h-16 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-4 text-green-600">
-                <CheckCircle2 className="w-8 h-8" />
-              </div>
-              <h3 className="text-xl font-bold mb-2 text-slate-900">Registration Successful!</h3>
-              <p className="text-slate-500 mb-6">
-                Please check your email to verify your account.
-              </p>
-              <p className="text-sm text-indigo-600 animate-pulse">
-                Redirecting to login...
-              </p>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-5">
-              <div className="space-y-2">
-                <Label htmlFor="name">Full Name</Label>
-                <Input
-                  id="name"
-                  type="text"
-                  placeholder="Your name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  required
-                  className="h-11"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="your@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="h-11"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="role">Account Type</Label>
-                <Select value={role} onValueChange={(value: 'adventurer' | 'company') => setRole(value)}>
-                  <SelectTrigger className="h-11">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="adventurer">Adventurer (Student)</SelectItem>
-                    <SelectItem value="company">Company</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {role === 'company' && (
-                <div className="space-y-2">
-                  <Label htmlFor="companyName">Company Name</Label>
-                  <Input
-                    id="companyName"
-                    type="text"
-                    placeholder="Your company name"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                    className="h-11"
-                  />
-                </div>
-              )}
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="h-11"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm</Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    placeholder="••••••"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    required
-                    className="h-11"
-                  />
-                </div>
-              </div>
-
-              <Button
-                type="submit"
-                className="w-full h-11 bg-slate-900 hover:bg-slate-800 text-white font-semibold"
-                disabled={loading}
-              >
-                {loading ? (
-                  <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                ) : (
-                  'Create Account'
-                )}
-              </Button>
-            </form>
-          )}
-
-          <div className="mt-6 pt-6 border-t border-slate-100 text-center">
-            <p className="text-sm text-slate-500">
-              Already have an account?{' '}
-              <Link href="/login" className="text-indigo-600 hover:text-indigo-500 font-medium transition-colors">
-                Sign in
-              </Link>
+        <div className="space-y-8">
+          <div>
+            <p className="text-[11px] font-semibold tracking-[0.15em] text-orange-400/60 uppercase mb-3">
+              Two paths await
+            </p>
+            <h2 className="text-3xl font-bold text-white mb-3">Choose your role in the Guild</h2>
+            <p className="text-slate-400 leading-relaxed">
+              Join as an adventurer and complete quests to level up. Or post quests as a company
+              and hire verified developers.
             </p>
           </div>
+
+          <div className="space-y-4">
+            <div className="flex items-start gap-4 p-4 rounded-xl bg-slate-800/60 border border-slate-700/50">
+              <div className="w-9 h-9 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center flex-shrink-0">
+                <Sword className="w-4 h-4 text-orange-400" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-white mb-1">Adventurer Path</p>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Take on coding quests, earn XP and real money, climb from F-Rank to S-Rank.
+                </p>
+              </div>
+              <RankBadge rank="F" size="sm" className="flex-shrink-0 mt-0.5" />
+            </div>
+
+            <div className="flex items-start gap-4 p-4 rounded-xl bg-slate-800/60 border border-slate-700/50">
+              <div className="w-9 h-9 rounded-lg bg-slate-700/40 border border-slate-600/40 flex items-center justify-center flex-shrink-0">
+                <Building2 className="w-4 h-4 text-slate-400" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-white mb-1">Company Path</p>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Post development tasks, get ranked submissions, pay only for work that meets your standards.
+                </p>
+              </div>
+            </div>
+          </div>
         </div>
-      </motion.div>
+
+        <blockquote className="border-l-2 border-orange-500/40 pl-4">
+          <p className="text-slate-400 text-sm leading-relaxed mb-3">
+            &ldquo;I went from F-Rank to B-Rank in 3 months. The quests pushed me harder than any bootcamp.&rdquo;
+          </p>
+          <footer className="text-sm text-slate-500">Raj Patel, Full-Stack Developer</footer>
+        </blockquote>
+      </div>
+
+      {/* Right panel — form */}
+      <div className="flex-1 flex items-center justify-center p-8">
+        <div className="w-full max-w-sm space-y-6">
+          {/* Mobile logo */}
+          <div className="lg:hidden flex items-center gap-2.5 justify-center mb-2">
+            <div className="w-9 h-9 bg-orange-500 rounded-lg flex items-center justify-center">
+              <span className="text-black font-bold text-sm">AG</span>
+            </div>
+            <span className="text-white font-bold text-lg">Adventurers Guild</span>
+          </div>
+
+          <div className="space-y-1.5">
+            <h1 className="text-2xl font-bold text-white tracking-tight">Choose Your Path</h1>
+            <p className="text-sm text-slate-400">Create your account and start your journey.</p>
+          </div>
+
+          <Tabs defaultValue="adventurer" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-5 bg-slate-900 border border-slate-800">
+              <TabsTrigger
+                value="adventurer"
+                className="data-[state=active]:bg-orange-500 data-[state=active]:text-black text-slate-400 font-medium"
+              >
+                <Sword className="w-3.5 h-3.5 mr-1.5" />
+                Adventurer
+              </TabsTrigger>
+              <TabsTrigger
+                value="company"
+                className="data-[state=active]:bg-slate-700 data-[state=active]:text-white text-slate-400 font-medium"
+              >
+                <Briefcase className="w-3.5 h-3.5 mr-1.5" />
+                Company
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="adventurer">
+              <div className="mb-4 p-3 rounded-lg bg-orange-500/5 border border-orange-500/15">
+                <p className="text-xs text-orange-400/80">
+                  <span className="font-semibold">Adventurer</span> — Complete quests to earn XP and real money. Start at F-Rank.
+                </p>
+              </div>
+              <form onSubmit={(e) => onRegister(e, 'adventurer')} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-slate-300 text-sm font-medium">Full Name</Label>
+                  <Input id="name" name="name" placeholder="John Doe" type="text" autoCorrect="off" disabled={isLoading} required className={inputClass} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-slate-300 text-sm font-medium">Email</Label>
+                  <Input id="email" name="email" placeholder="name@example.com" type="email" autoCapitalize="none" autoCorrect="off" disabled={isLoading} required className={inputClass} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password" className="text-slate-300 text-sm font-medium">Password</Label>
+                  <Input id="password" name="password" type="password" minLength={8} placeholder="Min. 8 characters" disabled={isLoading} required className={inputClass} />
+                </div>
+                <Button className="w-full h-11 bg-orange-500 hover:bg-orange-600 text-black font-semibold rounded-lg shadow-lg shadow-orange-500/20 transition-all mt-1" disabled={isLoading}>
+                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {!isLoading && <User className="mr-2 h-4 w-4" />}
+                  Join as Adventurer
+                </Button>
+              </form>
+            </TabsContent>
+
+            <TabsContent value="company">
+              <div className="mb-4 p-3 rounded-lg bg-slate-800/60 border border-slate-700/50">
+                <p className="text-xs text-slate-400">
+                  <span className="font-semibold text-slate-300">Company</span> — Post coding quests and hire verified developers.
+                </p>
+              </div>
+              <form onSubmit={(e) => onRegister(e, 'company')} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="company" className="text-slate-300 text-sm font-medium">Company Name</Label>
+                  <Input id="company" name="company" placeholder="Acme Inc." type="text" disabled={isLoading} required className={inputClass} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="work-email" className="text-slate-300 text-sm font-medium">Work Email</Label>
+                  <Input id="work-email" name="work-email" placeholder="name@company.com" type="email" disabled={isLoading} required className={inputClass} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="client-password" className="text-slate-300 text-sm font-medium">Password</Label>
+                  <Input id="client-password" name="client-password" type="password" minLength={8} placeholder="Min. 8 characters" disabled={isLoading} required className={inputClass} />
+                </div>
+                <Button className="w-full h-11 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition-colors mt-1" disabled={isLoading}>
+                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  {!isLoading && <Building2 className="mr-2 h-4 w-4" />}
+                  Create Company Account
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
+
+          <p className="text-center text-xs text-slate-600">
+            By signing up you agree to our{' '}
+            <Link href="/terms" className="text-slate-500 hover:text-orange-400 underline underline-offset-4 transition-colors">
+              Terms
+            </Link>{' '}
+            and{' '}
+            <Link href="/privacy" className="text-slate-500 hover:text-orange-400 underline underline-offset-4 transition-colors">
+              Privacy Policy
+            </Link>
+            .
+          </p>
+          <p className="text-center text-sm text-slate-500">
+            Already have an account?{' '}
+            <Link href="/login" className="text-orange-400 hover:text-orange-300 font-medium transition-colors">
+              Sign in
+            </Link>
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

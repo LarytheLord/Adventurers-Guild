@@ -30,16 +30,16 @@ import { toast } from 'sonner';
 // Types
 interface Submission {
   id: string;
-  assignment_id: string;
-  user_id: string;
-  submission_content: string;
-  submission_notes?: string;
-  submitted_at: string;
+  assignmentId: string;
+  userId: string;
+  submissionContent: string;
+  submissionNotes?: string;
+  submittedAt: string;
   status: string;
-  reviewer_id?: string;
-  reviewed_at?: string;
-  review_notes?: string;
-  quality_score?: number;
+  reviewerId?: string;
+  reviewedAt?: string;
+  reviewNotes?: string;
+  qualityScore?: number;
   users: {
     name: string;
     email: string;
@@ -50,8 +50,8 @@ interface Submission {
     email: string;
     rank: string;
   };
-  quest_assignments: {
-    quest_id: string;
+  questAssignments: {
+    questId: string;
   };
 }
 
@@ -106,7 +106,7 @@ export default function QualityAssuranceDashboard({ userId, userRole }: QualityA
         
         // If user is not admin or reviewer, only show their submissions
         if (userRole !== 'admin' && userRole !== 'reviewer') {
-          params.append('user_id', userId);
+          params.append('userId', userId);
         }
         
         url += `?${params.toString()}`;
@@ -154,7 +154,7 @@ export default function QualityAssuranceDashboard({ userId, userRole }: QualityA
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          submission_id: reviewForm.submissionId,
+          submissionId: reviewForm.submissionId,
           reviewer_id: userId,
           quality_score: reviewForm.qualityScore,
           review_notes: reviewForm.reviewNotes,
@@ -229,8 +229,8 @@ export default function QualityAssuranceDashboard({ userId, userRole }: QualityA
     setSelectedSubmission(submission);
     setReviewForm({
       submissionId: submission.id,
-      qualityScore: submission.quality_score || 8,
-      reviewNotes: submission.review_notes || '',
+      qualityScore: submission.qualityScore || 8,
+      reviewNotes: submission.reviewNotes || '',
       status: 'approved'
     });
   };
@@ -351,22 +351,22 @@ export default function QualityAssuranceDashboard({ userId, userRole }: QualityA
                             </div>
                           </TableCell>
                           <TableCell>
-                            <div className="max-w-xs truncate">{submission.submission_content.substring(0, 50)}...</div>
+                            <div className="max-w-xs truncate">{submission.submissionContent.substring(0, 50)}...</div>
                           </TableCell>
                           <TableCell>
-                            {new Date(submission.submitted_at).toLocaleDateString()}
+                            {new Date(submission.submittedAt).toLocaleDateString()}
                           </TableCell>
                           <TableCell>
-                            <Badge variant={statusBadge.variant as any}>
+                            <Badge variant={statusBadge.variant as "default" | "secondary" | "destructive" | "outline"}>
                               {statusBadge.icon && <span className="mr-1">{statusBadge.icon}</span>}
                               {statusBadge.text}
                             </Badge>
                           </TableCell>
                           <TableCell>
-                            {submission.quality_score ? (
+                            {submission.qualityScore ? (
                               <div className="flex items-center">
                                 <Star className="h-4 w-4 fill-yellow-500 text-yellow-500 mr-1" />
-                                {submission.quality_score}/10
+                                {submission.qualityScore}/10
                               </div>
                             ) : (
                               <span className="text-muted-foreground">-</span>
@@ -420,7 +420,7 @@ export default function QualityAssuranceDashboard({ userId, userRole }: QualityA
                   </div>
                 </div>
                 <div className="text-sm text-muted-foreground">
-                  Submitted: {new Date(selectedSubmission.submitted_at).toLocaleString()}
+                  Submitted: {new Date(selectedSubmission.submittedAt).toLocaleString()}
                 </div>
               </div>
             </CardHeader>
@@ -428,15 +428,15 @@ export default function QualityAssuranceDashboard({ userId, userRole }: QualityA
               <div>
                 <h4 className="font-medium mb-2">Submission Content</h4>
                 <div className="bg-muted p-4 rounded-md">
-                  {selectedSubmission.submission_content}
+                  {selectedSubmission.submissionContent}
                 </div>
               </div>
               
-              {selectedSubmission.submission_notes && (
+              {selectedSubmission.submissionNotes && (
                 <div>
                   <h4 className="font-medium mb-2">Adventurer Notes</h4>
                   <div className="bg-muted p-4 rounded-md">
-                    {selectedSubmission.submission_notes}
+                    {selectedSubmission.submissionNotes}
                   </div>
                 </div>
               )}

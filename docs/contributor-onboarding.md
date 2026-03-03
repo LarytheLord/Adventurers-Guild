@@ -43,19 +43,20 @@ The Adventurers Guild is a Next.js application that connects students (adventure
 2. Clone your fork: `git clone https://github.com/YOUR_USERNAME/adventurers-guild.git`
 3. Navigate to project: `cd adventurers-guild`
 4. Install dependencies: `npm install`
-5. Create environment file: `cp .env.example .env.local`
+5. Create environment file: `cp .env.example .env`
 6. Start development server: `npm run dev`
 
 ## Development Environment Setup
 
 ### Environment Variables
-You'll need to set up the following environment variables in your `.env.local` file:
+You'll need to set up the following environment variables in your `.env` file:
 
 ```
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=your-supabase-url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-REF].supabase.co:5432/postgres"
 
 # Authentication
 NEXTAUTH_URL=http://localhost:3000

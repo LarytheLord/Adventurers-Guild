@@ -47,13 +47,14 @@ This will install all the necessary tools and libraries for the project.
 
 ### 2.1. Set Up Environment Variables (Email & API Keys)
 
-The guild's email system requires SMTP configuration. Create a `.env.local` file in the root directory:
+The guild's email system requires SMTP configuration. Create a `.env` file in the root directory (Prisma requires `.env` to load variables):
 
 ```bash
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
 SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
+DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-REF].supabase.co:5432/postgres"
 
 # Authentication
 NEXTAUTH_URL=http://localhost:3000

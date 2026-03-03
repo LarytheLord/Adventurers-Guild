@@ -1,65 +1,27 @@
 // lib/notification-utils.ts
-import { createClient } from '@supabase/supabase-js';
-import { env } from './env';
-
-const supabase = createClient(
-  env.NEXT_PUBLIC_SUPABASE_URL,
-  env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
-
-// Types
-export interface Notification {
-  id: string;
-  user_id: string;
-  title: string;
-  message: string;
-  type: string;
-  data?: any;
-  read_at?: string;
-  created_at: string;
-}
+import { prisma } from './db';
+import { Prisma, NotificationType } from '@prisma/client';
 
 // Fetch notifications for a user
 export async function fetchNotifications(
-  userId: string, 
-  options: { 
-    type?: string; 
-    isRead?: boolean; 
-    limit?: number; 
-    offset?: number 
-  } = {}
-): Promise<Notification[]> {
-  let query = supabase
-    .from('notifications')
-    .select('*')
-    .eq('user_id', userId)
-    .order('created_at', { ascending: false });
+  userId: string,
+  options: { type?: string; isRead?: boolean; limit?: number; offset?: number } = {}
+) {
+  const where: Prisma.NotificationWhereInput = { userId };
 
   if (options.type) {
-    query = query.eq('type', options.type);
+    where.type = options.type as NotificationType;
   }
   if (options.isRead !== undefined) {
-    if (options.isRead) {
-      query = query.not('read_at', 'is', null);
-    } else {
-      query = query.is('read_at', null);
-    }
-  }
-  if (options.limit) {
-    query = query.limit(options.limit);
-    if (options.offset) {
-      query = query.range(options.offset, options.offset + options.limit - 1);
-    }
+    where.readAt = options.isRead ? { not: null } : null;
   }
 
-  const { data, error } = await query;
-
-  if (error) {
-    console.error('Error fetching notifications:', error);
-    throw new Error('Failed to fetch notifications');
-  }
-
-  return data;
+  return prisma.notification.findMany({
+    where,
+    orderBy: { createdAt: 'desc' },
+    take: options.limit,
+    skip: options.offset,
+  });
 }
 
 // Create a new notification
@@ -68,105 +30,53 @@ export async function createNotification(
   title: string,
   message: string,
   type: string,
-  data?: any
-): Promise<Notification | null> {
-  const { data: notification, error } = await supabase
-    .from('notifications')
-    .insert([{
-      user_id: userId,
+  data?: Record<string, unknown>
+) {
+  return prisma.notification.create({
+    data: {
+      userId,
       title,
       message,
-      type,
-      data: data || null
-    }])
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error creating notification:', error);
-    throw new Error('Failed to create notification');
-  }
-
-  return notification;
+      type: type as NotificationType,
+      data: data as Prisma.InputJsonValue | undefined,
+    },
+  });
 }
 
 // Mark a notification as read
-export async function markNotificationAsRead(
-  notificationId: string,
-  userId: string
-): Promise<Notification | null> {
-  const { data, error } = await supabase
-    .from('notifications')
-    .update({ read_at: new Date().toISOString() })
-    .eq('id', notificationId)
-    .eq('user_id', userId)
-    .select()
-    .single();
-
-  if (error) {
-    console.error('Error marking notification as read:', error);
-    throw new Error('Failed to mark notification as read');
-  }
-
-  return data;
+export async function markNotificationAsRead(notificationId: string, userId: string) {
+  return prisma.notification.update({
+    where: { id: notificationId, userId },
+    data: { readAt: new Date() },
+  });
 }
 
 // Mark all notifications as read for a user
 export async function markAllNotificationsAsRead(userId: string): Promise<boolean> {
-  const { error } = await supabase
-    .from('notifications')
-    .update({ read_at: new Date().toISOString() })
-    .eq('user_id', userId)
-    .is('read_at', null);
-
-  if (error) {
-    console.error('Error marking all notifications as read:', error);
-    throw new Error('Failed to mark all notifications as read');
-  }
-
+  await prisma.notification.updateMany({
+    where: { userId, readAt: null },
+    data: { readAt: new Date() },
+  });
   return true;
 }
 
 // Delete a notification
-export async function deleteNotification(
-  notificationId: string,
-  userId: string
-): Promise<boolean> {
-  const { error } = await supabase
-    .from('notifications')
-    .delete()
-    .eq('id', notificationId)
-    .eq('user_id', userId);
-
-  if (error) {
-    console.error('Error deleting notification:', error);
-    throw new Error('Failed to delete notification');
-  }
-
+export async function deleteNotification(notificationId: string, userId: string): Promise<boolean> {
+  await prisma.notification.delete({
+    where: { id: notificationId, userId },
+  });
   return true;
 }
 
 // Get unread count for a user
 export async function getUnreadNotificationCount(userId: string): Promise<number> {
-  const { count, error } = await supabase
-    .from('notifications')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', userId)
-    .is('read_at', null);
-
-  if (error) {
-    console.error('Error getting unread notification count:', error);
-    throw new Error('Failed to get unread notification count');
-  }
-
-  return count || 0;
+  return prisma.notification.count({
+    where: { userId, readAt: null },
+  });
 }
 
 // Send a quest assignment notification
-export async function sendQuestAssignmentNotification(
-  userId: string,
-  questTitle: string
-): Promise<void> {
+export async function sendQuestAssignmentNotification(userId: string, questTitle: string): Promise<void> {
   await createNotification(
     userId,
     'New Quest Assigned',
@@ -193,10 +103,7 @@ export async function sendQuestCompletionNotification(
 }
 
 // Send a rank up notification
-export async function sendRankUpNotification(
-  userId: string,
-  newRank: string
-): Promise<void> {
+export async function sendRankUpNotification(userId: string, newRank: string): Promise<void> {
   await createNotification(
     userId,
     'Rank Up!',

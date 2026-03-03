@@ -15,8 +15,8 @@ export interface ErrorContext {
   url?: string;
   userAgent?: string;
   userId?: string;
-  props?: Record<string, any>;
-  additionalData?: Record<string, any>;
+  props?: Record<string, unknown>;
+  additionalData?: Record<string, unknown>;
   component?: string;
   boundary?: string;
 }
@@ -94,7 +94,7 @@ export async function logError(
 export async function logErrorWithContext(
   error: Error,
   errorInfo?: ErrorContext,
-  additionalContext?: Record<string, any>
+  additionalContext?: ErrorContext
 ): Promise<void> {
   // Try to get user session context
   let userId: string | undefined;

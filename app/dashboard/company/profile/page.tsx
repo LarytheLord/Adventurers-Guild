@@ -47,7 +47,7 @@ export default function CompanyProfilePage() {
           const data = await res.json();
           const quests = data.quests || [];
           setQuestCount(quests.length);
-          setCompletedCount(quests.filter((q: any) => q.status === 'completed').length);
+          setCompletedCount(quests.filter((q: Record<string, unknown>) => q.status === 'completed').length);
         }
       } catch (err) {
         console.error('Error fetching company data:', err);

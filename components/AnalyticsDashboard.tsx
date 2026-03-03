@@ -36,60 +36,60 @@ interface AnalyticsData {
     name: string;
     rank: string;
     xp: number;
-    skill_points: number;
+    skillPoints: number;
     level: number;
     specialization?: string;
-    primary_skills?: string[];
-    quest_completion_rate?: number;
-    total_quests_completed?: number;
-    current_streak?: number;
-    max_streak?: number;
-    join_date: string;
-    last_login?: string;
+    primarySkills?: string[];
+    questCompletionRate?: number;
+    totalQuestsCompleted?: number;
+    currentStreak?: number;
+    maxStreak?: number;
+    joinDate: string;
+    lastLogin?: string;
   };
   stats?: {
-    total_quests: number;
-    completed_quests: number;
-    completion_rate: number;
-    xp_gained: number;
-    skill_points_gained: number;
+    totalQuests: number;
+    completedQuests: number;
+    completionRate: number;
+    xpGained: number;
+    skillPointsGained: number;
   };
-  recent_activity?: Array<{
+  recentActivity?: Array<{
     id: string;
-    quest_id: string;
-    completion_date: string;
-    xp_earned: number;
-    skill_points_earned: number;
-    quality_score?: number;
+    questId: string;
+    completionDate: string;
+    xpEarned: number;
+    skillPointsEarned: number;
+    qualityScore?: number;
     quests: {
       title: string;
       difficulty: string;
-      quest_category: string;
+      questCategory: string;
     };
   }>;
-  progress_over_time?: Array<{
+  progressOverTime?: Array<{
     date: string;
     xp: number;
     sp: number;
   }>;
-  platform_stats?: {
-    total_users: number;
-    total_quests: number;
-    total_assignments: number;
-    total_completions: number;
-    active_users: number;
-    completion_rate: number;
+  platformStats?: {
+    totalUsers: number;
+    totalQuests: number;
+    totalAssignments: number;
+    totalCompletions: number;
+    activeUsers: number;
+    completionRate: number;
   };
-  top_categories?: Array<{
+  topCategories?: Array<{
     category: string;
     count: number;
   }>;
-  rank_distribution?: Array<{
+  rankDistribution?: Array<{
     rank: string;
     count: number;
   }>;
-  quests?: any[];
-  quests_stats?: any;
+  quests?: Record<string, unknown>[];
+  questsStats?: Record<string, unknown>;
   success: boolean;
 }
 
@@ -113,7 +113,7 @@ export default function AnalyticsDashboard({
     const fetchAnalytics = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/analytics?type=${reportType}&user_id=${userId}&time_range=${selectedTimeRange}`);
+        const response = await fetch(`/api/analytics?type=${reportType}&userId=${userId}&time_range=${selectedTimeRange}`);
         const data = await response.json();
         
         if (data.success) {
@@ -230,7 +230,7 @@ export default function AnalyticsDashboard({
                   {analyticsData.user.xp.toLocaleString()}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  +{analyticsData.stats.xp_gained} in period
+                  +{analyticsData.stats.xpGained} in period
                 </p>
               </CardContent>
             </Card>
@@ -241,10 +241,10 @@ export default function AnalyticsDashboard({
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {analyticsData.user.skill_points.toLocaleString()}
+                  {analyticsData.user.skillPoints.toLocaleString()}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  +{analyticsData.stats.skill_points_gained} in period
+                  +{analyticsData.stats.skillPointsGained} in period
                 </p>
               </CardContent>
             </Card>
@@ -255,17 +255,17 @@ export default function AnalyticsDashboard({
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {analyticsData.user.quest_completion_rate?.toFixed(1)}%
+                  {analyticsData.user.questCompletionRate?.toFixed(1)}%
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {analyticsData.stats.completed_quests}/{analyticsData.stats.total_quests} quests
+                  {analyticsData.stats.completedQuests}/{analyticsData.stats.totalQuests} quests
                 </p>
               </CardContent>
             </Card>
           </div>
 
           {/* Progress Charts */}
-          {analyticsData.progress_over_time && analyticsData.progress_over_time.length > 0 && (
+          {analyticsData.progressOverTime && analyticsData.progressOverTime.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle>Progress Over Time</CardTitle>
@@ -277,7 +277,7 @@ export default function AnalyticsDashboard({
                 <div className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart
-                      data={analyticsData.progress_over_time}
+                      data={analyticsData.progressOverTime}
                       margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
                     >
                       <CartesianGrid strokeDasharray="3 3" />
@@ -312,7 +312,7 @@ export default function AnalyticsDashboard({
           )}
 
           {/* Recent Activity */}
-          {analyticsData.recent_activity && analyticsData.recent_activity.length > 0 && (
+          {analyticsData.recentActivity && analyticsData.recentActivity.length > 0 && (
             <Card>
               <CardHeader>
                 <CardTitle>Recent Activity</CardTitle>
@@ -320,7 +320,7 @@ export default function AnalyticsDashboard({
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {analyticsData.recent_activity.slice(0, 5).map((activity) => (
+                  {analyticsData.recentActivity.slice(0, 5).map((activity) => (
                     <div key={activity.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
                         <div className="font-medium">{activity.quests.title}</div>
@@ -328,13 +328,13 @@ export default function AnalyticsDashboard({
                           <span className={getRankColor(activity.quests.difficulty)}>
                             {activity.quests.difficulty}-Rank
                           </span>
-                          <span>{activity.quests.quest_category}</span>
-                          <span>{format(new Date(activity.completion_date), 'MMM dd, yyyy')}</span>
+                          <span>{activity.quests.questCategory}</span>
+                          <span>{format(new Date(activity.completionDate), 'MMM dd, yyyy')}</span>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="font-medium">+{activity.xp_earned} XP</div>
-                        <div className="text-sm text-muted-foreground">+{activity.skill_points_earned} SP</div>
+                        <div className="font-medium">+{activity.xpEarned} XP</div>
+                        <div className="text-sm text-muted-foreground">+{activity.skillPointsEarned} SP</div>
                       </div>
                     </div>
                   ))}
@@ -345,7 +345,7 @@ export default function AnalyticsDashboard({
         </>
       )}
 
-      {reportType === 'platform' && analyticsData.platform_stats && (
+      {reportType === 'platform' && analyticsData.platformStats && (
         <>
           {/* Platform Overview Stats */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -356,10 +356,10 @@ export default function AnalyticsDashboard({
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {analyticsData.platform_stats.total_users.toLocaleString()}
+                  {analyticsData.platformStats.totalUsers.toLocaleString()}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Active users: {analyticsData.platform_stats.active_users}
+                  Active users: {analyticsData.platformStats.activeUsers}
                 </p>
               </CardContent>
             </Card>
@@ -370,10 +370,10 @@ export default function AnalyticsDashboard({
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {analyticsData.platform_stats.total_quests.toLocaleString()}
+                  {analyticsData.platformStats.totalQuests.toLocaleString()}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Assignments: {analyticsData.platform_stats.total_assignments}
+                  Assignments: {analyticsData.platformStats.totalAssignments}
                 </p>
               </CardContent>
             </Card>
@@ -384,10 +384,10 @@ export default function AnalyticsDashboard({
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {analyticsData.platform_stats.total_completions.toLocaleString()}
+                  {analyticsData.platformStats.totalCompletions.toLocaleString()}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Completion Rate: {analyticsData.platform_stats.completion_rate.toFixed(1)}%
+                  Completion Rate: {analyticsData.platformStats.completionRate.toFixed(1)}%
                 </p>
               </CardContent>
             </Card>
@@ -398,10 +398,10 @@ export default function AnalyticsDashboard({
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {analyticsData.platform_stats.active_users.toLocaleString()}
+                  {analyticsData.platformStats.activeUsers.toLocaleString()}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  From {analyticsData.platform_stats.total_users} total
+                  From {analyticsData.platformStats.totalUsers} total
                 </p>
               </CardContent>
             </Card>
@@ -410,7 +410,7 @@ export default function AnalyticsDashboard({
           {/* Platform Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Top Categories */}
-            {analyticsData.top_categories && analyticsData.top_categories.length > 0 && (
+            {analyticsData.topCategories && analyticsData.topCategories.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle>Top Quest Categories</CardTitle>
@@ -420,7 +420,7 @@ export default function AnalyticsDashboard({
                   <div className="h-80">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart
-                        data={analyticsData.top_categories}
+                        data={analyticsData.topCategories}
                         margin={{ top: 20, right: 30, left: 20, bottom: 60 }}
                       >
                         <CartesianGrid strokeDasharray="3 3" />
@@ -441,7 +441,7 @@ export default function AnalyticsDashboard({
             )}
 
             {/* Rank Distribution */}
-            {analyticsData.rank_distribution && analyticsData.rank_distribution.length > 0 && (
+            {analyticsData.rankDistribution && analyticsData.rankDistribution.length > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle>Rank Distribution</CardTitle>
@@ -451,7 +451,7 @@ export default function AnalyticsDashboard({
                   <div className="h-80">
                     <ResponsiveContainer width="100%" height="100%">
                       <BarChart
-                        data={analyticsData.rank_distribution}
+                        data={analyticsData.rankDistribution}
                         margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
                       >
                         <CartesianGrid strokeDasharray="3 3" />

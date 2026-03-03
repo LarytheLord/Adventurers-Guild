@@ -1,18 +1,12 @@
 // app/api/matching/route.ts
 import { NextRequest } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { prisma } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {
     // Parse query parameters
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('user_id');
+    const userId = searchParams.get('userId');
     const limit = searchParams.get('limit') || '10';
 
     // Validate user ID is provided
@@ -21,64 +15,65 @@ export async function GET(request: NextRequest) {
     }
 
     // Get user's profile information including skills and rank
-    const { data: user, error: userError } = await supabase
-      .from('users')
-      .select(`
-        id,
-        role,
-        rank,
-        xp,
-        skill_points,
-        level,
-        adventurer_profiles (
-          specialization,
-          primary_skills,
-          quest_completion_rate
-        ),
-        skill_progress (
-          skill_id,
-          level,
-          experience_points
-        )
-      `)
-      .eq('id', userId)
-      .single();
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        role: true,
+        rank: true,
+        xp: true,
+        skillPoints: true,
+        level: true,
+        adventurerProfile: {
+          select: {
+            specialization: true,
+            primarySkills: true,
+            questCompletionRate: true,
+          },
+        },
+        skillProgress: {
+          select: {
+            skillId: true,
+            level: true,
+            experiencePoints: true,
+          },
+        },
+      },
+    });
 
-    if (userError || !user) {
+    if (!user) {
       return Response.json({ error: 'User not found', success: false }, { status: 404 });
     }
 
     // Get available quests
-    const { data: quests, error: questsError } = await supabase
-      .from('quests')
-      .select(`
-        id,
-        title,
-        description,
-        quest_type,
-        status,
-        difficulty,
-        xp_reward,
-        skill_points_reward,
-        monetary_reward,
-        required_skills,
-        required_rank,
-        max_participants,
-        quest_category,
-        company_id,
-        created_at,
-        deadline,
-        users (
-          name,
-          is_verified
-        )
-      `)
-      .eq('status', 'available')
-      .limit(parseInt(limit));
-
-    if (questsError) {
-      throw new Error(questsError.message);
-    }
+    const quests = await prisma.quest.findMany({
+      where: { status: 'available' },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        questType: true,
+        status: true,
+        difficulty: true,
+        xpReward: true,
+        skillPointsReward: true,
+        monetaryReward: true,
+        requiredSkills: true,
+        requiredRank: true,
+        maxParticipants: true,
+        questCategory: true,
+        companyId: true,
+        createdAt: true,
+        deadline: true,
+        company: {
+          select: {
+            name: true,
+            isVerified: true,
+          },
+        },
+      },
+      take: parseInt(limit),
+    });
 
     // If user is not an adventurer, return empty list
     if (user.role !== 'adventurer') {
@@ -89,9 +84,9 @@ export async function GET(request: NextRequest) {
     const matchedQuests = quests.map(quest => {
       // Calculate match score based on multiple factors
       let matchScore = 0;
-      
+
       // Extract profile data once for use throughout
-      const profile: any = Array.isArray(user.adventurer_profiles) ? user.adventurer_profiles[0] : user.adventurer_profiles;
+      const profile = Array.isArray(user.adventurerProfile) ? user.adventurerProfile[0] : user.adventurerProfile;
 
       // 1. Rank compatibility (0-25 points)
       if (quest.difficulty === user.rank) {
@@ -101,28 +96,28 @@ export async function GET(request: NextRequest) {
         const rankValues: Record<string, number> = { 'F': 0, 'E': 1, 'D': 2, 'C': 3, 'B': 4, 'A': 5, 'S': 6 };
         const userRankValue = rankValues[user.rank] || 0;
         const questRankValue = rankValues[quest.difficulty] || 0;
-        
+
         if (userRankValue >= questRankValue) {
           matchScore += Math.max(0, 25 - (userRankValue - questRankValue) * 5);
         }
       }
 
       // 2. Skill compatibility (0-35 points)
-      if (quest.required_skills && Array.isArray(quest.required_skills) && quest.required_skills.length > 0) {
+      if (quest.requiredSkills && Array.isArray(quest.requiredSkills) && quest.requiredSkills.length > 0) {
         // Count how many required skills the user has
         const userSkills = [
-          ...(profile?.primary_skills || []),
-          ...((user.skill_progress || []).map((sp: any) => sp.skill_id))
+          ...(profile?.primarySkills || []),
+          ...((user.skillProgress || []).map((sp: { skillId: string }) => sp.skillId))
         ];
-        
-        const matchingSkills = quest.required_skills.filter((reqSkill: string) => 
-          userSkills.some(userSkill => 
+
+        const matchingSkills = (quest.requiredSkills as string[]).filter((reqSkill: string) =>
+          userSkills.some((userSkill: string) =>
             userSkill.toLowerCase().includes(reqSkill.toLowerCase()) ||
             reqSkill.toLowerCase().includes(userSkill.toLowerCase())
           )
         ).length;
-        
-        const skillMatchPercentage = matchingSkills / quest.required_skills.length;
+
+        const skillMatchPercentage = matchingSkills / (quest.requiredSkills as string[]).length;
         matchScore += skillMatchPercentage * 35;
       } else {
         // If no specific skills required, award full points for this category
@@ -130,8 +125,8 @@ export async function GET(request: NextRequest) {
       }
 
       // 3. Category alignment (0-20 points)
-      if (profile?.specialization && 
-          profile.specialization.toLowerCase() === quest.quest_category.toLowerCase()) {
+      if (profile?.specialization &&
+          profile.specialization.toLowerCase() === quest.questCategory.toLowerCase()) {
         matchScore += 20;
       } else {
         // Partial points if it's in a related category
@@ -143,22 +138,22 @@ export async function GET(request: NextRequest) {
           'devops': ['backend'],
           'qa': ['backend', 'frontend']
         };
-        
+
         const userSpec = profile?.specialization?.toLowerCase();
-        if (userSpec && relatedCategories[userSpec]?.includes(quest.quest_category.toLowerCase())) {
+        if (userSpec && relatedCategories[userSpec]?.includes(quest.questCategory.toLowerCase())) {
           matchScore += 10;
         }
       }
 
       // 4. Quest completion rate bonus (0-20 points)
-      if (profile?.quest_completion_rate !== undefined) {
-        const completionRate = profile.quest_completion_rate;
+      if (profile?.questCompletionRate !== undefined) {
+        const completionRate = profile.questCompletionRate;
         // Higher completion rate gets more points
         matchScore += (completionRate / 100) * 20;
       }
 
       // 5. Reward attractiveness (0-10 points)
-      const avgReward = (quest.xp_reward + (quest.monetary_reward || 0) * 100) / 2; // Convert monetary to XP equivalent
+      const avgReward = (quest.xpReward + Number(quest.monetaryReward || 0) * 100) / 2; // Convert monetary to XP equivalent
       // Higher rewards get more points, but capped
       matchScore += Math.min(10, avgReward / 250); // Scale appropriately
 
@@ -183,49 +178,55 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { user_id, num_recommendations = 5 } = body;
+    const { userId, num_recommendations = 5 } = body;
 
     // Validate required fields
-    if (!user_id) {
+    if (!userId) {
       return Response.json({ error: 'User ID is required', success: false }, { status: 400 });
     }
 
     // Get user's profile
-    const { data: user, error: userError } = await supabase
-      .from('users')
-      .select(`
-        id,
-        rank,
-        adventurer_profiles (
-          primary_skills,
-          specialization
-        ),
-        skill_progress (
-          skill_id,
-          level
-        )
-      `)
-      .eq('id', user_id)
-      .single();
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        rank: true,
+        adventurerProfile: {
+          select: {
+            primarySkills: true,
+            specialization: true,
+          },
+        },
+        skillProgress: {
+          select: {
+            skillId: true,
+            level: true,
+          },
+        },
+      },
+    });
 
-    if (userError || !user) {
+    if (!user) {
       return Response.json({ error: 'User not found', success: false }, { status: 404 });
     }
 
     // Get user's completed quests to understand their preferences
-    const { data: completedQuests, error: completedError } = await supabase
-      .from('quest_completions')
-      .select(`
-        quest_id,
-        quests (
-          quest_category,
-          required_skills
-        )
-      `)
-      .eq('user_id', user_id)
-      .limit(10); // Get last 10 completed quests
-
-    if (completedError) {
+    let completedQuests: { questId: string; quest: { questCategory: string; requiredSkills: unknown } | null }[] | null = null;
+    try {
+      completedQuests = await prisma.questCompletion.findMany({
+        where: { userId: userId },
+        select: {
+          questId: true,
+          quest: {
+            select: {
+              questCategory: true,
+              requiredSkills: true,
+            },
+          },
+        },
+        take: 10, // Get last 10 completed quests
+      });
+    } catch (completedError) {
       console.error('Error fetching completed quests:', completedError);
       // Continue without completed quests data
     }
@@ -235,15 +236,15 @@ export async function POST(request: NextRequest) {
     const skillCount: Record<string, number> = {};
 
     if (completedQuests) {
-      completedQuests.forEach((completion: any) => {
-        const questData = Array.isArray(completion.quests) ? completion.quests[0] : completion.quests;
-        if (questData?.quest_category) {
-          categoryCount[questData.quest_category] = 
-            (categoryCount[questData.quest_category] || 0) + 1;
+      completedQuests.forEach((completion) => {
+        const questData = completion.quest;
+        if (questData?.questCategory) {
+          categoryCount[questData.questCategory] =
+            (categoryCount[questData.questCategory] || 0) + 1;
         }
-        
-        if (questData?.required_skills && Array.isArray(questData.required_skills)) {
-          questData.required_skills.forEach((skill: string) => {
+
+        if (questData?.requiredSkills && Array.isArray(questData.requiredSkills)) {
+          questData.requiredSkills.forEach((skill: string) => {
             skillCount[skill] = (skillCount[skill] || 0) + 1;
           });
         }
@@ -251,56 +252,52 @@ export async function POST(request: NextRequest) {
     }
 
     // Get available quests for recommendation
-    const { data: allQuests, error: allQuestsError } = await supabase
-      .from('quests')
-      .select(`
-        id,
-        title,
-        description,
-        quest_type,
-        status,
-        difficulty,
-        xp_reward,
-        skill_points_reward,
-        monetary_reward,
-        required_skills,
-        required_rank,
-        quest_category,
-        company_id,
-        created_at,
-        deadline
-      `)
-      .eq('status', 'available')
-      .limit(50); // Limit to prevent performance issues
-
-    if (allQuestsError) {
-      throw new Error(allQuestsError.message);
-    }
+    const allQuests = await prisma.quest.findMany({
+      where: { status: 'available' },
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        questType: true,
+        status: true,
+        difficulty: true,
+        xpReward: true,
+        skillPointsReward: true,
+        monetaryReward: true,
+        requiredSkills: true,
+        requiredRank: true,
+        questCategory: true,
+        companyId: true,
+        createdAt: true,
+        deadline: true,
+      },
+      take: 50, // Limit to prevent performance issues
+    });
 
     // Calculate recommendation scores
     const recommendedQuests = allQuests.map(quest => {
       let score = 0;
 
       // Category preference (higher weight if user has completed similar quests)
-      if (categoryCount[quest.quest_category]) {
-        score += categoryCount[quest.quest_category] * 10;
+      if (categoryCount[quest.questCategory]) {
+        score += categoryCount[quest.questCategory] * 10;
       }
 
       // Skill match
-      if (quest.required_skills && Array.isArray(quest.required_skills)) {
-        const userProfile: any = Array.isArray(user.adventurer_profiles) ? user.adventurer_profiles[0] : user.adventurer_profiles;
+      if (quest.requiredSkills && Array.isArray(quest.requiredSkills)) {
+        const userProfile = Array.isArray(user.adventurerProfile) ? user.adventurerProfile[0] : user.adventurerProfile;
         const userSkills = [
-          ...(userProfile?.primary_skills || []),
-          ...((user.skill_progress || []).map((sp: any) => sp.skill_id))
+          ...(userProfile?.primarySkills || []),
+          ...((user.skillProgress || []).map((sp: { skillId: string }) => sp.skillId))
         ];
-        
-        const matchingSkills = quest.required_skills.filter((reqSkill: string) => 
-          userSkills.some(userSkill => 
+
+        const matchingSkills = (quest.requiredSkills as string[]).filter((reqSkill: string) =>
+          userSkills.some((userSkill: string) =>
             userSkill.toLowerCase().includes(reqSkill.toLowerCase()) ||
             reqSkill.toLowerCase().includes(userSkill.toLowerCase())
           )
         ).length;
-        
+
         score += matchingSkills * 5;
       }
 
@@ -308,15 +305,15 @@ export async function POST(request: NextRequest) {
       const rankValues: Record<string, number> = { 'F': 0, 'E': 1, 'D': 2, 'C': 3, 'B': 4, 'A': 5, 'S': 6 };
       const userRankValue = rankValues[user.rank] || 0;
       const questRankValue = rankValues[quest.difficulty] || 0;
-      
+
       if (userRankValue >= questRankValue) {
         score += 20 - Math.abs(userRankValue - questRankValue) * 3;
       }
 
       // Reward factor
-      score += quest.xp_reward / 100; // Normalize XP to smaller factor
-      if (quest.monetary_reward) {
-        score += quest.monetary_reward / 10; // Monetary is more valuable
+      score += quest.xpReward / 100; // Normalize XP to smaller factor
+      if (quest.monetaryReward) {
+        score += Number(quest.monetaryReward) / 10; // Monetary is more valuable
       }
 
       return {

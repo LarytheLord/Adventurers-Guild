@@ -2,6 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -22,13 +23,13 @@ interface RankingUser {
   email: string;
   rank: string;
   xp: number;
-  skill_points: number;
+  skillPoints: number;
   level: number;
   position: number;
-  adventurer_profiles?: {
+  adventurerProfiles?: {
     specialization?: string;
-    quest_completion_rate?: number;
-    total_quests_completed?: number;
+    questCompletionRate?: number;
+    totalQuestsCompleted?: number;
   };
 }
 
@@ -38,6 +39,7 @@ interface RankingsBoardProps {
 }
 
 export default function RankingsBoard({ showUserPosition = false, limit = 10 }: RankingsBoardProps) {
+  const { data: session } = useSession();
   const [rankings, setRankings] = useState<RankingUser[]>([]);
   const [loading, setLoading] = useState(true);
   const [userRank, setUserRank] = useState<{ position: number; totalUsers: number } | null>(null);
@@ -55,11 +57,8 @@ export default function RankingsBoard({ showUserPosition = false, limit = 10 }: 
         });
         setRankings(data);
         
-        if (showUserPosition) {
-          // In a real implementation, you would get the current user's ID from the session
-          // For now, we'll simulate with a mock user ID
-          const mockUserId = 'mock-user-id'; // This should come from the session
-          const userRankData = await getUserRank(mockUserId);
+        if (showUserPosition && session?.user?.id) {
+          const userRankData = await getUserRank(session.user.id);
           setUserRank(userRankData);
         }
       } catch (error) {
@@ -71,7 +70,7 @@ export default function RankingsBoard({ showUserPosition = false, limit = 10 }: 
     };
 
     loadRankings();
-  }, [selectedRank, limit, showUserPosition]);
+  }, [selectedRank, limit, showUserPosition, session?.user?.id]);
 
   const getRankColor = (rank: string) => {
     switch (rank) {
@@ -207,8 +206,8 @@ export default function RankingsBoard({ showUserPosition = false, limit = 10 }: 
                       <div className="font-medium">{user.name || user.email}</div>
                       <div className="text-sm text-muted-foreground flex items-center gap-2">
                         <span className={getRankColor(user.rank)}>{user.rank}-Rank</span>
-                        {user.adventurer_profiles?.specialization && (
-                          <span>• {user.adventurer_profiles.specialization}</span>
+                        {user.adventurerProfiles?.specialization && (
+                          <span>• {user.adventurerProfiles.specialization}</span>
                         )}
                       </div>
                     </div>
@@ -218,7 +217,7 @@ export default function RankingsBoard({ showUserPosition = false, limit = 10 }: 
                     <div className="flex items-center space-x-4">
                       <div className="text-right">
                         <div className="font-medium">{user.xp.toLocaleString()} XP</div>
-                        <div className="text-sm text-muted-foreground">{user.skill_points} SP</div>
+                        <div className="text-sm text-muted-foreground">{user.skillPoints} SP</div>
                       </div>
                       <div className="flex flex-col items-end min-w-[100px]">
                         <Badge className={getRankColor(user.rank)}>

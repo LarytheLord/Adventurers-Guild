@@ -21,22 +21,22 @@ interface Quest {
   id: string;
   title: string;
   description: string;
-  quest_type: string;
+  questType: string;
   status: string;
   difficulty: string;
-  xp_reward: number;
-  skill_points_reward: number;
-  monetary_reward?: number;
-  required_skills: string[];
-  required_rank?: string;
-  max_participants?: number;
-  quest_category: string;
+  xpReward: number;
+  skillPointsReward: number;
+  monetaryReward?: number;
+  requiredSkills: string[];
+  requiredRank?: string;
+  maxParticipants?: number;
+  questCategory: string;
   company_id: string;
-  created_at: string;
+  createdAt: string;
   deadline?: string;
   users?: {
     name: string;
-    is_verified: boolean;
+    isVerified: boolean;
   };
   matchScore?: number;
   recommendationScore?: number;
@@ -61,7 +61,7 @@ export default function QuestMatcher({ userId, onQuestSelect }: QuestMatcherProp
         
         if (activeTab === 'matches') {
           // Fetch matched quests
-          const response = await fetch(`/api/matching?user_id=${userId}&limit=5`);
+          const response = await fetch(`/api/matching?userId=${userId}&limit=5`);
           const data = await response.json();
           
           if (data.success) {
@@ -77,7 +77,7 @@ export default function QuestMatcher({ userId, onQuestSelect }: QuestMatcherProp
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              user_id: userId,
+              userId: userId,
               num_recommendations: 5
             }),
           });
@@ -226,11 +226,11 @@ export default function QuestMatcher({ userId, onQuestSelect }: QuestMatcherProp
                 </p>
                 
                 <div className="flex flex-wrap gap-2 mb-3">
-                  <Badge variant="outline">{quest.quest_category}</Badge>
-                  <Badge variant="outline">{quest.quest_type}</Badge>
-                  {quest.required_rank && (
-                    <Badge variant="outline" className={getRankColor(quest.required_rank)}>
-                      Req: {quest.required_rank}
+                  <Badge variant="outline">{quest.questCategory}</Badge>
+                  <Badge variant="outline">{quest.questType}</Badge>
+                  {quest.requiredRank && (
+                    <Badge variant="outline" className={getRankColor(quest.requiredRank)}>
+                      Req: {quest.requiredRank}
                     </Badge>
                   )}
                 </div>
@@ -238,32 +238,32 @@ export default function QuestMatcher({ userId, onQuestSelect }: QuestMatcherProp
                 <div className="grid grid-cols-3 gap-4 text-sm">
                   <div className="flex items-center">
                     <Zap className="h-4 w-4 mr-1 text-yellow-500" />
-                    <span>{quest.xp_reward} XP</span>
+                    <span>{quest.xpReward} XP</span>
                   </div>
                   <div className="flex items-center">
                     <Star className="h-4 w-4 mr-1 text-blue-500" />
-                    <span>{quest.skill_points_reward} SP</span>
+                    <span>{quest.skillPointsReward} SP</span>
                   </div>
-                  {quest.monetary_reward && (
+                  {quest.monetaryReward && (
                     <div className="flex items-center">
                       <TrendingUp className="h-4 w-4 mr-1 text-green-500" />
-                      <span>${quest.monetary_reward}</span>
+                      <span>${quest.monetaryReward}</span>
                     </div>
                   )}
                 </div>
                 
-                {quest.required_skills && quest.required_skills.length > 0 && (
+                {quest.requiredSkills && quest.requiredSkills.length > 0 && (
                   <div className="mt-3">
                     <h4 className="text-xs font-medium text-muted-foreground mb-1">Required Skills:</h4>
                     <div className="flex flex-wrap gap-1">
-                      {quest.required_skills.slice(0, 3).map((skill, idx) => (
+                      {quest.requiredSkills.slice(0, 3).map((skill, idx) => (
                         <Badge key={idx} variant="secondary" className="text-xs">
                           {skill}
                         </Badge>
                       ))}
-                      {quest.required_skills.length > 3 && (
+                      {quest.requiredSkills.length > 3 && (
                         <Badge variant="secondary" className="text-xs">
-                          +{quest.required_skills.length - 3} more
+                          +{quest.requiredSkills.length - 3} more
                         </Badge>
                       )}
                     </div>
@@ -273,7 +273,7 @@ export default function QuestMatcher({ userId, onQuestSelect }: QuestMatcherProp
               
               <CardFooter className="flex justify-between">
                 <div className="text-xs text-muted-foreground">
-                  Posted: {new Date(quest.created_at).toLocaleDateString()}
+                  Posted: {new Date(quest.createdAt).toLocaleDateString()}
                 </div>
                 <Button 
                   size="sm" 

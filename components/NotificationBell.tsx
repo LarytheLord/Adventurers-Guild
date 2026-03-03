@@ -29,13 +29,13 @@ import { toast } from 'sonner';
 // Types
 interface Notification {
   id: string;
-  user_id: string;
+  userId: string;
   title: string;
   message: string;
   type: string;
-  data?: any;
-  read_at?: string;
-  created_at: string;
+  data?: Record<string, unknown>;
+  readAt?: string;
+  createdAt: string;
 }
 
 interface NotificationBellProps {
@@ -55,13 +55,13 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
       
       try {
         setLoading(true);
-        const response = await fetch(`/api/notifications?user_id=${userId}&limit=10`);
+        const response = await fetch(`/api/notifications?userId=${userId}&limit=10`);
         const data = await response.json();
         
         if (data.success) {
           setNotifications(data.notifications);
           // Calculate unread count
-          const unread = data.notifications.filter((n: Notification) => !n.read_at).length;
+          const unread = data.notifications.filter((n: Notification) => !n.readAt).length;
           setUnreadCount(unread);
         } else {
           toast.error(data.error || 'Failed to fetch notifications');
@@ -96,7 +96,7 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
         },
         body: JSON.stringify({
           notification_id: notificationId,
-          user_id: userId,
+          userId: userId,
           is_read: true
         }),
       });
@@ -107,7 +107,7 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
         // Update local state
         setNotifications(prev => 
           prev.map(n => 
-            n.id === notificationId ? { ...n, read_at: new Date().toISOString() } : n
+            n.id === notificationId ? { ...n, readAt: new Date().toISOString() } : n
           )
         );
         setUnreadCount(prev => Math.max(0, prev - 1));
@@ -128,7 +128,7 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          user_id: userId
+          userId: userId
         }),
       });
 
@@ -137,7 +137,7 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
       if (data.success) {
         // Update local state
         setNotifications(prev => 
-          prev.map(n => ({ ...n, read_at: new Date().toISOString() }))
+          prev.map(n => ({ ...n, readAt: new Date().toISOString() }))
         );
         setUnreadCount(0);
         toast.success('All notifications marked as read');
@@ -159,7 +159,7 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
         },
         body: JSON.stringify({
           notification_id: notificationId,
-          user_id: userId
+          userId: userId
         }),
       });
 
@@ -168,7 +168,7 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
       if (data.success) {
         // Update local state
         setNotifications(prev => prev.filter(n => n.id !== notificationId));
-        if (notifications.find(n => n.id === notificationId)?.read_at === null) {
+        if (notifications.find(n => n.id === notificationId)?.readAt === null) {
           setUnreadCount(prev => Math.max(0, prev - 1));
         }
         toast.success('Notification deleted');
@@ -184,25 +184,25 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'quest_assigned':
-        return <Target className="h-4 w-4 text-blue-500" />;
+        return <Target className="h-4 w-4 text-orange-400" />;
       case 'quest_updated':
-        return <Edit className="h-4 w-4 text-yellow-500" />;
+        return <Edit className="h-4 w-4 text-amber-400" />;
       case 'quest_completed':
-        return <Check className="h-4 w-4 text-green-500" />;
+        return <Check className="h-4 w-4 text-emerald-500" />;
       case 'quest_reviewed':
-        return <Star className="h-4 w-4 text-purple-500" />;
+        return <Star className="h-4 w-4 text-amber-400" />;
       case 'new_message':
-        return <MessageCircle className="h-4 w-4 text-indigo-500" />;
+        return <MessageCircle className="h-4 w-4 text-slate-400" />;
       case 'rank_up':
-        return <Trophy className="h-4 w-4 text-yellow-500" />;
+        return <Trophy className="h-4 w-4 text-orange-400" />;
       case 'skill_unlocked':
-        return <Star className="h-4 w-4 text-purple-500" />;
+        return <Star className="h-4 w-4 text-orange-400" />;
       case 'team_invite':
-        return <UserCheck className="h-4 w-4 text-green-500" />;
+        return <UserCheck className="h-4 w-4 text-emerald-500" />;
       case 'payment_received':
         return <DollarSign className="h-4 w-4 text-emerald-500" />;
       default:
-        return <Mail className="h-4 w-4 text-gray-500" />;
+        return <Mail className="h-4 w-4 text-slate-400" />;
     }
   };
 
@@ -261,7 +261,7 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
             notifications.map((notification) => (
               <div 
                 key={notification.id} 
-                className={`p-3 ${!notification.read_at ? 'bg-muted/30' : ''}`}
+                className={`p-3 ${!notification.readAt ? 'bg-muted/30' : ''}`}
               >
                 <div className="flex items-start gap-3">
                   <div className="mt-0.5">
@@ -269,11 +269,11 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between">
-                      <p className={`text-sm font-medium ${!notification.read_at ? 'text-foreground' : 'text-muted-foreground'}`}>
+                      <p className={`text-sm font-medium ${!notification.readAt ? 'text-foreground' : 'text-muted-foreground'}`}>
                         {notification.title}
                       </p>
                       <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        {formatNotificationTime(notification.created_at)}
+                        {formatNotificationTime(notification.createdAt)}
                       </span>
                     </div>
                     <p className="text-sm text-muted-foreground mt-1">
@@ -281,7 +281,7 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
                     </p>
                   </div>
                   <div className="flex items-center gap-1">
-                    {!notification.read_at && (
+                    {!notification.readAt && (
                       <Button
                         variant="ghost"
                         size="sm"

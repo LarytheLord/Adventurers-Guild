@@ -1,32 +1,26 @@
 // lib/quest-utils.ts
-import { createClient } from '@supabase/supabase-js';
-import { env } from './env';
-
-const supabase = createClient(
-  env.NEXT_PUBLIC_SUPABASE_URL,
-  env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+import { prisma } from './db';
 
 // Types for our data
 export interface Quest {
   id: string;
   title: string;
   description: string;
-  detailed_description?: string;
-  quest_type: string;
+  detailedDescription?: string;
+  questType: string;
   status: string;
   difficulty: string;
-  xp_reward: number;
-  skill_points_reward: number;
-  monetary_reward?: number;
-  required_skills: string[];
-  required_rank?: string;
-  max_participants?: number;
-  quest_category: string;
-  company_id: string;
-  created_at: string;
+  xpReward: number;
+  skillPointsReward: number;
+  monetaryReward?: number;
+  requiredSkills: string[];
+  requiredRank?: string;
+  maxParticipants?: number;
+  questCategory: string;
+  companyId: string;
+  createdAt: string;
   deadline?: string;
-  users?: {
+  company?: {
     name: string;
     email: string;
   };
@@ -34,215 +28,166 @@ export interface Quest {
 
 export interface QuestAssignment {
   id: string;
-  quest_id: string;
-  user_id: string;
-  assigned_at: string;
+  questId: string;
+  userId: string;
+  assignedAt: string;
   status: string;
-  started_at?: string;
-  completed_at?: string;
+  startedAt?: string;
+  completedAt?: string;
   progress: number;
-  quests?: Quest;
+  quest?: Quest;
 }
 
 export interface QuestSubmission {
   id: string;
-  assignment_id: string;
-  user_id: string;
-  submission_content: string;
-  submission_notes?: string;
-  submitted_at: string;
+  assignmentId: string;
+  userId: string;
+  submissionContent: string;
+  submissionNotes?: string;
+  submittedAt: string;
   status: string;
-  reviewer_id?: string;
-  reviewed_at?: string;
-  review_notes?: string;
-  quality_score?: number;
+  reviewerId?: string;
+  reviewedAt?: string;
+  reviewNotes?: string;
+  qualityScore?: number;
 }
 
 // Fetch all available quests
 export async function fetchAvailableQuests(): Promise<Quest[]> {
-  const { data, error } = await supabase
-    .from('quests')
-    .select(`
-      id,
-      title,
-      description,
-      quest_type,
-      status,
-      difficulty,
-      xp_reward,
-      skill_points_reward,
-      monetary_reward,
-      required_skills,
-      required_rank,
-      max_participants,
-      quest_category,
-      company_id,
-      created_at,
-      deadline,
-      users!quests_company_id_fkey (
-        name,
-        email
-      )
-    `)
-    .eq('status', 'available');
+  const quests = await prisma.quest.findMany({
+    where: { status: 'available' },
+    include: {
+      company: { select: { name: true, email: true } },
+    },
+  });
 
-  if (error) {
-    console.error('Error fetching quests:', error);
-    throw new Error('Failed to fetch quests');
-  }
-
-  // Transform data to handle array access issues
-  return (data || []).map((item: any) => {
-    const userData = Array.isArray(item.users) ? item.users[0] : item.users;
-    return {
-      ...item,
-      users: userData || { name: '', email: '' }
-    };
-  }) as Quest[];
+  return quests.map((q) => ({
+    id: q.id,
+    title: q.title,
+    description: q.description,
+    detailedDescription: q.detailedDescription ?? undefined,
+    questType: q.questType,
+    status: q.status,
+    difficulty: q.difficulty,
+    xpReward: q.xpReward,
+    skillPointsReward: q.skillPointsReward,
+    monetaryReward: q.monetaryReward ? Number(q.monetaryReward) : undefined,
+    requiredSkills: q.requiredSkills,
+    requiredRank: q.requiredRank ?? undefined,
+    maxParticipants: q.maxParticipants ?? undefined,
+    questCategory: q.questCategory,
+    companyId: q.companyId ?? '',
+    createdAt: q.createdAt.toISOString(),
+    deadline: q.deadline?.toISOString(),
+    company: q.company ? { name: q.company.name ?? '', email: q.company.email } : undefined,
+  }));
 }
 
 // Fetch quests for a specific user
-export async function fetchUserQuests(userId: string): Promise<QuestAssignment[]> {
-  const { data, error } = await supabase
-    .from('quest_assignments')
-    .select(`
-      id,
-      quest_id,
-      user_id,
-      assigned_at,
-      status,
-      started_at,
-      completed_at,
-      progress,
-      quests (
-        title,
-        description,
-        quest_type,
-        status,
-        difficulty,
-        xp_reward,
-        skill_points_reward,
-        required_skills,
-        required_rank,
-        quest_category,
-        deadline
-      )
-    `)
-    .eq('user_id', userId);
+export async function fetchUserQuests(userId: string) {
+  const assignments = await prisma.questAssignment.findMany({
+    where: { userId },
+    include: {
+      quest: {
+        select: {
+          title: true,
+          description: true,
+          questType: true,
+          status: true,
+          difficulty: true,
+          xpReward: true,
+          skillPointsReward: true,
+          requiredSkills: true,
+          requiredRank: true,
+          questCategory: true,
+          deadline: true,
+        },
+      },
+    },
+  });
 
-  if (error) {
-    console.error('Error fetching user quests:', error);
-    throw new Error('Failed to fetch user quests');
-  }
-
-  // Transform data to handle array access issues
-  return (data || []).map((item: any) => {
-    const questData = Array.isArray(item.quests) ? item.quests[0] : item.quests;
-    return {
-      ...item,
-      quests: questData
-    };
-  }) as QuestAssignment[];
+  return assignments.map((a) => ({
+    id: a.id,
+    questId: a.questId,
+    userId: a.userId,
+    assignedAt: a.assignedAt.toISOString(),
+    status: a.status,
+    startedAt: a.startedAt?.toISOString(),
+    completedAt: a.completedAt?.toISOString(),
+    progress: Number(a.progress),
+    quest: a.quest,
+  }));
 }
 
 // Fetch quest by ID
 export async function fetchQuestById(questId: string): Promise<Quest | null> {
-  const { data, error } = await supabase
-    .from('quests')
-    .select(`
-      id,
-      title,
-      description,
-      detailed_description,
-      quest_type,
-      status,
-      difficulty,
-      xp_reward,
-      skill_points_reward,
-      monetary_reward,
-      required_skills,
-      required_rank,
-      max_participants,
-      quest_category,
-      company_id,
-      created_at,
-      deadline,
-      users!quests_company_id_fkey (
-        name,
-        email
-      )
-    `)
-    .eq('id', questId)
-    .single();
+  const q = await prisma.quest.findUnique({
+    where: { id: questId },
+    include: {
+      company: { select: { name: true, email: true } },
+    },
+  });
 
-  if (error) {
-    console.error('Error fetching quest:', error);
-    return null;
-  }
+  if (!q) return null;
 
-  // Transform data to handle array access issues
-  if (data) {
-    const userData = Array.isArray(data.users) ? data.users[0] : data.users;
-    return {
-      ...data,
-      users: userData || { name: '', email: '' }
-    } as Quest;
-  }
-
-  return data;
+  return {
+    id: q.id,
+    title: q.title,
+    description: q.description,
+    detailedDescription: q.detailedDescription ?? undefined,
+    questType: q.questType,
+    status: q.status,
+    difficulty: q.difficulty,
+    xpReward: q.xpReward,
+    skillPointsReward: q.skillPointsReward,
+    monetaryReward: q.monetaryReward ? Number(q.monetaryReward) : undefined,
+    requiredSkills: q.requiredSkills,
+    requiredRank: q.requiredRank ?? undefined,
+    maxParticipants: q.maxParticipants ?? undefined,
+    questCategory: q.questCategory,
+    companyId: q.companyId ?? '',
+    createdAt: q.createdAt.toISOString(),
+    deadline: q.deadline?.toISOString(),
+    company: q.company ? { name: q.company.name ?? '', email: q.company.email } : undefined,
+  };
 }
 
 // Assign user to a quest
 export async function assignToQuest(questId: string, userId: string): Promise<QuestAssignment | null> {
-  // Check if the quest is available
   const quest = await fetchQuestById(questId);
   if (!quest || quest.status !== 'available') {
     throw new Error('Quest is not available');
   }
 
-  // Check max participants
-  if (quest.max_participants) {
-    const { count, error } = await supabase
-      .from('quest_assignments')
-      .select('*', { count: 'exact', head: true })
-      .eq('quest_id', questId)
-      .neq('status', 'cancelled');
+  if (quest.maxParticipants) {
+    const count = await prisma.questAssignment.count({
+      where: { questId, status: { not: 'cancelled' } },
+    });
 
-    if (error) {
-      console.error('Error checking participant count:', error);
-      throw new Error('Error checking participant count');
-    }
-
-    if (count && count >= quest.max_participants) {
+    if (count >= quest.maxParticipants) {
       throw new Error('Maximum participants reached for this quest');
     }
   }
 
-  // Create assignment
-  const { data, error } = await supabase
-    .from('quest_assignments')
-    .insert([{
-      quest_id: questId,
-      user_id: userId,
-      status: 'assigned'
-    }])
-    .select()
-    .single();
+  const assignment = await prisma.questAssignment.create({
+    data: { questId, userId, status: 'assigned' },
+  });
 
-  if (error) {
-    console.error('Error creating quest assignment:', error);
-    throw new Error('Failed to assign to quest');
+  if (!quest.maxParticipants || quest.maxParticipants === 1) {
+    await prisma.quest.update({
+      where: { id: questId },
+      data: { status: 'in_progress' },
+    });
   }
 
-  // Update quest status if it's a single-participant quest
-  if (!quest.max_participants || quest.max_participants === 1) {
-    await supabase
-      .from('quests')
-      .update({ status: 'in_progress' })
-      .eq('id', questId);
-  }
-
-  return data;
+  return {
+    id: assignment.id,
+    questId: assignment.questId,
+    userId: assignment.userId,
+    assignedAt: assignment.assignedAt.toISOString(),
+    status: assignment.status,
+    progress: Number(assignment.progress),
+  };
 }
 
 // Submit a quest for review
@@ -252,41 +197,37 @@ export async function submitQuest(
   submissionContent: string,
   submissionNotes?: string
 ): Promise<QuestSubmission | null> {
-  // Check if assignment exists and is in a valid state for submission
-  const { data: assignment, error: assignmentError } = await supabase
-    .from('quest_assignments')
-    .select('status')
-    .eq('id', assignmentId)
-    .single();
+  const assignment = await prisma.questAssignment.findUnique({
+    where: { id: assignmentId },
+  });
 
-  if (assignmentError || !assignment || !['assigned', 'started', 'in_progress'].includes(assignment.status)) {
+  if (!assignment || !['assigned', 'started', 'in_progress'].includes(assignment.status)) {
     throw new Error('Invalid assignment state for submission');
   }
 
-  // Create submission
-  const { data, error } = await supabase
-    .from('quest_submissions')
-    .insert([{
-      assignment_id: assignmentId,
-      user_id: userId,
-      submission_content: submissionContent,
-      submission_notes: submissionNotes || null
-    }])
-    .select()
-    .single();
+  const submission = await prisma.questSubmission.create({
+    data: {
+      assignmentId,
+      userId,
+      submissionContent,
+      submissionNotes: submissionNotes || null,
+    },
+  });
 
-  if (error) {
-    console.error('Error creating quest submission:', error);
-    throw new Error('Failed to create quest submission');
-  }
+  await prisma.questAssignment.update({
+    where: { id: assignmentId },
+    data: { status: 'submitted' },
+  });
 
-  // Update assignment status to submitted
-  await supabase
-    .from('quest_assignments')
-    .update({ status: 'submitted' })
-    .eq('id', assignmentId);
-
-  return data;
+  return {
+    id: submission.id,
+    assignmentId: submission.assignmentId,
+    userId: submission.userId ?? '',
+    submissionContent: submission.submissionContent,
+    submissionNotes: submission.submissionNotes ?? undefined,
+    submittedAt: submission.submittedAt.toISOString(),
+    status: submission.status,
+  };
 }
 
 // Update quest assignment status
@@ -295,24 +236,26 @@ export async function updateAssignmentStatus(
   status: string,
   progress?: number
 ): Promise<QuestAssignment | null> {
-  const { data, error } = await supabase
-    .from('quest_assignments')
-    .update({
-      status,
-      progress: progress !== undefined ? progress : undefined,
-      started_at: status === 'started' ? new Date().toISOString() : undefined,
-      completed_at: status === 'completed' ? new Date().toISOString() : undefined
-    })
-    .eq('id', assignmentId)
-    .select()
-    .single();
+  const data: Record<string, unknown> = { status };
+  if (progress !== undefined) data.progress = progress;
+  if (status === 'started') data.startedAt = new Date();
+  if (status === 'completed') data.completedAt = new Date();
 
-  if (error) {
-    console.error('Error updating assignment status:', error);
-    throw new Error('Failed to update assignment status');
-  }
+  const assignment = await prisma.questAssignment.update({
+    where: { id: assignmentId },
+    data,
+  });
 
-  return data;
+  return {
+    id: assignment.id,
+    questId: assignment.questId,
+    userId: assignment.userId,
+    assignedAt: assignment.assignedAt.toISOString(),
+    status: assignment.status,
+    startedAt: assignment.startedAt?.toISOString(),
+    completedAt: assignment.completedAt?.toISOString(),
+    progress: Number(assignment.progress),
+  };
 }
 
 // Delegate to centralized rank module

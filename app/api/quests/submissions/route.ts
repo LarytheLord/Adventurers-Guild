@@ -1,15 +1,9 @@
 // app/api/quests/submissions/route.ts
-import { NextRequest } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
+import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { NextResponse } from 'next/server';
-
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { prisma } from '@/lib/db';
+import { AssignmentStatus } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
   // Check authentication
@@ -21,8 +15,8 @@ export async function GET(request: NextRequest) {
   try {
     // Parse query parameters
     const { searchParams } = new URL(request.url);
-    const assignmentId = searchParams.get('assignment_id');
-    const requestedUserId = searchParams.get('user_id');
+    const assignmentId = searchParams.get('assignmentId');
+    const requestedUserId = searchParams.get('userId');
     const status = searchParams.get('status');
     const limit = searchParams.get('limit') || '10';
     const offset = searchParams.get('offset') || '0';
@@ -30,81 +24,61 @@ export async function GET(request: NextRequest) {
     const currentUserId = session.user.id;
     const currentUserRole = session.user.role;
 
-    // Build query
-    let query = supabase
-      .from('quest_submissions')
-      .select(`
-        id,
-        assignment_id,
-        user_id,
-        submission_content,
-        submission_notes,
-        submitted_at,
-        status,
-        reviewer_id,
-        reviewed_at,
-        review_notes,
-        quality_score,
-        quest_assignments (
-          quest_id,
-          status
-        ),
-        users (
-          name,
-          email
-        )
-      `)
-      .range(parseInt(offset), parseInt(offset) + parseInt(limit) - 1);
+    // Build where clause based on permissions
+    const where: Record<string, unknown> = {};
 
-    // Apply permissions based on user role
     if (currentUserRole === 'adventurer') {
       // Adventurers can only see their own submissions
-      query = query.eq('user_id', currentUserId);
+      where.userId = currentUserId;
     } else if (currentUserRole === 'company') {
       // Companies can see submissions for their quests
-      // First get the company's quests
-      const { data: companyQuests, error: questsError } = await supabase
-        .from('quests')
-        .select('id')
-        .eq('company_id', currentUserId);
+      const companyQuests = await prisma.quest.findMany({
+        where: { companyId: currentUserId },
+        select: { id: true },
+      });
 
-      if (questsError) {
-        throw new Error(questsError.message);
-      }
-
-      // Then get assignments for those quests
-      if (companyQuests && companyQuests.length > 0) {
-        const questIds = companyQuests.map(q => q.id);
-        query = query.in('quest_assignments.quest_id', questIds);
-      } else {
-        // If company has no quests, return empty result
+      if (companyQuests.length === 0) {
         return NextResponse.json({ submissions: [], success: true });
       }
+
+      const questIds = companyQuests.map(q => q.id);
+      where.assignment = { questId: { in: questIds } };
     } else if (currentUserRole === 'admin') {
-      // Admins can see all submissions
-      // No additional filter needed
+      // Admins can see all submissions - no additional filter needed
     } else {
-      // Other roles are not allowed
       return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 403 });
     }
 
     // Add filters if provided (respecting permissions)
     if (assignmentId) {
-      query = query.eq('assignment_id', assignmentId);
+      where.assignmentId = assignmentId;
     }
     if (requestedUserId && currentUserRole === 'admin') {
-      // Only admins can request submissions for a specific user
-      query = query.eq('user_id', requestedUserId);
+      where.userId = requestedUserId;
     }
     if (status) {
-      query = query.eq('status', status);
+      where.status = status;
     }
 
-    const { data, error } = await query;
-
-    if (error) {
-      throw new Error(error.message);
-    }
+    const data = await prisma.questSubmission.findMany({
+      where,
+      include: {
+        assignment: {
+          select: {
+            questId: true,
+            status: true,
+          },
+        },
+        user: {
+          select: {
+            name: true,
+            email: true,
+          },
+        },
+      },
+      skip: parseInt(offset),
+      take: parseInt(limit),
+    });
 
     return NextResponse.json({ submissions: data, success: true });
   } catch (error) {
@@ -122,27 +96,26 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { assignment_id, submission_content, submission_notes } = body;
-    const user_id = session.user.id; // Use authenticated user's ID
+    const { assignmentId, submissionContent, submissionNotes } = body;
+    const userId = session.user.id; // Use authenticated user's ID
 
     // Validate required fields
-    if (!assignment_id || !submission_content) {
+    if (!assignmentId || !submissionContent) {
       return NextResponse.json({ error: 'Missing required fields', success: false }, { status: 400 });
     }
 
     // Check if the assignment exists and belongs to the current user
-    const { data: assignment, error: assignmentError } = await supabase
-      .from('quest_assignments')
-      .select('status, user_id')
-      .eq('id', assignment_id)
-      .single();
+    const assignment = await prisma.questAssignment.findUnique({
+      where: { id: assignmentId },
+      select: { status: true, userId: true },
+    });
 
-    if (assignmentError || !assignment) {
+    if (!assignment) {
       return NextResponse.json({ error: 'Assignment not found', success: false }, { status: 404 });
     }
 
     // Only the assigned user can submit
-    if (assignment.user_id !== user_id && session.user.role !== 'admin') {
+    if (assignment.userId !== userId && session.user.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized to submit for this assignment', success: false }, { status: 403 });
     }
 
@@ -151,26 +124,20 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the submission
-    const { data, error } = await supabase
-      .from('quest_submissions')
-      .insert([{
-        assignment_id,
-        user_id,
-        submission_content,
-        submission_notes: submission_notes || null
-      }])
-      .select()
-      .single();
-
-    if (error) {
-      throw new Error(error.message);
-    }
+    const data = await prisma.questSubmission.create({
+      data: {
+        assignmentId: assignmentId,
+        userId,
+        submissionContent: submissionContent,
+        submissionNotes: submissionNotes || null,
+      },
+    });
 
     // Update assignment status to submitted
-    await supabase
-      .from('quest_assignments')
-      .update({ status: 'submitted' })
-      .eq('id', assignment_id);
+    await prisma.questAssignment.update({
+      where: { id: assignmentId },
+      data: { status: 'submitted' },
+    });
 
     return NextResponse.json({ submission: data, success: true }, { status: 201 });
   } catch (error) {
@@ -188,67 +155,60 @@ export async function PUT(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { submission_id, status, review_notes, quality_score } = body;
-    const reviewer_id = session.user.id; // Use authenticated user's ID
+    const { submissionId, status, review_notes, quality_score } = body;
+    const reviewerId = session.user.id; // Use authenticated user's ID
 
     // Validate required fields
-    if (!submission_id || !status) {
+    if (!submissionId || !status) {
       return NextResponse.json({ error: 'Missing required fields', success: false }, { status: 400 });
     }
 
     // Check if the user has permission to update this submission
     // Only admins, or company users for their own quests can review submissions
     // First get the submission
-    const { data: submission, error: submissionError } = await supabase
-      .from('quest_submissions')
-      .select('id, assignment_id')
-      .eq('id', submission_id)
-      .single();
+    const submission = await prisma.questSubmission.findUnique({
+      where: { id: submissionId },
+      select: { id: true, assignmentId: true },
+    });
 
-    if (submissionError || !submission) {
+    if (!submission) {
       return NextResponse.json({ error: 'Submission not found', success: false }, { status: 404 });
     }
 
     // Then get the assignment to check quest details
-    const { data: assignment, error: assignmentError } = await supabase
-      .from('quest_assignments')
-      .select(`
-        quest_id,
-        quests (
-          company_id
-        )
-      `)
-      .eq('id', submission.assignment_id)
-      .single();
+    const assignmentData = await prisma.questAssignment.findUnique({
+      where: { id: submission.assignmentId },
+      select: {
+        questId: true,
+        quest: {
+          select: {
+            companyId: true,
+          },
+        },
+      },
+    });
 
-    if (assignmentError || !assignment) {
+    if (!assignmentData) {
       return NextResponse.json({ error: 'Assignment not found', success: false }, { status: 404 });
     }
 
     // Check permissions
-    const questData = Array.isArray(assignment.quests) ? assignment.quests[0] : assignment.quests;
     if (session.user.role !== 'admin' &&
-        (session.user.role !== 'company' || !questData || questData.company_id !== session.user.id)) {
+        (session.user.role !== 'company' || !assignmentData.quest || assignmentData.quest.companyId !== session.user.id)) {
       return NextResponse.json({ error: 'Unauthorized to review this submission', success: false }, { status: 403 });
     }
 
     // Update the submission
-    const { data, error } = await supabase
-      .from('quest_submissions')
-      .update({
+    const data = await prisma.questSubmission.update({
+      where: { id: submissionId },
+      data: {
         status,
-        review_notes: review_notes || undefined,
-        quality_score: quality_score || undefined,
-        reviewer_id,
-        reviewed_at: status !== 'pending' ? new Date().toISOString() : undefined
-      })
-      .eq('id', submission_id)
-      .select()
-      .single();
-
-    if (error) {
-      throw new Error(error.message);
-    }
+        reviewNotes: review_notes || undefined,
+        qualityScore: quality_score || undefined,
+        reviewerId,
+        reviewedAt: status !== 'pending' ? new Date() : undefined,
+      },
+    });
 
     // Update assignment status based on submission status
     let newAssignmentStatus = '';
@@ -259,62 +219,52 @@ export async function PUT(request: NextRequest) {
     }
 
     if (newAssignmentStatus) {
-      // Update the assignment status
-      await supabase
-        .from('quest_assignments')
-        .update({ status: newAssignmentStatus })
-        .eq('id', submission.assignment_id);
+      await prisma.questAssignment.update({
+        where: { id: submission.assignmentId },
+        data: { status: newAssignmentStatus as AssignmentStatus },
+      });
     }
 
     // If the submission was approved, record the quest completion
-    if (status === 'approved' && data.assignment_id) {
+    if (status === 'approved' && data.assignmentId) {
       // Get assignment details to get the quest and user IDs
-      const { data: assignment, error: assignmentError } = await supabase
-        .from('quest_assignments')
-        .select('quest_id, user_id')
-        .eq('id', data.assignment_id)
-        .single();
+      const approvedAssignment = await prisma.questAssignment.findUnique({
+        where: { id: data.assignmentId },
+        select: { questId: true, userId: true },
+      });
 
-      if (assignmentError) {
-        throw new Error(assignmentError.message);
+      if (!approvedAssignment) {
+        throw new Error('Assignment not found for completion recording');
       }
 
       // Get quest details to get the rewards
-      const { data: quest, error: questError } = await supabase
-        .from('quests')
-        .select('xp_reward, skill_points_reward')
-        .eq('id', assignment.quest_id)
-        .single();
+      const quest = await prisma.quest.findUnique({
+        where: { id: approvedAssignment.questId },
+        select: { xpReward: true, skillPointsReward: true },
+      });
 
-      if (questError) {
-        throw new Error(questError.message);
+      if (!quest) {
+        throw new Error('Quest not found for completion recording');
       }
 
       // Record the quest completion
-      const { error: completionError } = await supabase
-        .from('quest_completions')
-        .insert([{
-          quest_id: assignment.quest_id,
-          user_id: assignment.user_id,
-          xp_earned: quest.xp_reward,
-          skill_points_earned: quest.skill_points_reward,
-          quality_score: quality_score || null
-        }]);
-
-      if (completionError) {
+      try {
+        await prisma.questCompletion.create({
+          data: {
+            questId: approvedAssignment.questId,
+            userId: approvedAssignment.userId,
+            xpEarned: quest.xpReward,
+            skillPointsEarned: quest.skillPointsReward,
+            qualityScore: quality_score || null,
+          },
+        });
+      } catch (completionError) {
         console.error('Error recording quest completion:', completionError);
       }
 
-      // Update user's XP and skill points
-      const { error: userUpdateError } = await supabase.rpc('update_user_xp_and_skills', {
-        user_id_input: assignment.user_id,
-        xp_gained: quest.xp_reward,
-        skill_points_gained: quest.skill_points_reward
-      });
-
-      if (userUpdateError) {
-        console.error('Error updating user XP and skills:', userUpdateError);
-      }
+      // Update user XP, level, rank, and skill points
+      const { updateUserXpAndSkills } = await import('@/lib/xp-utils');
+      await updateUserXpAndSkills(approvedAssignment.userId, quest.xpReward, quest.skillPointsReward);
     }
 
     return NextResponse.json({ submission: data, success: true });

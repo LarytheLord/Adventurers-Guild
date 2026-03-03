@@ -5,32 +5,42 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
+    --foreground: 215 20% 10%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card-foreground: 215 20% 10%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover-foreground: 215 20% 10%;
 
-    --primary: 239 84% 67%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 25 95% 53%;
+    --primary-foreground: 0 0% 0%;
 
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
+    /* Neutral gray — no blue tint on secondary/accent */
+    --secondary: 215 8% 95%;
+    --secondary-foreground: 215 15% 12%;
 
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 215 8% 95%;
+    --muted-foreground: 215 12% 45%;
 
-    --accent: 210 40% 96%;
-    --accent-foreground: 222 47% 11%;
+    --accent: 215 8% 93%;
+    --accent-foreground: 215 15% 12%;
 
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 239 84% 67%;
+    --border: 215 10% 88%;
+    --input: 215 10% 88%;
+    --ring: 25 95% 53%;
+
+    /* Rank colors — used ONLY inside RankBadge component */
+    --rank-s: 0 84% 60%;
+    --rank-a: 25 95% 53%;
+    --rank-b: 45 93% 47%;
+    --rank-c: 263 70% 50%;
+    --rank-d: 217 91% 60%;
+    --rank-e: 142 71% 45%;
+    --rank-f: 215 16% 57%;
 
     --radius: 0.625rem;
   }
@@ -45,8 +55,8 @@
     --popover: 222 47% 11%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 239 84% 67%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 25 95% 53%;
+    --primary-foreground: 0 0% 0%;
 
     --secondary: 217 19% 27%;
     --secondary-foreground: 210 40% 98%;
@@ -62,7 +72,7 @@
 
     --border: 217 19% 27%;
     --input: 217 19% 27%;
-    --ring: 239 84% 67%;
+    --ring: 25 95% 53%;
   }
 }
 
@@ -98,5 +108,5 @@
 }
 
 ::selection {
-  background: rgba(99, 102, 241, 0.15);
+  background: rgba(249, 115, 22, 0.2);
 }

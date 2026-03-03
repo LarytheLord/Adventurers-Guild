@@ -1,27 +1,25 @@
 // lib/payment-utils.ts
-import { createClient } from '@supabase/supabase-js';
-import { env } from './env';
-
-const supabase = createClient(
-  env.NEXT_PUBLIC_SUPABASE_URL,
-  env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+// Note: This is a client-side utility that calls API routes.
+// No direct database access needed.
 
 // Types
 export interface Transaction {
   id: string;
-  from_user_id: string;
-  to_user_id: string;
-  quest_id: string;
+  fromUserId: string;
+  toUserId: string;
+  questId: string;
   amount: number;
   currency: string;
   status: string;
-  payment_method: string;
-  transaction_id?: string;
+  paymentMethod: string;
+  transactionId?: string;
   description?: string;
-  created_at: string;
-  updated_at: string;
-  completed_at?: string;
+  createdAt: string;
+  updatedAt: string;
+  completedAt?: string;
+  fromUser?: { name: string; email: string };
+  toUser?: { name: string; email: string };
+  quest?: { title: string };
 }
 
 // Process a payment for quest completion
@@ -36,26 +34,20 @@ export async function processPayment(
   try {
     const response = await fetch('/api/payments', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        from_user_id: fromUserId,
-        to_user_id: toUserId,
-        quest_id: questId,
+        from_userId: fromUserId,
+        to_userId: toUserId,
+        questId: questId,
         amount,
         currency,
-        description
+        description,
       }),
     });
 
     const result = await response.json();
-    
-    if (result.success) {
-      return result.transaction;
-    } else {
-      throw new Error(result.error || 'Payment failed');
-    }
+    if (result.success) return result.transaction;
+    throw new Error(result.error || 'Payment failed');
   } catch (error) {
     console.error('Error processing payment:', error);
     throw new Error('Failed to process payment');
@@ -68,22 +60,16 @@ export async function getPaymentHistory(
   type: 'incoming' | 'outgoing' | 'all' = 'all',
   status?: string
 ): Promise<Transaction[]> {
-  let params = new URLSearchParams();
-  params.append('user_id', userId);
+  const params = new URLSearchParams();
+  params.append('userId', userId);
   params.append('type', type);
-  
-  if (status) {
-    params.append('status', status);
-  }
+  if (status) params.append('status', status);
 
   const response = await fetch(`/api/payments?${params.toString()}`);
   const result = await response.json();
-  
-  if (result.success) {
-    return result.transactions;
-  } else {
-    throw new Error(result.error || 'Failed to fetch payment history');
-  }
+
+  if (result.success) return result.transactions;
+  throw new Error(result.error || 'Failed to fetch payment history');
 }
 
 // Get pending payments for a user
@@ -93,65 +79,59 @@ export async function getPendingPayments(userId: string): Promise<Transaction[]>
 
 // Calculate total earnings for an adventurer
 export async function getTotalEarnings(userId: string): Promise<number> {
-  const response = await fetch(`/api/payments?user_id=${userId}&type=incoming&status=completed`);
+  const response = await fetch(`/api/payments?userId=${userId}&type=incoming&status=completed`);
   const result = await response.json();
-  
+
   if (result.success) {
-    return result.transactions.reduce((sum: number, transaction: Transaction) => 
-      sum + transaction.amount, 0
-    );
-  } else {
-    throw new Error(result.error || 'Failed to calculate earnings');
+    return result.transactions.reduce((sum: number, t: Transaction) => sum + t.amount, 0);
   }
+  throw new Error(result.error || 'Failed to calculate earnings');
 }
 
 // Calculate total spending for a company
 export async function getTotalSpending(userId: string): Promise<number> {
-  const response = await fetch(`/api/payments?user_id=${userId}&type=outgoing&status=completed`);
+  const response = await fetch(`/api/payments?userId=${userId}&type=outgoing&status=completed`);
   const result = await response.json();
-  
+
   if (result.success) {
-    return result.transactions.reduce((sum: number, transaction: Transaction) => 
-      sum + transaction.amount, 0
-    );
-  } else {
-    throw new Error(result.error || 'Failed to calculate spending');
+    return result.transactions.reduce((sum: number, t: Transaction) => sum + t.amount, 0);
   }
+  throw new Error(result.error || 'Failed to calculate spending');
 }
 
 // Validate payment information
-export function validatePaymentInfo(cardNumber: string, expiry: string, cvc: string): { isValid: boolean; error?: string } {
-  // Remove spaces from card number
+export function validatePaymentInfo(
+  cardNumber: string,
+  expiry: string,
+  cvc: string
+): { isValid: boolean; error?: string } {
   const cleanCardNumber = cardNumber.replace(/\s/g, '');
-  
-  // Validate card number length (basic check)
+
   if (cleanCardNumber.length !== 16 || !/^\d+$/.test(cleanCardNumber)) {
     return { isValid: false, error: 'Card number must be 16 digits' };
   }
-  
-  // Validate expiry date format
+
   if (!/^\d{2}\/\d{2}$/.test(expiry)) {
     return { isValid: false, error: 'Invalid expiry date format (MM/YY)' };
   }
-  
+
   const [month, year] = expiry.split('/').map(Number);
   const now = new Date();
   const currentYear = now.getFullYear() % 100;
   const currentMonth = now.getMonth() + 1;
-  
+
   if (year < currentYear || (year === currentYear && month < currentMonth)) {
     return { isValid: false, error: 'Card has expired' };
   }
-  
+
   if (month > 12) {
     return { isValid: false, error: 'Invalid expiry month' };
   }
-  
-  // Validate CVC
+
   if (cvc.length < 3 || cvc.length > 4 || !/^\d+$/.test(cvc)) {
     return { isValid: false, error: 'CVC must be 3-4 digits' };
   }
-  
+
   return { isValid: true };
 }
 
@@ -159,7 +139,7 @@ export function validatePaymentInfo(cardNumber: string, expiry: string, cvc: str
 export function formatCurrency(amount: number, currency: string = 'USD'): string {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
-    currency: currency,
-    minimumFractionDigits: 2
+    currency,
+    minimumFractionDigits: 2,
   }).format(amount);
 }

@@ -15,18 +15,18 @@ interface Quest {
   id: string;
   title: string;
   description: string;
-  quest_type: string;
+  questType: string;
   status: string;
   difficulty: string;
-  xp_reward: number;
-  skill_points_reward: number;
-  monetary_reward?: number;
-  required_skills: string[];
-  required_rank?: string;
-  max_participants?: number;
-  quest_category: string;
-  company_id: string;
-  created_at: string;
+  xpReward: number;
+  skillPointsReward: number;
+  monetaryReward?: number;
+  requiredSkills: string[];
+  requiredRank?: string;
+  maxParticipants?: number;
+  questCategory: string;
+  companyId: string;
+  createdAt: string;
   deadline?: string;
   users: {
     name: string;
@@ -85,7 +85,7 @@ export default function CompanyQuestsPage() {
   const filteredQuests = quests.filter(quest =>
     quest.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     quest.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    quest.quest_category.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    quest.questCategory.toLowerCase().includes(searchTerm.toLowerCase()) ||
     quest.status.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -113,7 +113,7 @@ export default function CompanyQuestsPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Your Quests</h1>
         <p className="text-muted-foreground mt-1">
-          Manage and track the quests you've posted for adventurers
+          Manage and track the quests you&apos;ve posted for adventurers
         </p>
       </div>
 
@@ -145,7 +145,7 @@ export default function CompanyQuestsPage() {
           <Target className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
           <h3 className="text-xl font-medium mb-2">No quests yet</h3>
           <p className="text-muted-foreground mb-4">
-            You haven't posted any quests yet. Create your first quest to get started.
+            You haven&apos;t posted any quests yet. Create your first quest to get started.
           </p>
           <Button onClick={() => router.push('/dashboard/company/create-quest')}>
             <Plus className="w-4 h-4 mr-2" />
@@ -161,7 +161,7 @@ export default function CompanyQuestsPage() {
                   <div>
                     <CardTitle className="text-xl">{quest.title}</CardTitle>
                     <CardDescription>
-                      Created on {new Date(quest.created_at).toLocaleDateString()}
+                      Created on {new Date(quest.createdAt).toLocaleDateString()}
                     </CardDescription>
                   </div>
                   <Badge className={`
@@ -176,7 +176,7 @@ export default function CompanyQuestsPage() {
                   </Badge>
                 </div>
                 <div className="flex flex-wrap gap-2 mt-2">
-                  <Badge variant="secondary">{quest.quest_category}</Badge>
+                  <Badge variant="secondary">{quest.questCategory}</Badge>
                   <Badge variant="outline">{quest.difficulty}-Rank</Badge>
                 </div>
               </CardHeader>
@@ -188,15 +188,15 @@ export default function CompanyQuestsPage() {
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div className="flex items-center">
                     <Zap className="w-4 h-4 mr-2 text-yellow-500" />
-                    <span className="text-sm">{quest.xp_reward} XP</span>
+                    <span className="text-sm">{quest.xpReward} XP</span>
                   </div>
                   <div className="flex items-center">
                     <Target className="w-4 h-4 mr-2 text-blue-500" />
-                    <span className="text-sm">{quest.skill_points_reward} SP</span>
+                    <span className="text-sm">{quest.skillPointsReward} SP</span>
                   </div>
-                  {quest.monetary_reward && (
+                  {quest.monetaryReward && (
                     <div className="flex items-center col-span-2">
-                      <span className="text-sm font-medium">${quest.monetary_reward}</span>
+                      <span className="text-sm font-medium">${quest.monetaryReward}</span>
                     </div>
                   )}
                 </div>
@@ -205,7 +205,7 @@ export default function CompanyQuestsPage() {
                   <p className="text-xs text-muted-foreground mb-1">Applicants</p>
                   <div className="flex items-center">
                     <Users className="w-4 h-4 mr-2 text-green-500" />
-                    <span className="text-sm">0/{quest.max_participants || 1}</span>
+                    <span className="text-sm">0/{quest.maxParticipants || 1}</span>
                   </div>
                 </div>
                 

@@ -1,0 +1,498 @@
+// Prisma schema for The Adventurers Guild
+// Database: Neon (serverless PostgreSQL)
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────
+
+enum UserRole {
+  adventurer
+  company
+  admin
+}
+
+enum UserRank {
+  F
+  E
+  D
+  C
+  B
+  A
+  S
+}
+
+enum AvailabilityStatus {
+  available
+  busy
+  on_leave
+}
+
+enum CompanySize {
+  startup
+  small
+  medium
+  large
+  enterprise
+}
+
+enum QuestType {
+  commission
+  internal
+  bug_bounty
+  code_refactor
+  learning
+}
+
+enum QuestStatus {
+  draft
+  available
+  in_progress
+  review
+  completed
+  cancelled
+}
+
+enum QuestCategory {
+  frontend
+  backend
+  fullstack
+  mobile
+  ai_ml
+  devops
+  security
+  qa
+  design
+  data_science
+}
+
+enum AssignmentStatus {
+  assigned
+  started
+  in_progress
+  submitted
+  review
+  completed
+  cancelled
+}
+
+enum SubmissionStatus {
+  pending
+  under_review
+  approved
+  needs_rework
+  rejected
+}
+
+enum TeamRole {
+  owner
+  admin
+  member
+}
+
+enum NotificationType {
+  quest_assigned
+  quest_updated
+  quest_completed
+  quest_reviewed
+  new_message
+  rank_up
+  skill_unlocked
+  team_invite
+  payment_received
+  system_message
+  mentorship_request
+  mentorship_approved
+}
+
+enum VerificationType {
+  company
+  identity
+  skill
+  portfolio
+}
+
+enum VerificationStatus {
+  pending
+  approved
+  rejected
+  in_review
+}
+
+// ─── Models ───────────────────────────────────────────────
+
+model User {
+  id            String    @id @default(uuid()) @db.Uuid
+  name          String?
+  email         String    @unique
+  passwordHash  String    @map("password_hash")
+  role          UserRole  @default(adventurer)
+  rank          UserRank  @default(F)
+  xp            Int       @default(0)
+  skillPoints   Int       @default(0) @map("skill_points")
+  level         Int       @default(1)
+  isActive      Boolean   @default(true) @map("is_active")
+  isVerified    Boolean   @default(false) @map("is_verified")
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  lastLoginAt   DateTime? @map("last_login_at") @db.Timestamptz
+  bio           String?
+  location      String?
+  website       String?
+  discord       String?
+  github        String?
+  linkedin      String?
+  avatar        String?
+
+  // Relations
+  adventurerProfile   AdventurerProfile?
+  companyProfile      CompanyProfile?
+  quests              Quest[]               @relation("CompanyQuests")
+  questAssignments    QuestAssignment[]
+  questSubmissions    QuestSubmission[]     @relation("SubmittedBy")
+  reviewedSubmissions QuestSubmission[]     @relation("ReviewedBy")
+  questCompletions    QuestCompletion[]
+  ownedTeams          Team[]                @relation("TeamOwner")
+  teamMemberships     TeamMember[]
+  skillProgress       SkillProgress[]
+  notifications       Notification[]
+  verificationRequests VerificationRequest[] @relation("RequestedBy")
+  adminVerifications  VerificationRequest[] @relation("AdminVerifier")
+  sentTransactions    Transaction[]         @relation("TransactionFrom")
+  receivedTransactions Transaction[]        @relation("TransactionTo")
+  passwordResetTokens PasswordResetToken[]
+  mentorships         Mentorship[]          @relation("MentorUser")
+  menteeships         Mentorship[]          @relation("MenteeUser")
+
+  @@index([email])
+  @@index([role])
+  @@index([rank])
+  @@index([isActive])
+  @@map("users")
+}
+
+model AdventurerProfile {
+  userId               String             @id @map("user_id") @db.Uuid
+  specialization       String?
+  primarySkills        String[]           @map("primary_skills")
+  availabilityStatus   AvailabilityStatus @default(available) @map("availability_status")
+  questCompletionRate  Decimal            @default(0.00) @map("quest_completion_rate") @db.Decimal(5, 2)
+  totalQuestsCompleted Int                @default(0) @map("total_quests_completed")
+  currentStreak        Int                @default(0) @map("current_streak")
+  maxStreak            Int                @default(0) @map("max_streak")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("adventurer_profiles")
+}
+
+model CompanyProfile {
+  userId             String       @id @map("user_id") @db.Uuid
+  companyName        String       @map("company_name")
+  companyWebsite     String?      @map("company_website")
+  companyDescription String?      @map("company_description")
+  industry           String?
+  size               CompanySize?
+  isVerified         Boolean      @default(false) @map("is_verified")
+  questsPosted       Int          @default(0) @map("quests_posted")
+  totalSpent         Decimal      @default(0.00) @map("total_spent") @db.Decimal(10, 2)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("company_profiles")
+}
+
+model Quest {
+  id                  String        @id @default(uuid()) @db.Uuid
+  title               String
+  description         String
+  detailedDescription String?       @map("detailed_description")
+  questType           QuestType     @default(commission) @map("quest_type")
+  status              QuestStatus   @default(available)
+  difficulty          UserRank      @default(D)
+  xpReward            Int           @map("xp_reward")
+  skillPointsReward   Int           @default(0) @map("skill_points_reward")
+  monetaryReward      Decimal?      @map("monetary_reward") @db.Decimal(10, 2)
+  requiredSkills      String[]      @map("required_skills")
+  requiredRank        UserRank?     @map("required_rank")
+  maxParticipants     Int?          @map("max_participants")
+  questCategory       QuestCategory @map("quest_category")
+  companyId           String?       @map("company_id") @db.Uuid
+  createdAt           DateTime      @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt           DateTime      @updatedAt @map("updated_at") @db.Timestamptz
+  deadline            DateTime?     @db.Timestamptz
+
+  company          User?             @relation("CompanyQuests", fields: [companyId], references: [id])
+  assignments      QuestAssignment[]
+  completions      QuestCompletion[]
+  transactions     Transaction[]
+  devSyncProject   DevSyncProjectMapping?
+
+  @@index([companyId])
+  @@index([status])
+  @@index([questCategory])
+  @@index([difficulty])
+  @@index([createdAt])
+  @@map("quests")
+}
+
+model SkillCategory {
+  id          String  @id @default(uuid()) @db.Uuid
+  name        String
+  description String?
+  icon        String?
+
+  skills Skill[]
+
+  @@map("skill_categories")
+}
+
+model Skill {
+  id          String  @id @default(uuid()) @db.Uuid
+  name        String
+  description String
+  categoryId  String? @map("category_id") @db.Uuid
+
+  category      SkillCategory?  @relation(fields: [categoryId], references: [id])
+  skillProgress SkillProgress[]
+
+  @@map("skills")
+}
+
+model SkillProgress {
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @map("user_id") @db.Uuid
+  skillId          String    @map("skill_id") @db.Uuid
+  level            Int       @default(0)
+  experiencePoints Int       @default(0) @map("experience_points")
+  lastPracticedAt  DateTime? @map("last_practiced_at") @db.Timestamptz
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  skill Skill @relation(fields: [skillId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, skillId])
+  @@index([userId])
+  @@index([skillId])
+  @@map("skill_progress")
+}
+
+model Team {
+  id          String   @id @default(uuid()) @db.Uuid
+  name        String
+  description String?
+  avatarUrl   String?  @map("avatar_url")
+  maxMembers  Int      @default(5) @map("max_members")
+  createdAt   DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  isActive    Boolean  @default(true) @map("is_active")
+  ownerUserId String?  @map("owner_user_id") @db.Uuid
+
+  owner   User?        @relation("TeamOwner", fields: [ownerUserId], references: [id])
+  members TeamMember[]
+
+  @@map("teams")
+}
+
+model TeamMember {
+  id       String   @id @default(uuid()) @db.Uuid
+  teamId   String   @map("team_id") @db.Uuid
+  userId   String   @map("user_id") @db.Uuid
+  role     TeamRole @default(member)
+  joinedAt DateTime @default(now()) @map("joined_at") @db.Timestamptz
+  isActive Boolean  @default(true) @map("is_active")
+
+  team Team @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, userId])
+  @@map("team_members")
+}
+
+model QuestAssignment {
+  id          String           @id @default(uuid()) @db.Uuid
+  questId     String           @map("quest_id") @db.Uuid
+  userId      String           @map("user_id") @db.Uuid
+  assignedAt  DateTime         @default(now()) @map("assigned_at") @db.Timestamptz
+  status      AssignmentStatus @default(assigned)
+  startedAt   DateTime?        @map("started_at") @db.Timestamptz
+  completedAt DateTime?        @map("completed_at") @db.Timestamptz
+  progress    Decimal          @default(0.00) @db.Decimal(5, 2)
+
+  quest       Quest             @relation(fields: [questId], references: [id], onDelete: Cascade)
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  submissions QuestSubmission[]
+
+  @@unique([questId, userId])
+  @@index([userId])
+  @@index([questId])
+  @@index([status])
+  @@map("quest_assignments")
+}
+
+model QuestSubmission {
+  id                String           @id @default(uuid()) @db.Uuid
+  assignmentId      String           @map("assignment_id") @db.Uuid
+  userId            String?          @map("user_id") @db.Uuid
+  submissionContent String           @map("submission_content")
+  submissionNotes   String?          @map("submission_notes")
+  submittedAt       DateTime         @default(now()) @map("submitted_at") @db.Timestamptz
+  status            SubmissionStatus @default(pending)
+  reviewerId        String?          @map("reviewer_id") @db.Uuid
+  reviewedAt        DateTime?        @map("reviewed_at") @db.Timestamptz
+  reviewNotes       String?          @map("review_notes")
+  qualityScore      Int?             @map("quality_score")
+
+  assignment QuestAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  user       User?           @relation("SubmittedBy", fields: [userId], references: [id])
+  reviewer   User?           @relation("ReviewedBy", fields: [reviewerId], references: [id])
+
+  @@index([assignmentId])
+  @@index([status])
+  @@map("quest_submissions")
+}
+
+model QuestCompletion {
+  id                String   @id @default(uuid()) @db.Uuid
+  questId           String   @map("quest_id") @db.Uuid
+  userId            String   @map("user_id") @db.Uuid
+  completionDate    DateTime @default(now()) @map("completion_date") @db.Timestamptz
+  xpEarned          Int      @map("xp_earned")
+  skillPointsEarned Int      @map("skill_points_earned")
+  qualityScore      Int?     @map("quality_score")
+
+  quest Quest @relation(fields: [questId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([questId, userId])
+  @@map("quest_completions")
+}
+
+model Notification {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @map("user_id") @db.Uuid
+  title     String
+  message   String
+  type      NotificationType
+  data      Json?
+  readAt    DateTime?        @map("read_at") @db.Timestamptz
+  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@index([type])
+  @@map("notifications")
+}
+
+model VerificationRequest {
+  id          String             @id @default(uuid()) @db.Uuid
+  userId      String             @map("user_id") @db.Uuid
+  requestType VerificationType   @map("request_type")
+  status      VerificationStatus @default(pending)
+  requestData Json               @map("request_data")
+  adminNotes  String?            @map("admin_notes")
+  adminId     String?            @map("admin_id") @db.Uuid
+  createdAt   DateTime           @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt   DateTime           @updatedAt @map("updated_at") @db.Timestamptz
+  processedAt DateTime?          @map("processed_at") @db.Timestamptz
+
+  user  User  @relation("RequestedBy", fields: [userId], references: [id], onDelete: Cascade)
+  admin User? @relation("AdminVerifier", fields: [adminId], references: [id])
+
+  @@map("verification_requests")
+}
+
+model Transaction {
+  id            String    @id @default(uuid()) @db.Uuid
+  fromUserId    String?   @map("from_user_id") @db.Uuid
+  toUserId      String?   @map("to_user_id") @db.Uuid
+  questId       String?   @map("quest_id") @db.Uuid
+  amount        Decimal   @db.Decimal(10, 2)
+  currency      String    @default("USD")
+  status        String    @default("pending")
+  paymentMethod String    @default("credit_card") @map("payment_method")
+  transactionId String?   @unique @map("transaction_id")
+  description   String?
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt     DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  completedAt   DateTime? @map("completed_at") @db.Timestamptz
+
+  fromUser User?  @relation("TransactionFrom", fields: [fromUserId], references: [id])
+  toUser   User?  @relation("TransactionTo", fields: [toUserId], references: [id])
+  quest    Quest? @relation(fields: [questId], references: [id])
+
+  @@index([fromUserId])
+  @@index([toUserId])
+  @@index([questId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([completedAt])
+  @@map("transactions")
+}
+
+model Mentorship {
+  id        String   @id @default(uuid()) @db.Uuid
+  mentorId  String   @map("mentor_id") @db.Uuid
+  menteeId  String   @map("mentee_id") @db.Uuid
+  status    String   @default("pending")
+  startDate DateTime? @map("start_date") @db.Timestamptz
+  endDate   DateTime? @map("end_date") @db.Timestamptz
+  goals     String[]
+  progress  Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  mentor User @relation("MentorUser", fields: [mentorId], references: [id], onDelete: Cascade)
+  mentee User @relation("MenteeUser", fields: [menteeId], references: [id], onDelete: Cascade)
+
+  @@index([mentorId])
+  @@index([menteeId])
+  @@map("mentorships")
+}
+
+model PasswordResetToken {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  token     String   @unique
+  expiresAt DateTime @map("expires_at") @db.Timestamptz
+  usedAt    DateTime? @map("used_at") @db.Timestamptz
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@map("password_reset_tokens")
+}
+
+model ErrorLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  message   String
+  severity  String   @default("error")
+  url       String?
+  userAgent String?  @map("user_agent")
+  timestamp DateTime
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([severity])
+  @@index([timestamp])
+  @@map("error_logs")
+}
+
+model DevSyncProjectMapping {
+  id               String   @id @default(uuid()) @db.Uuid
+  questId          String   @unique @map("quest_id") @db.Uuid
+  devsyncProjectId String   @unique @map("devsync_project_id")
+  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  quest Quest @relation(fields: [questId], references: [id], onDelete: Cascade)
+
+  @@map("devsync_project_mappings")
+}

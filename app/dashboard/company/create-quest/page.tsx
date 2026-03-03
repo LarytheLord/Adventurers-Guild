@@ -50,16 +50,16 @@ export default function CreateQuestPage() {
   const [form, setForm] = useState({
     title: '',
     description: '',
-    detailed_description: '',
-    quest_type: 'commission',
-    quest_category: 'frontend',
+    detailedDescription: '',
+    questType: 'commission',
+    questCategory: 'frontend',
     difficulty: 'D',
-    xp_reward: 500,
-    skill_points_reward: 10,
-    monetary_reward: '',
-    required_skills: '',
-    required_rank: '',
-    max_participants: 1,
+    xpReward: 500,
+    skillPointsReward: 10,
+    monetaryReward: '',
+    requiredSkills: '',
+    requiredRank: '',
+    maxParticipants: 1,
     deadline: '',
   });
 
@@ -94,18 +94,18 @@ export default function CreateQuestPage() {
       const body = {
         title: form.title.trim(),
         description: form.description.trim(),
-        detailed_description: form.detailed_description.trim() || null,
-        quest_type: form.quest_type,
-        quest_category: form.quest_category,
+        detailedDescription: form.detailedDescription.trim() || null,
+        questType: form.questType,
+        questCategory: form.questCategory,
         difficulty: form.difficulty,
-        xp_reward: Number(form.xp_reward),
-        skill_points_reward: Number(form.skill_points_reward),
-        monetary_reward: form.monetary_reward ? Number(form.monetary_reward) : null,
-        required_skills: form.required_skills
-          ? form.required_skills.split(',').map(s => s.trim()).filter(Boolean)
+        xpReward: Number(form.xpReward),
+        skillPointsReward: Number(form.skillPointsReward),
+        monetaryReward: form.monetaryReward ? Number(form.monetaryReward) : null,
+        requiredSkills: form.requiredSkills
+          ? form.requiredSkills.split(',').map(s => s.trim()).filter(Boolean)
           : [],
-        required_rank: form.required_rank || null,
-        max_participants: Number(form.max_participants) || 1,
+        requiredRank: form.requiredRank || null,
+        maxParticipants: Number(form.maxParticipants) || 1,
         deadline: form.deadline || null,
       };
 
@@ -189,12 +189,12 @@ export default function CreateQuestPage() {
 
             {/* Detailed Description */}
             <div className="space-y-2">
-              <Label htmlFor="detailed_description">Detailed Requirements</Label>
+              <Label htmlFor="detailedDescription">Detailed Requirements</Label>
               <Textarea
-                id="detailed_description"
+                id="detailedDescription"
                 placeholder="Detailed requirements, acceptance criteria, etc..."
-                value={form.detailed_description}
-                onChange={e => updateField('detailed_description', e.target.value)}
+                value={form.detailedDescription}
+                onChange={e => updateField('detailedDescription', e.target.value)}
                 rows={6}
               />
             </div>
@@ -203,7 +203,7 @@ export default function CreateQuestPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Quest Type</Label>
-                <Select value={form.quest_type} onValueChange={v => updateField('quest_type', v)}>
+                <Select value={form.questType} onValueChange={v => updateField('questType', v)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -216,7 +216,7 @@ export default function CreateQuestPage() {
               </div>
               <div className="space-y-2">
                 <Label>Category</Label>
-                <Select value={form.quest_category} onValueChange={v => updateField('quest_category', v)}>
+                <Select value={form.questCategory} onValueChange={v => updateField('questCategory', v)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -246,7 +246,7 @@ export default function CreateQuestPage() {
               </div>
               <div className="space-y-2">
                 <Label>Minimum Rank Required</Label>
-                <Select value={form.required_rank} onValueChange={v => updateField('required_rank', v)}>
+                <Select value={form.requiredRank} onValueChange={v => updateField('requiredRank', v)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Any rank" />
                   </SelectTrigger>
@@ -263,35 +263,35 @@ export default function CreateQuestPage() {
             {/* Rewards */}
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="xp_reward">XP Reward *</Label>
+                <Label htmlFor="xpReward">XP Reward *</Label>
                 <Input
-                  id="xp_reward"
+                  id="xpReward"
                   type="number"
                   min={0}
-                  value={form.xp_reward}
-                  onChange={e => updateField('xp_reward', e.target.value)}
+                  value={form.xpReward}
+                  onChange={e => updateField('xpReward', e.target.value)}
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="skill_points_reward">Skill Points</Label>
+                <Label htmlFor="skillPointsReward">Skill Points</Label>
                 <Input
-                  id="skill_points_reward"
+                  id="skillPointsReward"
                   type="number"
                   min={0}
-                  value={form.skill_points_reward}
-                  onChange={e => updateField('skill_points_reward', e.target.value)}
+                  value={form.skillPointsReward}
+                  onChange={e => updateField('skillPointsReward', e.target.value)}
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="monetary_reward">Payment (INR)</Label>
+                <Label htmlFor="monetaryReward">Payment (INR)</Label>
                 <Input
-                  id="monetary_reward"
+                  id="monetaryReward"
                   type="number"
                   min={0}
                   placeholder="Optional"
-                  value={form.monetary_reward}
-                  onChange={e => updateField('monetary_reward', e.target.value)}
+                  value={form.monetaryReward}
+                  onChange={e => updateField('monetaryReward', e.target.value)}
                 />
               </div>
             </div>
@@ -299,23 +299,23 @@ export default function CreateQuestPage() {
             {/* Skills & Participants */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="required_skills">Required Skills</Label>
+                <Label htmlFor="requiredSkills">Required Skills</Label>
                 <Input
-                  id="required_skills"
+                  id="requiredSkills"
                   placeholder="React, Node.js, PostgreSQL"
-                  value={form.required_skills}
-                  onChange={e => updateField('required_skills', e.target.value)}
+                  value={form.requiredSkills}
+                  onChange={e => updateField('requiredSkills', e.target.value)}
                 />
                 <p className="text-xs text-muted-foreground">Comma-separated</p>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="max_participants">Max Participants</Label>
+                <Label htmlFor="maxParticipants">Max Participants</Label>
                 <Input
-                  id="max_participants"
+                  id="maxParticipants"
                   type="number"
                   min={1}
-                  value={form.max_participants}
-                  onChange={e => updateField('max_participants', e.target.value)}
+                  value={form.maxParticipants}
+                  onChange={e => updateField('maxParticipants', e.target.value)}
                 />
               </div>
             </div>

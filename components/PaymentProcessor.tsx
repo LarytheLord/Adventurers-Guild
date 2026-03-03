@@ -16,9 +16,9 @@ interface Quest {
   title: string;
   description: string;
   difficulty: string;
-  xp_reward: number;
-  skill_points_reward: number;
-  monetary_reward?: number;
+  xpReward: number;
+  skillPointsReward: number;
+  monetaryReward?: number;
   status: string;
 }
 
@@ -90,7 +90,7 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
     const processPayment = async () => {
       try {
         // Find the adventurer who completed this quest
-        const assignmentResponse = await fetch(`/api/quests/assignments?quest_id=${questId}`);
+        const assignmentResponse = await fetch(`/api/quests/assignments?questId=${questId}`);
         const assignmentData = await assignmentResponse.json();
         
         if (!assignmentData.success || assignmentData.assignments.length === 0) {
@@ -98,7 +98,7 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
           return;
         }
         
-        const adventurerId = assignmentData.assignments[0].user_id;
+        const adventurerId = assignmentData.assignments[0].userId;
         
         setShowPaymentForm(true);
       } catch (err) {
@@ -164,7 +164,7 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
             </div>
             <CardTitle className="text-2xl mt-4">Payment Successful!</CardTitle>
             <CardDescription>
-              You've successfully paid for quest completion
+              You&apos;ve successfully paid for quest completion
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -176,11 +176,11 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex items-center justify-center p-3 bg-muted rounded-lg">
                   <Coins className="w-5 h-5 mr-2 text-green-500" />
-                  <span>{formatCurrency(quest.monetary_reward || 0)}</span>
+                  <span>{formatCurrency(quest.monetaryReward || 0)}</span>
                 </div>
                 <div className="flex items-center justify-center p-3 bg-muted rounded-lg">
                   <Target className="w-5 h-5 mr-2 text-blue-500" />
-                  <span>{quest.xp_reward} XP</span>
+                  <span>{quest.xpReward} XP</span>
                 </div>
               </div>
               <p className="text-muted-foreground">
@@ -193,14 +193,14 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
     );
   }
 
-  if (showPaymentForm && quest.monetary_reward) {
+  if (showPaymentForm && quest.monetaryReward) {
     return (
       <div className="container mx-auto py-6">
         <PaymentForm
           questId={quest.id}
           companyId={session?.user?.id || ''}
           adventurerId="" // Will be determined in the component
-          amount={quest.monetary_reward}
+          amount={quest.monetaryReward}
           currency="USD"
           onSuccess={handlePaymentSuccess}
           onCancel={handleCancelPayment}
@@ -239,28 +239,28 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               <div className="text-center p-3 bg-muted rounded-lg">
                 <Target className="w-6 h-6 mx-auto text-yellow-500 mb-1" />
-                <div className="font-bold">{quest.xp_reward} XP</div>
+                <div className="font-bold">{quest.xpReward} XP</div>
                 <div className="text-xs text-muted-foreground">Reward</div>
               </div>
               <div className="text-center p-3 bg-muted rounded-lg">
-                <div className="font-bold">{quest.skill_points_reward} SP</div>
+                <div className="font-bold">{quest.skillPointsReward} SP</div>
                 <div className="text-xs text-muted-foreground">Skill Points</div>
               </div>
-              {quest.monetary_reward && (
+              {quest.monetaryReward && (
                 <div className="text-center p-3 bg-muted rounded-lg col-span-2 md:col-span-2">
                   <Coins className="w-6 h-6 mx-auto text-green-500 mb-1" />
-                  <div className="font-bold text-lg">{formatCurrency(quest.monetary_reward)}</div>
+                  <div className="font-bold text-lg">{formatCurrency(quest.monetaryReward)}</div>
                   <div className="text-xs text-muted-foreground">Monetary Reward</div>
                 </div>
               )}
             </div>
 
-            {quest.monetary_reward && quest.monetary_reward > 0 ? (
+            {quest.monetaryReward && quest.monetaryReward > 0 ? (
               <div className="space-y-4">
                 <Alert>
                   <Coins className="h-4 w-4" />
                   <AlertDescription>
-                    This quest includes a monetary reward of {formatCurrency(quest.monetary_reward)}. 
+                    This quest includes a monetary reward of {formatCurrency(quest.monetaryReward)}. 
                     Complete the payment to release funds to the adventurer.
                   </AlertDescription>
                 </Alert>
@@ -287,7 +287,7 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
                 <CheckCircle className="w-12 h-12 mx-auto text-green-500 mb-3" />
                 <h3 className="text-lg font-medium mb-1">Non-monetary Quest</h3>
                 <p className="text-muted-foreground">
-                  This quest doesn't include a monetary reward, only XP and skill points.
+                  This quest doesn&apos;t include a monetary reward, only XP and skill points.
                 </p>
                 <Button className="mt-4" onClick={() => router.back()}>
                   Return to Dashboard

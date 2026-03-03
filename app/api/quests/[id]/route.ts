@@ -1,59 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
+import { prisma } from '@/lib/db';
 
 export async function GET(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
+  req: NextRequest,
+  props: { params: Promise<{ id: string }> }
 ) {
+  const params = await props.params;
   try {
-    const { id } = await context.params;
+    const quest = await prisma.quest.findUnique({
+      where: { id: params.id },
+      include: {
+        company: {
+          select: {
+            id: true,
+            name: true,
+            avatar: true,
+            email: true,
+          },
+        },
+        assignments: {
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                avatar: true,
+                rank: true,
+                xp: true
+              }
+            }
+          }
+        }
+      },
+    });
 
-    const { data, error } = await supabase
-      .from('quests')
-      .select(`
-        id,
-        title,
-        description,
-        detailed_description,
-        quest_type,
-        status,
-        difficulty,
-        xp_reward,
-        skill_points_reward,
-        monetary_reward,
-        required_skills,
-        required_rank,
-        max_participants,
-        quest_category,
-        company_id,
-        created_at,
-        deadline,
-        users!quests_company_id_fkey (
-          name,
-          email
-        )
-      `)
-      .eq('id', id)
-      .single();
-
-    if (error) {
-      return NextResponse.json({ error: 'Quest not found', success: false }, { status: 404 });
+    if (!quest) {
+      return NextResponse.json({ success: false, error: 'Quest not found' }, { status: 404 });
     }
 
-    // Transform array access
-    const userData = Array.isArray(data.users) ? data.users[0] : data.users;
-    const quest = { ...data, users: userData || { name: '', email: '' } };
-
-    return NextResponse.json({ quest, quests: [quest], success: true });
+    return NextResponse.json({ success: true, quest });
   } catch (error) {
-    console.error('Error fetching quest:', error);
-    return NextResponse.json({ error: 'Failed to fetch quest', success: false }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Failed to fetch quest' }, { status: 500 });
   }
 }

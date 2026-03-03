@@ -1,81 +1,70 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Target, Zap, Users, Clock, CheckCircle, XCircle, Eye, Edit, Trash2 } from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { 
+  AlertCircle, 
+  CheckCircle, 
+  XCircle, 
+  Clock, 
+  DollarSign, 
+  Target, 
+  Zap, 
+  ArrowLeft,
+  MoreVertical,
+  Users,
+  Loader2
+} from 'lucide-react';
 import { toast } from 'sonner';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-interface Quest {
+interface Applicant {
+  id: string;
+  userId: string;
+  status: 'assigned' | 'started' | 'in_progress' | 'submitted' | 'review' | 'completed' | 'cancelled';
+  createdAt: string;
+  user: {
+    name: string;
+    email: string;
+    image?: string;
+    rank: string;
+    xp: number;
+  };
+}
+
+interface QuestDetails {
   id: string;
   title: string;
   description: string;
-  detailed_description?: string;
-  quest_type: string;
   status: string;
   difficulty: string;
-  xp_reward: number;
-  skill_points_reward: number;
-  monetary_reward?: number;
-  required_skills: string[];
-  required_rank?: string;
-  max_participants?: number;
-  quest_category: string;
-  company_id: string;
-  created_at: string;
+  xpReward: number;
+  skillPointsReward: number;
+  monetaryReward?: number;
   deadline?: string;
-  users: {
-    name: string;
-    email: string;
-  };
+  assignments: Applicant[];
 }
 
-interface Assignment {
-  id: string;
-  quest_id: string;
-  user_id: string;
-  status: string;
-  assigned_at: string;
-  started_at?: string;
-  completed_at?: string;
-  progress?: number;
-  user: {
-    name: string;
-    email: string;
-    rank: string;
-  };
-}
-
-interface Submission {
-  id: string;
-  assignment_id: string;
-  user_id: string;
-  submission_content: string;
-  submission_notes?: string;
-  submitted_at: string;
-  status: string;
-  review_notes?: string;
-  quality_score?: number;
-  user: {
-    name: string;
-    email: string;
-  };
-}
-
-export default function CompanyQuestDetailPage() {
-  const { id } = useParams();
+export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [quest, setQuest] = useState<Quest | null>(null);
-  const [assignments, setAssignments] = useState<Assignment[]>([]);
-  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [quest, setQuest] = useState<QuestDetails | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [processingId, setProcessingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -83,355 +72,243 @@ export default function CompanyQuestDetailPage() {
       return;
     }
 
-    if (status === 'authenticated' && session?.user?.role !== 'company' && session.user.role !== 'admin') {
-      // Only companies and admins can access this page
-      router.push('/dashboard');
-      return;
-    }
-
     const fetchQuestDetails = async () => {
       try {
-        setLoading(true);
-        setError(null);
+        const response = await fetch(`/api/quests/${id}`);
+        const data = await response.json();
 
-        // Fetch quest details
-        const questResponse = await fetch(`/api/quests/${id}`);
-        const questData = await questResponse.json();
-
-        if (!questData.success) {
-          setError(questData.error || 'Failed to fetch quest');
-          return;
+        if (data.success) {
+          setQuest(data.quest);
+        } else {
+          toast.error(data.error || 'Failed to fetch quest details');
         }
-
-        const questDetails = questData.quests[0] || questData.quest;
-        
-        // Verify this quest belongs to the current company (or user is admin)
-        if (session?.user?.role !== 'admin' && questDetails.company_id !== session?.user?.id) {
-          setError('Unauthorized to view this quest');
-          return;
-        }
-
-        setQuest(questDetails);
-
-        // Fetch assignments for this quest
-        const assignmentsResponse = await fetch(`/api/quests/assignments?quest_id=${id}`);
-        const assignmentsData = await assignmentsResponse.json();
-        if (assignmentsData.success) {
-          setAssignments(assignmentsData.assignments);
-        }
-
-        // Fetch submissions for this quest
-        // Actually, we need to fetch submissions for each assignment
-        const submissionPromises = assignmentsData.assignments.map((assignment: Assignment) => 
-          fetch(`/api/quests/submissions?assignment_id=${assignment.id}`).then(res => res.json())
-        );
-        
-        const submissionsResults = await Promise.all(submissionPromises);
-        const allSubmissions = submissionsResults.flatMap(result => 
-          result.success ? result.submissions : []
-        );
-        
-        setSubmissions(allSubmissions);
-      } catch (err) {
-        console.error('Error fetching quest details:', err);
-        setError('An error occurred while fetching quest details');
+      } catch (error) {
+        console.error('Error:', error);
+        toast.error('Failed to load quest');
       } finally {
         setLoading(false);
       }
     };
 
-    if (status === 'authenticated' && id) {
+    if (status === 'authenticated') {
       fetchQuestDetails();
     }
-  }, [status, session, id, router]);
+  }, [id, status, router]);
 
-  const handleUpdateQuestStatus = async (newStatus: string) => {
-    if (!quest) return;
-
+  const handleApplicantAction = async (assignmentId: string, action: 'accepted' | 'rejected') => {
+    setProcessingId(assignmentId);
+    // Map UI action to DB status
+    const dbStatus: Applicant['status'] = action === 'accepted' ? 'started' : 'cancelled';
     try {
-      const response = await fetch('/api/company/quests', {
+      const response = await fetch(`/api/quests/${id}/assignments`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          quest_id: quest.id,
-          status: newStatus,
-        }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ assignmentId, status: action }),
       });
 
       const data = await response.json();
 
       if (data.success) {
-        setQuest(prev => prev ? { ...prev, status: newStatus } : null);
-        toast.success(`Quest status updated to ${newStatus}`);
+        toast.success(`Applicant ${action === 'accepted' ? 'accepted' : 'rejected'}`);
+        setQuest(prev => prev ? {
+          ...prev,
+          assignments: prev.assignments.map(a =>
+            a.id === assignmentId ? { ...a, status: dbStatus } : a
+          )
+        } : null);
       } else {
-        toast.error(data.error || 'Failed to update quest status');
+        toast.error(data.error || 'Action failed');
       }
-    } catch (err) {
-      console.error('Error updating quest status:', err);
-      toast.error('An error occurred while updating quest status');
+    } catch (error) {
+      toast.error('Something went wrong');
+    } finally {
+      setProcessingId(null);
     }
   };
 
-  if (status === 'loading' || loading) {
+  if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto py-6">
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-        <Button className="mt-4" onClick={() => router.back()}>
-          ← Back
-        </Button>
+      <div className="flex justify-center items-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     );
   }
 
   if (!quest) {
     return (
-      <div className="container mx-auto py-6">
-        <p>Quest not found</p>
+      <div className="container py-10">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>Quest not found or you don&apos;t have permission to view it.</AlertDescription>
+        </Alert>
+        <Button className="mt-4" onClick={() => router.back()}>Go Back</Button>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto py-6 max-w-6xl">
+    <div className="container py-8 max-w-5xl">
       <div className="mb-6">
-        <Button variant="outline" onClick={() => router.back()}>
-          ← Back to Quests
+        <Button variant="ghost" size="sm" onClick={() => router.back()} className="pl-0">
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Quests
         </Button>
       </div>
 
-      <Card className="mb-6">
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2 mb-2">
-                <CardTitle className="text-2xl">{quest.title}</CardTitle>
-                <Badge variant="outline">{quest.difficulty}-Rank</Badge>
-                <Badge className={`
-                  ${quest.status === 'available' ? 'bg-green-500' : 
-                    quest.status === 'in_progress' ? 'bg-yellow-500' : 
-                    quest.status === 'completed' ? 'bg-blue-500' : 
-                    quest.status === 'cancelled' ? 'bg-red-500' : 
-                    'bg-gray-500'}
-                `}>
-                  {quest.status.charAt(0).toUpperCase() + quest.status.slice(1)}
-                </Badge>
-              </div>
-              <CardDescription>
-                Posted on {new Date(quest.created_at).toLocaleDateString()}
-              </CardDescription>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="secondary">{quest.quest_category}</Badge>
-              <Badge variant="outline">{quest.quest_type}</Badge>
-            </div>
+      <div className="flex flex-col md:flex-row justify-between items-start gap-6 mb-8">
+        <div>
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-3xl font-bold">{quest.title}</h1>
+            <Badge variant={quest.status === 'open' ? 'default' : 'secondary'}>
+              {quest.status}
+            </Badge>
           </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div className="text-center p-3 bg-muted rounded-lg">
-              <Zap className="w-6 h-6 mx-auto text-yellow-500 mb-1" />
-              <div className="font-bold">{quest.xp_reward} XP</div>
-              <div className="text-xs text-muted-foreground">Reward</div>
-            </div>
-            <div className="text-center p-3 bg-muted rounded-lg">
-              <Target className="w-6 h-6 mx-auto text-blue-500 mb-1" />
-              <div className="font-bold">{quest.skill_points_reward} SP</div>
-              <div className="text-xs text-muted-foreground">Skill Points</div>
-            </div>
-            {quest.monetary_reward && (
-              <div className="text-center p-3 bg-muted rounded-lg">
-                <div className="font-bold">${quest.monetary_reward}</div>
-                <div className="text-xs text-muted-foreground">Monetary</div>
-              </div>
-            )}
-            <div className="text-center p-3 bg-muted rounded-lg">
-              <Users className="w-6 h-6 mx-auto text-green-500 mb-1" />
-              <div className="font-bold">{quest.max_participants || 1}/{quest.max_participants || 1}</div>
-              <div className="text-xs text-muted-foreground">Participants</div>
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div>
-              <h3 className="font-semibold mb-2">Description</h3>
-              <p className="text-muted-foreground">{quest.description}</p>
-            </div>
-
-            {quest.detailed_description && (
-              <div>
-                <h3 className="font-semibold mb-2">Detailed Requirements</h3>
-                <div className="prose prose-sm max-w-none">
-                  <p className="text-muted-foreground whitespace-pre-line">{quest.detailed_description}</p>
-                </div>
-              </div>
-            )}
-
-            {quest.required_skills && quest.required_skills.length > 0 && (
-              <div>
-                <h3 className="font-semibold mb-2">Required Skills</h3>
-                <div className="flex flex-wrap gap-2">
-                  {quest.required_skills.map((skill, index) => (
-                    <Badge key={index} variant="secondary">{skill}</Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-
+          <div className="flex items-center gap-4 text-muted-foreground text-sm">
+            <span className="flex items-center"><Target className="w-4 h-4 mr-1" /> {quest.difficulty}-Rank</span>
             {quest.deadline && (
-              <div className="flex items-center text-muted-foreground">
-                <Clock className="w-4 h-4 mr-2" />
-                <span>Deadline: {new Date(quest.deadline).toLocaleDateString()}</span>
-              </div>
+              <span className="flex items-center"><Clock className="w-4 h-4 mr-1" /> Due {new Date(quest.deadline).toLocaleDateString()}</span>
             )}
           </div>
+        </div>
+        <div className="flex gap-2">
+          <Button variant="outline">Edit Quest</Button>
+          <Button variant="destructive">Close Quest</Button>
+        </div>
+      </div>
 
-          <div className="flex flex-wrap gap-2 mt-6">
-            {quest.status === 'available' && (
-              <Button 
-                variant="outline" 
-                onClick={() => handleUpdateQuestStatus('draft')}
-              >
-                Mark as Draft
-              </Button>
-            )}
-            {(quest.status === 'draft' || quest.status === 'available') && (
-              <Button 
-                variant="outline" 
-                onClick={() => handleUpdateQuestStatus('available')}
-              >
-                Make Available
-              </Button>
-            )}
-            {quest.status === 'in_progress' && (
-              <Button 
-                variant="outline" 
-                onClick={() => handleUpdateQuestStatus('completed')}
-              >
-                Mark as Completed
-              </Button>
-            )}
-            <Button 
-              variant="outline" 
-              onClick={() => router.push(`/dashboard/company/quests/${quest.id}/edit`)}
-            >
-              <Edit className="w-4 h-4 mr-2" />
-              Edit Quest
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2">
+          <Tabs defaultValue="applicants">
+            <TabsList className="mb-4">
+              <TabsTrigger value="applicants">Applicants ({quest.assignments.length})</TabsTrigger>
+              <TabsTrigger value="details">Quest Details</TabsTrigger>
+            </TabsList>
 
-      {/* Assignments Section */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Assigned Adventurers</CardTitle>
-          <CardDescription>
-            {assignments.length} adventurer{assignments.length !== 1 ? 's' : ''} currently working on this quest
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {assignments.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <Users className="w-12 h-12 mx-auto mb-2" />
-              <p>No adventurers assigned to this quest yet</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {assignments.map((assignment) => (
-                <div key={assignment.id} className="flex items-center justify-between p-4 border rounded-lg">
+            <TabsContent value="applicants" className="space-y-4">
+              {quest.assignments.length === 0 ? (
+                <Card>
+                  <CardContent className="py-10 text-center text-muted-foreground">
+                    <Users className="w-12 h-12 mx-auto mb-3 opacity-20" />
+                    <p>No adventurers have applied yet.</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                quest.assignments.map((applicant) => (
+                  <Card key={applicant.id}>
+                    <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                      <div className="flex items-center gap-4">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage src={applicant.user.image} />
+                          <AvatarFallback>{applicant.user.name[0]}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <h3 className="font-semibold">{applicant.user.name}</h3>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Badge variant="outline" className="text-xs">{applicant.user.rank}-Rank</Badge>
+                            <span>• {applicant.user.xp} XP</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            Applied {new Date(applicant.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {applicant.status === 'assigned' ? (
+                          <>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                              onClick={() => handleApplicantAction(applicant.id, 'accepted')}
+                              disabled={!!processingId}
+                            >
+                              {processingId === applicant.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4 mr-1" />}
+                              Accept
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              onClick={() => handleApplicantAction(applicant.id, 'rejected')}
+                              disabled={!!processingId}
+                            >
+                              {processingId === applicant.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4 mr-1" />}
+                              Reject
+                            </Button>
+                          </>
+                        ) : (
+                          <Badge variant={applicant.status === 'started' || applicant.status === 'completed' ? 'default' : 'destructive'}>
+                            {applicant.status.charAt(0).toUpperCase() + applicant.status.slice(1)}
+                          </Badge>
+                        )}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem>View Profile</DropdownMenuItem>
+                            <DropdownMenuItem>Message</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </TabsContent>
+
+            <TabsContent value="details">
+              <Card>
+                <CardContent className="pt-6 space-y-4">
                   <div>
-                    <h4 className="font-medium">{assignment.user?.name || 'Unknown User'}</h4>
-                    <p className="text-sm text-muted-foreground">{assignment.user?.email}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="outline">{assignment.user?.rank || 'F'}-Rank</Badge>
-                      <Badge className={`
-                        ${assignment.status === 'assigned' ? 'bg-blue-500' : 
-                          assignment.status === 'started' ? 'bg-yellow-500' : 
-                          assignment.status === 'in_progress' ? 'bg-yellow-500' : 
-                          assignment.status === 'submitted' ? 'bg-purple-500' : 
-                          assignment.status === 'completed' ? 'bg-green-500' : 
-                          'bg-gray-500'}
-                      `}>
-                        {assignment.status.charAt(0).toUpperCase() + assignment.status.slice(1)}
-                      </Badge>
-                    </div>
+                    <h3 className="font-semibold mb-2">Description</h3>
+                    <p className="text-muted-foreground whitespace-pre-wrap">{quest.description}</p>
                   </div>
-                  <Button variant="outline" size="sm" onClick={() => router.push(`/dashboard/company/submissions/${assignment.id}`)}>
-                    <Eye className="w-4 h-4 mr-2" />
-                    View Progress
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Submissions Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Submissions</CardTitle>
-          <CardDescription>
-            Work submitted by adventurers for review
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {submissions.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              <CheckCircle className="w-12 h-12 mx-auto mb-2" />
-              <p>No submissions yet</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {submissions.map((submission) => (
-                <Card key={submission.id} className="p-4">
-                  <div className="flex items-start justify-between">
+                  <Separator />
+                  <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <h4 className="font-medium">{submission.user?.name || 'Unknown User'}</h4>
-                      <p className="text-sm text-muted-foreground">{submission.user?.email}</p>
-                      <div className="flex items-center gap-2 mt-2">
-                        <Badge className={`
-                          ${submission.status === 'pending' ? 'bg-yellow-500' :
-                            submission.status === 'approved' ? 'bg-green-500' :
-                            submission.status === 'needs_rework' ? 'bg-orange-500' :
-                            submission.status === 'rejected' ? 'bg-red-500' :
-                            'bg-gray-500'}
-                        `}>
-                          {submission.status.charAt(0).toUpperCase() + submission.status.slice(1)}
-                        </Badge>
-                        {submission.quality_score && (
-                          <Badge variant="outline">Score: {submission.quality_score}/10</Badge>
+                      <h4 className="text-sm font-medium text-muted-foreground mb-1">Rewards</h4>
+                      <div className="flex gap-4">
+                        <div className="flex items-center gap-1"><Zap className="w-4 h-4 text-yellow-500" /> {quest.xpReward} XP</div>
+                        {quest.monetaryReward && (
+                          <div className="flex items-center gap-1"><DollarSign className="w-4 h-4 text-green-500" /> ${quest.monetaryReward}</div>
                         )}
                       </div>
-                      <div className="mt-2 text-sm">
-                        <p className="font-medium">Submission:</p>
-                        <p className="text-muted-foreground line-clamp-2">{submission.submission_content}</p>
-                      </div>
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => router.push(`/dashboard/company/submissions/${submission.id}`)}>
-                      <Eye className="w-4 h-4 mr-2" />
-                      Review
-                    </Button>
                   </div>
-                </Card>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </div>
+
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle>Stats</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Total Applicants</span>
+                <span className="font-bold">{quest.assignments.length}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Accepted</span>
+                <span className="font-bold text-green-600">
+                  {quest.assignments.filter(a => a.status === 'started' || a.status === 'in_progress').length}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Pending Review</span>
+                <span className="font-bold text-yellow-600">
+                  {quest.assignments.filter(a => a.status === 'assigned').length}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 }
