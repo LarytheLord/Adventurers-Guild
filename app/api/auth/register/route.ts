@@ -25,6 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { name, email, password, role, companyName } = result.data;
+    const normalizedEmail = email.trim().toLowerCase();
 
     // Company accounts require a company name
     if (role === 'company' && !companyName) {
@@ -36,7 +37,7 @@ export async function POST(request: NextRequest) {
 
     // Check if user exists
     const existingUser = await prisma.user.findUnique({
-      where: { email },
+      where: { email: normalizedEmail },
     });
 
     if (existingUser) {
@@ -52,7 +53,7 @@ export async function POST(request: NextRequest) {
     // Create user and profile in transaction
     const user = await prisma.$transaction(async (tx) => {
       const newUser = await tx.user.create({
-        data: { name, email, passwordHash, role },
+        data: { name, email: normalizedEmail, passwordHash, role },
       });
 
       if (role === 'company') {

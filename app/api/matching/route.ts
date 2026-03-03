@@ -1,9 +1,15 @@
 // app/api/matching/route.ts
 import { NextRequest } from 'next/server';
+import { getAuthUser } from '@/lib/api-auth';
 import { prisma } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+    }
+
     // Parse query parameters
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
@@ -12,6 +18,9 @@ export async function GET(request: NextRequest) {
     // Validate user ID is provided
     if (!userId) {
       return Response.json({ error: 'User ID is required', success: false }, { status: 400 });
+    }
+    if (authUser.role !== 'admin' && userId !== authUser.id) {
+      return Response.json({ error: 'Forbidden', success: false }, { status: 403 });
     }
 
     // Get user's profile information including skills and rank
@@ -177,12 +186,20 @@ export async function GET(request: NextRequest) {
 // Endpoint to get recommendations based on user activity
 export async function POST(request: NextRequest) {
   try {
+    const authUser = await getAuthUser();
+    if (!authUser) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+    }
+
     const body = await request.json();
     const { userId, num_recommendations = 5 } = body;
 
     // Validate required fields
     if (!userId) {
       return Response.json({ error: 'User ID is required', success: false }, { status: 400 });
+    }
+    if (authUser.role !== 'admin' && userId !== authUser.id) {
+      return Response.json({ error: 'Forbidden', success: false }, { status: 403 });
     }
 
     // Get user's profile

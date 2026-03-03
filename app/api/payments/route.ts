@@ -92,6 +92,19 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    if (authUser.role !== 'admin' && body.from_userId !== authUser.id) {
+      return Response.json(
+        { error: 'You can only initiate payments from your own account', success: false },
+        { status: 403 }
+      );
+    }
+    if (body.from_userId === body.to_userId) {
+      return Response.json(
+        { error: 'Sender and receiver cannot be the same user', success: false },
+        { status: 400 }
+      );
+    }
+
     // Validate payment information
     if (body.payment_info) {
       const validation = validatePaymentInfo(

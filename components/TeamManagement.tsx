@@ -33,6 +33,8 @@ import { toast } from 'sonner';
 // Types
 interface TeamMember {
   id: string;
+  membershipId: string;
+  userId: string;
   name: string;
   email: string;
   rank: string;
@@ -78,7 +80,7 @@ export default function TeamManagement({ userId }: TeamManagementProps) {
     const fetchTeams = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/teams?userId=${userId}`);
+        const response = await fetch('/api/teams');
         const data = await response.json();
         
         if (data.success) {
@@ -109,8 +111,7 @@ export default function TeamManagement({ userId }: TeamManagementProps) {
         body: JSON.stringify({
           name: newTeam.name,
           description: newTeam.description,
-          max_members: newTeam.maxMembers,
-          owner_userId: userId
+          max_members: newTeam.maxMembers
         }),
       });
 
@@ -122,7 +123,7 @@ export default function TeamManagement({ userId }: TeamManagementProps) {
         setNewTeam({ name: '', description: '', maxMembers: 5 });
         
         // Refresh the team list
-        const updatedTeamsResponse = await fetch(`/api/teams?userId=${userId}`);
+        const updatedTeamsResponse = await fetch('/api/teams');
         const updatedTeamsData = await updatedTeamsResponse.json();
         
         if (updatedTeamsData.success) {
@@ -144,20 +145,14 @@ export default function TeamManagement({ userId }: TeamManagementProps) {
     }
 
     try {
-      // In a real implementation, we would look up the user by email
-      // For this example, we'll assume we have a way to get the user ID
-      // Here we'll just mock the user ID based on the email
-      const mockUserId = `mock-${inviteEmail}`; // This would be replaced with a real lookup
-
       const response = await fetch('/api/teams/members', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          teamId: teamId,
-          userId: mockUserId, // In real app, this would be the actual user ID
-          invitedBy: userId
+          teamId,
+          email: inviteEmail
         }),
       });
 
@@ -169,7 +164,7 @@ export default function TeamManagement({ userId }: TeamManagementProps) {
         setInvitingToTeam(null);
         
         // Refresh the team data to show the new member
-        const updatedTeamsResponse = await fetch(`/api/teams?userId=${userId}`);
+        const updatedTeamsResponse = await fetch('/api/teams');
         const updatedTeamsData = await updatedTeamsResponse.json();
         
         if (updatedTeamsData.success) {
@@ -190,12 +185,34 @@ export default function TeamManagement({ userId }: TeamManagementProps) {
     }
 
     try {
-      // In a real app, we would call an API endpoint to remove the user
-      // For now, we'll just update the UI and show a toast
+      const team = teams.find((item) => item.id === teamId);
+      const selfMembership = team?.members.find((member) => member.id === userId);
+
+      if (!selfMembership) {
+        toast.error('Could not find your membership in this team');
+        return;
+      }
+
+      const response = await fetch('/api/teams/members', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          member_id: selfMembership.membershipId,
+        }),
+      });
+
+      const data = await response.json();
+      if (!data.success) {
+        toast.error(data.error || 'Failed to leave team');
+        return;
+      }
+
       toast.success('Successfully left the team');
       
       // Refresh the team list
-      const updatedTeamsResponse = await fetch(`/api/teams?userId=${userId}`);
+      const updatedTeamsResponse = await fetch('/api/teams');
       const updatedTeamsData = await updatedTeamsResponse.json();
       
       if (updatedTeamsData.success) {
@@ -207,18 +224,32 @@ export default function TeamManagement({ userId }: TeamManagementProps) {
     }
   };
 
-  const handleRemoveMember = async (teamId: string, memberId: string) => {
+  const handleRemoveMember = async (teamId: string, membershipId: string) => {
     if (!window.confirm('Are you sure you want to remove this member from the team?')) {
       return;
     }
 
     try {
-      // In a real app, we would call an API endpoint to remove the member
-      // For now, we'll just update the UI and show a toast
+      const response = await fetch('/api/teams/members', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          member_id: membershipId,
+        }),
+      });
+
+      const data = await response.json();
+      if (!data.success) {
+        toast.error(data.error || 'Failed to remove member');
+        return;
+      }
+
       toast.success('Member removed from team');
       
       // Refresh the team data to show the updated member list
-      const updatedTeamsResponse = await fetch(`/api/teams?userId=${userId}`);
+      const updatedTeamsResponse = await fetch('/api/teams');
       const updatedTeamsData = await updatedTeamsResponse.json();
       
       if (updatedTeamsData.success) {
@@ -393,7 +424,7 @@ export default function TeamManagement({ userId }: TeamManagementProps) {
                               if (member.id === userId) {
                                 handleLeaveTeam(team.id);
                               } else if (team.userRole === 'owner' || team.userRole === 'admin') {
-                                handleRemoveMember(team.id, member.id);
+                                handleRemoveMember(team.id, member.membershipId);
                               }
                             }}
                             className="h-8 w-8 p-0"

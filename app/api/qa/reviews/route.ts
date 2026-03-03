@@ -1,32 +1,46 @@
-// app/api/qa/reviews/route.ts
 import { NextRequest } from 'next/server';
+import { requireAuth } from '@/lib/api-auth';
 import { prisma } from '@/lib/db';
+
+const VALID_REVIEW_STATUSES = ['pending', 'under_review', 'approved', 'needs_rework', 'rejected'] as const;
+type ReviewStatus = (typeof VALID_REVIEW_STATUSES)[number];
 
 export async function GET(request: NextRequest) {
   try {
-    // Parse query parameters
+    const authUser = await requireAuth('company', 'admin');
+    if (!authUser) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const submissionId = searchParams.get('submissionId');
     const reviewerId = searchParams.get('reviewer_id');
     const questId = searchParams.get('questId');
     const status = searchParams.get('status');
-    const limit = searchParams.get('limit') || '10';
-    const offset = searchParams.get('offset') || '0';
+    const limit = Number.parseInt(searchParams.get('limit') ?? '10', 10) || 10;
+    const offset = Number.parseInt(searchParams.get('offset') ?? '0', 10) || 0;
 
-    // Build where clause
-    const whereClause: Record<string, unknown> = {};
-
-    if (submissionId) {
-      whereClause.id = submissionId;
+    if (reviewerId && authUser.role !== 'admin' && reviewerId !== authUser.id) {
+      return Response.json({ error: 'Forbidden', success: false }, { status: 403 });
     }
-    if (reviewerId) {
+
+    const whereClause: Record<string, unknown> = {};
+    if (submissionId) whereClause.id = submissionId;
+    if (status) whereClause.status = status;
+
+    const assignmentFilter: Record<string, unknown> = {};
+    if (questId) assignmentFilter.questId = questId;
+    if (authUser.role !== 'admin') {
+      assignmentFilter.quest = { companyId: authUser.id };
+      if (reviewerId) {
+        whereClause.reviewerId = authUser.id;
+      }
+    } else if (reviewerId) {
       whereClause.reviewerId = reviewerId;
     }
-    if (questId) {
-      whereClause.assignment = { questId: questId };
-    }
-    if (status) {
-      whereClause.status = status;
+
+    if (Object.keys(assignmentFilter).length > 0) {
+      whereClause.assignment = assignmentFilter;
     }
 
     const data = await prisma.questSubmission.findMany({
@@ -64,8 +78,8 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: { submittedAt: 'desc' },
-      skip: parseInt(offset),
-      take: parseInt(limit),
+      skip: offset,
+      take: Math.min(limit, 50),
     });
 
     return Response.json({ submissions: data, success: true });
@@ -77,61 +91,85 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const authUser = await requireAuth('company', 'admin');
+    if (!authUser) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+    }
 
-    // Validate required fields
-    const requiredFields = ['submissionId', 'reviewer_id', 'quality_score', 'status'];
+    const body = (await request.json()) as Record<string, unknown>;
+    const requiredFields = ['submissionId', 'quality_score', 'status'];
     for (const field of requiredFields) {
       if (body[field] === undefined) {
         return Response.json({ error: `${field} is required`, success: false }, { status: 400 });
       }
     }
 
-    // Verify the reviewer has the appropriate permissions (in a real app, check if reviewer is qualified)
-    // For now, we'll just verify the reviewer exists
+    const submissionId = typeof body.submissionId === 'string' ? body.submissionId : '';
+    const status =
+      typeof body.status === 'string' && VALID_REVIEW_STATUSES.includes(body.status as ReviewStatus)
+        ? (body.status as ReviewStatus)
+        : null;
+    const qualityScore =
+      typeof body.quality_score === 'number'
+        ? Math.min(Math.max(Math.trunc(body.quality_score), 0), 100)
+        : null;
 
-    // Update the submission with review information
-    const data = await prisma.questSubmission.update({
-      where: { id: body.submissionId },
-      data: {
-        status: body.status,
-        reviewerId: body.reviewer_id,
-        reviewedAt: new Date(),
-        reviewNotes: body.review_notes || null,
-        qualityScore: body.quality_score,
+    if (!submissionId || !status || qualityScore === null) {
+      return Response.json(
+        { error: 'submissionId, status and quality_score are required', success: false },
+        { status: 400 }
+      );
+    }
+
+    const existingSubmission = await prisma.questSubmission.findUnique({
+      where: { id: submissionId },
+      select: {
+        id: true,
+        status: true,
+        assignmentId: true,
+        assignment: {
+          select: {
+            questId: true,
+            userId: true,
+            quest: {
+              select: {
+                companyId: true,
+              },
+            },
+          },
+        },
       },
     });
 
-    // If the submission is approved, update the assignment status and record completion
-    if (body.status === 'approved') {
-      // Get assignment ID for this submission
-      const submission = await prisma.questSubmission.findUnique({
-        where: { id: body.submissionId },
-        select: { assignmentId: true },
-      });
+    if (!existingSubmission) {
+      return Response.json({ error: 'Submission not found', success: false }, { status: 404 });
+    }
 
-      if (!submission) {
-        throw new Error('Submission not found');
-      }
+    if (authUser.role !== 'admin' && existingSubmission.assignment.quest?.companyId !== authUser.id) {
+      return Response.json({ error: 'Forbidden', success: false }, { status: 403 });
+    }
 
-      // Update assignment status
+    const data = await prisma.questSubmission.update({
+      where: { id: submissionId },
+      data: {
+        status,
+        reviewerId: authUser.id,
+        reviewedAt: new Date(),
+        reviewNotes: typeof body.review_notes === 'string' ? body.review_notes : null,
+        qualityScore,
+      },
+    });
+
+    const wasAlreadyApproved = existingSubmission.status === 'approved';
+
+    if (status === 'approved' && !wasAlreadyApproved) {
       await prisma.questAssignment.update({
-        where: { id: submission.assignmentId },
+        where: { id: existingSubmission.assignmentId },
         data: { status: 'completed', completedAt: new Date() },
       });
 
-      // Get quest details to determine rewards
-      const assignment = await prisma.questAssignment.findUnique({
-        where: { id: submission.assignmentId },
-        select: { questId: true, userId: true },
-      });
-
-      if (!assignment) {
-        throw new Error('Assignment not found');
-      }
-
       const quest = await prisma.quest.findUnique({
-        where: { id: assignment.questId },
+        where: { id: existingSubmission.assignment.questId },
         select: { xpReward: true, skillPointsReward: true },
       });
 
@@ -143,11 +181,11 @@ export async function POST(request: NextRequest) {
       try {
         await prisma.questCompletion.create({
           data: {
-            questId: assignment.questId,
-            userId: assignment.userId,
+            questId: existingSubmission.assignment.questId,
+            userId: existingSubmission.assignment.userId,
             xpEarned: quest.xpReward,
             skillPointsEarned: quest.skillPointsReward,
-            qualityScore: body.quality_score,
+            qualityScore,
           },
         });
       } catch (completionError) {
@@ -156,21 +194,15 @@ export async function POST(request: NextRequest) {
 
       // Update user XP, level, rank, and skill points
       const { updateUserXpAndSkills } = await import('@/lib/xp-utils');
-      await updateUserXpAndSkills(assignment.userId, quest.xpReward, quest.skillPointsReward);
+      await updateUserXpAndSkills(
+        existingSubmission.assignment.userId,
+        quest.xpReward,
+        quest.skillPointsReward
+      );
     }
-    // If submission needs rework, update assignment status to in_progress
-    else if (body.status === 'needs_rework') {
-      const submission = await prisma.questSubmission.findUnique({
-        where: { id: body.submissionId },
-        select: { assignmentId: true },
-      });
-
-      if (!submission) {
-        throw new Error('Submission not found');
-      }
-
+    else if (status === 'needs_rework') {
       await prisma.questAssignment.update({
-        where: { id: submission.assignmentId },
+        where: { id: existingSubmission.assignmentId },
         data: { status: 'in_progress' },
       });
     }
@@ -185,11 +217,13 @@ export async function POST(request: NextRequest) {
 // API to get quality statistics
 export async function PUT(request: NextRequest) {
   try {
-    // This endpoint could be used to update quality metrics or reprocess reviews
-    const body = await request.json();
+    const authUser = await requireAuth('company', 'admin');
+    if (!authUser) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+    }
 
-    // Currently just return a success response
-    // In a real implementation, this might be used to update quality metrics
+    await request.json();
+
     return Response.json({ success: true });
   } catch (error) {
     console.error('Error in QA PUT:', error);
