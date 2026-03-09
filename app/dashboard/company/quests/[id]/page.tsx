@@ -10,18 +10,20 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Separator } from '@/components/ui/separator';
-import { 
-  AlertCircle, 
-  CheckCircle, 
-  XCircle, 
-  Clock, 
-  DollarSign, 
-  Target, 
-  Zap, 
+import {
+  AlertCircle,
+  CheckCircle,
+  XCircle,
+  Clock,
+  DollarSign,
+  Target,
+  Zap,
   ArrowLeft,
   MoreVertical,
   Users,
-  Loader2
+  Loader2,
+  RotateCcw,
+  FileText,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import {
@@ -30,6 +32,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+
+interface Submission {
+  id: string;
+  status: string;
+  submissionContent: string;
+  submissionNotes?: string | null;
+}
 
 interface Applicant {
   id: string;
@@ -43,6 +52,7 @@ interface Applicant {
     rank: string;
     xp: number;
   };
+  submissions?: Submission[];
 }
 
 interface QuestDetails {
@@ -103,7 +113,6 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
 
   const handleApplicantAction = async (assignmentId: string, action: 'accepted' | 'rejected') => {
     setProcessingId(assignmentId);
-    // Map UI action to DB status
     const dbStatus: Applicant['status'] = action === 'accepted' ? 'started' : 'cancelled';
     try {
       const response = await fetch(`/api/quests/${id}/assignments`, {
@@ -127,6 +136,43 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
       }
     } catch (error) {
       console.error('Applicant action error:', error);
+      toast.error('Something went wrong');
+    } finally {
+      setProcessingId(null);
+    }
+  };
+
+  const handleSubmissionReview = async (
+    assignmentId: string,
+    submissionId: string,
+    action: 'approved' | 'needs_rework' | 'rejected'
+  ) => {
+    setProcessingId(assignmentId);
+    try {
+      const response = await fetch('/api/quests/submissions', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ submissionId, status: action }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        const newAssignmentStatus: Applicant['status'] =
+          action === 'approved' ? 'completed' : 'in_progress';
+        const label = action === 'approved' ? 'Approved' : action === 'needs_rework' ? 'Sent back for rework' : 'Rejected';
+        toast.success(label);
+        setQuest(prev => prev ? {
+          ...prev,
+          assignments: prev.assignments.map(a =>
+            a.id === assignmentId ? { ...a, status: newAssignmentStatus } : a
+          )
+        } : null);
+      } else {
+        toast.error(data.error || 'Review action failed');
+      }
+    } catch (error) {
+      console.error('Submission review error:', error);
       toast.error('Something went wrong');
     } finally {
       setProcessingId(null);
@@ -235,76 +281,132 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
                   </CardContent>
                 </Card>
               ) : (
-                quest.assignments.map((applicant) => (
-                  <Card key={applicant.id}>
-                    <CardContent className="p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                      <div className="flex items-center gap-4">
-                        <Avatar className="h-12 w-12">
-                          <AvatarImage src={applicant.user.avatar} />
-                          <AvatarFallback>{applicant.user.name[0]}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <h3 className="font-semibold">{applicant.user.name}</h3>
-                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                            <Badge variant="outline" className="text-xs">{applicant.user.rank}-Rank</Badge>
-                            <span>• {applicant.user.xp} XP</span>
-                          </div>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            Applied {new Date(applicant.assignedAt).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
+                quest.assignments.map((applicant) => {
+                  const latestSubmission = applicant.submissions?.[0];
+                  const needsReview = ['submitted', 'review'].includes(applicant.status) && !!latestSubmission;
 
-                      <div className="flex items-center gap-2">
-                        {applicant.status === 'assigned' ? (
-                          <>
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                              onClick={() => handleApplicantAction(applicant.id, 'accepted')}
-                              disabled={!!processingId}
-                            >
-                              {processingId === applicant.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4 mr-1" />}
-                              Accept
-                            </Button>
-                            <Button 
-                              size="sm" 
-                              variant="outline" 
-                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                              onClick={() => handleApplicantAction(applicant.id, 'rejected')}
-                              disabled={!!processingId}
-                            >
-                              {processingId === applicant.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4 mr-1" />}
-                              Reject
-                            </Button>
-                          </>
-                        ) : (
-                          <Badge
-                            variant={
-                              ['started', 'in_progress', 'completed'].includes(applicant.status)
-                                ? 'default'
-                                : ['submitted', 'review'].includes(applicant.status)
-                                  ? 'secondary'
-                                  : 'destructive'
-                            }
-                          >
-                            {applicant.status.replace('_', ' ')}
-                          </Badge>
+                  return (
+                    <Card key={applicant.id}>
+                      <CardContent className="p-6 space-y-4">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                          <div className="flex items-center gap-4">
+                            <Avatar className="h-12 w-12">
+                              <AvatarImage src={applicant.user.avatar} />
+                              <AvatarFallback>{applicant.user.name[0]}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <h3 className="font-semibold">{applicant.user.name}</h3>
+                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                <Badge variant="outline" className="text-xs">{applicant.user.rank}-Rank</Badge>
+                                <span>• {applicant.user.xp} XP</span>
+                              </div>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                Applied {new Date(applicant.assignedAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center gap-2">
+                            {applicant.status === 'assigned' ? (
+                              <>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                                  onClick={() => handleApplicantAction(applicant.id, 'accepted')}
+                                  disabled={!!processingId}
+                                >
+                                  {processingId === applicant.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle className="h-4 w-4 mr-1" />}
+                                  Accept
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  onClick={() => handleApplicantAction(applicant.id, 'rejected')}
+                                  disabled={!!processingId}
+                                >
+                                  {processingId === applicant.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <XCircle className="h-4 w-4 mr-1" />}
+                                  Reject
+                                </Button>
+                              </>
+                            ) : (
+                              <Badge
+                                variant={
+                                  ['started', 'in_progress', 'completed'].includes(applicant.status)
+                                    ? 'default'
+                                    : ['submitted', 'review'].includes(applicant.status)
+                                      ? 'secondary'
+                                      : 'destructive'
+                                }
+                              >
+                                {applicant.status.replace('_', ' ')}
+                              </Badge>
+                            )}
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem>View Profile</DropdownMenuItem>
+                                <DropdownMenuItem>Message</DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </div>
+                        </div>
+
+                        {/* Submission review panel */}
+                        {needsReview && latestSubmission && (
+                          <div className="border rounded-lg p-4 bg-muted/30 space-y-3">
+                            <div className="flex items-center gap-2 text-sm font-medium">
+                              <FileText className="h-4 w-4 text-orange-500" />
+                              Work Submitted — awaiting your review
+                            </div>
+                            <p className="text-sm text-muted-foreground whitespace-pre-wrap line-clamp-4">
+                              {latestSubmission.submissionContent}
+                            </p>
+                            {latestSubmission.submissionNotes && (
+                              <p className="text-xs text-muted-foreground italic">
+                                Note: {latestSubmission.submissionNotes}
+                              </p>
+                            )}
+                            <div className="flex flex-wrap gap-2 pt-1">
+                              <Button
+                                size="sm"
+                                className="bg-green-600 hover:bg-green-700 text-white"
+                                onClick={() => handleSubmissionReview(applicant.id, latestSubmission.id, 'approved')}
+                                disabled={!!processingId}
+                              >
+                                {processingId === applicant.id ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <CheckCircle className="h-4 w-4 mr-1" />}
+                                Approve & Award XP
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-yellow-600 hover:text-yellow-700 hover:bg-yellow-50"
+                                onClick={() => handleSubmissionReview(applicant.id, latestSubmission.id, 'needs_rework')}
+                                disabled={!!processingId}
+                              >
+                                <RotateCcw className="h-4 w-4 mr-1" />
+                                Request Rework
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                onClick={() => handleSubmissionReview(applicant.id, latestSubmission.id, 'rejected')}
+                                disabled={!!processingId}
+                              >
+                                <XCircle className="h-4 w-4 mr-1" />
+                                Reject
+                              </Button>
+                            </div>
+                          </div>
                         )}
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem>View Profile</DropdownMenuItem>
-                            <DropdownMenuItem>Message</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))
+                      </CardContent>
+                    </Card>
+                  );
+                })
               )}
             </TabsContent>
 
@@ -353,6 +455,12 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
                 <span className="text-muted-foreground">Pending Review</span>
                 <span className="font-bold text-yellow-600">
                   {quest.assignments.filter(a => ['submitted', 'review'].includes(a.status)).length}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Completed</span>
+                <span className="font-bold text-primary">
+                  {quest.assignments.filter(a => a.status === 'completed').length}
                 </span>
               </div>
             </CardContent>

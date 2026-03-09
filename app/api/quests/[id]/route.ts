@@ -33,6 +33,16 @@ export async function GET(
                 email: true,
               },
             },
+            submissions: {
+              select: {
+                id: true,
+                status: true,
+                submissionContent: true,
+                submissionNotes: true,
+              },
+              orderBy: { submittedAt: 'desc' },
+              take: 1,
+            },
           },
         },
       },

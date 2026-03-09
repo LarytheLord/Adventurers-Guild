@@ -108,6 +108,12 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // Increment questsPosted counter on company profile
+    await prisma.companyProfile.update({
+      where: { userId: companyId },
+      data: { questsPosted: { increment: 1 } },
+    });
+
     return Response.json({ quest: data, success: true }, { status: 201 });
   } catch (error) {
     console.error('Error creating quest:', error);

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { prisma, withDbRetry } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 
@@ -35,10 +35,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email: normalizedEmail },
-    });
+    // Check if user exists (with Neon cold-start retry)
+    const existingUser = await withDbRetry(() =>
+      prisma.user.findUnique({ where: { email: normalizedEmail } })
+    );
 
     if (existingUser) {
       return NextResponse.json(
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     const passwordHash = await bcrypt.hash(password, 12);
 
     // Create user and profile in transaction
-    const user = await prisma.$transaction(async (tx) => {
+    const user = await withDbRetry(() => prisma.$transaction(async (tx) => {
       const newUser = await tx.user.create({
         data: { name, email: normalizedEmail, passwordHash, role },
       });
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
       }
 
       return newUser;
-    });
+    }));
 
     return NextResponse.json({ success: true, userId: user.id }, { status: 201 });
   } catch (error) {

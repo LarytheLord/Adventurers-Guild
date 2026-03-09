@@ -35,6 +35,7 @@ const useShaderBackground = () => {
   const animationFrameRef = useRef<number>();
   const rendererRef = useRef<WebGLRenderer | null>(null);
   const pointersRef = useRef<PointerHandler | null>(null);
+  const [webglFailed, setWebglFailed] = useState(false);
 
   // WebGL Renderer class
   class WebGLRenderer {
@@ -61,7 +62,9 @@ void main(){gl_Position=position;}`;
     constructor(canvas: HTMLCanvasElement, scale: number) {
       this.canvas = canvas;
       this.scale = scale;
-      this.gl = canvas.getContext('webgl2')!;
+      const gl = canvas.getContext('webgl2');
+      if (!gl) throw new Error('WebGL2 not supported');
+      this.gl = gl;
       this.gl.viewport(0, 0, canvas.width * scale, canvas.height * scale);
       this.shaderSource = defaultShaderSource;
     }
@@ -295,23 +298,30 @@ void main(){gl_Position=position;}`;
 
     const canvas = canvasRef.current;
     const dpr = Math.max(1, 0.5 * window.devicePixelRatio);
-    
-    rendererRef.current = new WebGLRenderer(canvas, dpr);
-    pointersRef.current = new PointerHandler(canvas, dpr);
-    
-    rendererRef.current.setup();
-    rendererRef.current.init();
-    
-    resize();
-    
-    if (rendererRef.current.test(defaultShaderSource) === null) {
-      rendererRef.current.updateShader(defaultShaderSource);
+
+    try {
+      rendererRef.current = new WebGLRenderer(canvas, dpr);
+    } catch {
+      setWebglFailed(true);
+      return;
     }
-    
-    loop(0);
-    
+
+    try {
+      pointersRef.current = new PointerHandler(canvas, dpr);
+      rendererRef.current.setup();
+      rendererRef.current.init();
+      resize();
+      if (rendererRef.current.test(defaultShaderSource) === null) {
+        rendererRef.current.updateShader(defaultShaderSource);
+      }
+      loop(0);
+    } catch {
+      setWebglFailed(true);
+      return;
+    }
+
     window.addEventListener('resize', resize);
-    
+
     return () => {
       window.removeEventListener('resize', resize);
       if (animationFrameRef.current) {
@@ -323,7 +333,7 @@ void main(){gl_Position=position;}`;
     };
   }, []);
 
-  return canvasRef;
+  return { canvasRef, webglFailed };
 };
 
 // Reusable Hero Component
@@ -334,7 +344,7 @@ const Hero: React.FC<HeroProps> = ({
   buttons,
   className = ""
 }) => {
-  const canvasRef = useShaderBackground();
+  const { canvasRef, webglFailed } = useShaderBackground();
 
   return (
     <div className={`relative w-full h-screen overflow-hidden bg-black ${className}`}>
@@ -398,11 +408,15 @@ const Hero: React.FC<HeroProps> = ({
         }
       `}</style>
       
-      <canvas
-        ref={canvasRef}
-        className="absolute inset-0 w-full h-full object-contain touch-none"
-        style={{ background: 'black' }}
-      />
+      {webglFailed ? (
+        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-orange-950" />
+      ) : (
+        <canvas
+          ref={canvasRef}
+          className="absolute inset-0 w-full h-full object-contain touch-none"
+          style={{ background: 'black' }}
+        />
+      )}
       
       {/* Hero Content Overlay */}
       <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-white">

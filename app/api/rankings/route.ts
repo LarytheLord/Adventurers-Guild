@@ -83,7 +83,7 @@ export async function GET(request: NextRequest) {
       const ranked = companies
         .map((company) => {
           const totalSpent = Number(company.companyProfile?.totalSpent ?? 0);
-          const questsPosted = company.companyProfile?.questsPosted ?? company.quests.length;
+          const questsPosted = company.companyProfile?.questsPosted || company.quests.length;
           const completedQuests = company.quests.filter((quest) => quest.status === 'completed').length;
           const activeQuests = company.quests.filter((quest) =>
             ['available', 'in_progress', 'review'].includes(quest.status)
