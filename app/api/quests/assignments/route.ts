@@ -128,12 +128,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Quest not available', success: false }, { status: 400 });
     }
 
-    // Check if the max number of participants has been reached
+    // Check if the max number of accepted participants has been reached.
+    // Only count adventurers the company has accepted (started or beyond),
+    // matching the same statuses used in quest-lifecycle.ts to keep a slot "filled".
     if (quest.maxParticipants) {
       const count = await prisma.questAssignment.count({
         where: {
           questId: questId,
-          status: { not: 'cancelled' },
+          status: { in: ['started', 'in_progress', 'submitted', 'review', 'completed'] },
         },
       });
 

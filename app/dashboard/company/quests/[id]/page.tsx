@@ -292,7 +292,7 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
                           <div className="flex items-center gap-4">
                             <Avatar className="h-12 w-12">
                               <AvatarImage src={applicant.user.avatar} />
-                              <AvatarFallback>{applicant.user.name[0]}</AvatarFallback>
+                              <AvatarFallback>{applicant.user.name?.[0]?.toUpperCase() ?? '?'}</AvatarFallback>
                             </Avatar>
                             <div>
                               <h3 className="font-semibold">{applicant.user.name}</h3>
