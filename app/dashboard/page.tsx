@@ -2,7 +2,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
@@ -20,6 +20,15 @@ import Link from 'next/link';
 import { RankBadge } from '@/components/ui/rank-badge';
 import type { Rank } from '@/components/ui/rank-badge';
 import { RANK_THRESHOLDS } from '@/lib/ranks';
+import {
+  GuildCard,
+  GuildChip,
+  GuildHero,
+  GuildKpi,
+  GuildListItem,
+  GuildPage,
+  GuildPanel,
+} from '@/components/guild/primitives';
 
 const RANK_ORDER: Rank[] = ['F', 'E', 'D', 'C', 'B', 'A', 'S'];
 
@@ -136,8 +145,8 @@ export default async function DashboardPage() {
     .slice(0, 4);
 
   return (
-    <div className="guild-page">
-      <section className="guild-hero">
+    <GuildPage>
+      <GuildHero>
         <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-3">
             <Badge className="rounded-full border border-orange-300 bg-orange-100 text-orange-700">
@@ -153,9 +162,9 @@ export default async function DashboardPage() {
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="guild-chip">{specialization}</span>
-              <span className="guild-chip">Level {level}</span>
-              <span className="guild-chip">{user?.adventurerProfile?.currentStreak ?? 0} day streak</span>
+              <GuildChip>{specialization}</GuildChip>
+              <GuildChip>Level {level}</GuildChip>
+              <GuildChip>{user?.adventurerProfile?.currentStreak ?? 0} day streak</GuildChip>
             </div>
           </div>
 
@@ -186,19 +195,19 @@ export default async function DashboardPage() {
             </div>
           </div>
         </div>
-      </section>
+      </GuildHero>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <article className="guild-kpi">
+        <GuildKpi>
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Current Rank</p>
           <div className="mt-2 flex items-center gap-2">
             <RankBadge rank={rank} size="sm" />
             <p className="text-xl font-bold text-slate-900">{rank}-Rank</p>
           </div>
           <p className="mt-2 text-xs text-slate-500">{user?.skillPoints ?? 0} skill points available</p>
-        </article>
+        </GuildKpi>
 
-        <article className="guild-kpi">
+        <GuildKpi>
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">XP Total</p>
             <Zap className="h-4 w-4 text-amber-500" />
@@ -207,18 +216,18 @@ export default async function DashboardPage() {
           <p className="mt-1 text-xs text-slate-500">
             {nextEntry ? `${xpToNext.toLocaleString()} XP to ${nextEntry.rank}` : 'Top tier achieved'}
           </p>
-        </article>
+        </GuildKpi>
 
-        <article className="guild-kpi">
+        <GuildKpi>
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Active Pipeline</p>
             <Target className="h-4 w-4 text-sky-500" />
           </div>
           <p className="mt-2 text-2xl font-bold text-slate-900">{activeAssignments.length}</p>
           <p className="mt-1 text-xs text-slate-500">{reviewCount} waiting for review</p>
-        </article>
+        </GuildKpi>
 
-        <article className="guild-kpi">
+        <GuildKpi>
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Completed Quests</p>
             <Trophy className="h-4 w-4 text-emerald-500" />
@@ -228,11 +237,11 @@ export default async function DashboardPage() {
             <Flame className="h-3.5 w-3.5 text-orange-500" />
             {user?.adventurerProfile?.questCompletionRate?.toString() ?? '0.00'}% completion rate
           </p>
-        </article>
+        </GuildKpi>
       </section>
 
       <section className="grid gap-4 xl:grid-cols-3">
-        <Card className="guild-panel xl:col-span-2">
+        <GuildCard className="xl:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle>Current Quest Pipeline</CardTitle>
@@ -252,45 +261,47 @@ export default async function DashboardPage() {
               </div>
             ) : (
               activeAssignments.map((assignment) => (
-                <Link
+                <GuildListItem
+                  asChild
                   key={assignment.id}
-                  href={`/dashboard/quests/${assignment.quest.id}`}
-                  className="guild-list-item flex items-start justify-between gap-3"
+                  className="flex items-start justify-between gap-3"
                 >
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-semibold text-slate-900">{assignment.quest.title}</p>
-                    <p className="mt-0.5 text-xs text-slate-500">
-                      {assignment.quest.company?.name || 'Unknown Company'}
-                    </p>
-                    <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-500">
-                      <span className="flex items-center gap-1">
-                        <Zap className="h-3 w-3 text-amber-500" />
-                        {assignment.quest.xpReward} XP
-                      </span>
-                      <span>{assignment.quest.skillPointsReward} SP</span>
-                      {assignment.quest.monetaryReward && (
-                        <span className="font-medium text-emerald-600">
-                          ${Number(assignment.quest.monetaryReward)}
-                        </span>
-                      )}
-                      {assignment.quest.deadline && (
+                  <Link href={`/dashboard/quests/${assignment.quest.id}`}>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-semibold text-slate-900">{assignment.quest.title}</p>
+                      <p className="mt-0.5 text-xs text-slate-500">
+                        {assignment.quest.company?.name || 'Unknown Company'}
+                      </p>
+                      <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-500">
                         <span className="flex items-center gap-1">
-                          <Clock className="h-3 w-3" />
-                          {new Date(assignment.quest.deadline).toLocaleDateString()}
+                          <Zap className="h-3 w-3 text-amber-500" />
+                          {assignment.quest.xpReward} XP
                         </span>
-                      )}
+                        <span>{assignment.quest.skillPointsReward} SP</span>
+                        {assignment.quest.monetaryReward && (
+                          <span className="font-medium text-emerald-600">
+                            ${Number(assignment.quest.monetaryReward)}
+                          </span>
+                        )}
+                        {assignment.quest.deadline && (
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {new Date(assignment.quest.deadline).toLocaleDateString()}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  <Badge variant="secondary" className="shrink-0 capitalize">
-                    {assignment.status.replace('_', ' ')}
-                  </Badge>
-                </Link>
+                    <Badge variant="secondary" className="shrink-0 capitalize">
+                      {assignment.status.replace('_', ' ')}
+                    </Badge>
+                  </Link>
+                </GuildListItem>
               ))
             )}
           </CardContent>
-        </Card>
+        </GuildCard>
 
-        <Card className="guild-panel">
+        <GuildCard>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-orange-500" />
@@ -320,10 +331,10 @@ export default async function DashboardPage() {
               </Link>
             </Button>
           </CardContent>
-        </Card>
+        </GuildCard>
       </section>
 
-      <section className="guild-panel">
+      <GuildPanel>
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
@@ -374,7 +385,7 @@ export default async function DashboardPage() {
             </div>
           )}
         </CardContent>
-      </section>
-    </div>
+      </GuildPanel>
+    </GuildPage>
   );
 }

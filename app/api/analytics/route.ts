@@ -1,8 +1,7 @@
 import { NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { subDays, subYears } from 'date-fns';
+import { getAuthUser } from '@/lib/api-auth';
 
 interface ProgressPoint {
   date: string;
@@ -11,14 +10,14 @@ interface ProgressPoint {
 }
 
 export async function GET(req: Request) {
-  const session = await getServerSession(authOptions);
-  if (!session) {
+  const authUser = await getAuthUser();
+  if (!authUser) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
 
   const { searchParams } = new URL(req.url);
   const type = searchParams.get('type') || 'user';
-  const userId = searchParams.get('userId') || session.user.id;
+  const userId = searchParams.get('userId') || authUser.id;
   const timeRange = searchParams.get('time_range') || '30d';
 
   let startDate = new Date();
@@ -31,7 +30,7 @@ export async function GET(req: Request) {
   try {
     if (type === 'user') {
       // Authorization check
-      if (userId !== session.user.id && session.user.role !== 'admin' && session.user.role !== 'company') {
+      if (userId !== authUser.id && authUser.role !== 'admin' && authUser.role !== 'company') {
         return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
       }
 
@@ -135,7 +134,7 @@ export async function GET(req: Request) {
       });
 
     } else if (type === 'platform') {
-      if (session.user.role !== 'admin') {
+      if (authUser.role !== 'admin') {
         return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 403 });
       }
 
@@ -196,11 +195,11 @@ export async function GET(req: Request) {
         rankDistribution
       });
     } else if (type === 'company') {
-      if (session.user.role !== 'company' && session.user.role !== 'admin') {
+      if (authUser.role !== 'company' && authUser.role !== 'admin') {
         return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 403 });
       }
 
-      const companyId = (session.user.role === 'admin' && userId) ? userId : session.user.id;
+      const companyId = (authUser.role === 'admin' && userId) ? userId : authUser.id;
 
       const totalQuests = await prisma.quest.count({
         where: { companyId }

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { getAuthUser } from '@/lib/api-auth';
 
 type RankingsMode = 'adventurer' | 'company';
 type SortOrder = 'asc' | 'desc';
@@ -35,11 +34,11 @@ function parseCompanySort(rawSort: string | null): CompanySort {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const authUser = await getAuthUser();
     const { searchParams } = new URL(request.url);
 
     const requestedUserId = searchParams.get('userId');
-    const userId = requestedUserId || session?.user?.id;
+    const userId = requestedUserId || authUser?.id;
 
     if (!userId) {
       return NextResponse.json(

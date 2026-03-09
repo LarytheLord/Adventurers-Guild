@@ -5,7 +5,7 @@ import { prisma } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {
-    const authUser = await requireAuth('company', 'admin');
+    const authUser = await requireAuth(request, 'company', 'admin');
     if (!authUser) {
       return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const authUser = await requireAuth('company', 'admin');
+    const authUser = await requireAuth(request, 'company', 'admin');
     if (!authUser) {
       return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
@@ -117,13 +117,15 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const authUser = await requireAuth('company', 'admin');
+    const authUser = await requireAuth(request, 'company', 'admin');
     if (!authUser) {
       return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     const body = await request.json();
-    const { questId, company_id: _ignored, ...updateFields } = body;
+    const { questId, ...rawUpdateFields } = body;
+    const updateFields: Record<string, unknown> = { ...rawUpdateFields };
+    delete updateFields.company_id;
     const companyId = authUser.role === 'admin' ? (body.company_id || authUser.id) : authUser.id;
 
     // Validate required fields
@@ -153,7 +155,6 @@ export async function PUT(request: NextRequest) {
       requiredRank: 'requiredRank',
       maxParticipants: 'maxParticipants',
       questCategory: 'questCategory',
-      company_id: 'companyId',
     };
 
     for (const [key, value] of Object.entries(updateFields)) {
@@ -176,7 +177,7 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const authUser = await requireAuth('company', 'admin');
+    const authUser = await requireAuth(request, 'company', 'admin');
     if (!authUser) {
       return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }

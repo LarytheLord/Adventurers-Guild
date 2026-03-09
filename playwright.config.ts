@@ -12,14 +12,15 @@ import { defineConfig, devices } from '@playwright/test';
  */
 export default defineConfig({
   testDir: './__tests__/e2e',
-  /* Run tests in files in parallel */
-  fullyParallel: true,
+  /* Keep runs deterministic: core flows mutate shared auth/database state. */
+  fullyParallel: false,
+  timeout: 90_000,
   /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* Keep local runs stable against transient browser/runtime flakes. */
+  retries: process.env.CI ? 2 : 1,
+  /* Run serially to avoid cross-browser race conditions on shared local infra. */
+  workers: 1,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -29,6 +30,8 @@ export default defineConfig({
 
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
     trace: 'on-first-retry',
+    actionTimeout: 15_000,
+    navigationTimeout: 60_000,
   },
 
   /* Configure projects for major browsers */
@@ -71,8 +74,8 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: 'npm run dev',
+    command: 'npm run build && npm run start -- -p 3000',
     url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
   },
 });

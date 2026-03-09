@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,9 +16,20 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, ArrowLeft } from 'lucide-react';
+import {
+  AlertCircle,
+  ArrowLeft,
+  Coins,
+  Crown,
+  Loader2,
+  Rocket,
+  Sparkles,
+  Target,
+} from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { Badge } from '@/components/ui/badge';
+import { GuildCard, GuildChip, GuildHero, GuildPage } from '@/components/guild/primitives';
 
 const QUEST_CATEGORIES = [
   { value: 'frontend', label: 'Frontend' },
@@ -79,8 +90,18 @@ export default function CreateQuestPage() {
     return null;
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const skillPreview = form.requiredSkills
+    .split(',')
+    .map((skill) => skill.trim())
+    .filter(Boolean)
+    .slice(0, 6);
+
+  const updateField = (field: string, value: string | number) => {
+    setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
     setError('');
     setLoading(true);
 
@@ -102,20 +123,20 @@ export default function CreateQuestPage() {
         skillPointsReward: Number(form.skillPointsReward),
         monetaryReward: form.monetaryReward ? Number(form.monetaryReward) : null,
         requiredSkills: form.requiredSkills
-          ? form.requiredSkills.split(',').map(s => s.trim()).filter(Boolean)
+          ? form.requiredSkills.split(',').map((s) => s.trim()).filter(Boolean)
           : [],
         requiredRank: form.requiredRank || null,
         maxParticipants: Number(form.maxParticipants) || 1,
         deadline: form.deadline || null,
       };
 
-      const res = await fetch('/api/company/quests', {
+      const response = await fetch('/api/company/quests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
 
-      const data = await res.json();
+      const data = await response.json();
 
       if (data.success) {
         toast.success('Quest created successfully!');
@@ -123,37 +144,51 @@ export default function CreateQuestPage() {
       } else {
         setError(data.error || 'Failed to create quest');
       }
-    } catch (err) {
-      console.error('Error creating quest:', err);
+    } catch (submitError) {
+      console.error('Error creating quest:', submitError);
       setError('An unexpected error occurred');
     } finally {
       setLoading(false);
     }
   };
 
-  const updateField = (field: string, value: string | number) => {
-    setForm(prev => ({ ...prev, [field]: value }));
-  };
-
   return (
-    <div className="container mx-auto py-6 max-w-3xl">
-      <div className="mb-6">
-        <Button variant="outline" asChild>
-          <Link href="/dashboard/company/quests">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Quests
-          </Link>
-        </Button>
-      </div>
+    <GuildPage>
+      <GuildHero>
+        <div className="relative z-10 flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+          <div className="space-y-3">
+            <Badge className="rounded-full border border-sky-300 bg-sky-100 text-sky-700">
+              Quest Launch Console
+            </Badge>
+            <div>
+              <h1 className="text-3xl font-bold text-slate-900 sm:text-4xl">Create New Quest</h1>
+              <p className="mt-2 max-w-2xl text-sm text-slate-600 sm:text-base">
+                Define scope, rewards, and rank requirements so the right adventurers apply immediately.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <GuildChip>Structured brief</GuildChip>
+              <GuildChip>Rank-aware targeting</GuildChip>
+              <GuildChip>Fast publishing</GuildChip>
+            </div>
+          </div>
+          <Button variant="outline" asChild>
+            <Link href="/dashboard/company/quests">
+              <ArrowLeft className="h-4 w-4" />
+              Back to Quests
+            </Link>
+          </Button>
+        </div>
+      </GuildHero>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-2xl">Create New Quest</CardTitle>
+      <GuildCard className="border-slate-200/80">
+        <CardHeader className="border-b border-slate-200/80 bg-slate-50/70">
+          <CardTitle className="text-xl">Quest Specification</CardTitle>
           <CardDescription>
-            Post a quest for adventurers to take on
+            Strong briefs reduce review churn and improve delivery quality.
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6 sm:p-8">
           {error && (
             <Alert variant="destructive" className="mb-6">
               <AlertCircle className="h-4 w-4" />
@@ -161,182 +196,257 @@ export default function CreateQuestPage() {
             </Alert>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Title */}
-            <div className="space-y-2">
-              <Label htmlFor="title">Quest Title *</Label>
-              <Input
-                id="title"
-                placeholder="e.g. Build a user authentication API"
-                value={form.title}
-                onChange={e => updateField('title', e.target.value)}
-                required
-              />
-            </div>
+          <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="grid gap-8 lg:grid-cols-[1.2fr_1fr]">
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="title">Quest Title *</Label>
+                  <Input
+                    id="title"
+                    placeholder="e.g. Build a user authentication API"
+                    value={form.title}
+                    onChange={(event) => updateField('title', event.target.value)}
+                    required
+                    className="h-11"
+                  />
+                </div>
 
-            {/* Description */}
-            <div className="space-y-2">
-              <Label htmlFor="description">Short Description *</Label>
-              <Textarea
-                id="description"
-                placeholder="Brief description of the quest..."
-                value={form.description}
-                onChange={e => updateField('description', e.target.value)}
-                rows={3}
-                required
-              />
-            </div>
+                <div className="space-y-2">
+                  <Label htmlFor="description">Short Description *</Label>
+                  <Textarea
+                    id="description"
+                    placeholder="Brief description of the quest..."
+                    value={form.description}
+                    onChange={(event) => updateField('description', event.target.value)}
+                    rows={4}
+                    required
+                  />
+                </div>
 
-            {/* Detailed Description */}
-            <div className="space-y-2">
-              <Label htmlFor="detailedDescription">Detailed Requirements</Label>
-              <Textarea
-                id="detailedDescription"
-                placeholder="Detailed requirements, acceptance criteria, etc..."
-                value={form.detailedDescription}
-                onChange={e => updateField('detailedDescription', e.target.value)}
-                rows={6}
-              />
-            </div>
+                <div className="space-y-2">
+                  <Label htmlFor="detailedDescription">Detailed Requirements</Label>
+                  <Textarea
+                    id="detailedDescription"
+                    placeholder="Detailed requirements, acceptance criteria, etc..."
+                    value={form.detailedDescription}
+                    onChange={(event) => updateField('detailedDescription', event.target.value)}
+                    rows={7}
+                  />
+                </div>
 
-            {/* Type & Category */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Quest Type</Label>
-                <Select value={form.questType} onValueChange={v => updateField('questType', v)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {QUEST_TYPES.map(t => (
-                      <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="space-y-2">
+                  <Label htmlFor="requiredSkills">Required Skills</Label>
+                  <Input
+                    id="requiredSkills"
+                    placeholder="React, Node.js, PostgreSQL"
+                    value={form.requiredSkills}
+                    onChange={(event) => updateField('requiredSkills', event.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">Comma-separated</p>
+                  {skillPreview.length > 0 && (
+                    <div className="flex flex-wrap gap-2 pt-1">
+                      {skillPreview.map((skill) => (
+                        <Badge key={skill} variant="outline">
+                          {skill}
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label>Category</Label>
-                <Select value={form.questCategory} onValueChange={v => updateField('questCategory', v)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {QUEST_CATEGORIES.map(c => (
-                      <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+
+              <div className="space-y-6">
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+                  <div className="space-y-2">
+                    <Label>Quest Type</Label>
+                    <Select value={form.questType} onValueChange={(value) => updateField('questType', value)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {QUEST_TYPES.map((type) => (
+                          <SelectItem key={type.value} value={type.value}>
+                            {type.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Category</Label>
+                    <Select value={form.questCategory} onValueChange={(value) => updateField('questCategory', value)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {QUEST_CATEGORIES.map((category) => (
+                          <SelectItem key={category.value} value={category.value}>
+                            {category.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+                  <div className="space-y-2">
+                    <Label>Difficulty</Label>
+                    <Select value={form.difficulty} onValueChange={(value) => updateField('difficulty', value)}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {DIFFICULTY_RANKS.map((rank) => (
+                          <SelectItem key={rank} value={rank}>
+                            {rank}-Rank
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Minimum Rank Required</Label>
+                    <Select
+                      value={form.requiredRank || 'any'}
+                      onValueChange={(value) => updateField('requiredRank', value === 'any' ? '' : value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Any rank" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="any">Any Rank</SelectItem>
+                        {DIFFICULTY_RANKS.map((rank) => (
+                          <SelectItem key={rank} value={rank}>
+                            {rank}-Rank
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+                  <div className="space-y-2">
+                    <Label htmlFor="deadline">Deadline</Label>
+                    <Input
+                      id="deadline"
+                      type="date"
+                      value={form.deadline}
+                      onChange={(event) => updateField('deadline', event.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="maxParticipants">Max Participants</Label>
+                    <Input
+                      id="maxParticipants"
+                      type="number"
+                      min={1}
+                      value={form.maxParticipants}
+                      onChange={(event) =>
+                        updateField('maxParticipants', Math.max(1, Number(event.target.value) || 1))
+                      }
+                    />
+                  </div>
+                </div>
+
+                <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4 space-y-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Launch Tips</p>
+                  <p className="text-sm text-slate-600">
+                    Define acceptance criteria in the detailed section and include tech stack expectations in skills.
+                  </p>
+                  <div className="flex flex-wrap gap-2 text-xs text-slate-600">
+                    <span className="inline-flex items-center gap-1 rounded-full border border-slate-300 bg-white px-2.5 py-1">
+                      <Target className="h-3.5 w-3.5" />
+                      Clear deliverables
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-full border border-slate-300 bg-white px-2.5 py-1">
+                      <Sparkles className="h-3.5 w-3.5" />
+                      Faster reviews
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Difficulty & Required Rank */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label>Difficulty</Label>
-                <Select value={form.difficulty} onValueChange={v => updateField('difficulty', v)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {DIFFICULTY_RANKS.map(r => (
-                      <SelectItem key={r} value={r}>{r}-Rank</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label>Minimum Rank Required</Label>
-                <Select value={form.requiredRank} onValueChange={v => updateField('requiredRank', v)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Any rank" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="any">Any Rank</SelectItem>
-                    {DIFFICULTY_RANKS.map(r => (
-                      <SelectItem key={r} value={r}>{r}-Rank</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            {/* Rewards */}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid gap-4 sm:grid-cols-3">
               <div className="space-y-2">
                 <Label htmlFor="xpReward">XP Reward *</Label>
-                <Input
-                  id="xpReward"
-                  type="number"
-                  min={0}
-                  value={form.xpReward}
-                  onChange={e => updateField('xpReward', e.target.value)}
-                  required
-                />
+                <div className="relative">
+                  <Target className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <Input
+                    id="xpReward"
+                    type="number"
+                    min={0}
+                    value={form.xpReward}
+                    onChange={(event) => updateField('xpReward', Math.max(0, Number(event.target.value) || 0))}
+                    className="pl-9"
+                    required
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="skillPointsReward">Skill Points</Label>
-                <Input
-                  id="skillPointsReward"
-                  type="number"
-                  min={0}
-                  value={form.skillPointsReward}
-                  onChange={e => updateField('skillPointsReward', e.target.value)}
-                />
+                <div className="relative">
+                  <Crown className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <Input
+                    id="skillPointsReward"
+                    type="number"
+                    min={0}
+                    value={form.skillPointsReward}
+                    onChange={(event) =>
+                      updateField('skillPointsReward', Math.max(0, Number(event.target.value) || 0))
+                    }
+                    className="pl-9"
+                  />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="monetaryReward">Payment (INR)</Label>
-                <Input
-                  id="monetaryReward"
-                  type="number"
-                  min={0}
-                  placeholder="Optional"
-                  value={form.monetaryReward}
-                  onChange={e => updateField('monetaryReward', e.target.value)}
-                />
+                <div className="relative">
+                  <Coins className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                  <Input
+                    id="monetaryReward"
+                    type="number"
+                    min={0}
+                    placeholder="Optional"
+                    value={form.monetaryReward}
+                    onChange={(event) =>
+                      updateField(
+                        'monetaryReward',
+                        event.target.value === '' ? '' : String(Math.max(0, Number(event.target.value) || 0))
+                      )
+                    }
+                    className="pl-9"
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Skills & Participants */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="requiredSkills">Required Skills</Label>
-                <Input
-                  id="requiredSkills"
-                  placeholder="React, Node.js, PostgreSQL"
-                  value={form.requiredSkills}
-                  onChange={e => updateField('requiredSkills', e.target.value)}
-                />
-                <p className="text-xs text-muted-foreground">Comma-separated</p>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="maxParticipants">Max Participants</Label>
-                <Input
-                  id="maxParticipants"
-                  type="number"
-                  min={1}
-                  value={form.maxParticipants}
-                  onChange={e => updateField('maxParticipants', e.target.value)}
-                />
-              </div>
+            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <Button variant="outline" asChild>
+                <Link href="/dashboard/company/quests">
+                  <ArrowLeft className="h-4 w-4" />
+                  Cancel
+                </Link>
+              </Button>
+              <Button type="submit" className="sm:min-w-[180px]" disabled={loading}>
+                {loading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Creating Quest...
+                  </>
+                ) : (
+                  <>
+                    <Rocket className="h-4 w-4" />
+                    Create Quest
+                  </>
+                )}
+              </Button>
             </div>
-
-            {/* Deadline */}
-            <div className="space-y-2">
-              <Label htmlFor="deadline">Deadline</Label>
-              <Input
-                id="deadline"
-                type="date"
-                value={form.deadline}
-                onChange={e => updateField('deadline', e.target.value)}
-              />
-            </div>
-
-            <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? 'Creating Quest...' : 'Create Quest'}
-            </Button>
           </form>
         </CardContent>
-      </Card>
-    </div>
+      </GuildCard>
+    </GuildPage>
   );
 }

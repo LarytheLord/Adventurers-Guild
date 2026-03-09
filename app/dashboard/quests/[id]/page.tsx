@@ -5,13 +5,14 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Target, Zap, Users, Clock, CheckCircle, XCircle } from 'lucide-react';
+import { AlertCircle, Target, Zap, Users, Clock, CheckCircle, XCircle, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { GuildCard, GuildHero, GuildPage, GuildPanel } from '@/components/guild/primitives';
 
 interface Quest {
   id: string;
@@ -48,6 +49,15 @@ interface Assignment {
   progress?: number;
 }
 
+const assignmentStatusMeta: Record<string, { label: string; className: string }> = {
+  assigned: { label: 'Assigned', className: 'border-blue-200 bg-blue-100 text-blue-700' },
+  started: { label: 'Started', className: 'border-amber-200 bg-amber-100 text-amber-700' },
+  in_progress: { label: 'In Progress', className: 'border-amber-200 bg-amber-100 text-amber-700' },
+  submitted: { label: 'Submitted', className: 'border-violet-200 bg-violet-100 text-violet-700' },
+  completed: { label: 'Completed', className: 'border-emerald-200 bg-emerald-100 text-emerald-700' },
+  cancelled: { label: 'Cancelled', className: 'border-slate-200 bg-slate-100 text-slate-700' },
+};
+
 export default function QuestDetailPage() {
   const { id } = useParams();
   const { data: session, status } = useSession();
@@ -59,6 +69,7 @@ export default function QuestDetailPage() {
   const [isAssigned, setIsAssigned] = useState(false);
   const [submissionContent, setSubmissionContent] = useState('');
   const [submissionNotes, setSubmissionNotes] = useState('');
+  const [isAssigning, setIsAssigning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -93,6 +104,8 @@ export default function QuestDetailPage() {
           return;
         }
         setQuest(normalizedQuest);
+        setAssignment(null);
+        setIsAssigned(false);
 
         // Fetch user's assignment for this quest
         if (session?.user?.id) {
@@ -102,6 +115,9 @@ export default function QuestDetailPage() {
           if (assignmentData.success && assignmentData.assignments.length > 0) {
             setAssignment(assignmentData.assignments[0]);
             setIsAssigned(true);
+          } else {
+            setAssignment(null);
+            setIsAssigned(false);
           }
         }
       } catch (err) {
@@ -122,6 +138,11 @@ export default function QuestDetailPage() {
       router.push('/login');
       return;
     }
+    if (isAssigning) {
+      return;
+    }
+
+    setIsAssigning(true);
 
     try {
       const response = await fetch('/api/quests/assignments', {
@@ -134,18 +155,20 @@ export default function QuestDetailPage() {
         }),
       });
 
-      const data = await response.json();
+      const data = await response.json().catch(() => null);
 
-      if (data.success) {
+      if (response.ok && data?.success && data.assignment) {
         setAssignment(data.assignment);
         setIsAssigned(true);
         toast.success('Successfully assigned to quest!');
       } else {
-        toast.error(data.error || 'Failed to assign to quest');
+        toast.error(data?.error || 'Failed to assign to quest');
       }
     } catch (err) {
       console.error('Error assigning to quest:', err);
       toast.error('An error occurred while assigning to quest');
+    } finally {
+      setIsAssigning(false);
     }
   };
 
@@ -204,20 +227,20 @@ export default function QuestDetailPage() {
 
   if (error) {
     return (
-      <div className="container mx-auto py-6">
+      <GuildPage>
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
-      </div>
+      </GuildPage>
     );
   }
 
   if (!quest) {
     return (
-      <div className="container mx-auto py-6">
-        <p>Quest not found</p>
-      </div>
+      <GuildPage>
+        <GuildPanel className="p-6 text-sm text-slate-600">Quest not found</GuildPanel>
+      </GuildPage>
     );
   }
 
@@ -225,16 +248,30 @@ export default function QuestDetailPage() {
   const canSubmit =
     !!isAssigned &&
     ['assigned', 'started', 'in_progress'].includes(assignment?.status || '');
+  const assignmentMeta = assignment
+    ? (assignmentStatusMeta[assignment.status] ?? { label: assignment.status, className: 'border-slate-200 bg-slate-100 text-slate-700' })
+    : null;
 
   return (
-    <div className="container mx-auto py-6 max-w-4xl">
-      <div className="mb-6">
-        <Button variant="outline" onClick={() => router.back()}>
-          ← Back to Quests
-        </Button>
-      </div>
+    <GuildPage>
+      <GuildHero>
+        <div className="relative z-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div className="space-y-2">
+            <Badge className="rounded-full border border-emerald-300 bg-emerald-100 text-emerald-700">
+              Quest Mission Brief
+            </Badge>
+            <h1 className="text-3xl font-bold text-slate-900 sm:text-4xl">{quest.title}</h1>
+            <p className="max-w-2xl text-sm text-slate-600 sm:text-base">
+              Posted by {quest.company?.name || 'Unknown Company'} • {quest.questType.replace('_', ' ')}
+            </p>
+          </div>
+          <Button variant="outline" onClick={() => router.back()}>
+            ← Back to Quests
+          </Button>
+        </div>
+      </GuildHero>
 
-      <Card className="mb-6">
+      <GuildCard className="border-slate-200/80">
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div>
@@ -254,23 +291,23 @@ export default function QuestDetailPage() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-            <div className="text-center p-3 bg-muted rounded-lg">
+            <div className="text-center p-3 rounded-lg border border-slate-200 bg-slate-50">
               <Zap className="w-6 h-6 mx-auto text-yellow-500 mb-1" />
               <div className="font-bold">{quest.xpReward} XP</div>
               <div className="text-xs text-muted-foreground">Reward</div>
             </div>
-            <div className="text-center p-3 bg-muted rounded-lg">
+            <div className="text-center p-3 rounded-lg border border-slate-200 bg-slate-50">
               <Target className="w-6 h-6 mx-auto text-blue-500 mb-1" />
               <div className="font-bold">{quest.skillPointsReward} SP</div>
               <div className="text-xs text-muted-foreground">Skill Points</div>
             </div>
             {quest.monetaryReward && (
-              <div className="text-center p-3 bg-muted rounded-lg">
+              <div className="text-center p-3 rounded-lg border border-slate-200 bg-slate-50">
                 <div className="font-bold">${quest.monetaryReward}</div>
                 <div className="text-xs text-muted-foreground">Monetary</div>
               </div>
             )}
-            <div className="text-center p-3 bg-muted rounded-lg">
+            <div className="text-center p-3 rounded-lg border border-slate-200 bg-slate-50">
               <Users className="w-6 h-6 mx-auto text-green-500 mb-1" />
               <div className="font-bold">{quest.maxParticipants || 1}</div>
               <div className="text-xs text-muted-foreground">Participants</div>
@@ -311,10 +348,10 @@ export default function QuestDetailPage() {
             )}
           </div>
         </CardContent>
-      </Card>
+      </GuildCard>
 
       {isAssigned && assignment && (
-        <Card className="mb-6">
+        <GuildCard className="border-slate-200/80">
           <CardHeader>
             <CardTitle>Your Assignment Status</CardTitle>
             <CardDescription>
@@ -324,22 +361,8 @@ export default function QuestDetailPage() {
           <CardContent>
             <div className="flex items-center justify-between">
               <div>
-                <Badge 
-                  className={`
-                    ${assignment.status === 'assigned' ? 'bg-blue-500' : 
-                      assignment.status === 'started' ? 'bg-yellow-500' : 
-                      assignment.status === 'in_progress' ? 'bg-yellow-500' : 
-                      assignment.status === 'submitted' ? 'bg-purple-500' : 
-                      assignment.status === 'completed' ? 'bg-green-500' : 
-                      'bg-gray-500'}
-                  `}
-                >
-                  {assignment.status === 'assigned' && 'Assigned'}
-                  {assignment.status === 'started' && 'Started'}
-                  {assignment.status === 'in_progress' && 'In Progress'}
-                  {assignment.status === 'submitted' && 'Submitted'}
-                  {assignment.status === 'completed' && 'Completed'}
-                  {assignment.status === 'cancelled' && 'Cancelled'}
+                <Badge className={assignmentMeta?.className}>
+                  {assignmentMeta?.label}
                 </Badge>
                 <p className="text-sm text-muted-foreground mt-1">
                   Assigned on {new Date(assignment.assignedAt).toLocaleDateString()}
@@ -350,11 +373,11 @@ export default function QuestDetailPage() {
               )}
             </div>
           </CardContent>
-        </Card>
+        </GuildCard>
       )}
 
       {canAssign && (
-        <Card className="mb-6">
+        <GuildCard className="border-slate-200/80 bg-gradient-to-br from-amber-50/70 via-white to-emerald-50/70">
           <CardHeader>
             <CardTitle>Accept This Quest</CardTitle>
             <CardDescription>
@@ -364,16 +387,24 @@ export default function QuestDetailPage() {
           <CardContent>
             <Button
               onClick={handleAssignQuest}
-              disabled={!!(quest.maxParticipants && quest.maxParticipants <= 0)}
+              disabled={isAssigning || !!(quest.maxParticipants && quest.maxParticipants <= 0)}
+              className="w-full sm:w-auto"
             >
-              Accept Quest
+              {isAssigning ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Accepting...
+                </>
+              ) : (
+                'Accept Quest'
+              )}
             </Button>
           </CardContent>
-        </Card>
+        </GuildCard>
       )}
 
       {canSubmit && (
-        <Card>
+        <GuildCard className="border-slate-200/80">
           <CardHeader>
             <CardTitle>Submit Quest</CardTitle>
             <CardDescription>
@@ -407,15 +438,22 @@ export default function QuestDetailPage() {
                 disabled={isSubmitting || !submissionContent.trim()}
                 className="w-full"
               >
-                {isSubmitting ? 'Submitting...' : 'Submit Quest'}
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  'Submit Quest'
+                )}
               </Button>
             </div>
           </CardContent>
-        </Card>
+        </GuildCard>
       )}
 
       {quest.status !== 'available' && !isAssigned && (
-        <Card>
+        <GuildCard className="border-slate-200/80">
           <CardContent className="flex items-center justify-center py-8">
             <div className="text-center">
               <XCircle className="w-12 h-12 mx-auto text-muted-foreground mb-2" />
@@ -425,8 +463,8 @@ export default function QuestDetailPage() {
               </p>
             </div>
           </CardContent>
-        </Card>
+        </GuildCard>
       )}
-    </div>
+    </GuildPage>
   );
 }

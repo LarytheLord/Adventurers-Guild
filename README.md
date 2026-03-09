@@ -27,7 +27,7 @@
 
 ### Authentication & Security
 - **Role-Based Access**: Adventurers, Companies, and Admins
-- **Secure Authentication**: NextAuth.js with Supabase integration
+- **Secure Authentication**: NextAuth.js (credentials + JWT session strategy)
 - **Permission Management**: Granular access controls for different user types
 
 ## 🛠️ Technology Stack
@@ -38,7 +38,7 @@
 - **Authentication**: NextAuth.js (Credentials Provider)
 - **Deployment**: Vercel
 - **DevSync Integration**: Collaborative coding platform
-- **Payment Processing**: Stripe integration for monetary rewards
+- **Payment Processing**: Internal quest transaction pipeline
 
 ## 📋 Prerequisites
 
@@ -46,7 +46,6 @@
 - npm or Yarn
 - Git
 - Neon account (for serverless PostgreSQL)
-- Stripe account (for payment processing)
 
 ## 🚀 Getting Started
 
@@ -85,10 +84,6 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 # DevSync Integration (optional)
 NEXT_PUBLIC_DEVSYNC_API_URL=https://api.devsync.codes
 DEVSYNC_API_KEY=your-devsync-api-key
-
-# Stripe (for payments)
-STRIPE_SECRET_KEY=your-stripe-secret-key
-STRIPE_WEBHOOK_SECRET=your-webhook-secret
 ```
 
 ### 4. Run Locally
@@ -169,7 +164,8 @@ Check out our [GitHub Issues](https://github.com/LarytheLord/adventurers-guild/i
 - [CONTRIBUTING.md](CONTRIBUTING.md) - Contribution guidelines
 - [DEVELOPMENT.md](DEVELOPMENT.md) - Development setup and architecture overview
 - [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) - Community standards
-- [DEVSYNC_INTEGRATION_PLAN.md](DEVSYNC_INTEGRATION_PLAN.md) - DevSync integration specifications
+- [docs/contributor-onboarding.md](docs/contributor-onboarding.md) - Contributor onboarding
+- [docs/INFRA_AND_PRODUCT_PLAN_2026-03-04.md](docs/INFRA_AND_PRODUCT_PLAN_2026-03-04.md) - Infra + product roadmap
 
 ## 🌐 Connect
 
@@ -186,7 +182,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **Core Features**: Implemented
 - **Authentication**: Complete
 - **Quest Management**: Fully functional
-- **Payment Processing**: Integrated
+- **Payment Processing**: Core transaction flow integrated
 - **DevSync Integration**: Planned and documented
 - **User Dashboard**: Complete
 - **Company Portal**: Complete

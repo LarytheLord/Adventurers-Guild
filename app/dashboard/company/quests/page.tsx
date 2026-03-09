@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -21,6 +21,7 @@ import {
   Zap,
 } from 'lucide-react';
 import Link from 'next/link';
+import { GuildCard, GuildHero, GuildKpi, GuildPage, GuildPanel } from '@/components/guild/primitives';
 
 interface Quest {
   id: string;
@@ -120,22 +121,22 @@ export default function CompanyQuestsPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="guild-page">
-        <div className="guild-panel flex min-h-[320px] items-center justify-center">
+      <GuildPage>
+        <GuildPanel className="flex min-h-[320px] items-center justify-center">
           <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary" />
-        </div>
-      </div>
+        </GuildPanel>
+      </GuildPage>
     );
   }
 
   if (error) {
     return (
-      <div className="guild-page">
+      <GuildPage>
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
-      </div>
+      </GuildPage>
     );
   }
 
@@ -143,8 +144,8 @@ export default function CompanyQuestsPage() {
   const completedQuests = filteredQuests.filter((quest) => quest.status === 'completed').length;
 
   return (
-    <div className="guild-page">
-      <section className="guild-hero">
+    <GuildPage>
+      <GuildHero>
         <div className="relative z-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <Badge className="rounded-full border border-sky-300 bg-sky-100 text-sky-700">
@@ -170,31 +171,31 @@ export default function CompanyQuestsPage() {
             </Button>
           </div>
         </div>
-      </section>
+      </GuildHero>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <article className="guild-kpi sm:col-span-2 xl:col-span-1">
+        <GuildKpi className="sm:col-span-2 xl:col-span-1">
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Total Quests</p>
           <p className="mt-2 text-2xl font-bold text-slate-900">{filteredQuests.length}</p>
           <p className="mt-1 text-xs text-slate-500">In your current workspace</p>
-        </article>
-        <article className="guild-kpi">
+        </GuildKpi>
+        <GuildKpi>
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Active</p>
             <Target className="h-4 w-4 text-emerald-500" />
           </div>
           <p className="mt-2 text-2xl font-bold text-slate-900">{activeQuests}</p>
           <p className="mt-1 text-xs text-slate-500">Open, in progress, or review</p>
-        </article>
-        <article className="guild-kpi">
+        </GuildKpi>
+        <GuildKpi>
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Completed</p>
             <Sparkles className="h-4 w-4 text-violet-500" />
           </div>
           <p className="mt-2 text-2xl font-bold text-slate-900">{completedQuests}</p>
           <p className="mt-1 text-xs text-slate-500">Delivered successfully</p>
-        </article>
-        <article className="guild-kpi">
+        </GuildKpi>
+        <GuildKpi>
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Recruitment Focus</p>
             <Briefcase className="h-4 w-4 text-sky-500" />
@@ -203,10 +204,10 @@ export default function CompanyQuestsPage() {
             {filteredQuests.filter((quest) => (quest._count?.assignments ?? 0) === 0).length}
           </p>
           <p className="mt-1 text-xs text-slate-500">Quests needing applicants</p>
-        </article>
+        </GuildKpi>
       </section>
 
-      <section className="guild-panel p-4 sm:p-5">
+      <GuildPanel className="p-4 sm:p-5">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
           <Input
@@ -216,10 +217,10 @@ export default function CompanyQuestsPage() {
             className="pl-9"
           />
         </div>
-      </section>
+      </GuildPanel>
 
       {filteredQuests.length === 0 ? (
-        <section className="guild-panel p-12 text-center">
+        <GuildPanel className="p-12 text-center">
           <Target className="mx-auto mb-4 h-14 w-14 text-slate-400" />
           <h3 className="text-xl font-semibold text-slate-900">No quests found</h3>
           <p className="mt-2 text-sm text-slate-500">Create your first quest to start attracting adventurers.</p>
@@ -229,11 +230,11 @@ export default function CompanyQuestsPage() {
               Create Quest
             </Link>
           </Button>
-        </section>
+        </GuildPanel>
       ) : (
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {filteredQuests.map((quest) => (
-            <Card key={quest.id} className="guild-panel border-slate-200/80">
+            <GuildCard key={quest.id} className="border-slate-200/80">
               <CardHeader className="space-y-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
@@ -287,10 +288,10 @@ export default function CompanyQuestsPage() {
                   </Link>
                 </Button>
               </CardContent>
-            </Card>
+            </GuildCard>
           ))}
         </section>
       )}
-    </div>
+    </GuildPage>
   );
 }

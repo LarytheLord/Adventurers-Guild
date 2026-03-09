@@ -8,14 +8,14 @@ The Adventurers Guild is at a critical juncture in its development. While the pl
 
 ### Strengths
 - **Unique Value Proposition**: Gamified learning platform connecting students with real-world projects
-- **Modern Tech Stack**: Next.js 15, TypeScript, Supabase - excellent for scaling
+- **Modern Tech Stack**: Next.js 15, TypeScript, Neon Postgres + Prisma
 - **Well-Planned Architecture**: Clear separation of concerns and thoughtful component organization
 - **Clear Gamification Model**: Ranking system (F to S rank) with XP and skill points
 - **Comprehensive Documentation**: Good contributor guides and development documentation
 
 ### Critical Issues Identified
-1. **292 TypeScript errors** blocking production deployment
-2. Missing `NEXTAUTH_SECRET` environment variable
+1. Inconsistent auth/role checks across API endpoints
+2. Insufficient automated E2E coverage for core flows
 3. Incomplete core features (dashboard, quest completion, admin features)
 4. No active contributor engagement despite having documentation
 5. No visible live projects or success stories
@@ -26,13 +26,13 @@ The Adventurers Guild is at a critical juncture in its development. While the pl
 ### Phase 1: Make it Work (Weeks 1-2)
 ```typescript
 // Critical fixes needed:
-1. Fix TypeScript errors (292 errors)
-   - Focus on type safety in components/
-   - Fix API route type definitions
-   - Resolve Supabase schema mismatches
+1. Hardening API policy and runtime flow checks
+   - Standardize auth helper usage in routes
+   - Validate and preserve API response shapes
+   - Add E2E checks for register/login/quest lifecycle
 
 2. Complete authentication flow
-   - Add NEXTAUTH_SECRET generation script
+   - Keep env validation strict for auth secrets
    - Test registration → login → dashboard flow
    - Fix session management issues
 

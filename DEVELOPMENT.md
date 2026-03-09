@@ -1,109 +1,94 @@
 # Development Guide
 
-This document contains essential information for developers contributing to the Adventurers Guild project.
+This guide covers local setup and day-to-day development for Adventurers Guild.
 
-## Project Setup
-
-### Prerequisites
-- Node.js (LTS version recommended)
-- npm or Yarn
+## Prerequisites
+- Node.js LTS
+- npm
 - Git
+- Neon Postgres database
 
-### Installation
-1. Clone the repository:
+## Setup
+1. Clone repository:
 ```bash
 git clone https://github.com/LarytheLord/adventurers-guild.git
 cd adventurers-guild
 ```
-
 2. Install dependencies:
 ```bash
 npm install
 ```
-
-### Environment Configuration
-Create a `.env.local` file in the root directory with the following required variables:
-
+3. Create local env file:
 ```bash
-# Database
-DATABASE_URL="postgresql://user:password@your-neon-host.neon.tech/neondb?sslmode=require"
+cp .env.example .env.local
+```
+4. Fill required variables in `.env.local`:
+- `DATABASE_URL`
+- `NEXTAUTH_SECRET`
+- `NEXTAUTH_URL`
 
-# Authentication
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=generate-with-openssl-rand-base64-32
-
-# Email (SMTP)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your-email@gmail.com
-SMTP_PASS=your-app-password
-ADMIN_EMAIL=admin@adventurersguild.com
-
-# Application
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+## Database
+- ORM: Prisma
+- Primary schema: `prisma/schema.prisma`
+- Generate client:
+```bash
+npx prisma generate
+```
+- Push schema (dev only):
+```bash
+npm run db:push
+```
+- Seed sample data:
+```bash
+npm run db:seed
 ```
 
-For Gmail Setup:
-1. Enable 2-Factor Authentication on your Gmail account
-2. Generate App Password: Google Account → Security → 2-Step Verification → App passwords
-3. Select "Mail" and generate a 16-character password
-4. Use this password in `SMTP_PASS` (not your regular Gmail password)
-
-### Running the Application
+## Run App
 ```bash
 npm run dev
 ```
+App runs on `http://localhost:3000`.
 
-The application will be available at `http://localhost:3000`
+## Quality Checks
+- Lint:
+```bash
+npm run lint
+```
+- Type check:
+```bash
+npm run type-check
+```
+- Production build:
+```bash
+npm run build
+```
 
-## Development Commands
+## Testing
+- Playwright config exists at `playwright.config.ts`.
+- Add E2E tests under `__tests__/e2e`.
+- Run E2E tests:
+```bash
+npx playwright test
+```
+- Run full phase gate before moving to the next phase:
+```bash
+npm run test:phase-gate
+```
+This validates type safety, lint, and cross-browser end-to-end flows in one command.
 
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run start` - Start production server
-- `npm run lint` - Run linter
-- `npm run type-check` - Run TypeScript checks
-- `npm run test` - Run tests
-- `npm run test:watch` - Run tests in watch mode
-- `npm run test:coverage` - Run tests with coverage
-- `npm run deploy:vercel` - Deploy to Vercel
+## Architecture (Current)
+- Frontend/API: Next.js App Router
+- Auth: NextAuth credentials provider (JWT sessions)
+- Database: Neon Postgres + Prisma
+- Deployment: Vercel
 
-## Architecture Overview
+## Key Paths
+- `app/` app routes and API handlers
+- `components/` UI and feature components
+- `lib/` auth, DB client, domain helpers
+- `prisma/` schema + seed
+- `docs/` project and architecture docs
 
-The Adventurers Guild is built with:
-- **Frontend:** Next.js 15, React, TypeScript, Tailwind CSS
-- **Styling:** shadcn/ui components
-- **Database:** Supabase (PostgreSQL)
-- **Authentication:** NextAuth.js with Supabase
-- **Deployment:** Vercel
-
-Key directories:
-- `app/` - Next.js 13+ app router pages
-- `components/` - React components including UI library
-- `lib/` - Utility functions and libraries
-- `types/` - TypeScript type definitions
-- `prisma/` - Database schema and migrations
-
-## Contributing
-
-Please refer to [CONTRIBUTING.md](CONTRIBUTING.md) for detailed contribution guidelines.
-
-## Build Status
-
-The project currently has some TypeScript errors that need to be resolved (292 errors identified). The main build-blocking issue is a missing NEXTAUTH_SECRET environment variable. Once this is added and the TypeScript errors are fixed, the application should build and run successfully.
-
-## Next Steps
-
-1. Complete TypeScript error fixes
-2. Implement missing core functionality (dashboard, quest completion, admin features)
-3. Complete company onboarding flow
-4. Add comprehensive testing
-5. Improve documentation
-
-## Support
-
-If you encounter issues:
-1. Check that all environment variables are properly set
-2. Run `npm run type-check` to see TypeScript errors
-3. Check browser console for runtime errors
-4. Review terminal logs
+## Notes
+- Prefer `lib/api-auth.ts` helpers (`getAuthUser`, `requireAuth`) for API route auth checks.
+- Keep API responses backward-compatible where existing clients rely on legacy keys.

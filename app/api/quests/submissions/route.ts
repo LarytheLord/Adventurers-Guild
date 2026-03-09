@@ -1,15 +1,14 @@
 // app/api/quests/submissions/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { AssignmentStatus } from '@prisma/client';
 import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
+import { getAuthUser } from '@/lib/api-auth';
 
 export async function GET(request: NextRequest) {
   // Check authentication
-  const session = await getServerSession(authOptions);
-  if (!session || !session.user) {
+  const user = await getAuthUser(request);
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
   }
 
@@ -22,8 +21,8 @@ export async function GET(request: NextRequest) {
     const limit = searchParams.get('limit') || '10';
     const offset = searchParams.get('offset') || '0';
 
-    const currentUserId = session.user.id;
-    const currentUserRole = session.user.role;
+    const currentUserId = user.id;
+    const currentUserRole = user.role;
 
     // Build where clause based on permissions
     const where: Record<string, unknown> = {};
@@ -90,15 +89,15 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   // Check authentication
-  const session = await getServerSession(authOptions);
-  if (!session || !session.user) {
+  const user = await getAuthUser(request);
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
   }
 
   try {
     const body = await request.json();
     const { assignmentId, submissionContent, submissionNotes } = body;
-    const userId = session.user.id; // Use authenticated user's ID
+    const userId = user.id; // Use authenticated user's ID
 
     // Validate required fields
     if (!assignmentId || !submissionContent) {
@@ -116,7 +115,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Only the assigned user can submit
-    if (assignment.userId !== userId && session.user.role !== 'admin') {
+    if (assignment.userId !== userId && user.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized to submit for this assignment', success: false }, { status: 403 });
     }
 
@@ -124,24 +123,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid assignment state for submission', success: false }, { status: 400 });
     }
 
-    const data = await prisma.$transaction(async (tx) => {
-      const submission = await tx.questSubmission.create({
-        data: {
-          assignmentId: assignmentId,
-          userId,
-          submissionContent: submissionContent,
-          submissionNotes: submissionNotes || null,
-        },
-      });
+    const data = await prisma.$transaction(
+      async (tx) => {
+        const submission = await tx.questSubmission.create({
+          data: {
+            assignmentId: assignmentId,
+            userId,
+            submissionContent: submissionContent,
+            submissionNotes: submissionNotes || null,
+          },
+        });
 
-      await tx.questAssignment.update({
-        where: { id: assignmentId },
-        data: { status: 'submitted' },
-      });
+        await tx.questAssignment.update({
+          where: { id: assignmentId },
+          data: { status: 'submitted' },
+        });
 
-      await syncQuestLifecycleStatus(tx, assignment.questId);
-      return submission;
-    });
+        await syncQuestLifecycleStatus(tx, assignment.questId);
+        return submission;
+      },
+      { maxWait: 10_000, timeout: 20_000 }
+    );
 
     return NextResponse.json({ submission: data, success: true }, { status: 201 });
   } catch (error) {
@@ -152,15 +154,15 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   // Check authentication
-  const session = await getServerSession(authOptions);
-  if (!session || !session.user) {
+  const user = await getAuthUser(request);
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
   }
 
   try {
     const body = await request.json();
     const { submissionId, status, review_notes, quality_score } = body;
-    const reviewerId = session.user.id; // Use authenticated user's ID
+    const reviewerId = user.id; // Use authenticated user's ID
 
     // Validate required fields
     if (!submissionId || !status) {
@@ -198,85 +200,88 @@ export async function PUT(request: NextRequest) {
     }
 
     // Check permissions
-    if (session.user.role !== 'admin' &&
-        (session.user.role !== 'company' || !assignmentData.quest || assignmentData.quest.companyId !== session.user.id)) {
+    if (user.role !== 'admin' &&
+        (user.role !== 'company' || !assignmentData.quest || assignmentData.quest.companyId !== user.id)) {
       return NextResponse.json({ error: 'Unauthorized to review this submission', success: false }, { status: 403 });
     }
 
     const wasAlreadyApproved = submission.status === 'approved';
 
-    const reviewResult = await prisma.$transaction(async (tx) => {
-      const updatedSubmission = await tx.questSubmission.update({
-        where: { id: submissionId },
-        data: {
-          status,
-          reviewNotes: review_notes || undefined,
-          qualityScore: quality_score || undefined,
-          reviewerId,
-          reviewedAt: status !== 'pending' ? new Date() : undefined,
-        },
-      });
-
-      let newAssignmentStatus: AssignmentStatus | null = null;
-      if (status === 'approved') {
-        newAssignmentStatus = 'completed';
-      } else if (status === 'needs_rework' || status === 'rejected') {
-        newAssignmentStatus = 'in_progress';
-      }
-
-      if (newAssignmentStatus) {
-        await tx.questAssignment.update({
-          where: { id: submission.assignmentId },
+    const reviewResult = await prisma.$transaction(
+      async (tx) => {
+        const updatedSubmission = await tx.questSubmission.update({
+          where: { id: submissionId },
           data: {
-            status: newAssignmentStatus,
-            ...(newAssignmentStatus === 'completed' ? { completedAt: new Date() } : {}),
+            status,
+            reviewNotes: review_notes || undefined,
+            qualityScore: quality_score || undefined,
+            reviewerId,
+            reviewedAt: status !== 'pending' ? new Date() : undefined,
           },
         });
-      }
 
-      await syncQuestLifecycleStatus(tx, assignmentData.questId);
-
-      let rewardsPayload: { userId: string; xpReward: number; skillPointsReward: number } | null = null;
-      if (status === 'approved' && !wasAlreadyApproved) {
-        const quest = await tx.quest.findUnique({
-          where: { id: assignmentData.questId },
-          select: { xpReward: true, skillPointsReward: true },
-        });
-
-        if (!quest) {
-          throw new Error('Quest not found for completion recording');
+        let newAssignmentStatus: AssignmentStatus | null = null;
+        if (status === 'approved') {
+          newAssignmentStatus = 'completed';
+        } else if (status === 'needs_rework' || status === 'rejected') {
+          newAssignmentStatus = 'in_progress';
         }
 
-        await tx.questCompletion.upsert({
-          where: {
-            questId_userId: {
+        if (newAssignmentStatus) {
+          await tx.questAssignment.update({
+            where: { id: submission.assignmentId },
+            data: {
+              status: newAssignmentStatus,
+              ...(newAssignmentStatus === 'completed' ? { completedAt: new Date() } : {}),
+            },
+          });
+        }
+
+        await syncQuestLifecycleStatus(tx, assignmentData.questId);
+
+        let rewardsPayload: { userId: string; xpReward: number; skillPointsReward: number } | null = null;
+        if (status === 'approved' && !wasAlreadyApproved) {
+          const quest = await tx.quest.findUnique({
+            where: { id: assignmentData.questId },
+            select: { xpReward: true, skillPointsReward: true },
+          });
+
+          if (!quest) {
+            throw new Error('Quest not found for completion recording');
+          }
+
+          await tx.questCompletion.upsert({
+            where: {
+              questId_userId: {
+                questId: assignmentData.questId,
+                userId: assignmentData.userId,
+              },
+            },
+            create: {
               questId: assignmentData.questId,
               userId: assignmentData.userId,
+              xpEarned: quest.xpReward,
+              skillPointsEarned: quest.skillPointsReward,
+              qualityScore: quality_score || null,
             },
-          },
-          create: {
-            questId: assignmentData.questId,
+            update: {
+              xpEarned: quest.xpReward,
+              skillPointsEarned: quest.skillPointsReward,
+              qualityScore: quality_score || null,
+            },
+          });
+
+          rewardsPayload = {
             userId: assignmentData.userId,
-            xpEarned: quest.xpReward,
-            skillPointsEarned: quest.skillPointsReward,
-            qualityScore: quality_score || null,
-          },
-          update: {
-            xpEarned: quest.xpReward,
-            skillPointsEarned: quest.skillPointsReward,
-            qualityScore: quality_score || null,
-          },
-        });
+            xpReward: quest.xpReward,
+            skillPointsReward: quest.skillPointsReward,
+          };
+        }
 
-        rewardsPayload = {
-          userId: assignmentData.userId,
-          xpReward: quest.xpReward,
-          skillPointsReward: quest.skillPointsReward,
-        };
-      }
-
-      return { submission: updatedSubmission, rewardsPayload };
-    });
+        return { submission: updatedSubmission, rewardsPayload };
+      },
+      { maxWait: 10_000, timeout: 20_000 }
+    );
 
     if (reviewResult.rewardsPayload) {
       const { updateUserXpAndSkills } = await import('@/lib/xp-utils');

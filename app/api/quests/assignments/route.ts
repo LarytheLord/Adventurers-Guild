@@ -1,15 +1,14 @@
 // app/api/quests/assignments/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { AssignmentStatus, Prisma } from '@prisma/client';
 import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
+import { getAuthUser } from '@/lib/api-auth';
 
 export async function GET(request: NextRequest) {
   // Check authentication
-  const session = await getServerSession(authOptions);
-  if (!session || !session.user) {
+  const user = await getAuthUser(request);
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
   }
 
@@ -22,8 +21,8 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const offset = parseInt(searchParams.get('offset') || '0');
 
-    const currentUserId = session.user.id;
-    const currentUserRole = session.user.role;
+    const currentUserId = user.id;
+    const currentUserRole = user.role;
 
     // Build where clause based on permissions
     const where: Prisma.QuestAssignmentWhereInput = {};
@@ -97,12 +96,12 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   // Check authentication
-  const session = await getServerSession(authOptions);
-  if (!session || !session.user) {
+  const user = await getAuthUser(request);
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
   }
 
-  if (session.user.role !== 'adventurer' && session.user.role !== 'admin') {
+  if (user.role !== 'adventurer' && user.role !== 'admin') {
     return NextResponse.json(
       { error: 'Only adventurers can apply to quests', success: false },
       { status: 403 }
@@ -112,7 +111,7 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     const { questId } = body;
-    const userId = session.user.id; // Use authenticated user's ID
+    const userId = user.id; // Use authenticated user's ID
 
     // Validate required fields
     if (!questId) {
@@ -156,18 +155,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Create the assignment
-    const assignment = await prisma.$transaction(async (tx) => {
-      const created = await tx.questAssignment.create({
-        data: {
-          questId: questId,
-          userId,
-          status: 'assigned',
-        },
-      });
+    const assignment = await prisma.$transaction(
+      async (tx) => {
+        const created = await tx.questAssignment.create({
+          data: {
+            questId: questId,
+            userId,
+            status: 'assigned',
+          },
+        });
 
-      await syncQuestLifecycleStatus(tx, questId);
-      return created;
-    });
+        await syncQuestLifecycleStatus(tx, questId);
+        return created;
+      },
+      { maxWait: 10_000, timeout: 20_000 }
+    );
 
     return NextResponse.json({ assignment, success: true }, { status: 201 });
   } catch (error) {
@@ -178,15 +180,15 @@ export async function POST(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   // Check authentication
-  const session = await getServerSession(authOptions);
-  if (!session || !session.user) {
+  const user = await getAuthUser(request);
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
   }
 
   try {
     const body = await request.json();
     const { assignmentId, status, progress } = body;
-    const userId = session.user.id; // Use authenticated user's ID
+    const userId = user.id; // Use authenticated user's ID
 
     // Validate required fields
     if (!assignmentId || !status) {
@@ -204,7 +206,7 @@ export async function PUT(request: NextRequest) {
       'cancelled',
     ];
     const adventurerStatuses: AssignmentStatus[] = ['started', 'in_progress'];
-    const allowedStatuses = session.user.role === 'admin' ? adminStatuses : adventurerStatuses;
+    const allowedStatuses = user.role === 'admin' ? adminStatuses : adventurerStatuses;
 
     if (!allowedStatuses.includes(requestedStatus)) {
       return NextResponse.json({ error: 'Invalid assignment status transition', success: false }, { status: 400 });
@@ -221,7 +223,7 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Assignment not found', success: false }, { status: 404 });
     }
 
-    if (assignment.userId !== userId && session.user.role !== 'admin') {
+    if (assignment.userId !== userId && user.role !== 'admin') {
       return NextResponse.json({ error: 'Unauthorized to update this assignment', success: false }, { status: 403 });
     }
 
@@ -240,15 +242,18 @@ export async function PUT(request: NextRequest) {
       updateData.completedAt = new Date();
     }
 
-    const updatedAssignment = await prisma.$transaction(async (tx) => {
-      const updated = await tx.questAssignment.update({
-        where: { id: assignmentId },
-        data: updateData,
-      });
+    const updatedAssignment = await prisma.$transaction(
+      async (tx) => {
+        const updated = await tx.questAssignment.update({
+          where: { id: assignmentId },
+          data: updateData,
+        });
 
-      await syncQuestLifecycleStatus(tx, assignment.questId);
-      return updated;
-    });
+        await syncQuestLifecycleStatus(tx, assignment.questId);
+        return updated;
+      },
+      { maxWait: 10_000, timeout: 20_000 }
+    );
 
     return NextResponse.json({ assignment: updatedAssignment, success: true });
   } catch (error) {

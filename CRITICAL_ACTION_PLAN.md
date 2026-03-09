@@ -6,9 +6,9 @@ This document outlines immediate actions required to address the critical issues
 ## Critical Issues Summary
 
 ### 1. Technical Issues
-- **292 TypeScript errors** preventing production deployment
-- **Missing NEXTAUTH_SECRET** environment variable
-- **Incomplete core features** (dashboard, quest completion, admin features)
+- **Auth and route-guard inconsistency** across API surface
+- **Missing E2E coverage** for register/login/quest/payment core flows
+- **Incomplete core features** (dashboard polish, quest lifecycle observability, admin hardening)
 
 ### 2. Growth Issues
 - **No active contributor engagement** despite documentation
@@ -27,15 +27,15 @@ This document outlines immediate actions required to address the critical issues
 
 2. **Categorize by Severity**
    - Build-blocking errors: 0
-   - Type mismatch errors: ~200
-   - Missing type definitions: ~50
-   - Unused variables: ~42
+   - Runtime flow regressions: auth redirects, quest lifecycle edge cases
+   - API policy mismatches: routes using mixed auth patterns
+   - Non-blocking lint warnings: cleanup backlog
 
 3. **Fix Priority Errors**
-   - [ ] Fix authentication-related TypeScript errors
-   - [ ] Resolve API route type mismatches
-   - [ ] Fix component prop type issues
-   - [ ] Address database schema type mismatches
+   - [ ] Standardize API auth checks on shared helpers
+   - [ ] Ship E2E smoke tests for register/login and quest flow
+   - [ ] Fix route-level regressions and response-shape inconsistencies
+   - [ ] Address highest-value lint warnings in active screens
 
 4. **Create Fix Scripts**
    ```bash
@@ -47,9 +47,9 @@ This document outlines immediate actions required to address the critical issues
 **Priority: CRITICAL**
 
 1. **Add Missing Environment Variables**
-   - [ ] Generate NEXTAUTH_SECRET
-   - [ ] Update .env.example with all required variables
-   - [ ] Create environment validation script
+   - [x] Generate and use `NEXTAUTH_SECRET`
+   - [x] Update `.env.example` with required variables
+   - [x] Add runtime environment validation (`lib/env.ts`)
 
 2. **Security Hardening**
    - [ ] Implement proper secret generation

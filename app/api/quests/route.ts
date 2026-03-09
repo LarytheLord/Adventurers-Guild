@@ -1,13 +1,12 @@
 // app/api/quests/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
+import { getAuthUser } from '@/lib/api-auth';
 import { Prisma, QuestStatus, QuestCategory, UserRank } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
   // Check authentication but don't require it - allow public access to available quests
-  const session = await getServerSession(authOptions);
+  const user = await getAuthUser(request);
 
   try {
     // Parse query parameters
@@ -22,20 +21,20 @@ export async function GET(request: NextRequest) {
     // Build where clause based on permissions
     const where: Prisma.QuestWhereInput = {};
 
-    if (session && session.user) {
-      if (session.user.role === 'company') {
+    if (user) {
+      if (user.role === 'company') {
         // Companies can see their own quests regardless of status
         where.OR = [
-          { companyId: session.user.id },
+          { companyId: user.id },
           { status: 'available' },
         ];
-      } else if (session.user.role === 'admin') {
+      } else if (user.role === 'admin') {
         // Admins can see all quests - no additional filter needed
       } else {
         // Adventurers can see available quests and their assigned quests
         where.OR = [
           { status: 'available' },
-          { assignments: { some: { userId: session.user.id } } },
+          { assignments: { some: { userId: user.id } } },
         ];
       }
     } else {
@@ -44,7 +43,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Add filters if provided
-    if (status && (!session || !session.user || session.user.role !== 'company')) {
+    if (status && (!user || user.role !== 'company')) {
       where.status = status as QuestStatus;
     }
     if (category) {
@@ -53,7 +52,7 @@ export async function GET(request: NextRequest) {
     if (difficulty) {
       where.difficulty = difficulty as UserRank;
     }
-    if (companyId && session && session.user && (session.user.role === 'admin' || session.user.id === companyId)) {
+    if (companyId && user && (user.role === 'admin' || user.id === companyId)) {
       where.companyId = companyId;
     }
 
@@ -80,13 +79,11 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   // Check authentication
-  const session = await getServerSession(authOptions);
-  if (!session || !session.user) {
+  const user = await getAuthUser(request);
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
   }
-
-  // Only companies and admins can create quests
-  if (session.user.role !== 'company' && session.user.role !== 'admin') {
+  if (user.role !== 'company' && user.role !== 'admin') {
     return NextResponse.json({ error: 'Only companies and admins can create quests', success: false }, { status: 403 });
   }
 
@@ -128,7 +125,7 @@ export async function POST(request: NextRequest) {
         requiredRank: requiredRank,
         maxParticipants: maxParticipants,
         questCategory: questCategory,
-        companyId: session.user.id,
+        companyId: user.id,
         deadline: deadline ? new Date(deadline) : null,
       },
     });

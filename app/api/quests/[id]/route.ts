@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
 import { prisma } from '@/lib/db';
-import { authOptions } from '@/lib/auth';
+import { getAuthUser } from '@/lib/api-auth';
 
 export async function GET(
   req: NextRequest,
   props: { params: Promise<{ id: string }> }
 ) {
-  void req;
   const params = await props.params;
-  const session = await getServerSession(authOptions);
+  const user = await getAuthUser(req);
 
   try {
     const quest = await prisma.quest.findUnique({
@@ -44,12 +42,12 @@ export async function GET(
       return NextResponse.json({ success: false, error: 'Quest not found' }, { status: 404 });
     }
 
-    const isAdmin = session?.user?.role === 'admin';
+    const isAdmin = user?.role === 'admin';
     const isOwner =
-      session?.user?.role === 'company' &&
+      user?.role === 'company' &&
       !!quest.companyId &&
-      session.user.id === quest.companyId;
-    const userId = session?.user?.id;
+      user.id === quest.companyId;
+    const userId = user?.id;
 
     const assignments =
       isAdmin || isOwner

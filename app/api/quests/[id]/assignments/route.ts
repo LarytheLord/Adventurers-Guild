@@ -1,19 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { AssignmentStatus } from '@prisma/client';
 import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
+import { getAuthUser } from '@/lib/api-auth';
 
 // GET /api/quests/[id]/assignments — list all assignments for a quest (company/admin only)
 export async function GET(
   req: NextRequest,
   props: { params: Promise<{ id: string }> }
 ) {
-  void req;
   const params = await props.params;
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
+  const user = await getAuthUser(req);
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
   }
 
@@ -29,7 +27,7 @@ export async function GET(
     }
 
     // Only the owning company or admin can see all assignments
-    if (session.user.role !== 'admin' && quest.companyId !== session.user.id) {
+    if (user.role !== 'admin' && quest.companyId !== user.id) {
       return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 403 });
     }
 
@@ -64,8 +62,8 @@ export async function PUT(
   props: { params: Promise<{ id: string }> }
 ) {
   const params = await props.params;
-  const session = await getServerSession(authOptions);
-  if (!session?.user) {
+  const user = await getAuthUser(req);
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
   }
 
@@ -91,7 +89,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Quest not found', success: false }, { status: 404 });
     }
 
-    if (session.user.role !== 'admin' && quest.companyId !== session.user.id) {
+    if (user.role !== 'admin' && quest.companyId !== user.id) {
       return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 403 });
     }
 
@@ -114,18 +112,21 @@ export async function PUT(
     // Map frontend status to DB enum
     const newStatus: AssignmentStatus = status === 'accepted' ? 'started' : 'cancelled';
 
-    const updated = await prisma.$transaction(async (tx) => {
-      const assignment = await tx.questAssignment.update({
-        where: { id: assignmentId },
-        data: {
-          status: newStatus,
-          ...(newStatus === 'started' ? { startedAt: new Date() } : {}),
-        },
-      });
+    const updated = await prisma.$transaction(
+      async (tx) => {
+        const assignment = await tx.questAssignment.update({
+          where: { id: assignmentId },
+          data: {
+            status: newStatus,
+            ...(newStatus === 'started' ? { startedAt: new Date() } : {}),
+          },
+        });
 
-      await syncQuestLifecycleStatus(tx, params.id);
-      return assignment;
-    });
+        await syncQuestLifecycleStatus(tx, params.id);
+        return assignment;
+      },
+      { maxWait: 10_000, timeout: 20_000 }
+    );
 
     return NextResponse.json({ assignment: updated, success: true });
   } catch (error) {

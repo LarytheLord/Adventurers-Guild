@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { prisma } from '@/lib/db';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import {
   ArrowRight,
@@ -19,6 +19,14 @@ import {
   Users,
 } from 'lucide-react';
 import Link from 'next/link';
+import {
+  GuildCard,
+  GuildChip,
+  GuildHero,
+  GuildKpi,
+  GuildListItem,
+  GuildPage,
+} from '@/components/guild/primitives';
 
 const ACTIVE_ASSIGNMENT_STATUSES = ['assigned', 'started', 'in_progress', 'submitted', 'review'] as const;
 
@@ -215,8 +223,8 @@ export default async function CompanyDashboardPage() {
     .slice(0, 4);
 
   return (
-    <div className="guild-page">
-      <section className="guild-hero">
+    <GuildPage>
+      <GuildHero>
         <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-3">
             <Badge className="rounded-full border border-sky-300 bg-sky-100 text-sky-700">
@@ -231,11 +239,11 @@ export default async function CompanyDashboardPage() {
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="guild-chip">{company?.companyProfile?.industry || 'Technology'}</span>
-              <span className="guild-chip">{company?.companyProfile?.size || 'startup'} size</span>
-              <span className="guild-chip">
+              <GuildChip>{company?.companyProfile?.industry || 'Technology'}</GuildChip>
+              <GuildChip>{company?.companyProfile?.size || 'startup'} size</GuildChip>
+              <GuildChip>
                 {company?.companyProfile?.isVerified ? 'Verified company' : 'Verification pending'}
-              </span>
+              </GuildChip>
             </div>
           </div>
 
@@ -254,48 +262,48 @@ export default async function CompanyDashboardPage() {
             </Button>
           </div>
         </div>
-      </section>
+      </GuildHero>
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <article className="guild-kpi">
+        <GuildKpi>
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Quest Portfolio</p>
             <Briefcase className="h-4 w-4 text-sky-600" />
           </div>
           <p className="mt-2 text-2xl font-bold text-slate-900">{totalQuests}</p>
           <p className="mt-1 text-xs text-slate-500">{openQuests} open, {inProgressQuests} in delivery</p>
-        </article>
+        </GuildKpi>
 
-        <article className="guild-kpi">
+        <GuildKpi>
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Active Adventurers</p>
             <Users className="h-4 w-4 text-violet-600" />
           </div>
           <p className="mt-2 text-2xl font-bold text-slate-900">{activeCollaborators}</p>
           <p className="mt-1 text-xs text-slate-500">{pendingReviews} submissions need review</p>
-        </article>
+        </GuildKpi>
 
-        <article className="guild-kpi">
+        <GuildKpi>
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Delivery Success</p>
             <CheckCircle2 className="h-4 w-4 text-emerald-600" />
           </div>
           <p className="mt-2 text-2xl font-bold text-slate-900">{completionRate}%</p>
           <p className="mt-1 text-xs text-slate-500">{completedQuests} completed quests</p>
-        </article>
+        </GuildKpi>
 
-        <article className="guild-kpi">
+        <GuildKpi>
           <div className="flex items-center justify-between">
             <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Guild Spend Rank</p>
             <Trophy className="h-4 w-4 text-amber-500" />
           </div>
           <p className="mt-2 text-2xl font-bold text-slate-900">#{companyPosition || '-'}</p>
           <p className="mt-1 text-xs text-slate-500">${totalSpent.toLocaleString()} total platform spend</p>
-        </article>
+        </GuildKpi>
       </section>
 
       <section className="grid gap-4 xl:grid-cols-3">
-        <Card className="guild-panel xl:col-span-2">
+        <GuildCard className="xl:col-span-2">
           <CardHeader className="flex flex-row items-center justify-between">
             <div>
               <CardTitle>Quest Delivery Board</CardTitle>
@@ -312,30 +320,32 @@ export default async function CompanyDashboardPage() {
               </div>
             ) : (
               quests.slice(0, 6).map((quest) => (
-                <Link
+                <GuildListItem
+                  asChild
                   key={quest.id}
-                  href={`/dashboard/company/quests/${quest.id}`}
-                  className="guild-list-item flex items-start justify-between gap-3"
+                  className="flex items-start justify-between gap-3"
                 >
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-semibold text-slate-900">{quest.title}</p>
-                    <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500">
-                      <span>{quest.difficulty}-Rank</span>
-                      <span>{quest._count.assignments} applicant(s)</span>
-                      <span>{quest.xpReward} XP</span>
-                      {quest.deadline && <span>Due {new Date(quest.deadline).toLocaleDateString()}</span>}
+                  <Link href={`/dashboard/company/quests/${quest.id}`}>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-semibold text-slate-900">{quest.title}</p>
+                      <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+                        <span>{quest.difficulty}-Rank</span>
+                        <span>{quest._count.assignments} applicant(s)</span>
+                        <span>{quest.xpReward} XP</span>
+                        {quest.deadline && <span>Due {new Date(quest.deadline).toLocaleDateString()}</span>}
+                      </div>
                     </div>
-                  </div>
-                  <Badge variant="outline" className={statusBadgeClass(quest.status)}>
-                    {quest.status.replace('_', ' ')}
-                  </Badge>
-                </Link>
+                    <Badge variant="outline" className={statusBadgeClass(quest.status)}>
+                      {quest.status.replace('_', ' ')}
+                    </Badge>
+                  </Link>
+                </GuildListItem>
               ))
             )}
           </CardContent>
-        </Card>
+        </GuildCard>
 
-        <Card className="guild-panel">
+        <GuildCard>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-violet-500" />
@@ -365,11 +375,11 @@ export default async function CompanyDashboardPage() {
               ))
             )}
           </CardContent>
-        </Card>
+        </GuildCard>
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
-        <Card className="guild-panel">
+        <GuildCard>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Target className="h-5 w-5 text-emerald-500" />
@@ -395,12 +405,12 @@ export default async function CompanyDashboardPage() {
             <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-600">
               {pendingReviews > 0
                 ? `${pendingReviews} submission(s) are waiting for company review.`
-                : 'No pending reviews. Quest pipeline is clear.'}
+              : 'No pending reviews. Quest pipeline is clear.'}
             </div>
           </CardContent>
-        </Card>
+        </GuildCard>
 
-        <Card className="guild-panel">
+        <GuildCard>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock3 className="h-5 w-5 text-rose-500" />
@@ -415,17 +425,19 @@ export default async function CompanyDashboardPage() {
               </p>
             ) : (
               urgentQuests.map((quest) => (
-                <Link
+                <GuildListItem
+                  asChild
                   key={quest.id}
-                  href={`/dashboard/company/quests/${quest.id}`}
-                  className="guild-list-item flex items-center justify-between"
+                  className="flex items-center justify-between"
                 >
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-slate-900">{quest.title}</p>
-                    <p className="text-xs text-slate-500">{new Date(quest.deadline as Date).toLocaleDateString()}</p>
-                  </div>
-                  <ArrowRight className="h-4 w-4 text-slate-400" />
-                </Link>
+                  <Link href={`/dashboard/company/quests/${quest.id}`}>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-semibold text-slate-900">{quest.title}</p>
+                      <p className="text-xs text-slate-500">{new Date(quest.deadline as Date).toLocaleDateString()}</p>
+                    </div>
+                    <ArrowRight className="h-4 w-4 text-slate-400" />
+                  </Link>
+                </GuildListItem>
               ))
             )}
             <div className="grid grid-cols-2 gap-2 pt-1">
@@ -443,8 +455,8 @@ export default async function CompanyDashboardPage() {
               </Button>
             </div>
           </CardContent>
-        </Card>
+        </GuildCard>
       </section>
-    </div>
+    </GuildPage>
   );
 }

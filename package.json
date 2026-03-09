@@ -8,6 +8,8 @@
     "lint": "next lint",
     "start": "next start",
     "type-check": "next typegen && tsc --noEmit",
+    "test:e2e": "playwright test",
+    "test:phase-gate": "npm run type-check && npm run lint && npm run test:e2e",
     "deploy:vercel": "vercel --prod",
     "postinstall": "prisma generate",
     "db:push": "prisma db push",
