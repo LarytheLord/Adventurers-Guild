@@ -6,7 +6,7 @@ import { Prisma, UserRole } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await requireAuth('admin');
+    const user = await requireAuth(request, 'admin');
     if (!user) {
       return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
@@ -87,7 +87,7 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const authUser = await requireAuth('admin');
+    const authUser = await requireAuth(request, 'admin');
     if (!authUser) {
       return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
@@ -120,7 +120,7 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    const authUser = await requireAuth('admin');
+    const authUser = await requireAuth(request, 'admin');
     if (!authUser) {
       return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
