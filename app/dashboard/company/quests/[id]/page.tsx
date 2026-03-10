@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -251,8 +252,10 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => toast.info('Quest editing is coming in a follow-up update')}>
-            Edit Quest
+          <Button variant="outline" asChild>
+            <Link href={`/dashboard/company/quests/${id}/edit`}>
+              Edit Quest
+            </Link>
           </Button>
           <Button
             variant="destructive"

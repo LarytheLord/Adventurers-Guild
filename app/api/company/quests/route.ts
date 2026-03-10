@@ -108,11 +108,13 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Increment questsPosted counter on company profile
-    await prisma.companyProfile.update({
-      where: { userId: companyId },
-      data: { questsPosted: { increment: 1 } },
-    });
+    // Only increment questsPosted for company users — admin users have no CompanyProfile
+    if (authUser.role !== 'admin') {
+      await prisma.companyProfile.update({
+        where: { userId: companyId },
+        data: { questsPosted: { increment: 1 } },
+      });
+    }
 
     return Response.json({ quest: data, success: true }, { status: 201 });
   } catch (error) {
