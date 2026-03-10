@@ -16,7 +16,8 @@ export async function GET(request: NextRequest) {
     const role = searchParams.get('role');
     const isVerified = searchParams.get('isVerified');
     const search = searchParams.get('search');
-    const limit = searchParams.get('limit') || '10';
+    const limitRaw = searchParams.get('limit') || '10';
+    const take = Math.min(Math.max(1, parseInt(limitRaw)), 200);
     const offset = searchParams.get('offset') || '0';
 
     // Build where clause
@@ -74,7 +75,7 @@ export async function GET(request: NextRequest) {
         },
       },
       skip: parseInt(offset),
-      take: parseInt(limit),
+      take,
       orderBy: { createdAt: 'desc' },
     });
 
@@ -100,9 +101,23 @@ export async function PUT(request: NextRequest) {
       return Response.json({ error: 'User ID is required', success: false }, { status: 400 });
     }
 
+    // Validate role if provided
+    if (role !== undefined) {
+      if (!Object.values(UserRole).includes(role as UserRole)) {
+        return Response.json({ error: 'Invalid role value', success: false }, { status: 400 });
+      }
+      // Prevent demoting admin users
+      if (role !== 'admin') {
+        const target = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
+        if (target?.role === 'admin') {
+          return Response.json({ error: 'Cannot change role of an admin user', success: false }, { status: 400 });
+        }
+      }
+    }
+
     // Update the user
     const updateData: Prisma.UserUpdateInput = {};
-    if (role !== undefined) updateData.role = role;
+    if (role !== undefined) updateData.role = role as UserRole;
     if (isVerified !== undefined) updateData.isVerified = isVerified;
     if (isActive !== undefined) updateData.isActive = isActive;
 
@@ -131,6 +146,11 @@ export async function DELETE(request: NextRequest) {
     // Validate required field
     if (!userId) {
       return Response.json({ error: 'User ID is required', success: false }, { status: 400 });
+    }
+
+    // Prevent self-deactivation
+    if (userId === authUser.id) {
+      return Response.json({ error: 'Cannot deactivate your own account', success: false }, { status: 400 });
     }
 
     // Delete the user (in reality, you'd want to de-activate rather than hard delete)

@@ -51,3 +51,8 @@ export const RANK_COLORS: Record<string, string> = {
   E: 'bg-purple-100 text-purple-800',
   F: 'bg-gray-100 text-gray-700',
 };
+
+/** Returns the quest list path for a given user role. */
+export function getQuestListPath(role: string): string {
+  return role === 'admin' ? '/admin/quests' : '/dashboard/company/quests';
+}

@@ -2,7 +2,9 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireAuth } from '@/lib/api-auth';
-import { Prisma, QuestStatus, QuestType, UserRank } from '@prisma/client';
+import { Prisma, QuestStatus, QuestType, UserRank, QuestCategory } from '@prisma/client';
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 interface AdminNote {
   [key: string]: string; // satisfies Prisma InputJsonObject index signature
@@ -24,7 +26,8 @@ export async function GET(request: NextRequest) {
     const questType = searchParams.get('questType');
     const difficulty = searchParams.get('difficulty');
     const search = searchParams.get('search');
-    const limit = searchParams.get('limit') || '50';
+    const limitRaw = searchParams.get('limit') || '50';
+    const take = Math.min(Math.max(1, parseInt(limitRaw)), 200);
     const offset = searchParams.get('offset') || '0';
 
     const where: Prisma.QuestWhereInput = {};
@@ -78,7 +81,7 @@ export async function GET(request: NextRequest) {
         },
       },
       skip: parseInt(offset),
-      take: parseInt(limit),
+      take,
       orderBy: { createdAt: 'desc' },
     });
 
@@ -100,9 +103,19 @@ export async function POST(request: NextRequest) {
 
     const requiredFields = ['title', 'description', 'questType', 'difficulty', 'xpReward', 'questCategory'];
     for (const field of requiredFields) {
-      if (!body[field]) {
+      if (body[field] == null || String(body[field]).trim() === '') {
         return Response.json({ error: `${field} is required`, success: false }, { status: 400 });
       }
+    }
+
+    if (!Object.values(QuestType).includes(body.questType as QuestType)) {
+      return Response.json({ error: 'Invalid questType value', success: false }, { status: 400 });
+    }
+    if (!Object.values(UserRank).includes(body.difficulty as UserRank)) {
+      return Response.json({ error: 'Invalid difficulty value', success: false }, { status: 400 });
+    }
+    if (!Object.values(QuestCategory).includes(body.questCategory as QuestCategory)) {
+      return Response.json({ error: 'Invalid questCategory value', success: false }, { status: 400 });
     }
 
     const data = await prisma.quest.create({
@@ -110,15 +123,15 @@ export async function POST(request: NextRequest) {
         title: body.title,
         description: body.description,
         detailedDescription: body.detailedDescription || null,
-        questType: body.questType,
-        difficulty: body.difficulty,
+        questType: body.questType as QuestType,
+        difficulty: body.difficulty as UserRank,
         xpReward: body.xpReward,
         skillPointsReward: body.skillPointsReward || 0,
         monetaryReward: body.monetaryReward || null,
         requiredSkills: body.requiredSkills || [],
         requiredRank: body.requiredRank || null,
         maxParticipants: body.maxParticipants || null,
-        questCategory: body.questCategory,
+        questCategory: body.questCategory as QuestCategory,
         status: body.status || 'available',
         companyId: null,
         deadline: body.deadline ? new Date(body.deadline) : null,
@@ -144,6 +157,9 @@ export async function PUT(request: NextRequest) {
 
     if (!questId) {
       return Response.json({ error: 'Quest ID is required', success: false }, { status: 400 });
+    }
+    if (!UUID_REGEX.test(questId)) {
+      return Response.json({ error: 'Invalid quest ID format', success: false }, { status: 400 });
     }
 
     const updateData: Prisma.QuestUpdateInput = {};
@@ -174,7 +190,12 @@ export async function PUT(request: NextRequest) {
     }
     if (updateFields.title !== undefined) updateData.title = updateFields.title;
     if (updateFields.description !== undefined) updateData.description = updateFields.description;
-    if (updateFields.requiredRank !== undefined) updateData.requiredRank = updateFields.requiredRank;
+    if (updateFields.requiredRank !== undefined) {
+      if (updateFields.requiredRank !== null && !Object.values(UserRank).includes(updateFields.requiredRank as UserRank)) {
+        return Response.json({ error: 'Invalid requiredRank value', success: false }, { status: 400 });
+      }
+      updateData.requiredRank = updateFields.requiredRank as UserRank | null;
+    }
     if (updateFields.maxParticipants !== undefined) updateData.maxParticipants = updateFields.maxParticipants;
     if (updateFields.xpReward !== undefined) updateData.xpReward = updateFields.xpReward;
     if (updateFields.deadline !== undefined) {
@@ -205,6 +226,9 @@ export async function DELETE(request: NextRequest) {
 
     if (!questId) {
       return Response.json({ error: 'Quest ID is required', success: false }, { status: 400 });
+    }
+    if (!UUID_REGEX.test(questId)) {
+      return Response.json({ error: 'Invalid quest ID format', success: false }, { status: 400 });
     }
 
     await prisma.quest.update({

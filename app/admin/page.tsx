@@ -48,6 +48,7 @@ export default function AdminDashboard() {
   const [stats, setStats] = useState<AdminStats>({ totalUsers: 0, totalQuests: 0, activeQuests: 0, completedQuests: 0 });
   const [users, setUsers] = useState<UserItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === 'authenticated' && session?.user?.role !== 'admin') {
@@ -81,6 +82,7 @@ export default function AdminDashboard() {
         }
       } catch (err) {
         console.error('Error fetching admin data:', err);
+        setFetchError('Failed to load admin data. Please refresh the page.');
       } finally {
         setLoading(false);
       }
@@ -95,6 +97,14 @@ export default function AdminDashboard() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (fetchError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-destructive text-sm">{fetchError}</p>
       </div>
     );
   }
@@ -245,7 +255,7 @@ export default function AdminDashboard() {
                     </div>
                     <div className="flex items-center gap-2 ml-3 shrink-0">
                       <Badge variant="outline">{u.role}</Badge>
-                      <Badge className={RANK_COLORS[u.rank] || RANK_COLORS.F}>
+                      <Badge className={RANK_COLORS[u.rank] ?? RANK_COLORS['F']}>
                         {u.rank}-Rank
                       </Badge>
                       <span className="text-sm text-muted-foreground hidden sm:inline">

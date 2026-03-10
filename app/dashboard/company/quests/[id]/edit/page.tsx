@@ -186,6 +186,7 @@ export default function EditQuestPage({ params }: { params: Promise<{ id: string
       if (data.success) {
         toast.success('Quest updated successfully!');
         router.push(backHref);
+        router.refresh();
       } else {
         setError(data.error || 'Failed to update quest');
       }

@@ -30,7 +30,7 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { GuildCard, GuildChip, GuildHero, GuildPage } from '@/components/guild/primitives';
-import { QUEST_CATEGORIES, QUEST_TYPES, DIFFICULTY_RANKS } from '@/lib/quest-constants';
+import { QUEST_CATEGORIES, QUEST_TYPES, DIFFICULTY_RANKS, getQuestListPath } from '@/lib/quest-constants';
 
 export default function CreateQuestPage() {
   const { data: session, status } = useSession();
@@ -118,7 +118,7 @@ export default function CreateQuestPage() {
 
       if (data.success) {
         toast.success('Quest created successfully!');
-        router.push(session?.user?.role === 'admin' ? '/admin/quests' : '/dashboard/company/quests');
+        router.push(getQuestListPath(session?.user?.role ?? ''));
       } else {
         setError(data.error || 'Failed to create quest');
       }
@@ -151,7 +151,7 @@ export default function CreateQuestPage() {
             </div>
           </div>
           <Button variant="outline" asChild>
-            <Link href={session?.user?.role === 'admin' ? '/admin/quests' : '/dashboard/company/quests'}>
+            <Link href={getQuestListPath(session?.user?.role ?? '')}>
               <ArrowLeft className="h-4 w-4" />
               Back to Quests
             </Link>
@@ -403,7 +403,7 @@ export default function CreateQuestPage() {
 
             <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
               <Button variant="outline" asChild>
-                <Link href={session?.user?.role === 'admin' ? '/admin/quests' : '/dashboard/company/quests'}>
+                <Link href={getQuestListPath(session?.user?.role ?? '')}>
                   <ArrowLeft className="h-4 w-4" />
                   Cancel
                 </Link>
