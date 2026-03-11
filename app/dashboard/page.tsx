@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { prisma } from '@/lib/db';
+import { prisma, withDbRetry } from '@/lib/db';
 import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -49,7 +49,7 @@ export default async function DashboardPage() {
 
   const userId = session.user.id;
 
-  const [user, activeAssignments, availableQuests] = await Promise.all([
+  const [user, activeAssignments, availableQuests] = await withDbRetry(() => Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -107,13 +107,13 @@ export default async function DashboardPage() {
       orderBy: { createdAt: 'desc' },
       take: 24,
     }),
-  ]);
+  ]));
 
-  const [completedCount, reviewCount, totalAdventurers] = await Promise.all([
+  const [completedCount, reviewCount, totalAdventurers] = await withDbRetry(() => Promise.all([
     prisma.questAssignment.count({ where: { userId, status: 'completed' } }),
     prisma.questAssignment.count({ where: { userId, status: { in: ['submitted', 'review'] } } }),
     prisma.user.count({ where: { role: 'adventurer' } }),
-  ]);
+  ]));
 
   const xp = user?.xp ?? 0;
   const rank = (user?.rank ?? 'F') as Rank;
@@ -129,7 +129,7 @@ export default async function DashboardPage() {
   const specialization = user?.adventurerProfile?.specialization || 'Generalist';
 
   const leaderboardPosition =
-    (await prisma.user.count({ where: { role: 'adventurer', xp: { gt: xp } } })) + 1;
+    (await withDbRetry(() => prisma.user.count({ where: { role: 'adventurer', xp: { gt: xp } } }))) + 1;
 
   const rankValue = (candidate: string | null | undefined) => {
     if (!candidate) return 0;
