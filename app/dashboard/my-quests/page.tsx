@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { prisma } from "@/lib/db";
+import { prisma, withDbRetry } from "@/lib/db";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,7 @@ export default async function MyQuestsPage() {
   }
 
   // Fetch user's assignments
-  const assignments = await prisma.questAssignment.findMany({
+  const assignments = await withDbRetry(() => prisma.questAssignment.findMany({
     where: {
       userId: session.user.id,
     },
@@ -35,7 +35,7 @@ export default async function MyQuestsPage() {
     orderBy: {
       assignedAt: 'desc',
     },
-  });
+  }));
 
   return (
     <div className="container py-8">

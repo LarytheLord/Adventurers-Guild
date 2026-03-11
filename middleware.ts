@@ -4,20 +4,21 @@ import { UserRole } from '@/types';
 
 // Define protected routes and their required roles
 const protectedRoutes: { [key: string]: UserRole[] } = {
-  '/dashboard': ['adventurer', 'company'],
-  '/dashboard/quests': ['adventurer', 'company'],
+  '/dashboard': ['adventurer', 'company', 'admin'],
+  '/dashboard/quests': ['adventurer', 'company', 'admin'],
   '/dashboard/my-quests': ['adventurer'],
   '/dashboard/completed-quests': ['adventurer'],
   '/dashboard/skill-tree': ['adventurer'],
-  '/dashboard/teams': ['adventurer', 'company'],
-  '/dashboard/leaderboard': ['adventurer', 'company'],
-  '/dashboard/profile': ['adventurer', 'company'],
-  '/dashboard/company': ['company'],
-  '/dashboard/company/quests': ['company'],
-  '/dashboard/company/create-quest': ['company'],
-  '/dashboard/company/analytics': ['company'],
-  '/dashboard/company/profile': ['company'],
+  '/dashboard/teams': ['adventurer', 'company', 'admin'],
+  '/dashboard/leaderboard': ['adventurer', 'company', 'admin'],
+  '/dashboard/profile': ['adventurer', 'company', 'admin'],
+  '/dashboard/company': ['company', 'admin'],
+  '/dashboard/company/quests': ['company', 'admin'],
+  '/dashboard/company/create-quest': ['company', 'admin'],
+  '/dashboard/company/analytics': ['company', 'admin'],
+  '/dashboard/company/profile': ['company', 'admin'],
   '/admin': ['admin'],
+  '/admin/quests': ['admin'],
 };
 
 export async function middleware(request: NextRequest) {

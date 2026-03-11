@@ -224,6 +224,7 @@ model Quest {
   maxParticipants     Int?          @map("max_participants")
   questCategory       QuestCategory @map("quest_category")
   companyId           String?       @map("company_id") @db.Uuid
+  adminNotes          Json?         @map("admin_notes")
   createdAt           DateTime      @default(now()) @map("created_at") @db.Timestamptz
   updatedAt           DateTime      @updatedAt @map("updated_at") @db.Timestamptz
   deadline            DateTime?     @db.Timestamptz

@@ -9,6 +9,11 @@ export async function GET(
   const params = await props.params;
   const user = await getAuthUser(req);
 
+  const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!uuidRegex.test(params.id)) {
+    return NextResponse.json({ success: false, error: 'Quest not found' }, { status: 404 });
+  }
+
   try {
     const quest = await prisma.quest.findUnique({
       where: { id: params.id },
