@@ -152,4 +152,8 @@ temp/
 
 # TypeScript
 *.tsbuildinfo
-next-env.d.ts 
+next-env.d.ts
+
+# Playwright
+playwright-report/
+test-results/
