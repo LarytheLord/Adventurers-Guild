@@ -110,12 +110,6 @@ export default function RegisterPage() {
           </div>
         </div>
 
-        <blockquote className="border-l-2 border-orange-500/40 pl-4">
-          <p className="text-slate-400 text-sm leading-relaxed mb-3">
-            &ldquo;I went from F-Rank to B-Rank in 3 months. The quests pushed me harder than any bootcamp.&rdquo;
-          </p>
-          <footer className="text-sm text-slate-500">Raj Patel, Full-Stack Developer</footer>
-        </blockquote>
       </div>
 
       {/* Right panel — form */}
