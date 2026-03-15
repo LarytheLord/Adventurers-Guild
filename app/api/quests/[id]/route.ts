@@ -26,6 +26,26 @@ export async function GET(
             email: true,
           },
         },
+        parentQuest: {
+          select: {
+            id: true,
+            title: true,
+            track: true,
+            difficulty: true,
+            status: true,
+          },
+        },
+        subQuests: {
+          select: {
+            id: true,
+            title: true,
+            track: true,
+            difficulty: true,
+            status: true,
+            source: true,
+          },
+          orderBy: { createdAt: 'asc' },
+        },
         assignments: {
           include: {
             user: {
