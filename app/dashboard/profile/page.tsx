@@ -80,10 +80,18 @@ export default function ProfilePage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      // For now, show a success message - name updates would require a dedicated API endpoint
+      const res = await fetch('/api/users/me', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: name.trim() }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to update profile');
+      }
       toast.success('Profile updated successfully');
-    } catch {
-      toast.error('Failed to update profile');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update profile');
     } finally {
       setSaving(false);
     }
