@@ -19,6 +19,15 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10');
     const offset = parseInt(searchParams.get('offset') || '0');
 
+    // Check if user is a bootcamp student (has BootcampLink)
+    let bootcampLink: { eligibleForRealQuests: boolean } | null = null;
+    if (user && user.role === 'adventurer') {
+      bootcampLink = await prisma.bootcampLink.findUnique({
+        where: { userId: user.id },
+        select: { eligibleForRealQuests: true },
+      });
+    }
+
     // Build where clause based on permissions
     const where: Prisma.QuestWhereInput = {};
 
@@ -31,19 +40,31 @@ export async function GET(request: NextRequest) {
         ];
       } else if (user.role === 'admin') {
         // Admins can see all quests - no additional filter needed
-      } else {
-        // Adventurers can see available quests and their assigned quests
+      } else if (bootcampLink) {
+        // Bootcamp students: ONLY see BOOTCAMP track quests (API-enforced)
+        where.track = 'BOOTCAMP';
+        if (!bootcampLink.eligibleForRealQuests) {
+          // Ineligible bootcamp students: only see TUTORIAL source quests
+          where.source = 'TUTORIAL';
+        }
         where.OR = [
           { status: 'available' },
           { assignments: { some: { userId: user.id } } },
         ];
+      } else {
+        // Regular adventurers: see OPEN quests + their assigned quests
+        where.OR = [
+          { status: 'available', track: 'OPEN' },
+          { assignments: { some: { userId: user.id } } },
+        ];
       }
     } else {
-      // Unauthenticated users can only see available quests
+      // Unauthenticated users: only see OPEN track available quests
       where.status = 'available';
+      where.track = 'OPEN';
     }
 
-    // Add filters if provided
+    // Add filters if provided (track filter overridden for bootcamp users above)
     if (status && (!user || user.role !== 'company')) {
       where.status = status as QuestStatus;
     }
@@ -53,7 +74,8 @@ export async function GET(request: NextRequest) {
     if (difficulty) {
       where.difficulty = difficulty as UserRank;
     }
-    if (track && Object.values(QuestTrack).includes(track as QuestTrack)) {
+    // Only allow track filter override for admin/company — bootcamp students are locked
+    if (track && Object.values(QuestTrack).includes(track as QuestTrack) && !bootcampLink) {
       where.track = track as QuestTrack;
     }
     if (companyId && user && (user.role === 'admin' || user.id === companyId)) {

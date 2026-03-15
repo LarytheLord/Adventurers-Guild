@@ -57,6 +57,22 @@ export async function GET(
       return NextResponse.json({ success: false, error: 'Quest not found' }, { status: 404 });
     }
 
+    // Track enforcement: bootcamp students cannot access non-BOOTCAMP quests
+    if (user && user.role === 'adventurer') {
+      const bootcampLink = await prisma.bootcampLink.findUnique({
+        where: { userId: user.id },
+        select: { eligibleForRealQuests: true },
+      });
+      if (bootcampLink) {
+        if (quest.track !== 'BOOTCAMP') {
+          return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
+        }
+        if (!bootcampLink.eligibleForRealQuests && quest.source !== 'TUTORIAL') {
+          return NextResponse.json({ success: false, error: 'Complete tutorial quests first' }, { status: 403 });
+        }
+      }
+    }
+
     const isAdmin = user?.role === 'admin';
     const isOwner =
       user?.role === 'company' &&
