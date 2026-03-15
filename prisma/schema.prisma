@@ -229,7 +229,10 @@ model AdventurerProfile {
   questCompletionRate  Decimal            @default(0.00) @map("quest_completion_rate") @db.Decimal(5, 2)
   totalQuestsCompleted Int                @default(0) @map("total_quests_completed")
   currentStreak        Int                @default(0) @map("current_streak")
-  maxStreak            Int                @default(0) @map("max_streak")
+  maxStreak              Int                @default(0) @map("max_streak")
+  stripeAccountId        String?            @map("stripe_account_id")
+  razorpayContactId      String?            @map("razorpay_contact_id")
+  razorpayFundAccountId  String?            @map("razorpay_fund_account_id")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -243,9 +246,13 @@ model CompanyProfile {
   companyDescription String?      @map("company_description")
   industry           String?
   size               CompanySize?
-  isVerified         Boolean      @default(false) @map("is_verified")
-  questsPosted       Int          @default(0) @map("quests_posted")
-  totalSpent         Decimal      @default(0.00) @map("total_spent") @db.Decimal(10, 2)
+  isVerified           Boolean      @default(false) @map("is_verified")
+  questsPosted         Int          @default(0) @map("quests_posted")
+  totalSpent           Decimal      @default(0.00) @map("total_spent") @db.Decimal(10, 2)
+  stripeCustomerId     String?      @map("stripe_customer_id")
+  razorpayCustomerId   String?      @map("razorpay_customer_id")
+  subscriptionPlan     String       @default("starter") @map("subscription_plan")
+  stripeSubId          String?      @map("stripe_subscription_id")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -497,19 +504,24 @@ model VerificationRequest {
 }
 
 model Transaction {
-  id            String    @id @default(uuid()) @db.Uuid
-  fromUserId    String?   @map("from_user_id") @db.Uuid
-  toUserId      String?   @map("to_user_id") @db.Uuid
-  questId       String?   @map("quest_id") @db.Uuid
-  amount        Decimal   @db.Decimal(10, 2)
-  currency      String    @default("USD")
-  status        String    @default("pending")
-  paymentMethod String    @default("credit_card") @map("payment_method")
-  transactionId String?   @unique @map("transaction_id")
-  description   String?
-  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt     DateTime  @updatedAt @map("updated_at") @db.Timestamptz
-  completedAt   DateTime? @map("completed_at") @db.Timestamptz
+  id                    String    @id @default(uuid()) @db.Uuid
+  fromUserId            String?   @map("from_user_id") @db.Uuid
+  toUserId              String?   @map("to_user_id") @db.Uuid
+  questId               String?   @map("quest_id") @db.Uuid
+  amount                Decimal   @db.Decimal(10, 2)
+  currency              String    @default("USD")
+  status                String    @default("pending")
+  paymentMethod         String    @default("credit_card") @map("payment_method")
+  transactionId         String?   @unique @map("transaction_id")
+  description           String?
+  paymentProvider       String?   @map("payment_provider") // "stripe" | "razorpay" | "simulated"
+  providerPaymentId     String?   @map("provider_payment_id") // Stripe PaymentIntent ID or Razorpay payment_id
+  providerOrderId       String?   @map("provider_order_id") // Razorpay order_id
+  platformFee           Decimal?  @map("platform_fee") @db.Decimal(10, 2)
+  platformFeeRate       Decimal?  @map("platform_fee_rate") @db.Decimal(4, 4) // e.g. 0.1500 = 15%
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  completedAt           DateTime? @map("completed_at") @db.Timestamptz
 
   fromUser User?  @relation("TransactionFrom", fields: [fromUserId], references: [id])
   toUser   User?  @relation("TransactionTo", fields: [toUserId], references: [id])
