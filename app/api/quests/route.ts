@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getAuthUser } from '@/lib/api-auth';
-import { Prisma, QuestStatus, QuestCategory, UserRank } from '@prisma/client';
+import { Prisma, QuestStatus, QuestCategory, UserRank, QuestTrack } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
   // Check authentication but don't require it - allow public access to available quests
@@ -14,6 +14,7 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
     const category = searchParams.get('category');
     const difficulty = searchParams.get('difficulty');
+    const track = searchParams.get('track');
     const companyId = searchParams.get('company_id');
     const limit = parseInt(searchParams.get('limit') || '10');
     const offset = parseInt(searchParams.get('offset') || '0');
@@ -51,6 +52,9 @@ export async function GET(request: NextRequest) {
     }
     if (difficulty) {
       where.difficulty = difficulty as UserRank;
+    }
+    if (track && Object.values(QuestTrack).includes(track as QuestTrack)) {
+      where.track = track as QuestTrack;
     }
     if (companyId && user && (user.role === 'admin' || user.id === companyId)) {
       where.companyId = companyId;
@@ -102,6 +106,9 @@ export async function POST(request: NextRequest) {
       requiredRank,
       maxParticipants,
       questCategory,
+      track,
+      source,
+      parentQuestId,
       deadline,
     } = body;
 
@@ -125,6 +132,9 @@ export async function POST(request: NextRequest) {
         requiredRank: requiredRank,
         maxParticipants: maxParticipants,
         questCategory: questCategory,
+        track: track || undefined,
+        source: source || undefined,
+        parentQuestId: parentQuestId || null,
         companyId: user.id,
         deadline: deadline ? new Date(deadline) : null,
       },

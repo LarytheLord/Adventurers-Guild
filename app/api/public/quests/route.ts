@@ -5,7 +5,7 @@ export async function GET() {
   try {
     const quests = await withDbRetry(() =>
       prisma.quest.findMany({
-        where: { status: QuestStatus.available },
+        where: { status: QuestStatus.available, track: 'OPEN' },
         orderBy: { createdAt: 'desc' },
         take: 3,
         include: {
@@ -25,6 +25,8 @@ export async function GET() {
       description: q.description,
       company: q.company?.companyProfile?.companyName ?? q.company?.name ?? 'Unknown Company',
       difficulty: q.difficulty,
+      track: q.track,
+      source: q.source,
       xpReward: q.xpReward,
       monetaryReward: q.monetaryReward ? Number(q.monetaryReward) : null,
       deadline: q.deadline ? q.deadline.toISOString() : null,

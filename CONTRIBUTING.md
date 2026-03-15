@@ -70,9 +70,6 @@ ADMIN_EMAIL=admin@adventurersguild.com
 # Application
 NEXT_PUBLIC_APP_URL=http://localhost:3000
 
-# DevSync Integration (optional)
-NEXT_PUBLIC_DEVSYNC_API_URL=https://api.devsync.codes
-DEVSYNC_API_KEY=your-devsync-api-key
 ```
 
 #### Gmail SMTP Setup (Recommended):

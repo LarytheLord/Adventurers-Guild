@@ -90,6 +90,27 @@ enum SubmissionStatus {
   rejected
 }
 
+enum RevisionStatus {
+  PENDING
+  IN_PROGRESS
+  RESOLVED
+  ESCALATED
+}
+
+enum QuestTrack {
+  OPEN
+  INTERN
+  BOOTCAMP
+}
+
+enum QuestSource {
+  BACKLOG
+  HACKATHON
+  CLIENT_PORTAL
+  INTERNAL
+  TUTORIAL
+}
+
 enum TeamRole {
   owner
   admin
@@ -145,10 +166,13 @@ model User {
   bio           String?
   location      String?
   website       String?
-  discord       String?
-  github        String?
-  linkedin      String?
-  avatar        String?
+  discord           String?
+  github            String?
+  linkedin          String?
+  avatar            String?
+  mentorEligible    Boolean  @default(false) @map("mentor_eligible")
+  mentorTier        Int?     @map("mentor_tier") // 1 = junior (D-Rank+), 2 = senior (staff)
+  mentorBadgeCount  Int      @default(0) @map("mentor_badge_count")
 
   // Relations
   adventurerProfile   AdventurerProfile?
@@ -169,12 +193,32 @@ model User {
   passwordResetTokens PasswordResetToken[]
   mentorships         Mentorship[]          @relation("MentorUser")
   menteeships         Mentorship[]          @relation("MenteeUser")
+  bootcampLink        BootcampLink?
 
   @@index([email])
   @@index([role])
   @@index([rank])
   @@index([isActive])
   @@map("users")
+}
+
+model BootcampLink {
+  id                     String    @id @default(uuid()) @db.Uuid
+  userId                 String    @unique @map("user_id") @db.Uuid
+  bootcampStudentId      String    @unique @map("bootcamp_student_id")
+  bootcampTrack          String    @map("bootcamp_track") // animal_advocacy | climate_action | ai_safety | hybrid
+  bootcampWeek           Int       @default(1) @map("bootcamp_week")
+  enrolledAt             DateTime  @default(now()) @map("enrolled_at") @db.Timestamptz
+  graduatedAt            DateTime? @map("graduated_at") @db.Timestamptz
+  tutorialQuest1Complete Boolean   @default(false) @map("tutorial_quest_1_complete")
+  tutorialQuest2Complete Boolean   @default(false) @map("tutorial_quest_2_complete")
+  eligibleForRealQuests  Boolean   @default(false) @map("eligible_for_real_quests")
+  createdAt              DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt              DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("bootcamp_links")
 }
 
 model AdventurerProfile {
@@ -223,24 +267,66 @@ model Quest {
   requiredRank        UserRank?     @map("required_rank")
   maxParticipants     Int?          @map("max_participants")
   questCategory       QuestCategory @map("quest_category")
+  track               QuestTrack    @default(OPEN)
+  source              QuestSource   @default(CLIENT_PORTAL)
   companyId           String?       @map("company_id") @db.Uuid
   adminNotes          Json?         @map("admin_notes")
+  parentQuestId       String?       @map("parent_quest_id") @db.Uuid
+  maxRevisions        Int           @default(2) @map("max_revisions")
+  revisionCount       Int           @default(0) @map("revision_count")
+  hackathonEventId    String?       @map("hackathon_event_id")
+  partnerOrgName      String?       @map("partner_org_name")
   createdAt           DateTime      @default(now()) @map("created_at") @db.Timestamptz
   updatedAt           DateTime      @updatedAt @map("updated_at") @db.Timestamptz
   deadline            DateTime?     @db.Timestamptz
 
   company          User?             @relation("CompanyQuests", fields: [companyId], references: [id])
-  assignments      QuestAssignment[]
-  completions      QuestCompletion[]
-  transactions     Transaction[]
-  devSyncProject   DevSyncProjectMapping?
+  parentQuest      Quest?            @relation("SubQuests", fields: [parentQuestId], references: [id])
+  subQuests        Quest[]           @relation("SubQuests")
+  assignments        QuestAssignment[]
+  completions        QuestCompletion[]
+  transactions       Transaction[]
+  revisionRequests   RevisionRequest[]
 
   @@index([companyId])
   @@index([status])
   @@index([questCategory])
   @@index([difficulty])
+  @@index([track])
+  @@index([source])
+  @@index([parentQuestId])
   @@index([createdAt])
   @@map("quests")
+}
+
+model HackathonEvent {
+  id            String   @id @default(uuid()) @db.Uuid
+  name          String
+  location      String
+  date          DateTime @db.Timestamptz
+  totalTeams    Int?     @map("total_teams")
+  questsCreated Int      @default(0) @map("quests_created")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("hackathon_events")
+}
+
+model RevisionRequest {
+  id            String         @id @default(uuid()) @db.Uuid
+  questId       String         @map("quest_id") @db.Uuid
+  unmetCriteria String[]       @map("unmet_criteria")
+  description   String
+  isNewScope    Boolean        @default(false) @map("is_new_scope")
+  status        RevisionStatus @default(PENDING)
+  deadline      DateTime?      @db.Timestamptz
+  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  resolvedAt    DateTime?      @map("resolved_at") @db.Timestamptz
+
+  quest Quest @relation(fields: [questId], references: [id], onDelete: Cascade)
+
+  @@index([questId])
+  @@index([status])
+  @@map("revision_requests")
 }
 
 model SkillCategory {
@@ -486,14 +572,3 @@ model ErrorLog {
   @@map("error_logs")
 }
 
-model DevSyncProjectMapping {
-  id               String   @id @default(uuid()) @db.Uuid
-  questId          String   @unique @map("quest_id") @db.Uuid
-  devsyncProjectId String   @unique @map("devsync_project_id")
-  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz
-
-  quest Quest @relation(fields: [questId], references: [id], onDelete: Cascade)
-
-  @@map("devsync_project_mappings")
-}

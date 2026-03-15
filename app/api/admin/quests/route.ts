@@ -2,7 +2,7 @@
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireAuth } from '@/lib/api-auth';
-import { Prisma, QuestStatus, QuestType, UserRank, QuestCategory } from '@prisma/client';
+import { Prisma, QuestStatus, QuestType, UserRank, QuestCategory, QuestTrack, QuestSource } from '@prisma/client';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -25,6 +25,8 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get('status');
     const questType = searchParams.get('questType');
     const difficulty = searchParams.get('difficulty');
+    const track = searchParams.get('track');
+    const source = searchParams.get('source');
     const search = searchParams.get('search');
     const limitRaw = searchParams.get('limit') || '50';
     const take = Math.min(Math.max(1, parseInt(limitRaw)), 200);
@@ -40,6 +42,12 @@ export async function GET(request: NextRequest) {
     }
     if (difficulty) {
       where.difficulty = difficulty as UserRank;
+    }
+    if (track) {
+      where.track = track as QuestTrack;
+    }
+    if (source) {
+      where.source = source as QuestSource;
     }
     if (search) {
       where.OR = [
@@ -64,6 +72,11 @@ export async function GET(request: NextRequest) {
         requiredRank: true,
         maxParticipants: true,
         questCategory: true,
+        track: true,
+        source: true,
+        parentQuestId: true,
+        revisionCount: true,
+        maxRevisions: true,
         companyId: true,
         adminNotes: true,
         createdAt: true,
@@ -117,6 +130,12 @@ export async function POST(request: NextRequest) {
     if (!Object.values(QuestCategory).includes(body.questCategory as QuestCategory)) {
       return Response.json({ error: 'Invalid questCategory value', success: false }, { status: 400 });
     }
+    if (body.track && !Object.values(QuestTrack).includes(body.track as QuestTrack)) {
+      return Response.json({ error: 'Invalid track value', success: false }, { status: 400 });
+    }
+    if (body.source && !Object.values(QuestSource).includes(body.source as QuestSource)) {
+      return Response.json({ error: 'Invalid source value', success: false }, { status: 400 });
+    }
 
     const data = await prisma.quest.create({
       data: {
@@ -132,8 +151,13 @@ export async function POST(request: NextRequest) {
         requiredRank: body.requiredRank || null,
         maxParticipants: body.maxParticipants || null,
         questCategory: body.questCategory as QuestCategory,
+        track: (body.track as QuestTrack) || undefined,
+        source: (body.source as QuestSource) || undefined,
+        parentQuestId: body.parentQuestId || null,
+        partnerOrgName: body.partnerOrgName || null,
+        hackathonEventId: body.hackathonEventId || null,
         status: body.status || 'available',
-        companyId: null,
+        companyId: body.companyId || null,
         deadline: body.deadline ? new Date(body.deadline) : null,
       },
     });
@@ -198,6 +222,25 @@ export async function PUT(request: NextRequest) {
     }
     if (updateFields.maxParticipants !== undefined) updateData.maxParticipants = updateFields.maxParticipants;
     if (updateFields.xpReward !== undefined) updateData.xpReward = updateFields.xpReward;
+    if (updateFields.track !== undefined) {
+      if (!Object.values(QuestTrack).includes(updateFields.track as QuestTrack)) {
+        return Response.json({ error: 'Invalid track value', success: false }, { status: 400 });
+      }
+      updateData.track = updateFields.track as QuestTrack;
+    }
+    if (updateFields.source !== undefined) {
+      if (!Object.values(QuestSource).includes(updateFields.source as QuestSource)) {
+        return Response.json({ error: 'Invalid source value', success: false }, { status: 400 });
+      }
+      updateData.source = updateFields.source as QuestSource;
+    }
+    if (updateFields.parentQuestId !== undefined) {
+      updateData.parentQuest = updateFields.parentQuestId
+        ? { connect: { id: updateFields.parentQuestId } }
+        : { disconnect: true };
+    }
+    if (updateFields.partnerOrgName !== undefined) updateData.partnerOrgName = updateFields.partnerOrgName;
+    if (updateFields.hackathonEventId !== undefined) updateData.hackathonEventId = updateFields.hackathonEventId;
     if (updateFields.deadline !== undefined) {
       updateData.deadline = updateFields.deadline ? new Date(updateFields.deadline) : null;
     }
