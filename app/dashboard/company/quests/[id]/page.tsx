@@ -267,6 +267,14 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
         </div>
       </div>
 
+      {/* Transparency notice — always visible on company quest pages */}
+      <Alert className="border-orange-500/30 bg-orange-50 dark:bg-orange-950/20">
+        <AlertCircle className="h-4 w-4 text-orange-500" />
+        <AlertDescription className="text-sm text-orange-800 dark:text-orange-200">
+          Projects are completed by trained developers in our supervised guild programme. All work passes through automated quality checks and senior review before delivery.
+        </AlertDescription>
+      </Alert>
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
           <Tabs defaultValue="applicants">
