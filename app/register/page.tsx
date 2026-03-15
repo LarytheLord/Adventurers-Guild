@@ -6,23 +6,36 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Briefcase, User, Loader2, Sword, Building2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { toast } from 'sonner';
 import { RankBadge } from '@/components/ui/rank-badge';
 
 export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [adventurerName, setAdventurerName] = useState('');
+  const [adventurerEmail, setAdventurerEmail] = useState('');
+  const [adventurerPassword, setAdventurerPassword] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [companyEmail, setCompanyEmail] = useState('');
+  const [companyPassword, setCompanyPassword] = useState('');
 
-  async function onRegister(event: React.FormEvent<HTMLFormElement>, role: 'adventurer' | 'company') {
-    event.preventDefault();
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
+  async function onRegister(role: 'adventurer' | 'company') {
+    const email = role === 'company' ? companyEmail : adventurerEmail;
+    const password = role === 'company' ? companyPassword : adventurerPassword;
+    const name = role === 'company' ? companyName : adventurerName;
+    const normalizedCompanyName = role === 'company' ? companyName : '';
+
+    if (!email || !password || !name) {
+      return;
+    }
+
     setIsLoading(true);
-
-    const formData = new FormData(event.currentTarget);
-    const email = formData.get(role === 'company' ? 'work-email' : 'email') as string;
-    const password = formData.get(role === 'company' ? 'client-password' : 'password') as string;
-    const name = role === 'company' ? '' : (formData.get('name') as string);
-    const companyName = role === 'company' ? (formData.get('company') as string) : '';
 
     try {
       const res = await fetch('/api/auth/register', {
@@ -31,9 +44,9 @@ export default function RegisterPage() {
         body: JSON.stringify({
           email,
           password,
-          name: role === 'company' ? companyName : name,
+          name,
           role,
-          companyName,
+          companyName: normalizedCompanyName,
         }),
       });
 
@@ -54,6 +67,11 @@ export default function RegisterPage() {
       toast.error(error instanceof Error ? error.message : 'Registration failed');
       setIsLoading(false);
     }
+  }
+
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>, role: 'adventurer' | 'company') {
+    event.preventDefault();
+    await onRegister(role);
   }
 
   const inputClass =
@@ -152,20 +170,25 @@ export default function RegisterPage() {
                   <span className="font-semibold">Adventurer</span> — Complete quests to earn XP and real money. Start at F-Rank.
                 </p>
               </div>
-              <form onSubmit={(e) => onRegister(e, 'adventurer')} className="space-y-4">
+              <form
+                onSubmit={(e) => onSubmit(e, 'adventurer')}
+                method="post"
+                className="space-y-4"
+                data-auth-ready={isHydrated ? 'true' : 'false'}
+              >
                 <div className="space-y-2">
                   <Label htmlFor="name" className="text-slate-300 text-sm font-medium">Full Name</Label>
-                  <Input id="name" name="name" placeholder="John Doe" type="text" autoCorrect="off" disabled={isLoading} required className={inputClass} />
+                  <Input id="name" name="name" placeholder="John Doe" type="text" autoCorrect="off" value={adventurerName} onChange={(event) => setAdventurerName(event.target.value)} disabled={!isHydrated || isLoading} required className={inputClass} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-slate-300 text-sm font-medium">Email</Label>
-                  <Input id="email" name="email" placeholder="name@example.com" type="email" autoCapitalize="none" autoCorrect="off" disabled={isLoading} required className={inputClass} />
+                  <Input id="email" name="email" placeholder="name@example.com" type="email" autoCapitalize="none" autoCorrect="off" autoComplete="email" value={adventurerEmail} onChange={(event) => setAdventurerEmail(event.target.value)} disabled={!isHydrated || isLoading} required className={inputClass} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="password" className="text-slate-300 text-sm font-medium">Password</Label>
-                  <Input id="password" name="password" type="password" minLength={8} placeholder="Min. 8 characters" disabled={isLoading} required className={inputClass} />
+                  <Input id="password" name="password" type="password" minLength={8} placeholder="Min. 8 characters" autoComplete="new-password" value={adventurerPassword} onChange={(event) => setAdventurerPassword(event.target.value)} disabled={!isHydrated || isLoading} required className={inputClass} />
                 </div>
-                <Button className="w-full h-11 bg-orange-500 hover:bg-orange-600 text-black font-semibold rounded-lg shadow-lg shadow-orange-500/20 transition-all mt-1" disabled={isLoading}>
+                <Button type="button" className="w-full h-11 bg-orange-500 hover:bg-orange-600 text-black font-semibold rounded-lg shadow-lg shadow-orange-500/20 transition-all mt-1" disabled={!isHydrated || isLoading} onClick={() => { void onRegister('adventurer'); }}>
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {!isLoading && <User className="mr-2 h-4 w-4" />}
                   Join as Adventurer
@@ -179,20 +202,25 @@ export default function RegisterPage() {
                   <span className="font-semibold text-slate-300">Company</span> — Post coding quests and hire verified developers.
                 </p>
               </div>
-              <form onSubmit={(e) => onRegister(e, 'company')} className="space-y-4">
+              <form
+                onSubmit={(e) => onSubmit(e, 'company')}
+                method="post"
+                className="space-y-4"
+                data-auth-ready={isHydrated ? 'true' : 'false'}
+              >
                 <div className="space-y-2">
                   <Label htmlFor="company" className="text-slate-300 text-sm font-medium">Company Name</Label>
-                  <Input id="company" name="company" placeholder="Acme Inc." type="text" disabled={isLoading} required className={inputClass} />
+                  <Input id="company" name="company" placeholder="Acme Inc." type="text" value={companyName} onChange={(event) => setCompanyName(event.target.value)} disabled={!isHydrated || isLoading} required className={inputClass} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="work-email" className="text-slate-300 text-sm font-medium">Work Email</Label>
-                  <Input id="work-email" name="work-email" placeholder="name@company.com" type="email" disabled={isLoading} required className={inputClass} />
+                  <Input id="work-email" name="work-email" placeholder="name@company.com" type="email" autoComplete="email" value={companyEmail} onChange={(event) => setCompanyEmail(event.target.value)} disabled={!isHydrated || isLoading} required className={inputClass} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="client-password" className="text-slate-300 text-sm font-medium">Password</Label>
-                  <Input id="client-password" name="client-password" type="password" minLength={8} placeholder="Min. 8 characters" disabled={isLoading} required className={inputClass} />
+                  <Input id="client-password" name="client-password" type="password" minLength={8} placeholder="Min. 8 characters" autoComplete="new-password" value={companyPassword} onChange={(event) => setCompanyPassword(event.target.value)} disabled={!isHydrated || isLoading} required className={inputClass} />
                 </div>
-                <Button className="w-full h-11 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition-colors mt-1" disabled={isLoading}>
+                <Button type="button" className="w-full h-11 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-lg transition-colors mt-1" disabled={!isHydrated || isLoading} onClick={() => { void onRegister('company'); }}>
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   {!isLoading && <Building2 className="mr-2 h-4 w-4" />}
                   Create Company Account
