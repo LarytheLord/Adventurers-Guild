@@ -54,6 +54,26 @@ These decisions were made after stress-testing with the PM team. They are final 
 **Why**: Open Paws has separated from Electric Sheep. All operations are under Open Paws branding.
 **Implication**: Search the codebase for any Electric Sheep or C4C references and remove them. Bootcamp webhook comes from "Open Paws Bootcamp", not "C4C Campus".
 
+### 11. Squad/Party System Is Central to Delivery (Not Optional)
+**Decision**: Both intern track and bootcamp track use the Party system for delivery — not individual assignments.
+**Why**: The org plan explicitly describes "mixed-rank squads handle delivery — senior Adventurers mentor juniors automatically through the Party Leader structure." Without this, interns have no team coordination mechanism and bootcamp pairs have no defined roles.
+**Implication**: A `Party` model owns the quest assignment for multi-participant quests. `PartyMember` links users to parties. The Party Leader (senior Adventurer) is the accountable owner of delivery. Rank constraints apply: leader must have rank >= quest difficulty. BOOTCAMP parties cap at 2 members (pairs), INTERN at 5.
+
+### 12. Open Paws Mediates — Submissions Don't Reach Clients Directly
+**Decision**: All submissions pass through an admin QA review before the client sees them.
+**Why**: The org plan is explicit: "Open Paws mediates all client relations, QA, and payment. Clients never interact directly with students." If a student's bad submission reaches a client, it damages the client relationship and the Open Paws brand.
+**Implication**: A new `pending_admin_review` state sits between `submitted` and `review`. Submissions from BOOTCAMP and INTERN track quests land in the admin QA queue first. Admin either forwards to client (`review`) or sends back to student (`needs_rework`). Professional track (OPEN) quests skip this step.
+
+### 13. Stripe Connect for Interns, XP-Only for Bootcamp (Phase 2)
+**Decision**: Intern track uses real Stripe Connect payouts. Bootcamp students earn XP and portfolio in Phase 2, no money.
+**Why**: Bootcamp students are learning. Introducing payment before the model is proven adds legal and operational complexity without commensurate benefit. Interns are contracted professionals who need to get paid.
+**Implication**: `AdventurerProfile.stripeAccountId` and payout flow only apply to users on INTERN track quests. Bootcamp quest rewards should be 0 or XP-only. Add payment gating: `if (quest.track === 'BOOTCAMP') skip payment`.
+
+### 14. API Key Budget Caps Are Enforced at the Log Level, Not the API
+**Decision**: We log API key spend manually (not via middleware or proxy). Caps are advisory in Phase 2, enforced in Phase 3.
+**Why**: Building a full API key proxy adds weeks. The intern cohort is small enough (20 people) that manual logging + admin view provides sufficient oversight for launch. Phase 3 can add hard enforcement.
+**Implication**: `ApiKeyBudget` model tracks spend per user per week. Admin can see who is over cap and act. Soft enforcement is fine for May launch. Do not block requests based on spend in Phase 2.
+
 ---
 
 ## Constraints
