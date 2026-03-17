@@ -90,7 +90,7 @@ dist
 
 # Gatsby files
 .cache/
-/public
+# Note: /public intentionally removed — Next.js uses /public for static assets
 
 # Vuepress build output
 .vuepress/dist
