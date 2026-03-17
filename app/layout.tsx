@@ -9,6 +9,7 @@ import A11ySkipLink from "../components/A11ySkipLink"
 import Navigation from "../components/Navigation"
 import ErrorBoundary from "../components/ErrorBoundary"
 import { Toaster } from "@/components/ui/sonner"
+import { GoToTop } from "@/components/ui/go-to-top"
 import { SiteFooter } from "@/components/site-footer"
 
 export const metadata: Metadata = {
@@ -71,6 +72,7 @@ export default function RootLayout({
               <SiteFooter />
             </div>
             <Toaster />
+            <GoToTop />
           </ThemeProvider>
         </SessionProvider>
 
