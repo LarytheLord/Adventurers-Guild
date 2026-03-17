@@ -24,6 +24,7 @@ export default function Navigation() {
   const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState<'home' | 'features' | 'how-it-works'>('home');
   const pathname = usePathname();
   const normalizedPath = pathname ? pathname.replace(/\/+$/, '') || '/' : null;
 
@@ -47,6 +48,43 @@ export default function Navigation() {
     setMobileMenuOpen(false);
   }, [pathname]);
 
+  useEffect(() => {
+    if (!isHome) {
+      setActiveSection('home');
+      return;
+    }
+
+    const updateActiveSection = () => {
+      if (window.scrollY < 160) {
+        setActiveSection('home');
+        return;
+      }
+
+      const orderedSections: Array<'features' | 'how-it-works'> = ['features', 'how-it-works'];
+      let nextSection: 'home' | 'features' | 'how-it-works' = 'home';
+
+      for (const sectionId of orderedSections) {
+        const section = document.getElementById(sectionId);
+        if (!section) continue;
+
+        if (window.scrollY >= section.offsetTop - 180) {
+          nextSection = sectionId;
+        }
+      }
+
+      setActiveSection(nextSection);
+    };
+
+    updateActiveSection();
+    window.addEventListener('scroll', updateActiveSection, { passive: true });
+    window.addEventListener('resize', updateActiveSection);
+
+    return () => {
+      window.removeEventListener('scroll', updateActiveSection);
+      window.removeEventListener('resize', updateActiveSection);
+    };
+  }, [isHome]);
+
   // Dashboard and auth screens have dedicated layouts
   if (isDashboard || isAuthPage || !mounted) return null;
 
@@ -60,8 +98,9 @@ export default function Navigation() {
   const isTransparent = isHome && !scrolled && !mobileMenuOpen;
 
   const marketingLinks = [
-    { href: '/home#how-it-works', label: 'How It Works' },
+    { href: '/home', label: 'Home' },
     { href: '/home#features', label: 'Features' },
+    { href: '/home#how-it-works', label: 'How It Works' },
     { href: '/register-company', label: 'For Companies' },
   ];
 
@@ -74,9 +113,16 @@ export default function Navigation() {
       : [{ href: '/dashboard', label: 'Dashboard' }, { href: '/dashboard/quests', label: 'Quests' }];
 
   const activeHref = (href: string) => {
-    if (href.startsWith('/home#')) return isHome;
     if (!pathname) return false;
-    return pathname === href || pathname.startsWith(`${href}/`);
+
+    const [route, hash] = href.split('#');
+
+    if (route === '/home' && isHome) {
+      if (!hash) return activeSection === 'home';
+      return activeSection === hash;
+    }
+
+    return pathname === route || pathname.startsWith(`${route}/`);
   };
 
   const renderAuthButtons = () => {
@@ -361,6 +407,7 @@ function NavLink({
   return (
     <Link
       href={href}
+      aria-current={active ? 'page' : undefined}
       className={cn(
         'rounded-full px-3 py-1.5 text-sm font-medium transition-colors',
         transparent
@@ -394,6 +441,7 @@ function MobileNavLink({
     <Link
       href={href}
       onClick={onClick}
+      aria-current={active ? 'page' : undefined}
       className={cn(
         'text-sm font-medium py-2.5 px-3 rounded-lg transition-colors',
         transparent
