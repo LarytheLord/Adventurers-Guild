@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Clock, Zap, DollarSign, Users, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,55 +8,41 @@ import Link from 'next/link';
 import { RankBadge } from '@/components/ui/rank-badge';
 import type { Rank } from '@/components/ui/rank-badge';
 
-const quests: {
-  rank: Rank;
+type PublicQuest = {
+  id: string;
   title: string;
-  company: string;
   description: string;
-  xp: number;
-  reward: number;
-  deadline: string;
+  company: string;
+  difficulty: Rank;
+  xpReward: number;
+  monetaryReward: number | null;
+  deadline: string | null;
+  requiredSkills: string[];
   applicants: number;
-  tags: string[];
-  featured?: boolean;
-}[] = [
-  {
-    rank: 'E',
-    title: 'Build a responsive dashboard component',
-    company: 'PixelCraft Studios',
-    description: 'Create a reusable analytics dashboard with charts, filters, and responsive layouts.',
-    xp: 500,
-    reward: 120,
-    deadline: '3 days',
-    applicants: 4,
-    tags: ['React', 'Tailwind', 'TypeScript'],
-  },
-  {
-    rank: 'C',
-    title: 'Implement OAuth2 social login flow',
-    company: 'AuthGuard Inc.',
-    description: 'Add Google, GitHub, and Discord OAuth2 login with proper session management.',
-    xp: 2000,
-    reward: 400,
-    deadline: '5 days',
-    applicants: 7,
-    tags: ['Node.js', 'OAuth2', 'PostgreSQL'],
-    featured: true,
-  },
-  {
-    rank: 'B',
-    title: 'Optimize GraphQL API performance',
-    company: 'DataStream Co.',
-    description: 'Fix N+1 queries, implement DataLoader patterns, and add a Redis caching layer.',
-    xp: 4500,
-    reward: 750,
-    deadline: '7 days',
-    applicants: 2,
-    tags: ['GraphQL', 'Redis', 'Performance'],
-  },
-];
+};
+
+function formatDeadline(iso: string | null): string {
+  if (!iso) return 'No deadline';
+  const diff = new Date(iso).getTime() - Date.now();
+  const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+  if (days < 0) return 'Expired';
+  if (days === 0) return 'Today';
+  if (days === 1) return '1 day left';
+  return `${days} days left`;
+}
 
 export default function QuestShowcase() {
+  const [quests, setQuests] = useState<PublicQuest[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/public/quests')
+      .then((r) => r.json())
+      .then((data) => setQuests(data.quests ?? []))
+      .catch(() => setQuests([]))
+      .finally(() => setLoading(false));
+  }, []);
+
   return (
     <section className="py-20 md:py-28 bg-slate-950">
       <div className="container px-6 mx-auto max-w-6xl">
@@ -85,58 +72,72 @@ export default function QuestShowcase() {
           </Button>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {quests.map((quest, index) => (
-            <motion.div
-              key={quest.title}
-              initial={{ opacity: 0, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: index * 0.08 }}
-              className={`rounded-xl border bg-slate-900 p-5 hover:border-slate-600 transition-colors duration-200 ${
-                quest.featured ? 'border-orange-500/30' : 'border-slate-800'
-              }`}
-            >
-              {/* Header */}
-              <div className="flex items-center justify-between mb-4">
-                <RankBadge rank={quest.rank} size="sm" glow={quest.featured} />
-                {quest.featured && (
-                  <span className="text-[10px] font-semibold text-orange-400 bg-orange-500/10 border border-orange-500/20 px-2 py-0.5 rounded-full">
-                    Featured
-                  </span>
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[0, 1, 2].map((i) => (
+              <div key={i} className="rounded-xl border border-slate-800 bg-slate-900 p-5 animate-pulse h-64" />
+            ))}
+          </div>
+        ) : quests.length === 0 ? (
+          <div className="rounded-xl border border-slate-800 bg-slate-900 p-12 text-center">
+            <p className="text-slate-400 text-sm">No open quests right now — check back soon.</p>
+            <Button asChild variant="outline" className="mt-4 border-slate-700 text-slate-400 hover:bg-slate-800 hover:text-white bg-transparent">
+              <Link href="/register">Join the waitlist</Link>
+            </Button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {quests.map((quest, index) => (
+              <motion.div
+                key={quest.id}
+                initial={{ opacity: 0, y: 12 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: index * 0.08 }}
+                className="rounded-xl border border-slate-800 bg-slate-900 p-5 hover:border-slate-600 transition-colors duration-200"
+              >
+                {/* Header */}
+                <div className="flex items-center justify-between mb-4">
+                  <RankBadge rank={quest.difficulty} size="sm" />
+                </div>
+
+                {/* Content */}
+                <h3 className="text-base font-semibold text-white mb-1 leading-snug">{quest.title}</h3>
+                <p className="text-xs text-slate-500 mb-3">{quest.company}</p>
+                <p className="text-sm text-slate-400 leading-relaxed mb-4 line-clamp-2">{quest.description}</p>
+
+                {/* Tags */}
+                {quest.requiredSkills.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5 mb-5">
+                    {quest.requiredSkills.slice(0, 3).map((tag) => (
+                      <span
+                        key={tag}
+                        className="text-[10px] px-2 py-0.5 bg-slate-800 border border-slate-700 rounded-md text-slate-400 font-medium"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
                 )}
-              </div>
 
-              {/* Content */}
-              <h3 className="text-base font-semibold text-white mb-1 leading-snug">{quest.title}</h3>
-              <p className="text-xs text-slate-500 mb-3">{quest.company}</p>
-              <p className="text-sm text-slate-400 leading-relaxed mb-4">{quest.description}</p>
+                {/* Divider */}
+                <div className="h-px bg-slate-800 mb-4" />
 
-              {/* Tags */}
-              <div className="flex flex-wrap gap-1.5 mb-5">
-                {quest.tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="text-[10px] px-2 py-0.5 bg-slate-800 border border-slate-700 rounded-md text-slate-400 font-medium"
-                  >
-                    {tag}
-                  </span>
-                ))}
-              </div>
-
-              {/* Divider */}
-              <div className="h-px bg-slate-800 mb-4" />
-
-              {/* Stats */}
-              <div className="grid grid-cols-2 gap-2.5">
-                <Stat icon={<Zap className="w-3.5 h-3.5 text-orange-400" />} value={`${quest.xp.toLocaleString()} XP`} />
-                <Stat icon={<DollarSign className="w-3.5 h-3.5 text-emerald-400" />} value={`$${quest.reward}`} />
-                <Stat icon={<Clock className="w-3.5 h-3.5 text-slate-500" />} value={quest.deadline} />
-                <Stat icon={<Users className="w-3.5 h-3.5 text-slate-500" />} value={`${quest.applicants} applied`} />
-              </div>
-            </motion.div>
-          ))}
-        </div>
+                {/* Stats */}
+                <div className="grid grid-cols-2 gap-2.5">
+                  <Stat icon={<Zap className="w-3.5 h-3.5 text-orange-400" />} value={`${quest.xpReward.toLocaleString()} XP`} />
+                  {quest.monetaryReward != null ? (
+                    <Stat icon={<DollarSign className="w-3.5 h-3.5 text-emerald-400" />} value={`$${quest.monetaryReward}`} />
+                  ) : (
+                    <Stat icon={<DollarSign className="w-3.5 h-3.5 text-slate-600" />} value="Unpaid" />
+                  )}
+                  <Stat icon={<Clock className="w-3.5 h-3.5 text-slate-500" />} value={formatDeadline(quest.deadline)} />
+                  <Stat icon={<Users className="w-3.5 h-3.5 text-slate-500" />} value={`${quest.applicants} applied`} />
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );

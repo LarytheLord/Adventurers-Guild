@@ -2,6 +2,7 @@
 import { NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/api-auth';
 import { prisma } from '@/lib/db';
+import { Prisma, QuestStatus, QuestType, UserRank, QuestTrack, QuestSource } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
   try {
@@ -12,8 +13,7 @@ export async function GET(request: NextRequest) {
 
     // Parse query parameters
     const { searchParams } = new URL(request.url);
-    // Use authenticated user's ID as company_id (override any query param to prevent spoofing)
-    const companyId = authUser.role === 'admin' ? (searchParams.get('company_id') || authUser.id) : authUser.id;
+    const companyId = authUser.id;
     const status = searchParams.get('status');
     const questType = searchParams.get('questType');
     const difficulty = searchParams.get('difficulty');
@@ -22,18 +22,25 @@ export async function GET(request: NextRequest) {
     const offset = searchParams.get('offset') || '0';
 
     // Build where clause
-    const where: Record<string, unknown> = {
-      companyId,
-    };
+    const where: Prisma.QuestWhereInput = { companyId };
 
     if (status) {
-      where.status = status;
+      if (!Object.values(QuestStatus).includes(status as QuestStatus)) {
+        return Response.json({ error: 'Invalid status value', success: false }, { status: 400 });
+      }
+      where.status = status as QuestStatus;
     }
     if (questType) {
-      where.questType = questType;
+      if (!Object.values(QuestType).includes(questType as QuestType)) {
+        return Response.json({ error: 'Invalid questType value', success: false }, { status: 400 });
+      }
+      where.questType = questType as QuestType;
     }
     if (difficulty) {
-      where.difficulty = difficulty;
+      if (!Object.values(UserRank).includes(difficulty as UserRank)) {
+        return Response.json({ error: 'Invalid difficulty value', success: false }, { status: 400 });
+      }
+      where.difficulty = difficulty as UserRank;
     }
     if (search) {
       where.OR = [
@@ -77,15 +84,22 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    // Force company_id to authenticated user
-    const companyId = authUser.role === 'admin' ? (body.company_id || authUser.id) : authUser.id;
+    const companyId = authUser.id;
 
     // Validate required fields
     const requiredFields = ['title', 'description', 'questType', 'difficulty', 'xpReward', 'questCategory'];
     for (const field of requiredFields) {
-      if (!body[field]) {
+      if (body[field] == null || String(body[field]).trim() === '') {
         return Response.json({ error: `${field} is required`, success: false }, { status: 400 });
       }
+    }
+
+    // Validate optional enums
+    if (body.track && !Object.values(QuestTrack).includes(body.track as QuestTrack)) {
+      return Response.json({ error: 'Invalid track value', success: false }, { status: 400 });
+    }
+    if (body.source && !Object.values(QuestSource).includes(body.source as QuestSource)) {
+      return Response.json({ error: 'Invalid source value', success: false }, { status: 400 });
     }
 
     // Create the quest
@@ -103,16 +117,21 @@ export async function POST(request: NextRequest) {
         requiredRank: body.requiredRank || null,
         maxParticipants: body.maxParticipants || null,
         questCategory: body.questCategory,
+        track: (body.track as QuestTrack) || undefined,
+        source: (body.source as QuestSource) || undefined,
+        parentQuestId: body.parentQuestId || null,
         companyId,
         deadline: body.deadline ? new Date(body.deadline) : null,
       },
     });
 
-    // Increment questsPosted counter on company profile
-    await prisma.companyProfile.update({
-      where: { userId: companyId },
-      data: { questsPosted: { increment: 1 } },
-    });
+    // Only increment questsPosted for company users — admin users have no CompanyProfile
+    if (authUser.role !== 'admin') {
+      await prisma.companyProfile.update({
+        where: { userId: companyId },
+        data: { questsPosted: { increment: 1 } },
+      });
+    }
 
     return Response.json({ quest: data, success: true }, { status: 201 });
   } catch (error) {
@@ -132,7 +151,7 @@ export async function PUT(request: NextRequest) {
     const { questId, ...rawUpdateFields } = body;
     const updateFields: Record<string, unknown> = { ...rawUpdateFields };
     delete updateFields.company_id;
-    const companyId = authUser.role === 'admin' ? (body.company_id || authUser.id) : authUser.id;
+    const companyId = authUser.id;
 
     // Validate required fields
     if (!questId || !companyId) {
@@ -190,7 +209,7 @@ export async function DELETE(request: NextRequest) {
 
     const body = await request.json();
     const { questId } = body;
-    const companyId = authUser.role === 'admin' ? (body.company_id || authUser.id) : authUser.id;
+    const companyId = authUser.id;
 
     // Validate required fields
     if (!questId || !companyId) {

@@ -5,6 +5,11 @@ async function expectAdventurerDashboard(page: Page) {
   await expect(page.getByText('Adventurer Command Center')).toBeVisible({ timeout: 30_000 });
 }
 
+async function waitForAuthForm(page: Page) {
+  await page.waitForLoadState('networkidle');
+  await page.waitForTimeout(750);
+}
+
 async function registerUser(request: APIRequestContext, payload: Record<string, string>) {
   const maxAttempts = 3;
 
@@ -37,6 +42,7 @@ test.describe('Auth Core Flows', () => {
     const password = 'E2EPass123!';
 
     await page.goto('/register');
+    await waitForAuthForm(page);
 
     await page.locator('#name').fill('E2E Adventurer');
     await page.locator('#email').fill(email);
@@ -60,6 +66,7 @@ test.describe('Auth Core Flows', () => {
     });
 
     await page.goto('/login');
+    await waitForAuthForm(page);
     await page.locator('#email').fill(email);
     await page.locator('#password').fill(password);
     await page.getByRole('button', { name: 'Sign In' }).click();

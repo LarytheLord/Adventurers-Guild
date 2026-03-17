@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Github, Twitter, Linkedin } from 'lucide-react';
@@ -20,6 +21,12 @@ const footerLinks = {
     { label: 'Privacy Policy', href: '/privacy' },
   ],
 };
+
+const paymentMethods = [
+  { src: '/images/payments/visa.svg', alt: 'Visa' },
+  { src: '/images/payments/mastercard.svg', alt: 'Mastercard' },
+  { src: '/images/payments/paypal.svg', alt: 'PayPal' },
+];
 
 export function SiteFooter() {
   const pathname = usePathname();
@@ -48,6 +55,28 @@ export function SiteFooter() {
               <SocialLink href="https://github.com" icon={<Github className="w-4 h-4" />} label="GitHub" />
               <SocialLink href="https://twitter.com" icon={<Twitter className="w-4 h-4" />} label="Twitter" />
               <SocialLink href="https://linkedin.com" icon={<Linkedin className="w-4 h-4" />} label="LinkedIn" />
+            </div>
+
+            <div className="mt-6">
+              <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                Supported Payments
+              </p>
+              <div className="flex flex-wrap items-center gap-3">
+                {paymentMethods.map((method) => (
+                  <div
+                    key={method.alt}
+                    className="rounded-xl border border-slate-800 bg-slate-950/70 p-1.5 shadow-[0_12px_20px_-18px_rgba(15,23,42,0.9)]"
+                  >
+                    <Image
+                      src={method.src}
+                      alt={method.alt}
+                      width={120}
+                      height={40}
+                      className="h-8 w-auto"
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 

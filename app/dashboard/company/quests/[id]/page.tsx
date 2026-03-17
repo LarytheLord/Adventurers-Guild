@@ -3,6 +3,7 @@
 import { useState, useEffect, use } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -251,8 +252,10 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => toast.info('Quest editing is coming in a follow-up update')}>
-            Edit Quest
+          <Button variant="outline" asChild>
+            <Link href={`/dashboard/company/quests/${id}/edit`}>
+              Edit Quest
+            </Link>
           </Button>
           <Button
             variant="destructive"
@@ -263,6 +266,14 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
           </Button>
         </div>
       </div>
+
+      {/* Transparency notice — always visible on company quest pages */}
+      <Alert className="border-orange-500/30 bg-orange-50 dark:bg-orange-950/20">
+        <AlertCircle className="h-4 w-4 text-orange-500" />
+        <AlertDescription className="text-sm text-orange-800 dark:text-orange-200">
+          Projects are completed by trained developers in our supervised guild programme. All work passes through automated quality checks and senior review before delivery.
+        </AlertDescription>
+      </Alert>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">

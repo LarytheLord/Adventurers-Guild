@@ -1,7 +1,7 @@
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
-import { prisma } from '@/lib/db';
+import { prisma, withDbRetry } from '@/lib/db';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -64,7 +64,7 @@ export default async function CompanyDashboardPage() {
 
   const companyId = session.user.id;
 
-  const [company, quests, assignments, companySpendBoard] = await Promise.all([
+  const [company, quests, assignments, companySpendBoard] = await withDbRetry(() => Promise.all([
     prisma.user.findUnique({
       where: { id: companyId },
       select: {
@@ -139,7 +139,7 @@ export default async function CompanyDashboardPage() {
         companyProfile: { select: { totalSpent: true } },
       },
     }),
-  ]);
+  ]));
 
   const totalQuests = quests.length;
   const openQuests = quests.filter((quest) => quest.status === 'available').length;

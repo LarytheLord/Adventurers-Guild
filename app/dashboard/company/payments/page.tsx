@@ -1,14 +1,41 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, CreditCard, DollarSign, TrendingUp, Wallet, Calendar, Search, Filter, Download } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import {
+  AlertCircle,
+  ArrowRight,
+  Calendar,
+  CreditCard,
+  DollarSign,
+  Download,
+  Search,
+  TrendingUp,
+  Wallet,
+} from 'lucide-react';
 import { formatCurrency, getPaymentHistory, Transaction } from '@/lib/payment-utils';
+import { GuildCard, GuildHero, GuildKpi, GuildPage, GuildPanel } from '@/components/guild/primitives';
+
+function paymentStatusClass(status: string) {
+  switch (status) {
+    case 'completed':
+      return 'bg-emerald-100 text-emerald-700 border-emerald-300';
+    case 'pending':
+      return 'bg-amber-100 text-amber-700 border-amber-300';
+    case 'failed':
+      return 'bg-rose-100 text-rose-700 border-rose-300';
+    case 'cancelled':
+      return 'bg-slate-100 text-slate-700 border-slate-300';
+    default:
+      return 'bg-sky-100 text-sky-700 border-sky-300';
+  }
+}
 
 export default function CompanyPaymentsPage() {
   const { data: session, status } = useSession();
@@ -27,7 +54,6 @@ export default function CompanyPaymentsPage() {
     }
 
     if (status === 'authenticated' && session?.user?.role !== 'company' && session.user.role !== 'admin') {
-      // Only companies and admins can access this page
       router.push('/dashboard');
       return;
     }
@@ -42,223 +68,230 @@ export default function CompanyPaymentsPage() {
           return;
         }
 
-        // Get payment history for this company (outgoing payments)
         const payments = await getPaymentHistory(
           session.user.id,
-          'outgoing', // Companies make outgoing payments
+          'outgoing',
           statusFilter === 'all' ? undefined : statusFilter
         );
 
         setTransactions(payments as Transaction[]);
-        
-        // Calculate total spent
-        const total = payments.reduce((sum, transaction) => sum + transaction.amount, 0);
-        setTotalSpent(total);
-      } catch (err) {
-        console.error('Error fetching payments:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch payment history');
+        setTotalSpent(payments.reduce((sum, transaction) => sum + transaction.amount, 0));
+      } catch (fetchError) {
+        console.error('Error fetching payments:', fetchError);
+        setError(fetchError instanceof Error ? fetchError.message : 'Failed to fetch payment history');
       } finally {
         setLoading(false);
       }
     };
 
     if (status === 'authenticated') {
-      fetchPayments();
+      void fetchPayments();
     }
-  }, [status, session, statusFilter, router]);
+  }, [router, session, status, statusFilter]);
 
-  const filteredTransactions = transactions.filter(transaction =>
-    transaction.quest?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    transaction.toUser?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    transaction.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    transaction.id.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredTransactions = useMemo(
+    () =>
+      transactions.filter((transaction) =>
+        [
+          transaction.quest?.title || '',
+          transaction.toUser?.name || '',
+          transaction.description || '',
+          transaction.id,
+          transaction.transactionId || '',
+        ]
+          .join(' ')
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())
+      ),
+    [searchTerm, transactions]
   );
+
+  const completedTransactions = filteredTransactions.filter((transaction) => transaction.status === 'completed');
+  const pendingTransactions = filteredTransactions.filter((transaction) => transaction.status === 'pending');
+  const pendingTotal = pendingTransactions.reduce((sum, transaction) => sum + transaction.amount, 0);
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
+      <GuildPage>
+        <GuildPanel className="flex min-h-[320px] items-center justify-center">
+          <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary" />
+        </GuildPanel>
+      </GuildPage>
     );
   }
 
   if (error) {
     return (
-      <div className="container mx-auto py-6">
+      <GuildPage>
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
-        <Button className="mt-4" onClick={() => router.back()}>
-          ← Back
+        <Button className="w-fit" variant="outline" onClick={() => router.back()}>
+          Back
         </Button>
-      </div>
+      </GuildPage>
     );
   }
 
   return (
-    <div className="container mx-auto py-6 max-w-6xl">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Payment History</h1>
-        <p className="text-muted-foreground mt-1">
-          Track your payments to adventurers for completed quests
-        </p>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Spent</CardTitle>
-            <Wallet className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalSpent)}</div>
-            <p className="text-xs text-muted-foreground">Lifetime spending</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Payments</CardTitle>
-            <CreditCard className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{transactions.length}</div>
-            <p className="text-xs text-muted-foreground">Payment transactions</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completed Quests</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {transactions.filter(t => t.status === 'completed').length}
-            </div>
-            <p className="text-xs text-muted-foreground">Paid quests</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Payments</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(transactions.filter(t => t.status === 'pending').reduce((sum, t) => sum + t.amount, 0))}
-            </div>
-            <p className="text-xs text-muted-foreground">Awaiting payment</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="mb-6">
-        <div className="flex flex-col sm:flex-row gap-4">
-          <div className="relative flex-1">
-            <input
-              type="text"
-              placeholder="Search by quest, adventurer, or transaction ID..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-            />
-            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
-              <Search className="h-4 w-4" />
-            </div>
+    <GuildPage>
+      <GuildHero>
+        <div className="relative z-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <Badge className="rounded-full border border-emerald-300 bg-emerald-100 text-emerald-700">
+              Treasury Ledger
+            </Badge>
+            <h1 className="mt-3 text-3xl font-bold text-slate-900 sm:text-4xl">Company Payments</h1>
+            <p className="mt-2 max-w-2xl text-sm text-slate-600 sm:text-base">
+              Review outgoing payments, monitor pending settlements, and keep quest payouts visible.
+            </p>
           </div>
-          <div className="flex gap-2">
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value="all">All Statuses</option>
-              <option value="pending">Pending</option>
-              <option value="completed">Completed</option>
-              <option value="failed">Failed</option>
-              <option value="cancelled">Cancelled</option>
-            </select>
-            <Button variant="outline" onClick={() => router.push('/dashboard/company')}>
-              ← Back to Dashboard
-            </Button>
-          </div>
+          <Button variant="outline" onClick={() => router.push('/dashboard/company')}>
+            Back to Dashboard
+            <ArrowRight className="h-4 w-4" />
+          </Button>
         </div>
-      </div>
+      </GuildHero>
+
+      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <GuildKpi className="sm:col-span-2 xl:col-span-1">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Total Spent</p>
+            <Wallet className="h-4 w-4 text-emerald-500" />
+          </div>
+          <p className="mt-2 text-2xl font-bold text-slate-900">{formatCurrency(totalSpent)}</p>
+          <p className="mt-1 text-xs text-slate-500">Lifetime payout volume</p>
+        </GuildKpi>
+        <GuildKpi>
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Transactions</p>
+            <CreditCard className="h-4 w-4 text-sky-500" />
+          </div>
+          <p className="mt-2 text-2xl font-bold text-slate-900">{filteredTransactions.length}</p>
+          <p className="mt-1 text-xs text-slate-500">Matching current filters</p>
+        </GuildKpi>
+        <GuildKpi>
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Completed</p>
+            <TrendingUp className="h-4 w-4 text-violet-500" />
+          </div>
+          <p className="mt-2 text-2xl font-bold text-slate-900">{completedTransactions.length}</p>
+          <p className="mt-1 text-xs text-slate-500">Settled payouts</p>
+        </GuildKpi>
+        <GuildKpi>
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Pending Value</p>
+            <DollarSign className="h-4 w-4 text-amber-500" />
+          </div>
+          <p className="mt-2 text-2xl font-bold text-slate-900">{formatCurrency(pendingTotal)}</p>
+          <p className="mt-1 text-xs text-slate-500">{pendingTransactions.length} payment(s) awaiting settlement</p>
+        </GuildKpi>
+      </section>
+
+      <GuildPanel className="p-4 sm:p-5">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Input
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Search by quest, adventurer, description, or transaction ID"
+              className="pl-9"
+            />
+          </div>
+          <select
+            value={statusFilter}
+            onChange={(event) => setStatusFilter(event.target.value)}
+            className="h-10 rounded-xl border border-slate-300 bg-white px-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-orange-400 focus:ring-2 focus:ring-orange-200"
+          >
+            <option value="all">All statuses</option>
+            <option value="pending">Pending</option>
+            <option value="completed">Completed</option>
+            <option value="failed">Failed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+        </div>
+      </GuildPanel>
 
       {filteredTransactions.length === 0 ? (
-        <div className="text-center py-12">
-          <Wallet className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-xl font-medium mb-2">No payments yet</h3>
-          <p className="text-muted-foreground mb-4">
-            {searchTerm || statusFilter !== 'all' 
-              ? 'No payments match your current filters' 
-              : 'You haven\'t made any payments yet. Complete quests to start paying adventurers.'}
+        <GuildPanel className="p-12 text-center">
+          <Wallet className="mx-auto mb-4 h-14 w-14 text-slate-400" />
+          <h3 className="text-xl font-semibold text-slate-900">No payments found</h3>
+          <p className="mt-2 text-sm text-slate-500">
+            {searchTerm || statusFilter !== 'all'
+              ? 'Try adjusting your search terms or status filter.'
+              : 'Complete quests to start building your payment history.'}
           </p>
-          {(!searchTerm && statusFilter === 'all') && (
-            <Button onClick={() => router.push('/dashboard/company/quests')}>
+          {!searchTerm && statusFilter === 'all' && (
+            <Button className="mt-4" onClick={() => router.push('/dashboard/company/quests')}>
               View Quests
             </Button>
           )}
-        </div>
+        </GuildPanel>
       ) : (
-        <div className="space-y-4">
+        <section className="space-y-4">
           {filteredTransactions.map((transaction) => (
-            <Card key={transaction.id}>
-              <CardHeader className="sm:grid sm:grid-cols-3 sm:items-center">
-                <div>
-                  <CardTitle className="text-lg">{transaction.quest?.title || 'Quest Payment'}</CardTitle>
-                  <CardDescription>
-                    To {transaction.toUser?.name || 'Unknown Adventurer'}
-                  </CardDescription>
-                </div>
-                <div className="sm:mt-0 mt-2">
-                  <div className="font-bold text-lg">{formatCurrency(transaction.amount, transaction.currency)}</div>
-                  <div className="text-sm text-muted-foreground flex items-center">
-                    <Calendar className="w-4 h-4 mr-1" />
-                    {new Date(transaction.createdAt).toLocaleDateString()}
+            <GuildCard key={transaction.id} className="border-slate-200/80">
+              <CardContent className="p-5 sm:p-6">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h2 className="text-lg font-semibold text-slate-900">
+                        {transaction.quest?.title || 'Quest Payment'}
+                      </h2>
+                      <Badge variant="outline" className={paymentStatusClass(transaction.status)}>
+                        {transaction.status}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-slate-600">
+                      Paid to {transaction.toUser?.name || 'Unknown Adventurer'}
+                    </p>
+                    <p className="text-xs text-slate-500">
+                      Transaction ID: {transaction.transactionId || transaction.id}
+                    </p>
+                    <p className="text-sm text-slate-500">
+                      {transaction.description || 'Payment for quest completion'}
+                    </p>
+                  </div>
+
+                  <div className="grid gap-3 sm:min-w-[240px] sm:grid-cols-2 lg:grid-cols-1">
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                      <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Amount</p>
+                      <p className="mt-1 text-lg font-bold text-slate-900">
+                        {formatCurrency(transaction.amount, transaction.currency)}
+                      </p>
+                    </div>
+                    <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                      <p className="flex items-center gap-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                        <Calendar className="h-3.5 w-3.5" />
+                        Created
+                      </p>
+                      <p className="mt-1 text-sm font-medium text-slate-900">
+                        {new Date(transaction.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
                   </div>
                 </div>
-                <div className="flex sm:justify-end sm:mt-0 mt-2">
-                  <Badge className={`
-                    ${transaction.status === 'completed' ? 'bg-green-500' : 
-                      transaction.status === 'pending' ? 'bg-yellow-500' : 
-                      transaction.status === 'failed' ? 'bg-red-500' : 
-                      transaction.status === 'cancelled' ? 'bg-gray-500' : 
-                      'bg-gray-500'}
-                  `}>
-                    {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
-                  </Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                  <div className="text-sm">
-                    <p className="font-medium">Transaction ID: {transaction.transactionId || transaction.id}</p>
-                    <p className="text-muted-foreground">{transaction.description || 'Payment for quest completion'}</p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
-                      <Download className="w-4 h-4 mr-2" />
-                      Receipt
-                    </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => router.push(`/dashboard/company/quests/${transaction.questId}`)}
-                    >
-                      View Quest
-                    </Button>
-                  </div>
+
+                <div className="mt-5 flex flex-wrap gap-2">
+                  <Button variant="outline" size="sm">
+                    <Download className="h-4 w-4" />
+                    Receipt
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => router.push(`/dashboard/company/quests/${transaction.questId}`)}
+                  >
+                    View Quest
+                  </Button>
                 </div>
               </CardContent>
-            </Card>
+            </GuildCard>
           ))}
-        </div>
+        </section>
       )}
-    </div>
+    </GuildPage>
   );
 }

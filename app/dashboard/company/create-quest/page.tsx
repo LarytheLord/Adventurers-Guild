@@ -30,29 +30,7 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { GuildCard, GuildChip, GuildHero, GuildPage } from '@/components/guild/primitives';
-
-const QUEST_CATEGORIES = [
-  { value: 'frontend', label: 'Frontend' },
-  { value: 'backend', label: 'Backend' },
-  { value: 'fullstack', label: 'Full Stack' },
-  { value: 'mobile', label: 'Mobile' },
-  { value: 'ai_ml', label: 'AI / ML' },
-  { value: 'devops', label: 'DevOps' },
-  { value: 'security', label: 'Security' },
-  { value: 'qa', label: 'QA' },
-  { value: 'design', label: 'Design' },
-  { value: 'data_science', label: 'Data Science' },
-];
-
-const QUEST_TYPES = [
-  { value: 'commission', label: 'Commission' },
-  { value: 'bug_bounty', label: 'Bug Bounty' },
-  { value: 'code_refactor', label: 'Code Refactor' },
-  { value: 'internal', label: 'Internal' },
-  { value: 'learning', label: 'Learning' },
-];
-
-const DIFFICULTY_RANKS = ['F', 'E', 'D', 'C', 'B', 'A', 'S'];
+import { QUEST_CATEGORIES, QUEST_TYPES, DIFFICULTY_RANKS, getQuestListPath } from '@/lib/quest-constants';
 
 export default function CreateQuestPage() {
   const { data: session, status } = useSession();
@@ -85,7 +63,7 @@ export default function CreateQuestPage() {
     );
   }
 
-  if (status === 'unauthenticated' || session?.user?.role !== 'company') {
+  if (status === 'unauthenticated' || (session?.user?.role !== 'company' && session?.user?.role !== 'admin')) {
     router.push('/dashboard');
     return null;
   }
@@ -140,7 +118,7 @@ export default function CreateQuestPage() {
 
       if (data.success) {
         toast.success('Quest created successfully!');
-        router.push('/dashboard/company/quests');
+        router.push(getQuestListPath(session?.user?.role ?? ''));
       } else {
         setError(data.error || 'Failed to create quest');
       }
@@ -173,7 +151,7 @@ export default function CreateQuestPage() {
             </div>
           </div>
           <Button variant="outline" asChild>
-            <Link href="/dashboard/company/quests">
+            <Link href={getQuestListPath(session?.user?.role ?? '')}>
               <ArrowLeft className="h-4 w-4" />
               Back to Quests
             </Link>
@@ -425,7 +403,7 @@ export default function CreateQuestPage() {
 
             <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
               <Button variant="outline" asChild>
-                <Link href="/dashboard/company/quests">
+                <Link href={getQuestListPath(session?.user?.role ?? '')}>
                   <ArrowLeft className="h-4 w-4" />
                   Cancel
                 </Link>

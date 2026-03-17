@@ -190,6 +190,7 @@ export async function PUT(request: NextRequest) {
         quest: {
           select: {
             companyId: true,
+            title: true,
           },
         },
       },
@@ -239,7 +240,7 @@ export async function PUT(request: NextRequest) {
 
         await syncQuestLifecycleStatus(tx, assignmentData.questId);
 
-        let rewardsPayload: { userId: string; xpReward: number; skillPointsReward: number } | null = null;
+        let rewardsPayload: { userId: string; xpReward: number; skillPointsReward: number; questTitle: string } | null = null;
         if (status === 'approved' && !wasAlreadyApproved) {
           const quest = await tx.quest.findUnique({
             where: { id: assignmentData.questId },
@@ -275,6 +276,7 @@ export async function PUT(request: NextRequest) {
             userId: assignmentData.userId,
             xpReward: quest.xpReward,
             skillPointsReward: quest.skillPointsReward,
+            questTitle: assignmentData.quest?.title ?? '',
           };
         }
 
@@ -290,6 +292,26 @@ export async function PUT(request: NextRequest) {
         reviewResult.rewardsPayload.xpReward,
         reviewResult.rewardsPayload.skillPointsReward
       );
+
+      // Task 1.4: Tutorial quest completion tracking for bootcamp students
+      const { questTitle, userId: rewardUserId } = reviewResult.rewardsPayload;
+      if (questTitle.startsWith('Tutorial:')) {
+        const bootcampLink = await prisma.bootcampLink.findUnique({
+          where: { userId: rewardUserId },
+          select: { tutorialQuest1Complete: true, tutorialQuest2Complete: true },
+        });
+        if (bootcampLink) {
+          const updateData: { tutorialQuest1Complete?: boolean; tutorialQuest2Complete?: boolean; eligibleForRealQuests?: boolean } = {};
+          if (questTitle.startsWith('Tutorial: First Blood')) updateData.tutorialQuest1Complete = true;
+          if (questTitle.startsWith('Tutorial: Party Up')) updateData.tutorialQuest2Complete = true;
+          const tq1 = updateData.tutorialQuest1Complete ?? bootcampLink.tutorialQuest1Complete;
+          const tq2 = updateData.tutorialQuest2Complete ?? bootcampLink.tutorialQuest2Complete;
+          if (tq1 && tq2) updateData.eligibleForRealQuests = true;
+          if (Object.keys(updateData).length > 0) {
+            await prisma.bootcampLink.update({ where: { userId: rewardUserId }, data: updateData });
+          }
+        }
+      }
     }
 
     return NextResponse.json({ submission: reviewResult.submission, success: true });

@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main, migration/supabase-to-neon]
+    branches: [main, Phase-1]
   pull_request:
     branches: [main]
 
