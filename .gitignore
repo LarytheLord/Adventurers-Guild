@@ -90,7 +90,7 @@ dist
 
 # Gatsby files
 .cache/
-public
+# Note: /public intentionally removed — Next.js uses /public for static assets
 
 # Vuepress build output
 .vuepress/dist
@@ -152,4 +152,8 @@ temp/
 
 # TypeScript
 *.tsbuildinfo
-next-env.d.ts 
+next-env.d.ts
+
+# Playwright
+playwright-report/
+test-results/

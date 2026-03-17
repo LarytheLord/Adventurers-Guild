@@ -2,7 +2,7 @@
 import { NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/api-auth';
 import { prisma } from '@/lib/db';
-import { Prisma, QuestStatus, QuestType, UserRank } from '@prisma/client';
+import { Prisma, QuestStatus, QuestType, UserRank, QuestTrack, QuestSource } from '@prisma/client';
 
 export async function GET(request: NextRequest) {
   try {
@@ -94,6 +94,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Validate optional enums
+    if (body.track && !Object.values(QuestTrack).includes(body.track as QuestTrack)) {
+      return Response.json({ error: 'Invalid track value', success: false }, { status: 400 });
+    }
+    if (body.source && !Object.values(QuestSource).includes(body.source as QuestSource)) {
+      return Response.json({ error: 'Invalid source value', success: false }, { status: 400 });
+    }
+
     // Create the quest
     const data = await prisma.quest.create({
       data: {
@@ -109,6 +117,9 @@ export async function POST(request: NextRequest) {
         requiredRank: body.requiredRank || null,
         maxParticipants: body.maxParticipants || null,
         questCategory: body.questCategory,
+        track: (body.track as QuestTrack) || undefined,
+        source: (body.source as QuestSource) || undefined,
+        parentQuestId: body.parentQuestId || null,
         companyId,
         deadline: body.deadline ? new Date(body.deadline) : null,
       },

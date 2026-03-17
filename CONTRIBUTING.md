@@ -1,250 +1,282 @@
-# Contributing to The Adventurers Guild
+# Contributing to Adventurers Guild
 
-First off, thank you for considering contributing! Your help is essential for making the guild a legendary place for developers. All contributions are welcome, from fixing a typo to implementing a major new feature.
+This document is the source of truth for how work gets done on this project — whether you're a human developer or an AI agent picking up a GitHub issue.
 
-This document is the Guild's official charter for new adventurers. It outlines how you can find a quest and submit your work for review.
+---
 
-## Finding a Quest
+## Table of Contents
 
-The first step on your adventure is to find a quest that suits your skills. All available quests are listed on our **[GitHub Issues page](https://github.com/LarytheLord/adventurers-guild-website/issues)**.
+1. [Project Context](#project-context)
+2. [Local Setup](#local-setup)
+3. [How Work Is Organized](#how-work-is-organized)
+4. [Rules for Solving Issues](#rules-for-solving-issues)
+5. [Branch and PR conventions](#branch-and-pr-conventions)
+6. [Code Standards](#code-standards)
+7. [Definition of Done](#definition-of-done)
 
-We use labels to categorize quests by difficulty and type:
+---
 
-*   **F-Rank (good first issue):** Perfect for new adventurers! These are simple, well-defined tasks that are a great way to learn the codebase.
-*   **E-Rank (help wanted):** These are a bit more involved but are still great for those looking to make a meaningful contribution.
-*   **D-Rank (bug):** A known issue or a gremlin in the code that needs to be squashed.
-*   **C-Rank (feature):** A request to build a new feature for the guild.
-*   **B-Rank (refactor):** A quest to improve the structure or performance of existing code.
-*   **A-Rank (enhancement):** A significant improvement to existing functionality.
-*   **S-Rank (epic):** A major, complex quest that may require significant effort and planning.
+## Project Context
 
-Before starting a quest, please leave a comment on the issue to let the guild masters (maintainers) know you're taking it on. This prevents multiple adventurers from working on the same quest.
+Adventurers Guild is a gamified developer marketplace. Adventurers (developers) complete Quests for Companies (clients), earn XP, and climb ranks F → S. It's also the delivery backbone for the Open Paws Bootcamp — a 10-week coding program where bootcamp students complete real client work as ranked Adventurers.
 
-## The Forging Process (Your Development Workflow)
+**Tech Stack:**
+- Next.js 15 App Router — framework and BFF
+- TypeScript — all code is typed
+- Neon (serverless PostgreSQL) + Prisma 6 ORM — database
+- NextAuth.js v4 (credentials + JWT, 30-day sessions) — auth
+- shadcn/ui + Tailwind CSS + Radix UI — UI components
+- Vercel — deployment
 
-Once you've chosen a quest, it's time to begin your work.
+**Key docs to read before contributing:**
+- [`CLAUDE.md`](./CLAUDE.md) — full project context, architecture, and rules
+- [`docs/ARCHITECTURE_DECISIONS.md`](./docs/ARCHITECTURE_DECISIONS.md) — why things are the way they are (do not revisit)
+- [`docs/IMPLEMENTATION_TASKS.md`](./docs/IMPLEMENTATION_TASKS.md) — current task queue
+- [`docs/ISSUE_RESOLUTION_GUIDE.md`](./docs/ISSUE_RESOLUTION_GUIDE.md) — detailed rules for completing issues
+- [`prisma/schema.prisma`](./prisma/schema.prisma) — authoritative database schema
 
-### 1. Claim Your Quest (Fork & Clone)
+---
 
-First, you'll need your own copy of the guild's archives (the repository).
+## Local Setup
 
-*   **Fork** the repository to your own GitHub account.
-*   **Clone** your fork to your local machine:
-    ```bash
-    git clone https://github.com/YOUR_USERNAME/adventurers-guild.git
-    cd adventurers-guild
-    ```
-
-### 2. Prepare Your Tools (Installation)
-
-The guild uses `npm` for managing dependencies. Prepare your development environment with a single command:
+### 1. Clone and install
 
 ```bash
+git clone https://github.com/LarytheLord/Adventurers-Guild.git
+cd Adventurers-Guild
 npm install
 ```
 
-This will install all the necessary tools and libraries for the project.
+### 2. Configure environment
 
-### 2.1. Set Up Environment Variables (Email & API Keys)
-
-The guild's email system requires SMTP configuration. Create a `.env` file in the root directory (Prisma requires `.env` to load variables):
+Copy the example env file:
 
 ```bash
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key-here
-SUPABASE_SERVICE_ROLE_KEY=your-service-role-key-here
-DATABASE_URL="postgresql://postgres:[YOUR-PASSWORD]@db.[YOUR-PROJECT-REF].supabase.co:5432/postgres"
-
-# Authentication
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=generate-with-openssl-rand-base64-32
-
-# Email (SMTP)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your-email@gmail.com
-SMTP_PASS=your-app-password
-ADMIN_EMAIL=admin@adventurersguild.com
-
-# Application
-NEXT_PUBLIC_APP_URL=http://localhost:3000
-
-# DevSync Integration (optional)
-NEXT_PUBLIC_DEVSYNC_API_URL=https://api.devsync.codes
-DEVSYNC_API_KEY=your-devsync-api-key
+cp .env.example .env.local
 ```
 
-#### Gmail SMTP Setup (Recommended):
-
-1. **Enable 2-Factor Authentication** on your Gmail account
-2. **Generate App Password**:
-   - Go to Google Account settings → Security → 2-Step Verification → App passwords
-   - Select "Mail" and generate a 16-character password
-   - Use this password in `SMTP_PASS` (not your regular Gmail password)
-3. **Update `.env.local`** with your credentials
-
-#### Alternative Email Providers:
-
-**Outlook/Hotmail:**
-```bash
-SMTP_HOST=smtp-mail.outlook.com
-SMTP_PORT=587
-```
-
-**Yahoo:**
-```bash
-SMTP_HOST=smtp.mail.yahoo.com
-SMTP_PORT=587
-```
-
-#### Security Notes:
-- ⚠️ **Never commit `.env.local` to Git** (it's already in `.gitignore`)
-- Use app passwords instead of regular passwords
-- For production, consider services like SendGrid, Mailgun, or AWS SES
-
-### 3. Create a Quest Branch
-
-Never work directly on the `main` branch. Create a new branch specifically for your quest. This keeps the archives clean and makes your work easier to review.
-
-Choose a descriptive branch name, like:
-`feature/add-quest-filters` or `fix/header-alignment-bug`
+Required variables:
 
 ```bash
-git checkout -b your-branch-name
+# Database — get from Neon dashboard
+DATABASE_URL="postgresql://..."
+DATABASE_URL_UNPOOLED="postgresql://..."
+
+# Auth — generate with: openssl rand -base64 32
+NEXTAUTH_SECRET="your-secret-here"
+NEXTAUTH_URL="http://localhost:3000"
+
+# App
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
+
+# Bootcamp webhook (optional for most tasks)
+ONBOARD_WEBHOOK_SECRET="dev-secret"
+
+# Discord notifications (optional)
+DISCORD_WEBHOOK_URL="https://discord.com/api/webhooks/..."
+
+# Stripe (only needed for payment tasks)
+STRIPE_SECRET_KEY="sk_test_..."
+STRIPE_WEBHOOK_SECRET="whsec_..."
+
+# Razorpay (only needed for payment tasks — India)
+RAZORPAY_KEY_ID="rzp_test_..."
+RAZORPAY_KEY_SECRET="..."
 ```
 
-### 4. Ignite the Forge (Run the Dev Server)
+### 3. Set up the database
 
-Now you're ready to start the local development server and see the website in action.
+```bash
+# Generate Prisma client
+npx prisma generate
+
+# Apply migrations (dev only)
+npx prisma migrate dev
+
+# Seed with sample data
+npm run db:seed
+```
+
+### 4. Run the dev server
 
 ```bash
 npm run dev
 ```
 
-This will start the website on `http://localhost:3000`. The server will automatically reload as you make changes to the code.
+Open `http://localhost:3000`.
 
-### 5. Craft Your Solution
+---
 
-This is where you work your magic! Write the code to complete your quest.
+## How Work Is Organized
 
-*   Follow the existing code style and conventions.
-*   Keep your code clean, readable, and add comments for any complex logic.
-*   Ensure the website runs without errors after your changes.
-*   Test your changes thoroughly before submitting.
+### GitHub Issues = Quests
 
-### 6. Test Your Changes
+Every piece of work is a GitHub issue. Issues are labeled by rank:
 
-Before submitting your work, make sure to test it:
+| Label | Rank | What it means |
+|-------|------|---------------|
+| `F-rank` | F | Isolated, well-defined. Good first issue. < 100 lines. |
+| `E-rank` | E | Small feature or fix. Follows clear existing patterns. |
+| `D-rank` | D | Moderate complexity. May touch multiple files. |
+| `C-rank` | C | Feature with schema changes or new API routes. |
+| `B-rank` | B | Multi-file feature, significant logic. |
+| `A-rank` | A | Complex system. Requires architecture understanding. |
+| `S-rank` | S | Epic. Multi-phase, cross-cutting. Plan before building. |
 
-```bash
-# Run type checking
-npm run type-check
+### Branches
 
-# Run linting
-npm run lint
+All work goes to `development` via PR. Never push directly to `main` or `development`.
 
-# Run tests (if applicable)
-npm run test
+Branch naming:
+```
+feat/squad-party-schema
+fix/revision-count-not-incrementing
+docs/update-contributing-guide
+chore/remove-legacy-footer-component
 ```
 
-### 7. Submit Your Work for Review (Open a Pull Request)
+---
 
-Once your quest is complete, it's time to submit your work to the guild for review.
+## Rules for Solving Issues
 
-*   **Commit** your changes with a clear and descriptive message:
-    ```bash
-    git add .
-    git commit -m "feat: Add filtering to the quest board"
-    ```
-*   **Push** your branch to your fork on GitHub:
-    ```bash
-    git push -u origin your-branch-name
-    ```
-*   **Open a Pull Request (PR)** from your fork to the `main` branch of the original repository.
+> **Read [`docs/ISSUE_RESOLUTION_GUIDE.md`](./docs/ISSUE_RESOLUTION_GUIDE.md) for the full version.** The summary is here.
 
-In your PR description, please include:
-*   A link to the issue/quest you are solving (e.g., "Closes #42").
-*   A clear description of the changes you made.
-*   Any screenshots or GIFs that demonstrate your work, if applicable.
-*   The rank of your contribution (F-S rank) based on complexity
+### 1. Read the issue completely before writing code
 
-A guild master will review your PR, provide feedback, and, once approved, merge your contribution into the main codebase. Congratulations, adventurer—your legend grows!
+Every issue has:
+- **Context** — why this exists and how it fits the system
+- **Spec** — exact schema changes, API contracts, UI requirements
+- **Files to touch** — explicit list of what to create or modify
+- **Acceptance criteria** — checkboxes you must satisfy before opening a PR
+- **What NOT to do** — common mistakes and off-limits changes
+
+Read all of it. The issue is the spec. Don't invent behavior that isn't in the spec.
+
+### 2. Read the files before editing them
+
+Never edit a file you haven't read in the current session. Check the surrounding code for patterns to follow.
+
+### 3. Follow existing patterns exactly
+
+- API auth: use `requireAuth(...roles)` from `lib/api-auth.ts` — never roll your own
+- Enum validation: `Object.values(SomeEnum).includes(val as SomeEnum)` before casting
+- Prisma enums in queries: cast strings — `where.status = status as QuestStatus`
+- Error responses: `return NextResponse.json({ error: '...' }, { status: N })`
+- Admin guard: admin has no `CompanyProfile` — skip `companyProfile.update` for admin role
+- DB calls in server components: wrap in `withDbRetry()` from `lib/db.ts`
+
+### 4. Don't over-engineer
+
+- Don't add features not in the spec
+- Don't add error handling for scenarios that can't happen
+- Don't refactor code you didn't need to touch
+- Don't add docstrings or comments unless the logic is genuinely non-obvious
+
+### 5. Schema changes
+
+Every schema change requires a migration:
+
+```bash
+npx prisma migrate dev --name describe-what-changed
+```
+
+Always use `@default()` for new required fields so existing rows aren't broken.
+
+### 6. Run checks before opening a PR
+
+```bash
+npm run lint        # must have 0 errors
+npm run type-check  # must have 0 errors
+npm run build       # must pass clean
+```
+
+Warnings are OK. Errors are not.
+
+---
+
+## Branch and PR Conventions
+
+### Commit messages — conventional commits
+
+```
+feat: add squad model and party assignment endpoint
+fix: increment revision count on needs_rework status
+docs: update implementation tasks for Phase 2
+chore: remove unused legacy footer component
+```
+
+### PR description template
+
+Every PR must include:
+
+```markdown
+## What this does
+[1-3 sentences. What problem does this solve?]
+
+## Issue
+Closes #[issue number]
+
+## Changes
+- [File/feature 1]
+- [File/feature 2]
+
+## Schema changes
+[List any new models, fields, or enums. Or "None"]
+
+## Test plan
+- [ ] [Manual step to verify the happy path]
+- [ ] [Edge case to verify]
+- [ ] npm run lint → 0 errors
+- [ ] npm run type-check → 0 errors
+- [ ] npm run build → passes
+```
+
+### PR rules
+
+- PR targets `development` branch, not `main`
+- One issue per PR (unless explicitly linked)
+- No PR merges without all 3 checks passing (lint + type-check + build)
+- Reference the issue: "Closes #N" so it auto-closes on merge
+
+---
 
 ## Code Standards
 
 ### TypeScript
-- Use TypeScript for all new code
-- Define proper interfaces for complex objects
-- Use type guards when working with potentially undefined values
-- Follow naming conventions (camelCase for variables, PascalCase for components)
 
-### React Components
-- Use functional components with hooks
-- Keep components focused on a single responsibility
-- Use shadcn/ui components when possible for consistency
-- Follow accessibility best practices
+- All new code is TypeScript. No `any` unless absolutely unavoidable (and if so, comment why)
+- Prefer explicit interfaces over inline types for anything more than 2 fields
+- Cast Prisma enum params: `status as QuestStatus` (not coercion hacks)
 
-### Styling
-- Use Tailwind CSS for styling
-- Follow the existing design system
-- Use responsive design patterns
-- Maintain consistent spacing and typography
+### React / Next.js
 
-### Git Commit Messages
-We follow the conventional commits format:
-- `feat:` for new features
-- `fix:` for bug fixes
-- `docs:` for documentation updates
-- `style:` for styling changes
-- `refactor:` for code restructuring
-- `test:` for adding or modifying tests
-- `chore:` for maintenance tasks
+- App Router: server components by default, `'use client'` only when needed (event handlers, hooks, browser APIs)
+- Never add `<Navigation />` or `<SiteFooter />` inside pages — the root layout handles it
+- New API routes follow the shape of existing ones in `app/api/`
 
-### Pull Request Guidelines
-- Keep pull requests focused on a single issue or feature
-- Include tests for new functionality when applicable
-- Update documentation if your changes affect user-facing features
-- Reference any related issues in your PR description
+### Design system
 
-## Development Philosophy
+- Primary color: `orange-500`. No other accent colors.
+- Rank colors live in `<RankBadge>` only — never hardcode rank colors elsewhere
+- Dark backgrounds: `bg-slate-950` / `bg-slate-900`
+- Use `shadcn/ui` components as base primitives
 
-The Adventurers Guild follows these core principles:
+### Database
 
-### 1. Progressive Enhancement
-- Build features that work without JavaScript first
-- Enhance with JavaScript for better user experience
-- Ensure accessibility is maintained throughout
+- Schema file `prisma/schema.prisma` is the authoritative source of truth
+- Map column names with `@map("snake_case")` and `@@map("table_name")`
+- Timestamps: `@db.Timestamptz` for all datetime fields
+- UUIDs: `@default(uuid()) @db.Uuid` for all ID fields
 
-### 2. Performance First
-- Optimize for Core Web Vitals
-- Lazy-load components when appropriate
-- Minimize bundle sizes
+---
 
-### 3. User-Centric Design
-- Prioritize user experience over technical elegance
-- Consider all user types (adventurers, companies, admins)
-- Ensure responsive design for all device sizes
+## Definition of Done
 
-### 4. Security Consciousness
-- Validate all inputs
-- Sanitize user content
-- Follow security best practices
-- Protect user privacy
+A task is done when:
 
-## Where to Get Help
-
-If you need assistance:
-
-1. Check the [Contributor Onboarding Guide](./docs/contributor-onboarding.md)
-2. Join our Discord community (link in README)
-3. Create an issue for technical questions
-4. Ask in the discussions tab for broader questions
-
-## Recognition
-
-- Contributors are acknowledged in the README
-- Outstanding contributions may lead to core team membership
-- Contributors can showcase their work on the Adventurers Guild platform
-
-Remember: Every contribution, no matter how small, makes the Adventurers Guild stronger. Happy coding, adventurer!
+1. All acceptance criteria in the issue are checked off
+2. `npm run lint` passes with 0 errors
+3. `npm run type-check` passes with 0 errors
+4. `npm run build` passes clean
+5. PR is open targeting `development` with a description that matches the template above
+6. No unrelated files are modified

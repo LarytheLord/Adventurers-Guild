@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, ArrowRight } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -22,14 +22,20 @@ const rankShowcase: { rank: Rank; label: string }[] = [
 export default function LoginPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
 
-  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
+  async function handleLogin() {
+    if (!email || !password) {
+      return;
+    }
+
     setIsLoading(true);
-
-    const formData = new FormData(event.currentTarget);
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
 
     try {
       const result = await signIn('credentials', {
@@ -55,6 +61,11 @@ export default function LoginPage() {
     } finally {
       setIsLoading(false);
     }
+  }
+
+  async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    await handleLogin();
   }
 
   return (
@@ -120,7 +131,12 @@ export default function LoginPage() {
             <p className="text-sm text-slate-400">Enter your credentials to access your quest board.</p>
           </div>
 
-          <form onSubmit={onSubmit} className="space-y-4">
+          <form
+            onSubmit={onSubmit}
+            method="post"
+            className="space-y-4"
+            data-auth-ready={isHydrated ? 'true' : 'false'}
+          >
             <div className="space-y-2">
               <Label htmlFor="email" className="text-slate-300 text-sm font-medium">
                 Email
@@ -133,7 +149,9 @@ export default function LoginPage() {
                 autoCapitalize="none"
                 autoComplete="email"
                 autoCorrect="off"
-                disabled={isLoading}
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                disabled={!isHydrated || isLoading}
                 required
                 className="bg-slate-900 border-slate-700 text-white placeholder:text-slate-500 focus:border-orange-500/50 focus:ring-orange-500/20 h-11"
               />
@@ -152,14 +170,21 @@ export default function LoginPage() {
                 id="password"
                 name="password"
                 type="password"
-                disabled={isLoading}
+                autoComplete="current-password"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                disabled={!isHydrated || isLoading}
                 required
                 className="bg-slate-900 border-slate-700 text-white placeholder:text-slate-500 focus:border-orange-500/50 focus:ring-orange-500/20 h-11"
               />
             </div>
 
             <Button
-              disabled={isLoading}
+              type="button"
+              disabled={!isHydrated || isLoading}
+              onClick={() => {
+                void handleLogin();
+              }}
               className="w-full h-11 bg-orange-500 hover:bg-orange-600 text-black font-semibold rounded-lg shadow-lg shadow-orange-500/20 transition-all mt-2"
             >
               {isLoading ? (

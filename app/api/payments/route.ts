@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Validate required fields
-    const requiredFields = ['from_userId', 'to_userId', 'questId', 'amount', 'currency'];
+    const requiredFields = ['fromUserId', 'toUserId', 'questId', 'amount', 'currency'];
     for (const field of requiredFields) {
       if (body[field] === undefined) {
         return Response.json({ error: `${field} is required`, success: false }, { status: 400 });
@@ -93,26 +93,26 @@ export async function POST(request: NextRequest) {
     }
 
     if (
-      typeof body.from_userId !== 'string' ||
-      typeof body.to_userId !== 'string' ||
+      typeof body.fromUserId !== 'string' ||
+      typeof body.toUserId !== 'string' ||
       typeof body.questId !== 'string' ||
-      !body.from_userId.trim() ||
-      !body.to_userId.trim() ||
+      !body.fromUserId.trim() ||
+      !body.toUserId.trim() ||
       !body.questId.trim()
     ) {
       return Response.json(
-        { error: 'from_userId, to_userId, and questId must be non-empty strings', success: false },
+        { error: 'fromUserId, toUserId, and questId must be non-empty strings', success: false },
         { status: 400 }
       );
     }
 
-    if (authUser.role !== 'admin' && body.from_userId !== authUser.id) {
+    if (authUser.role !== 'admin' && body.fromUserId !== authUser.id) {
       return Response.json(
         { error: 'You can only initiate payments from your own account', success: false },
         { status: 403 }
       );
     }
-    if (body.from_userId === body.to_userId) {
+    if (body.fromUserId === body.toUserId) {
       return Response.json(
         { error: 'Sender and receiver cannot be the same user', success: false },
         { status: 400 }
@@ -157,15 +157,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (authUser.role !== 'admin' && body.from_userId !== quest.companyId) {
+    if (authUser.role !== 'admin' && body.fromUserId !== quest.companyId) {
       return Response.json(
-        { error: 'from_userId must match the quest owner', success: false },
+        { error: 'fromUserId must match the quest owner', success: false },
         { status: 403 }
       );
     }
 
     const recipient = await prisma.user.findUnique({
-      where: { id: body.to_userId },
+      where: { id: body.toUserId },
       select: { role: true, isActive: true },
     });
 
@@ -177,7 +177,7 @@ export async function POST(request: NextRequest) {
       where: {
         questId_userId: {
           questId: body.questId,
-          userId: body.to_userId,
+          userId: body.toUserId,
         },
       },
       select: { id: true },
@@ -194,7 +194,7 @@ export async function POST(request: NextRequest) {
     const existingPayment = await prisma.transaction.findFirst({
       where: {
         questId: body.questId,
-        toUserId: body.to_userId,
+        toUserId: body.toUserId,
       },
       select: { id: true },
     });
@@ -208,8 +208,8 @@ export async function POST(request: NextRequest) {
 
     const transaction = await prisma.transaction.create({
       data: {
-        fromUserId: body.from_userId,
-        toUserId: body.to_userId,
+        fromUserId: body.fromUserId,
+        toUserId: body.toUserId,
         questId: body.questId,
         amount: body.amount,
         currency: body.currency,
@@ -241,7 +241,7 @@ export async function POST(request: NextRequest) {
     // Send notification to receiving user
     await prisma.notification.create({
       data: {
-        userId: body.to_userId,
+        userId: body.toUserId,
         title: 'Payment Received',
         message: `You've received payment of ${body.amount} ${body.currency} for completing the quest "${quest.title}"`,
         type: 'payment_received',
