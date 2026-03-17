@@ -234,17 +234,23 @@ a:focus,
   justify-content: center;
 }
 
-/* Better contrast for links */
-a:not(.no-contrast) {
+/* Better contrast for body content links without overriding app chrome */
+.accessible-content a,
+.prose a,
+.accessible-link {
   color: #2563eb;
   text-decoration: underline;
 }
 
-a:not(.no-contrast):visited {
+.accessible-content a:visited,
+.prose a:visited,
+.accessible-link:visited {
   color: #7e22ce;
 }
 
-a:not(.no-contrast):focus {
+.accessible-content a:focus,
+.prose a:focus,
+.accessible-link:focus {
   outline: 2px solid #2563eb;
   outline-offset: 2px;
   border-radius: 2px;

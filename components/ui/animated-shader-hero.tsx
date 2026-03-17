@@ -35,7 +35,9 @@ const useShaderBackground = () => {
   const animationFrameRef = useRef<number>();
   const rendererRef = useRef<WebGLRenderer | null>(null);
   const pointersRef = useRef<PointerHandler | null>(null);
+  const viewportRef = useRef<VisualViewport | null>(null);
   const [webglFailed, setWebglFailed] = useState(false);
+  const [disableShader, setDisableShader] = useState(false);
 
   // WebGL Renderer class
   class WebGLRenderer {
@@ -273,9 +275,10 @@ void main(){gl_Position=position;}`;
     
     const canvas = canvasRef.current;
     const dpr = Math.max(1, 0.5 * window.devicePixelRatio);
+    const viewportHeight = window.visualViewport?.height ?? window.innerHeight;
     
     canvas.width = window.innerWidth * dpr;
-    canvas.height = window.innerHeight * dpr;
+    canvas.height = viewportHeight * dpr;
     
     if (rendererRef.current) {
       rendererRef.current.updateScale(dpr);
@@ -298,6 +301,13 @@ void main(){gl_Position=position;}`;
 
     const canvas = canvasRef.current;
     const dpr = Math.max(1, 0.5 * window.devicePixelRatio);
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const isSmallScreen = window.matchMedia('(max-width: 767px)').matches;
+
+    if (prefersReducedMotion || isSmallScreen) {
+      setDisableShader(true);
+      return;
+    }
 
     try {
       rendererRef.current = new WebGLRenderer(canvas, dpr);
@@ -321,9 +331,12 @@ void main(){gl_Position=position;}`;
     }
 
     window.addEventListener('resize', resize);
+    viewportRef.current = window.visualViewport;
+    viewportRef.current?.addEventListener('resize', resize);
 
     return () => {
       window.removeEventListener('resize', resize);
+      viewportRef.current?.removeEventListener('resize', resize);
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
@@ -333,7 +346,7 @@ void main(){gl_Position=position;}`;
     };
   }, []);
 
-  return { canvasRef, webglFailed };
+  return { canvasRef, webglFailed: webglFailed || disableShader };
 };
 
 // Reusable Hero Component
@@ -347,7 +360,7 @@ const Hero: React.FC<HeroProps> = ({
   const { canvasRef, webglFailed } = useShaderBackground();
 
   return (
-    <div className={`relative w-full h-screen overflow-hidden bg-black ${className}`}>
+    <div className={`relative w-full min-h-[100svh] overflow-hidden bg-black ${className}`}>
       <style jsx>{`
         @keyframes fade-in-down {
           from {

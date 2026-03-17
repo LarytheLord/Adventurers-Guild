@@ -27,7 +27,7 @@ const features = [
   {
     title: 'Real-world projects',
     description:
-      'No tutorials. Work on actual production tasks from partner companies — bug fixes, features, and integrations.',
+      'No tutorials. Work on actual production tasks from partner companies - bug fixes, features, and integrations.',
     span: 'md:col-span-2',
     visual: (
       <div className="mt-6 space-y-2">
@@ -102,7 +102,7 @@ const features = [
             {'  const data = await'}
           </div>
           <div className="bg-red-500/10 text-red-400 rounded px-1.5 py-0.5 -mx-1.5">
-            <span className="text-red-600 mr-3">{'−'}</span>
+            <span className="text-red-600 mr-3">{'-'}</span>
             {'    fetch(url);'}
           </div>
           <div className="bg-emerald-500/10 text-emerald-400 rounded px-1.5 py-0.5 -mx-1.5">
@@ -118,7 +118,7 @@ const features = [
           <p className="text-xs text-slate-300">
             <span className="font-semibold text-orange-400">@senior_dev</span>{' '}
             <span className="text-slate-400">
-              Nice catch — consider adding exponential backoff for production.
+              Nice catch - consider adding exponential backoff for production.
             </span>
           </p>
         </div>

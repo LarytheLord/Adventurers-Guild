@@ -262,11 +262,11 @@ export default function QuestDetailPage() {
             </Badge>
             <h1 className="text-3xl font-bold text-slate-900 sm:text-4xl">{quest.title}</h1>
             <p className="max-w-2xl text-sm text-slate-600 sm:text-base">
-              Posted by {quest.company?.name || 'Unknown Company'} • {quest.questType.replace('_', ' ')}
+              Posted by {quest.company?.name || 'Unknown Company'} / {quest.questType.replace('_', ' ')}
             </p>
           </div>
-          <Button variant="outline" onClick={() => router.back()}>
-            ← Back to Quests
+          <Button variant="outline" className="w-full sm:w-auto" onClick={() => router.back()}>
+            Back to Quests
           </Button>
         </div>
       </GuildHero>
@@ -275,7 +275,7 @@ export default function QuestDetailPage() {
         <CardHeader>
           <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
             <div>
-              <div className="flex items-center gap-2 mb-2">
+              <div className="mb-2 flex flex-wrap items-center gap-2">
                 <CardTitle className="text-2xl">{quest.title}</CardTitle>
                 <Badge variant="outline">{quest.difficulty}-Rank</Badge>
               </div>
@@ -290,7 +290,7 @@ export default function QuestDetailPage() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
             <div className="text-center p-3 rounded-lg border border-slate-200 bg-slate-50">
               <Zap className="w-6 h-6 mx-auto text-yellow-500 mb-1" />
               <div className="font-bold">{quest.xpReward} XP</div>
@@ -359,7 +359,7 @@ export default function QuestDetailPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <Badge className={assignmentMeta?.className}>
                   {assignmentMeta?.label}
