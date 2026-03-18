@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh issue:*)",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(d.get\\(''''data'''',{}\\).get\\(''''createDiscussion'''',{}\\).get\\(''''discussion'''',{}\\).get\\(''''url'''',''''error''''\\)\\)\")",
+      "Bash(python3 -c \":*)",
+      "Bash(git -C /Users/abi/Documents/Adventurers-Guild diff --name-only --diff-filter=U)",
+      "Bash(npx prisma:*)",
+      "Bash(mkdir -p /Users/abi/Documents/Adventurers-Guild/app/api/admin/qa-queue/[assignmentId])",
+      "Bash(mkdir -p /Users/abi/Documents/Adventurers-Guild/app/admin/qa-queue/[assignmentId])",
+      "Bash(git -C /Users/abi/Documents/Adventurers-Guild add -A)"
+    ],
+    "additionalDirectories": [
+      "/Users/abi/Documents/Adventurers-Guild/app/api/parties/[id]/members"
+    ]
+  }
+}
