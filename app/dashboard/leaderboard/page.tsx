@@ -173,7 +173,7 @@ export default function LeaderboardPage() {
   if (status === 'loading' || loading) {
     return (
       <div className="guild-page">
-        <div className="guild-panel flex min-h-[320px] items-center justify-center">
+        <div className="guild-panel flex min-h-[50vh] items-center justify-center py-8">
           <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary" />
         </div>
       </div>

@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, CreditCard, DollarSign, TrendingUp, Wallet, Calendar, Search, Filter, Download } from 'lucide-react';
+import { AlertCircle, CreditCard, DollarSign, TrendingUp, Wallet, Calendar, Search, Download } from 'lucide-react';
 import { formatCurrency, getPaymentHistory, getTotalEarnings, Transaction } from '@/lib/payment-utils';
+import { getStatusColor } from '@/lib/status-utils';
 
 export default function EarningsPage() {
   const { data: session, status } = useSession();
@@ -76,7 +77,7 @@ export default function EarningsPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex min-h-[60vh] items-center justify-center py-8">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
@@ -190,12 +191,12 @@ export default function EarningsPage() {
       </div>
 
       {filteredTransactions.length === 0 ? (
-        <div className="text-center py-12">
-          <Wallet className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-xl font-medium mb-2">No payments yet</h3>
-          <p className="text-muted-foreground mb-4">
-            {searchTerm || statusFilter !== 'all' 
-              ? 'No payments match your current filters' 
+        <div className="text-center py-8 sm:py-12">
+          <Wallet className="w-12 h-12 sm:w-16 sm:h-16 mx-auto text-muted-foreground mb-4" />
+          <h3 className="text-lg sm:text-xl font-medium mb-2">No payments yet</h3>
+          <p className="text-sm sm:text-base text-muted-foreground mb-4 px-4">
+            {searchTerm || statusFilter !== 'all'
+              ? 'No payments match your current filters'
               : 'You haven\'t earned any payments yet. Complete quests to start earning.'}
           </p>
           {(!searchTerm && statusFilter === 'all') && (
@@ -223,13 +224,7 @@ export default function EarningsPage() {
                   </div>
                 </div>
                 <div className="flex sm:justify-end sm:mt-0 mt-2">
-                  <Badge className={`
-                    ${transaction.status === 'completed' ? 'bg-green-500' : 
-                      transaction.status === 'pending' ? 'bg-yellow-500' : 
-                      transaction.status === 'failed' ? 'bg-red-500' : 
-                      transaction.status === 'cancelled' ? 'bg-gray-500' : 
-                      'bg-gray-500'}
-                  `}>
+                  <Badge variant="outline" className={getStatusColor(transaction.status)}>
                     {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
                   </Badge>
                 </div>

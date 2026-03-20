@@ -253,7 +253,7 @@ export default async function DashboardPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             {activeAssignments.length === 0 ? (
-              <div className="flex h-[200px] flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-slate-300 text-slate-500">
+              <div className="flex h-[120px] sm:h-[200px] flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-slate-300 text-slate-500">
                 <p>No active quests yet.</p>
                 <Button size="sm" asChild>
                   <Link href="/dashboard/quests">Browse Quest Board</Link>

@@ -22,17 +22,21 @@ import {
   Save,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useApiFetch } from '@/lib/hooks';
 
 export default function CompanyProfilePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [companyName, setCompanyName] = useState('');
   const [description, setDescription] = useState('');
   const [website, setWebsite] = useState('');
-  const [questCount, setQuestCount] = useState(0);
-  const [completedCount, setCompletedCount] = useState(0);
+  const shouldFetch =
+    status === 'authenticated' && (session?.user?.role === 'company' || session?.user?.role === 'admin');
+  const { data, loading } = useApiFetch<{ success: boolean; quests: Array<{ status: string }> }>(
+    '/api/company/quests',
+    { skip: !shouldFetch }
+  );
 
   useEffect(() => {
     if (status === 'authenticated' && session?.user?.role !== 'company' && session?.user?.role !== 'admin') {
@@ -40,27 +44,14 @@ export default function CompanyProfilePage() {
       return;
     }
 
-    const fetchData = async () => {
-      try {
-        const res = await fetch('/api/company/quests');
-        if (res.ok) {
-          const data = await res.json();
-          const quests = data.quests || [];
-          setQuestCount(quests.length);
-          setCompletedCount(quests.filter((q: Record<string, unknown>) => q.status === 'completed').length);
-        }
-      } catch (err) {
-        console.error('Error fetching company data:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     if (status === 'authenticated') {
       setCompanyName(session?.user?.name || '');
-      fetchData();
     }
   }, [status, session, router]);
+
+  const quests = data?.quests || [];
+  const questCount = quests.length;
+  const completedCount = quests.filter((quest) => quest.status === 'completed').length;
 
   const handleSave = async () => {
     setSaving(true);

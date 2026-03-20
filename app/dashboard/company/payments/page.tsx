@@ -7,8 +7,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, CreditCard, DollarSign, TrendingUp, Wallet, Calendar, Search, Filter, Download } from 'lucide-react';
+import { AlertCircle, CreditCard, DollarSign, TrendingUp, Wallet, Calendar, Search, Download } from 'lucide-react';
 import { formatCurrency, getPaymentHistory, Transaction } from '@/lib/payment-utils';
+import { getStatusColor } from '@/lib/status-utils';
 
 export default function CompanyPaymentsPage() {
   const { data: session, status } = useSession();
@@ -223,13 +224,7 @@ export default function CompanyPaymentsPage() {
                   </div>
                 </div>
                 <div className="flex sm:justify-end sm:mt-0 mt-2">
-                  <Badge className={`
-                    ${transaction.status === 'completed' ? 'bg-green-500' : 
-                      transaction.status === 'pending' ? 'bg-yellow-500' : 
-                      transaction.status === 'failed' ? 'bg-red-500' : 
-                      transaction.status === 'cancelled' ? 'bg-gray-500' : 
-                      'bg-gray-500'}
-                  `}>
+                  <Badge variant="outline" className={getStatusColor(transaction.status)}>
                     {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
                   </Badge>
                 </div>

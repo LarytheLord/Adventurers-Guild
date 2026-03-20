@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { GuildCard, GuildHero, GuildKpi, GuildPage, GuildPanel } from '@/components/guild/primitives';
+import { useApiFetch } from '@/lib/hooks';
 
 interface Quest {
   id: string;
@@ -44,13 +45,18 @@ interface Quest {
   };
 }
 
+const EMPTY_QUESTS: Quest[] = [];
+
 export default function QuestsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [quests, setQuests] = useState<Quest[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const shouldFetch = status === 'authenticated' && session?.user?.role !== 'company';
+  const { data, loading, error } = useApiFetch<{ success: boolean; quests: Quest[]; error?: string }>(
+    '/api/quests?status=available&limit=60',
+    { skip: !shouldFetch }
+  );
+  const quests = data?.quests ?? EMPTY_QUESTS;
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -63,31 +69,6 @@ export default function QuestsPage() {
       return;
     }
 
-    const fetchQuests = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const response = await fetch('/api/quests?status=available&limit=60');
-        const data = await response.json();
-
-        if (!data.success) {
-          setError(data.error || 'Failed to fetch quests');
-          return;
-        }
-
-        setQuests(data.quests || []);
-      } catch (err) {
-        console.error('Error fetching quests:', err);
-        setError('An error occurred while fetching quests');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (status === 'authenticated') {
-      fetchQuests();
-    }
   }, [status, session, router]);
 
   const filteredQuests = useMemo(
@@ -110,7 +91,7 @@ export default function QuestsPage() {
   if (status === 'loading' || loading) {
     return (
       <GuildPage>
-        <GuildPanel className="flex min-h-[320px] items-center justify-center">
+        <GuildPanel className="flex min-h-64 sm:min-h-[320px] items-center justify-center">
           <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary" />
         </GuildPanel>
       </GuildPage>

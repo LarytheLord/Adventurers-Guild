@@ -7,8 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Coins, TrendingDown, TrendingUp, Calendar, ExternalLink, Search, Download } from 'lucide-react';
+import { AlertCircle, Coins, TrendingDown, TrendingUp, Calendar, ExternalLink, Search } from 'lucide-react';
 import { formatCurrency, getPaymentHistory, Transaction } from '@/lib/payment-utils';
+import { getStatusColor } from '@/lib/status-utils';
 
 export default function MyPaymentsPage() {
   const { data: session, status } = useSession();
@@ -71,7 +72,7 @@ export default function MyPaymentsPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="flex min-h-[60vh] items-center justify-center py-8">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     );
@@ -222,12 +223,12 @@ export default function MyPaymentsPage() {
         </CardHeader>
         <CardContent>
           {filteredTransactions.length === 0 ? (
-            <div className="text-center py-12">
+            <div className="text-center py-8 sm:py-12">
               <Coins className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-xl font-medium mb-2">No transactions yet</h3>
-              <p className="text-muted-foreground mb-4">
-                {searchTerm || statusFilter !== 'all' 
-                  ? 'No transactions match your current filters' 
+              <h3 className="text-lg sm:text-xl font-medium mb-2">No transactions yet</h3>
+              <p className="text-sm sm:text-base text-muted-foreground mb-4 px-4">
+                {searchTerm || statusFilter !== 'all'
+                  ? 'No transactions match your current filters'
                   : 'You haven\'t received or made any payments yet.'}
               </p>
               {(!searchTerm && statusFilter === 'all') && (
@@ -280,16 +281,7 @@ export default function MyPaymentsPage() {
                     }`}>
                       {transaction.toUserId === session?.user?.id ? '+' : '-'}{formatCurrency(transaction.amount)}
                     </div>
-                    <Badge 
-                      variant="outline" 
-                      className={`
-                        ${transaction.status === 'completed' ? 'border-green-500 text-green-700' :
-                          transaction.status === 'pending' ? 'border-yellow-500 text-yellow-700' :
-                          transaction.status === 'processing' ? 'border-blue-500 text-blue-700' :
-                          transaction.status === 'failed' ? 'border-red-500 text-red-700' :
-                          'border-gray-500 text-gray-700'}
-                      `}
-                    >
+                    <Badge variant="outline" className={getStatusColor(transaction.status)}>
                       {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
                     </Badge>
                   </div>
