@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized to submit for this assignment', success: false }, { status: 403 });
     }
 
-    if (!['assigned', 'started', 'in_progress'].includes(assignment.status)) {
+    if (!['assigned', 'started', 'in_progress', 'needs_rework'].includes(assignment.status)) {
       return NextResponse.json({ error: 'Invalid assignment state for submission', success: false }, { status: 400 });
     }
 
