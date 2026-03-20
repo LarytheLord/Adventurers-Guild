@@ -1,24 +1,28 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { AlertCircle, Calendar, Coins, ExternalLink, Search, TrendingDown, TrendingUp } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, Coins, TrendingDown, TrendingUp, Calendar, ExternalLink, Search } from 'lucide-react';
-import { formatCurrency, getPaymentHistory, Transaction } from '@/lib/payment-utils';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useApiFetch } from '@/lib/hooks';
+import { formatCurrency, type Transaction } from '@/lib/payment-utils';
 import { getStatusColor } from '@/lib/status-utils';
+
+type PaymentsResponse = {
+  success: boolean;
+  transactions: Transaction[];
+  error?: string;
+};
 
 export default function MyPaymentsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState<'incoming' | 'outgoing' | 'all'>('incoming');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
 
   useEffect(() => {
@@ -28,42 +32,24 @@ export default function MyPaymentsPage() {
     }
 
     if (status === 'authenticated' && session?.user?.role === 'company') {
-      // Companies should go to their payment page instead
       router.push('/dashboard/company/payments');
-      return;
     }
+  }, [router, session?.user?.role, status]);
 
-    const fetchPayments = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  const shouldFetch = status === 'authenticated' && session?.user?.role !== 'company';
+  const paymentParams = new URLSearchParams({ type: typeFilter });
 
-        if (!session?.user?.id) {
-          setError('User ID not found');
-          return;
-        }
+  if (statusFilter !== 'all') {
+    paymentParams.set('status', statusFilter);
+  }
 
-        const payments = await getPaymentHistory(
-          session.user.id,
-          typeFilter,
-          statusFilter === 'all' ? undefined : statusFilter
-        );
+  const { data, loading, error } = useApiFetch<PaymentsResponse>(`/api/payments?${paymentParams.toString()}`, {
+    skip: !shouldFetch,
+  });
 
-        setTransactions(payments as Transaction[]);
-      } catch (err) {
-        console.error('Error fetching payments:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch payment history');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (status === 'authenticated') {
-      fetchPayments();
-    }
-  }, [status, session, typeFilter, statusFilter, router]);
-
-  const filteredTransactions = transactions.filter(transaction => 
+  const transactions = data?.transactions ?? [];
+  const viewerId = session?.user?.id;
+  const filteredTransactions = transactions.filter(transaction =>
     transaction.quest?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     transaction.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     transaction.fromUser?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -73,7 +59,7 @@ export default function MyPaymentsPage() {
   if (status === 'loading' || loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center py-8">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary" />
       </div>
     );
   }
@@ -86,36 +72,40 @@ export default function MyPaymentsPage() {
           <AlertDescription>{error}</AlertDescription>
         </Alert>
         <Button className="mt-4" onClick={() => router.back()}>
-          ← Back
+          Back
         </Button>
       </div>
     );
   }
 
+  if (status !== 'authenticated' || session?.user?.role === 'company') {
+    return null;
+  }
+
   const totalEarned = filteredTransactions
-    .filter(t => t.status === 'completed' && t.toUserId === session?.user?.id)
+    .filter(transaction => transaction.status === 'completed' && transaction.toUserId === viewerId)
     .reduce((sum, transaction) => sum + transaction.amount, 0);
 
   const totalSpent = filteredTransactions
-    .filter(t => t.status === 'completed' && t.fromUserId === session?.user?.id)
+    .filter(transaction => transaction.status === 'completed' && transaction.fromUserId === viewerId)
     .reduce((sum, transaction) => sum + transaction.amount, 0);
 
   return (
-    <div className="container mx-auto py-6 max-w-6xl">
+    <div className="container mx-auto max-w-6xl py-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Payment History</h1>
-        <p className="text-muted-foreground mt-1">
+        <p className="mt-1 text-muted-foreground">
           Track your earnings and payments on the Adventurers Guild platform
         </p>
       </div>
 
       <div className="mb-6">
         <Button variant="outline" onClick={() => router.back()}>
-          ← Back to Dashboard
+          Back to Dashboard
         </Button>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-4 mb-8">
+      <div className="mb-8 grid gap-6 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Earned</CardTitle>
@@ -145,7 +135,7 @@ export default function MyPaymentsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {filteredTransactions.filter(t => t.status !== 'completed').length}
+              {filteredTransactions.filter(transaction => transaction.status !== 'completed').length}
             </div>
             <p className="text-xs text-muted-foreground">Pending or processing</p>
           </CardContent>
@@ -158,7 +148,7 @@ export default function MyPaymentsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {filteredTransactions.filter(t => t.status === 'completed').length}
+              {filteredTransactions.filter(transaction => transaction.status === 'completed').length}
             </div>
             <p className="text-xs text-muted-foreground">Successful transactions</p>
           </CardContent>
@@ -167,22 +157,20 @@ export default function MyPaymentsPage() {
 
       <Card>
         <CardHeader>
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <CardTitle>Transaction History</CardTitle>
-              <CardDescription>
-                Your payment transactions on the platform
-              </CardDescription>
+              <CardDescription>Your payment transactions on the platform</CardDescription>
             </div>
-            
-            <div className="flex flex-col sm:flex-row gap-2">
+
+            <div className="flex flex-col gap-2 sm:flex-row">
               <div className="flex gap-1">
                 <Button
                   variant={typeFilter === 'incoming' ? 'default' : 'outline'}
                   size="sm"
                   onClick={() => setTypeFilter('incoming')}
                 >
-                  <TrendingUp className="w-3 h-3 mr-1" />
+                  <TrendingUp className="mr-1 h-3 w-3" />
                   Earnings
                 </Button>
                 <Button
@@ -190,15 +178,15 @@ export default function MyPaymentsPage() {
                   size="sm"
                   onClick={() => setTypeFilter('outgoing')}
                 >
-                  <TrendingDown className="w-3 h-3 mr-1" />
+                  <TrendingDown className="mr-1 h-3 w-3" />
                   Payments
                 </Button>
               </div>
-              
+
               <select
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="border rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                onChange={(event) => setStatusFilter(event.target.value)}
+                className="rounded-md border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
               >
                 <option value="all">All Statuses</option>
                 <option value="pending">Pending</option>
@@ -209,77 +197,76 @@ export default function MyPaymentsPage() {
               </select>
             </div>
           </div>
-          
+
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <input
               type="text"
               placeholder="Search transactions..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              onChange={(event) => setSearchTerm(event.target.value)}
+              className="w-full rounded-lg border py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary"
             />
           </div>
         </CardHeader>
         <CardContent>
           {filteredTransactions.length === 0 ? (
-            <div className="text-center py-8 sm:py-12">
-              <Coins className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg sm:text-xl font-medium mb-2">No transactions yet</h3>
-              <p className="text-sm sm:text-base text-muted-foreground mb-4 px-4">
+            <div className="py-8 text-center sm:py-12">
+              <Coins className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+              <h3 className="text-lg font-medium sm:text-xl">No transactions yet</h3>
+              <p className="mb-4 px-4 text-sm text-muted-foreground sm:text-base">
                 {searchTerm || statusFilter !== 'all'
                   ? 'No transactions match your current filters'
-                  : 'You haven\'t received or made any payments yet.'}
+                  : "You haven't received or made any payments yet."}
               </p>
-              {(!searchTerm && statusFilter === 'all') && (
-                <Button onClick={() => router.push('/dashboard/quests')}>
-                  Browse Quests
-                </Button>
-              )}
+              {!searchTerm && statusFilter === 'all' ? (
+                <Button onClick={() => router.push('/dashboard/quests')}>Browse Quests</Button>
+              ) : null}
             </div>
           ) : (
             <div className="space-y-4">
-              {filteredTransactions.map((transaction) => (
-                <div 
-                  key={transaction.id} 
-                  className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors"
+              {filteredTransactions.map(transaction => (
+                <div
+                  key={transaction.id}
+                  className="flex items-center justify-between rounded-lg border p-4 transition-colors hover:bg-accent"
                 >
                   <div className="flex items-center space-x-4">
-                    <div className={`p-2 rounded-full ${
-                      transaction.toUserId === session?.user?.id 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
-                    }`}>
-                      {transaction.toUserId === session?.user?.id ? (
-                        <TrendingUp className="w-5 h-5" />
+                    <div
+                      className={`rounded-full p-2 ${
+                        transaction.toUserId === viewerId
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-red-100 text-red-800'
+                      }`}
+                    >
+                      {transaction.toUserId === viewerId ? (
+                        <TrendingUp className="h-5 w-5" />
                       ) : (
-                        <TrendingDown className="w-5 h-5" />
+                        <TrendingDown className="h-5 w-5" />
                       )}
                     </div>
                     <div>
-                      <h4 className="font-medium">
-                        {transaction.quest?.title || 'Quest Payment'}
-                      </h4>
+                      <h4 className="font-medium">{transaction.quest?.title || 'Quest Payment'}</h4>
                       <p className="text-sm text-muted-foreground">
-                        {transaction.description || 
-                          (transaction.toUserId === session?.user?.id 
-                            ? `Received from ${transaction.fromUser?.name || 'Unknown'}` 
+                        {transaction.description ||
+                          (transaction.toUserId === viewerId
+                            ? `Received from ${transaction.fromUser?.name || 'Unknown'}`
                             : `Paid to ${transaction.toUser?.name || 'Unknown'}`)}
                       </p>
-                      <div className="flex items-center text-xs text-muted-foreground mt-1">
-                        <Calendar className="w-3 h-3 mr-1" />
+                      <div className="mt-1 flex items-center text-xs text-muted-foreground">
+                        <Calendar className="mr-1 h-3 w-3" />
                         <span>{new Date(transaction.createdAt).toLocaleDateString()}</span>
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="text-right">
-                    <div className={`font-medium ${
-                      transaction.toUserId === session?.user?.id 
-                        ? 'text-green-600' 
-                        : 'text-red-600'
-                    }`}>
-                      {transaction.toUserId === session?.user?.id ? '+' : '-'}{formatCurrency(transaction.amount)}
+                    <div
+                      className={`font-medium ${
+                        transaction.toUserId === viewerId ? 'text-green-600' : 'text-red-600'
+                      }`}
+                    >
+                      {transaction.toUserId === viewerId ? '+' : '-'}
+                      {formatCurrency(transaction.amount)}
                     </div>
                     <Badge variant="outline" className={getStatusColor(transaction.status)}>
                       {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}

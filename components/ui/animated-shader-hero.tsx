@@ -302,9 +302,16 @@ void main(){gl_Position=position;}`;
     const canvas = canvasRef.current;
     const dpr = Math.max(1, 0.5 * window.devicePixelRatio);
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // More aggressive mobile detection - disable on screens smaller than 768px
     const isSmallScreen = window.matchMedia('(max-width: 767px)').matches;
+    // Also check for low-end devices by detecting hardware concurrency and device memory (RAM)
+    const isLowEndDevice = 
+      (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) ||
+      // @ts-expect-error deviceMemory is not in all standard typings yet
+      (navigator.deviceMemory && navigator.deviceMemory < 4);
 
-    if (prefersReducedMotion || isSmallScreen) {
+    // Disable shader for mobile, reduced motion, or low-end devices
+    if (prefersReducedMotion || isSmallScreen || isLowEndDevice) {
       setDisableShader(true);
       return;
     }
@@ -344,6 +351,7 @@ void main(){gl_Position=position;}`;
         rendererRef.current.reset();
       }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return { canvasRef, webglFailed: webglFailed || disableShader };

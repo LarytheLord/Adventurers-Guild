@@ -1,25 +1,29 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { AlertCircle, Calendar, CreditCard, DollarSign, Download, Search, TrendingUp, Wallet } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, CreditCard, DollarSign, TrendingUp, Wallet, Calendar, Search, Download } from 'lucide-react';
-import { formatCurrency, getPaymentHistory, Transaction } from '@/lib/payment-utils';
+import { useApiFetch } from '@/lib/hooks';
+import { formatCurrency, type Transaction } from '@/lib/payment-utils';
 import { getStatusColor } from '@/lib/status-utils';
+
+type PaymentsResponse = {
+  success: boolean;
+  transactions: Transaction[];
+  error?: string;
+};
 
 export default function CompanyPaymentsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [totalSpent, setTotalSpent] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const role = session?.user?.role;
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -27,47 +31,24 @@ export default function CompanyPaymentsPage() {
       return;
     }
 
-    if (status === 'authenticated' && session?.user?.role !== 'company' && session.user.role !== 'admin') {
-      // Only companies and admins can access this page
+    if (status === 'authenticated' && role !== 'company' && role !== 'admin') {
       router.push('/dashboard');
-      return;
     }
+  }, [role, router, status]);
 
-    const fetchPayments = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  const shouldFetch = status === 'authenticated' && (role === 'company' || role === 'admin');
 
-        if (!session?.user?.id) {
-          setError('User ID not found');
-          return;
-        }
+  const paymentParams = new URLSearchParams({ type: 'outgoing' });
+  if (statusFilter !== 'all') {
+    paymentParams.set('status', statusFilter);
+  }
 
-        // Get payment history for this company (outgoing payments)
-        const payments = await getPaymentHistory(
-          session.user.id,
-          'outgoing', // Companies make outgoing payments
-          statusFilter === 'all' ? undefined : statusFilter
-        );
+  const { data, loading, error } = useApiFetch<PaymentsResponse>(`/api/payments?${paymentParams.toString()}`, {
+    skip: !shouldFetch,
+  });
 
-        setTransactions(payments as Transaction[]);
-        
-        // Calculate total spent
-        const total = payments.reduce((sum, transaction) => sum + transaction.amount, 0);
-        setTotalSpent(total);
-      } catch (err) {
-        console.error('Error fetching payments:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch payment history');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (status === 'authenticated') {
-      fetchPayments();
-    }
-  }, [status, session, statusFilter, router]);
-
+  const transactions = data?.transactions ?? [];
+  const totalSpent = transactions.reduce((sum, transaction) => sum + transaction.amount, 0);
   const filteredTransactions = transactions.filter(transaction =>
     transaction.quest?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     transaction.toUser?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -77,8 +58,8 @@ export default function CompanyPaymentsPage() {
 
   if (status === 'loading' || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary" />
       </div>
     );
   }
@@ -91,23 +72,26 @@ export default function CompanyPaymentsPage() {
           <AlertDescription>{error}</AlertDescription>
         </Alert>
         <Button className="mt-4" onClick={() => router.back()}>
-          ← Back
+          Back
         </Button>
       </div>
     );
   }
 
+  if (!shouldFetch) {
+    return null;
+  }
+
   return (
-    <div className="container mx-auto py-6 max-w-6xl">
+    <div className="container mx-auto max-w-6xl py-6">
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Payment History</h1>
-        <p className="text-muted-foreground mt-1">
+        <p className="mt-1 text-muted-foreground">
           Track your payments to adventurers for completed quests
         </p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
+      <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Spent</CardTitle>
@@ -137,7 +121,7 @@ export default function CompanyPaymentsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {transactions.filter(t => t.status === 'completed').length}
+              {transactions.filter(transaction => transaction.status === 'completed').length}
             </div>
             <p className="text-xs text-muted-foreground">Paid quests</p>
           </CardContent>
@@ -150,7 +134,11 @@ export default function CompanyPaymentsPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {formatCurrency(transactions.filter(t => t.status === 'pending').reduce((sum, t) => sum + t.amount, 0))}
+              {formatCurrency(
+                transactions
+                  .filter(transaction => transaction.status === 'pending')
+                  .reduce((sum, transaction) => sum + transaction.amount, 0)
+              )}
             </div>
             <p className="text-xs text-muted-foreground">Awaiting payment</p>
           </CardContent>
@@ -158,24 +146,24 @@ export default function CompanyPaymentsPage() {
       </div>
 
       <div className="mb-6">
-        <div className="flex flex-col sm:flex-row gap-4">
+        <div className="flex flex-col gap-4 sm:flex-row">
           <div className="relative flex-1">
             <input
               type="text"
               placeholder="Search by quest, adventurer, or transaction ID..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              onChange={(event) => setSearchTerm(event.target.value)}
+              className="w-full rounded-lg border py-2 pl-10 pr-4 focus:outline-none focus:ring-2 focus:ring-primary"
             />
-            <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
               <Search className="h-4 w-4" />
             </div>
           </div>
           <div className="flex gap-2">
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
-              className="border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+              onChange={(event) => setStatusFilter(event.target.value)}
+              className="rounded-lg border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="all">All Statuses</option>
               <option value="pending">Pending</option>
@@ -184,65 +172,63 @@ export default function CompanyPaymentsPage() {
               <option value="cancelled">Cancelled</option>
             </select>
             <Button variant="outline" onClick={() => router.push('/dashboard/company')}>
-              ← Back to Dashboard
+              Back to Dashboard
             </Button>
           </div>
         </div>
       </div>
 
       {filteredTransactions.length === 0 ? (
-        <div className="text-center py-12">
-          <Wallet className="w-16 h-16 mx-auto text-muted-foreground mb-4" />
-          <h3 className="text-xl font-medium mb-2">No payments yet</h3>
-          <p className="text-muted-foreground mb-4">
-            {searchTerm || statusFilter !== 'all' 
-              ? 'No payments match your current filters' 
-              : 'You haven\'t made any payments yet. Complete quests to start paying adventurers.'}
+        <div className="py-12 text-center">
+          <Wallet className="mx-auto mb-4 h-16 w-16 text-muted-foreground" />
+          <h3 className="mb-2 text-xl font-medium">No payments yet</h3>
+          <p className="mb-4 text-muted-foreground">
+            {searchTerm || statusFilter !== 'all'
+              ? 'No payments match your current filters'
+              : "You haven't made any payments yet. Complete quests to start paying adventurers."}
           </p>
-          {(!searchTerm && statusFilter === 'all') && (
-            <Button onClick={() => router.push('/dashboard/company/quests')}>
-              View Quests
-            </Button>
-          )}
+          {!searchTerm && statusFilter === 'all' ? (
+            <Button onClick={() => router.push('/dashboard/company/quests')}>View Quests</Button>
+          ) : null}
         </div>
       ) : (
         <div className="space-y-4">
-          {filteredTransactions.map((transaction) => (
+          {filteredTransactions.map(transaction => (
             <Card key={transaction.id}>
               <CardHeader className="sm:grid sm:grid-cols-3 sm:items-center">
                 <div>
                   <CardTitle className="text-lg">{transaction.quest?.title || 'Quest Payment'}</CardTitle>
-                  <CardDescription>
-                    To {transaction.toUser?.name || 'Unknown Adventurer'}
-                  </CardDescription>
+                  <CardDescription>To {transaction.toUser?.name || 'Unknown Adventurer'}</CardDescription>
                 </div>
-                <div className="sm:mt-0 mt-2">
-                  <div className="font-bold text-lg">{formatCurrency(transaction.amount, transaction.currency)}</div>
-                  <div className="text-sm text-muted-foreground flex items-center">
-                    <Calendar className="w-4 h-4 mr-1" />
+                <div className="mt-2 sm:mt-0">
+                  <div className="text-lg font-bold">{formatCurrency(transaction.amount, transaction.currency)}</div>
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Calendar className="mr-1 h-4 w-4" />
                     {new Date(transaction.createdAt).toLocaleDateString()}
                   </div>
                 </div>
-                <div className="flex sm:justify-end sm:mt-0 mt-2">
+                <div className="mt-2 flex sm:mt-0 sm:justify-end">
                   <Badge variant="outline" className={getStatusColor(transaction.status)}>
                     {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
                   </Badge>
                 </div>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="text-sm">
                     <p className="font-medium">Transaction ID: {transaction.transactionId || transaction.id}</p>
-                    <p className="text-muted-foreground">{transaction.description || 'Payment for quest completion'}</p>
+                    <p className="text-muted-foreground">
+                      {transaction.description || 'Payment for quest completion'}
+                    </p>
                   </div>
                   <div className="flex gap-2">
                     <Button variant="outline" size="sm">
-                      <Download className="w-4 h-4 mr-2" />
+                      <Download className="mr-2 h-4 w-4" />
                       Receipt
                     </Button>
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
+                    <Button
+                      variant="outline"
+                      size="sm"
                       onClick={() => router.push(`/dashboard/company/quests/${transaction.questId}`)}
                     >
                       View Quest

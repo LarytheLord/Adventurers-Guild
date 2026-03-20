@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Star, Compass, Code2 } from 'lucide-react';
+import { ArrowRight, Star, Compass } from 'lucide-react';
 import Link from 'next/link';
 
 export default function HeroSection() {

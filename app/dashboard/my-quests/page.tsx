@@ -45,12 +45,12 @@ export default async function MyQuestsPage() {
       <div className="grid gap-6">
         {assignments.length === 0 ? (
           <Card>
-            <CardContent className="flex flex-col items-center justify-center py-12">
+            <CardContent className="flex flex-col items-center justify-center py-8 sm:py-12 px-4">
               <div className="rounded-full bg-muted p-4 mb-4">
                 <AlertCircle className="h-8 w-8 text-muted-foreground" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">No quests found</h3>
-              <p className="text-muted-foreground mb-4">You haven&apos;t accepted any quests yet.</p>
+              <h3 className="text-lg font-semibold mb-2 text-center">No quests found</h3>
+              <p className="text-muted-foreground mb-4 text-center text-sm sm:text-base">You haven&apos;t accepted any quests yet.</p>
               <Button asChild>
                 <Link href="/dashboard/quests">Find Quests</Link>
               </Button>

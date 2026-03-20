@@ -15,15 +15,11 @@ import {
   TableRow 
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Users, 
-  Target, 
-  Trophy, 
-  Calendar, 
+import {
+  Users,
+  Target,
+  Trophy,
   Search,
-  Edit,
-  Eye,
-  Trash2,
   CheckCircle,
   XCircle,
   AlertTriangle
@@ -84,8 +80,6 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [userSearch, setUserSearch] = useState('');
   const [questSearch, setQuestSearch] = useState('');
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
-  const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
 
   // Fetch users
   useEffect(() => {

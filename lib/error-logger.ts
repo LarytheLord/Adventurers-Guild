@@ -1,6 +1,4 @@
 // lib/error-logger.ts
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
 
 /**
  * Error severity levels
@@ -26,23 +24,23 @@ export interface ErrorContext {
  */
 export function getErrorSeverity(error: Error): ErrorSeverity {
   const errorString = error.toString().toLowerCase();
-  
+
   if (errorString.includes('network') || errorString.includes('timeout')) {
     return 'medium';
   }
-  
+
   if (errorString.includes('permission denied') || errorString.includes('access denied')) {
     return 'high';
   }
-  
+
   if (errorString.includes('internal server error') || errorString.includes('server error')) {
     return 'critical';
   }
-  
+
   if (errorString.includes('invalid') || errorString.includes('malformed')) {
     return 'medium';
   }
-  
+
   // Default to low severity for most errors
   return 'low';
 }
@@ -61,7 +59,7 @@ export async function logError(
   // - LogRocket
   // - Custom logging service
   // - Email notifications for critical errors
-  
+
   const logEntry = {
     timestamp: new Date().toISOString(),
     error: {
@@ -83,7 +81,7 @@ export async function logError(
 
   // In production, you would send this to your logging service
   // Example: await sendToLoggingService(logEntry);
-  
+
   // For now, we'll just log to console
   console.warn(`[${severity.toUpperCase()}] Error logged: ${error.message}`);
 }
@@ -102,7 +100,7 @@ export async function logErrorWithContext(
     // This would work in server components
     // const session = await getServerSession(authOptions);
     // userId = session?.user?.id;
-  } catch (e) {
+  } catch {
     // Ignore session errors
   }
 
@@ -123,7 +121,7 @@ export function createErrorHandler(componentName: string) {
       component: componentName,
       ...errorInfo,
     };
-    
+
     await logErrorWithContext(error, errorInfo, context);
   };
 }

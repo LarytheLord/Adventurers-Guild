@@ -17,11 +17,27 @@ export async function GET(request: NextRequest) {
     const userId = authUser.role === 'admin' ? (searchParams.get('userId') || authUser.id) : authUser.id;
     const type = searchParams.get('type'); // 'incoming' or 'outgoing'
     const status = searchParams.get('status');
-    const limit = searchParams.get('limit') || '10';
-    const offset = searchParams.get('offset') || '0';
+    const limitParam = searchParams.get('limit');
+    const offsetParam = searchParams.get('offset');
 
     if (!userId) {
       return Response.json({ error: 'User ID is required', success: false }, { status: 400 });
+    }
+
+    let limit: number | null = null;
+    if (limitParam !== null) {
+      limit = Number.parseInt(limitParam, 10);
+      if (!Number.isFinite(limit) || limit <= 0) {
+        return Response.json({ error: 'limit must be a positive integer', success: false }, { status: 400 });
+      }
+    }
+
+    let offset = 0;
+    if (offsetParam !== null) {
+      offset = Number.parseInt(offsetParam, 10);
+      if (!Number.isFinite(offset) || offset < 0) {
+        return Response.json({ error: 'offset must be a non-negative integer', success: false }, { status: 400 });
+      }
     }
 
     // Build where clause based on type
@@ -63,8 +79,8 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-      skip: parseInt(offset),
-      take: parseInt(limit),
+      skip: offset,
+      ...(limit ? { take: limit } : {}),
       orderBy: { createdAt: 'desc' },
     });
 

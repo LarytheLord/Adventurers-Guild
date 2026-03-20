@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import {
   ArrowUpRight,
   Award,
@@ -18,6 +19,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { GuildPage, GuildPanel } from '@/components/guild/primitives';
+import { useApiFetch } from '@/lib/hooks';
 
 type Mode = 'adventurer' | 'company';
 
@@ -47,6 +50,25 @@ type CompanyRankRow = {
   isVerified: boolean;
 };
 
+type RankingsResponse = {
+  success: boolean;
+  rankings: Array<AdventurerRankRow | CompanyRankRow>;
+  total: number;
+  error?: string;
+};
+
+type UserRankResponse = {
+  success: boolean;
+  rank: {
+    position: number;
+    totalUsers: number;
+  } | null;
+  error?: string;
+};
+
+const EMPTY_ADVENTURERS: AdventurerRankRow[] = [];
+const EMPTY_COMPANIES: CompanyRankRow[] = [];
+
 const RANK_COLORS: Record<string, string> = {
   S: 'border-amber-300 bg-amber-100 text-amber-700',
   A: 'border-violet-300 bg-violet-100 text-violet-700',
@@ -72,6 +94,7 @@ const COMPANY_SORT_LABELS = {
 
 export default function LeaderboardPage() {
   const { data: session, status } = useSession();
+  const router = useRouter();
   const defaultMode: Mode = session?.user?.role === 'company' ? 'company' : 'adventurer';
 
   const [mode, setMode] = useState<Mode>(defaultMode);
@@ -79,64 +102,45 @@ export default function LeaderboardPage() {
   const [companySort, setCompanySort] = useState<
     'totalSpent' | 'questsPosted' | 'completedQuests' | 'activeQuests'
   >('totalSpent');
-  const [loading, setLoading] = useState(true);
-  const [userPosition, setUserPosition] = useState<{ position: number; totalUsers: number } | null>(
-    null
-  );
-  const [adventurers, setAdventurers] = useState<AdventurerRankRow[]>([]);
-  const [companies, setCompanies] = useState<CompanyRankRow[]>([]);
 
   useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/login');
+      return;
+    }
+
     if (status === 'authenticated') {
       setMode(session?.user?.role === 'company' ? 'company' : 'adventurer');
     }
-  }, [status, session?.user?.role]);
+  }, [router, session?.user?.role, status]);
 
   const activeSort = mode === 'adventurer' ? adventurerSort : companySort;
   const activeSortLabel =
     mode === 'adventurer'
       ? ADVENTURER_SORT_LABELS[adventurerSort]
       : COMPANY_SORT_LABELS[companySort];
+  const shouldFetch = status === 'authenticated';
+  const rankingsEndpoint = `/api/rankings?mode=${mode}&sort=${activeSort}&order=desc&limit=50`;
+  const userRankEndpoint = `/api/rankings/user?mode=${mode}&sort=${activeSort}&order=desc`;
 
-  useEffect(() => {
-    const loadRankings = async () => {
-      if (status !== 'authenticated') {
-        return;
-      }
+  const { data: rankingsData, loading: rankingsLoading } = useApiFetch<RankingsResponse>(
+    rankingsEndpoint,
+    { skip: !shouldFetch }
+  );
+  const { data: userRankData, loading: userRankLoading } = useApiFetch<UserRankResponse>(
+    userRankEndpoint,
+    { skip: !shouldFetch }
+  );
 
-      try {
-        setLoading(true);
-
-        const [rankingRes, userRankRes] = await Promise.all([
-          fetch(`/api/rankings?mode=${mode}&sort=${activeSort}&order=desc&limit=50`),
-          fetch(`/api/rankings/user?mode=${mode}&sort=${activeSort}&order=desc`),
-        ]);
-
-        const rankingData = await rankingRes.json();
-        const userRankData = await userRankRes.json();
-
-        if (mode === 'adventurer') {
-          setAdventurers(rankingData.rankings || []);
-        } else {
-          setCompanies(rankingData.rankings || []);
-        }
-
-        setUserPosition(userRankData.rank || null);
-      } catch (error) {
-        console.error('Failed to load leaderboard:', error);
-        if (mode === 'adventurer') {
-          setAdventurers([]);
-        } else {
-          setCompanies([]);
-        }
-        setUserPosition(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadRankings();
-  }, [mode, activeSort, status]);
+  const adventurers =
+    mode === 'adventurer'
+      ? ((rankingsData?.rankings as AdventurerRankRow[] | undefined) ?? EMPTY_ADVENTURERS)
+      : EMPTY_ADVENTURERS;
+  const companies =
+    mode === 'company'
+      ? ((rankingsData?.rankings as CompanyRankRow[] | undefined) ?? EMPTY_COMPANIES)
+      : EMPTY_COMPANIES;
+  const userPosition = userRankData?.rank ?? null;
 
   const topThree = useMemo(() => {
     if (mode === 'adventurer') {
@@ -152,7 +156,9 @@ export default function LeaderboardPage() {
     }
 
     return [companies[1], companies[0], companies[2]].filter(Boolean);
-  }, [mode, adventurers, companies]);
+  }, [adventurers, companies, mode]);
+
+  const activeRows = mode === 'adventurer' ? adventurers : companies;
 
   const getPositionIcon = (position: number) => {
     if (position === 1) {
@@ -170,17 +176,19 @@ export default function LeaderboardPage() {
     return <span className="text-sm font-semibold text-slate-500">{position}</span>;
   };
 
-  if (status === 'loading' || loading) {
+  if (status === 'loading' || (shouldFetch && (rankingsLoading || userRankLoading))) {
     return (
-      <div className="guild-page">
-        <div className="guild-panel flex min-h-[50vh] items-center justify-center py-8">
+      <GuildPage>
+        <GuildPanel className="flex min-h-[50vh] items-center justify-center py-8">
           <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary" />
-        </div>
-      </div>
+        </GuildPanel>
+      </GuildPage>
     );
   }
 
-  const activeRows = mode === 'adventurer' ? adventurers : companies;
+  if (status !== 'authenticated') {
+    return null;
+  }
 
   return (
     <div className="guild-page">
@@ -230,13 +238,13 @@ export default function LeaderboardPage() {
                 value={companySort}
                 onValueChange={(value) => setCompanySort(value as typeof companySort)}
               >
-                <SelectTrigger className="w-full sm:w-[220px]">
+                <SelectTrigger className="w-full sm:w-[200px]">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="totalSpent">Sort by Total Spend</SelectItem>
-                  <SelectItem value="completedQuests">Sort by Completed Quests</SelectItem>
                   <SelectItem value="questsPosted">Sort by Quests Posted</SelectItem>
+                  <SelectItem value="completedQuests">Sort by Completed Quests</SelectItem>
                   <SelectItem value="activeQuests">Sort by Active Quests</SelectItem>
                 </SelectContent>
               </Select>
@@ -245,9 +253,14 @@ export default function LeaderboardPage() {
         </div>
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <article className="guild-kpi sm:col-span-2 xl:col-span-1">
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Your Position</p>
+      <section className="grid gap-4 md:grid-cols-4">
+        <article className="guild-kpi">
+          <div className="flex items-center justify-between">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Your Position
+            </p>
+            <Trophy className="h-4 w-4 text-amber-500" />
+          </div>
           <p className="mt-2 text-2xl font-bold text-slate-900">
             #{userPosition?.position ?? '-'}
             <span className="ml-1 text-sm font-medium text-slate-500">
@@ -259,7 +272,9 @@ export default function LeaderboardPage() {
 
         <article className="guild-kpi">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Board Type</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Board Type
+            </p>
             {mode === 'adventurer' ? (
               <Users className="h-4 w-4 text-sky-500" />
             ) : (
@@ -272,7 +287,9 @@ export default function LeaderboardPage() {
 
         <article className="guild-kpi">
           <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Current Sort</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Current Sort
+            </p>
             <ArrowUpRight className="h-4 w-4 text-amber-500" />
           </div>
           <p className="mt-2 text-2xl font-bold text-slate-900">{activeSortLabel}</p>
@@ -293,8 +310,8 @@ export default function LeaderboardPage() {
 
       {topThree.length > 0 && (
         <section className="grid gap-4 md:grid-cols-3">
-          {topThree.map((row, idx) => {
-            const isCenter = idx === 1;
+          {topThree.map((row, index) => {
+            const isCenter = index === 1;
             const name =
               mode === 'adventurer'
                 ? (row as AdventurerRankRow).name
@@ -334,7 +351,10 @@ export default function LeaderboardPage() {
                     </>
                   ) : (
                     <>
-                      <Badge variant="outline" className="mt-2 border-sky-300 bg-sky-100 text-sky-700">
+                      <Badge
+                        variant="outline"
+                        className="mt-2 border-sky-300 bg-sky-100 text-sky-700"
+                      >
                         {(row as CompanyRankRow).isVerified ? 'Verified' : 'Unverified'}
                       </Badge>
                       <p className="mt-2 text-sm font-semibold text-slate-700">
@@ -362,7 +382,9 @@ export default function LeaderboardPage() {
         </CardHeader>
         <CardContent className="p-0">
           {activeRows.length === 0 ? (
-            <div className="p-10 text-center text-sm text-slate-500">No ranking data available yet.</div>
+            <div className="p-10 text-center text-sm text-slate-500">
+              No ranking data available yet.
+            </div>
           ) : (
             <div className="divide-y">
               {mode === 'adventurer'
@@ -481,7 +503,9 @@ export default function LeaderboardPage() {
 
       <div className="flex justify-end">
         <Button asChild>
-          <Link href={mode === 'adventurer' ? '/dashboard/quests' : '/dashboard/company/create-quest'}>
+          <Link
+            href={mode === 'adventurer' ? '/dashboard/quests' : '/dashboard/company/create-quest'}
+          >
             {mode === 'adventurer' ? 'Find Next Quest' : 'Launch New Quest'}
           </Link>
         </Button>

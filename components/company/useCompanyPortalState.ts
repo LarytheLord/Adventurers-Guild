@@ -1,38 +1,30 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
+import { useApiFetch } from '@/lib/hooks';
 import type { CompanyQuest, QuestFormData } from './company-portal-types';
+
+interface CompanyQuestsResponse {
+  success: boolean;
+  quests: CompanyQuest[];
+  error?: string;
+}
+
+const EMPTY_COMPANY_QUESTS: CompanyQuest[] = [];
 
 export function useCompanyPortalState(companyId: string) {
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [companyQuests, setCompanyQuests] = useState<CompanyQuest[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const loadCompanyQuests = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`/api/company/quests?company_id=${companyId}`);
-      const data = await response.json();
-
-      if (data.success) {
-        setCompanyQuests(data.quests);
-      } else {
-        toast.error(data.error || 'Failed to fetch quests');
-      }
-    } catch (error) {
-      console.error('Error fetching company quests:', error);
-      toast.error('Error fetching quests');
-    } finally {
-      setLoading(false);
-    }
-  }, [companyId]);
-
-  useEffect(() => {
-    if (companyId && (activeTab === 'quests' || activeTab === 'dashboard')) {
-      void loadCompanyQuests();
-    }
-  }, [activeTab, companyId, loadCompanyQuests]);
+  const shouldFetch = Boolean(companyId) && (activeTab === 'quests' || activeTab === 'dashboard');
+  const {
+    data,
+    loading,
+    refetch: loadCompanyQuests,
+    mutate,
+  } = useApiFetch<CompanyQuestsResponse>(`/api/company/quests?company_id=${companyId}`, {
+    skip: !shouldFetch,
+  });
+  const companyQuests = data?.quests ?? EMPTY_COMPANY_QUESTS;
 
   const handleCreateQuest = async (formData: QuestFormData) => {
     try {
@@ -84,7 +76,10 @@ export function useCompanyPortalState(companyId: string) {
 
       if (data.success) {
         toast.success('Quest cancelled successfully');
-        setCompanyQuests((quests) => quests.filter((quest) => quest.id !== questId));
+        mutate({
+          success: true,
+          quests: companyQuests.filter((quest) => quest.id !== questId),
+        });
       } else {
         toast.error(data.error || 'Failed to cancel quest');
       }

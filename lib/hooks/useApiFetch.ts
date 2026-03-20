@@ -13,6 +13,7 @@ interface ApiState<T> {
 interface ApiOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
   body?: Record<string, unknown>;
+  cache?: RequestCache;
   showToast?: boolean;
   successMessage?: string;
   errorMessage?: string;
@@ -60,6 +61,7 @@ export function useApiFetch<T = unknown>(
     const {
       method = initialOptions.method || 'GET',
       body,
+      cache = initialOptions.cache,
       showToast = true,
       successMessage,
       errorMessage,
@@ -74,6 +76,10 @@ export function useApiFetch<T = unknown>(
           'Content-Type': 'application/json',
         },
       };
+
+      if (cache) {
+        fetchOptions.cache = cache;
+      }
 
       if (body && method !== 'GET') {
         fetchOptions.body = JSON.stringify(body);
@@ -110,7 +116,7 @@ export function useApiFetch<T = unknown>(
       setState(prev => ({ ...prev, error: errorMsg, loading: false }));
       return null;
     }
-  }, [endpoint, initialOptions.method]);
+  }, [endpoint, initialOptions.cache, initialOptions.method]);
 
   // Auto-fetch on mount if not skipped
   useEffect(() => {

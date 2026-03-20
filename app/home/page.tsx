@@ -93,8 +93,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      <LogoMarquee />
-
       <section id="features">
         <StatsSection />
       </section>
@@ -110,6 +108,9 @@ export default function HomePage() {
       <section id="join">
         <CTASection />
       </section>
+      
+      {/* Trusted Partners section - moved below main CTA */}
+      <LogoMarquee />
     </>
   );
 }

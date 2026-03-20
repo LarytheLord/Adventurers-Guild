@@ -169,6 +169,7 @@ model User {
   passwordResetTokens PasswordResetToken[]
   mentorships         Mentorship[]          @relation("MentorUser")
   menteeships         Mentorship[]          @relation("MenteeUser")
+  apiKeyBudgets       ApiKeyBudget[]
 
   @@index([email])
   @@index([role])
@@ -496,4 +497,19 @@ model DevSyncProjectMapping {
   quest Quest @relation(fields: [questId], references: [id], onDelete: Cascade)
 
   @@map("devsync_project_mappings")
+}
+
+model ApiKeyBudget {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  weekStart DateTime @map("week_start") @db.Timestamptz
+  spent     Float    @default(0)
+  cap       Float    @default(5)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, weekStart])
+  @@map("api_key_budgets")
 }

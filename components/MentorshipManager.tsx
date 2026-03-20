@@ -8,15 +8,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  UserPlus, 
-  UserCheck, 
-  UserX, 
-  Target, 
+import {
+  UserPlus,
+  UserCheck,
+  UserX,
+  Target,
   Star,
   MessageCircle,
-  Calendar,
-  TrendingUp
+  Calendar
 } from 'lucide-react';
 import { toast } from 'sonner';
 

@@ -6,22 +6,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { 
-  Code, 
-  Database, 
-  Brain, 
-  Server, 
-  Zap, 
-  Shield, 
-  Star, 
-  Trophy, 
-  Target, 
-  CheckCircle, 
+import {
+  Code,
+  Database,
+  Brain,
+  Server,
+  Zap,
+  Trophy,
+  CheckCircle,
   Lock,
-  TrendingUp,
   Award,
-  Sparkles,
-  X
+  Sparkles
 } from 'lucide-react'
 
 interface Skill {
