@@ -29,6 +29,38 @@ interface HeroProps {
   className?: string;
 }
 
+interface NavigatorWithPerformanceHints extends Navigator {
+  connection?: {
+    saveData?: boolean;
+  };
+  deviceMemory?: number;
+  userAgentData?: {
+    mobile?: boolean;
+  };
+}
+
+const shouldUseCssFallback = () => {
+  if (typeof window === 'undefined') return false;
+
+  const navigatorWithHints = navigator as NavigatorWithPerformanceHints;
+  const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const saveData = Boolean(navigatorWithHints.connection?.saveData);
+  const isMobile =
+    navigatorWithHints.userAgentData?.mobile ??
+    /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+  const lowMemory =
+    typeof navigatorWithHints.deviceMemory === 'number' &&
+    navigatorWithHints.deviceMemory <= 4;
+  const lowCoreCount = navigator.hardwareConcurrency > 0 && navigator.hardwareConcurrency <= 4;
+  const smallViewport = Math.min(window.innerWidth, window.innerHeight) < 820;
+
+  if (prefersReducedMotion || saveData) {
+    return true;
+  }
+
+  return isMobile && smallViewport && (lowMemory || lowCoreCount);
+};
+
 // Reusable Shader Background Hook
 const useShaderBackground = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -299,6 +331,11 @@ void main(){gl_Position=position;}`;
     const canvas = canvasRef.current;
     const dpr = Math.max(1, 0.5 * window.devicePixelRatio);
 
+    if (shouldUseCssFallback() || typeof window.WebGL2RenderingContext === 'undefined') {
+      setWebglFailed(true);
+      return;
+    }
+
     try {
       rendererRef.current = new WebGLRenderer(canvas, dpr);
     } catch {
@@ -409,7 +446,11 @@ const Hero: React.FC<HeroProps> = ({
       `}</style>
       
       {webglFailed ? (
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-950 via-slate-900 to-orange-950" />
+        <div className="absolute inset-0 overflow-hidden bg-[radial-gradient(circle_at_top,rgba(251,146,60,0.18),transparent_38%),linear-gradient(135deg,#020617_0%,#111827_48%,#431407_100%)]">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(251,191,36,0.12),transparent_24%),radial-gradient(circle_at_80%_18%,rgba(249,115,22,0.14),transparent_26%),radial-gradient(circle_at_50%_100%,rgba(56,189,248,0.12),transparent_32%)]" />
+          <div className="absolute left-1/2 top-24 h-56 w-56 -translate-x-1/2 rounded-full bg-orange-400/10 blur-3xl" />
+          <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-black/40 to-transparent" />
+        </div>
       ) : (
         <canvas
           ref={canvasRef}
