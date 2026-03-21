@@ -2,7 +2,7 @@
 
 Task queue for the Open Paws Bootcamp integration and platform scale-up. Tasks are ordered by dependency. Do not skip ahead.
 
-**Current date**: 2026-03-16
+**Current date**: 2026-03-21
 **Sprint target**: Platform operational for intern + bootcamp launch by May 2026
 
 ---
@@ -13,7 +13,8 @@ Task queue for the Open Paws Bootcamp integration and platform scale-up. Tasks a
 |-------|--------|-------|
 | Phase 0: Schema & Prerequisites | ✅ Complete | All schema changes merged |
 | Phase 1: Bootcamp Integration | ✅ Complete | All 5 tasks done (PR #103) |
-| Phase 2: Squad System + Payments | 🔨 In Progress | 4 tasks, target ~April 13 |
+| Phase 2: Squad System + Payments | ✅ Core done | 2.A + 2.B done, 2.C + 2.D delegated |
+| Phase 2.5: Credential System | 🔨 In Progress | Guild Card, Analytics, Streaks — NEW |
 | Phase 3: Platform Polish + Scale | ⏳ Planned | 6 tasks, target ~May 11 |
 
 ---
@@ -71,16 +72,17 @@ Task queue for the Open Paws Bootcamp integration and platform scale-up. Tasks a
 
 ---
 
-## 🔨 Phase 2: Squad System + Payment Infrastructure
+## ✅ Phase 2: Squad System + Payment Infrastructure
 
 **Target: ~April 13, 2026 (2 weeks)**
 **GitHub issues**: See linked issues for full spec.
+**Updated**: 2026-03-21
 
 ---
 
-### Task 2.A: Squad/Party System — Schema and API
+### ~~Task 2.A: Squad/Party System — Schema and API~~ ✅
 
-**GitHub issue**: [#TBD Squad/Party System](https://github.com/LarytheLord/Adventurers-Guild/issues)
+**GitHub issue**: [#104](https://github.com/LarytheLord/Adventurers-Guild/issues/104) (closed)
 **Full spec**: [`docs/SQUAD_PARTY_SYSTEM.md`](./SQUAD_PARTY_SYSTEM.md)
 **Rank**: S
 
@@ -143,9 +145,9 @@ model PartyMember {
 
 ---
 
-### Task 2.B: Admin QA Mediation Layer
+### ~~Task 2.B: Admin QA Mediation Layer~~ ✅
 
-**GitHub issue**: [#TBD Admin QA Mediation](https://github.com/LarytheLord/Adventurers-Guild/issues)
+**GitHub issue**: [#105](https://github.com/LarytheLord/Adventurers-Guild/issues/105) (closed)
 **Full spec**: [`docs/ADMIN_QA_MEDIATION.md`](./ADMIN_QA_MEDIATION.md)
 **Rank**: A
 
