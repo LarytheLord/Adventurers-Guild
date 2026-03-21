@@ -54,9 +54,11 @@ export async function GET(request: NextRequest) {
         'started',
         'in_progress',
         'submitted',
+        'pending_admin_review',
         'review',
         'completed',
         'cancelled',
+        'needs_rework',
       ];
       if (!validStatuses.includes(status as AssignmentStatus)) {
         return NextResponse.json({ error: 'Invalid status filter', success: false }, { status: 400 });
@@ -153,7 +155,7 @@ export async function POST(request: NextRequest) {
       const count = await prisma.questAssignment.count({
         where: {
           questId: questId,
-          status: { in: ['started', 'in_progress', 'submitted', 'review', 'completed'] },
+          status: { in: ['started', 'in_progress', 'submitted', 'pending_admin_review', 'review', 'needs_rework', 'completed'] },
         },
       });
 
@@ -162,11 +164,12 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Check if user is already assigned to this quest
+    // Check if user is already assigned to this quest (ignore cancelled)
     const existingAssignment = await prisma.questAssignment.findFirst({
       where: {
         questId: questId,
         userId,
+        status: { not: 'cancelled' },
       },
     });
 
@@ -221,9 +224,11 @@ export async function PUT(request: NextRequest) {
       'started',
       'in_progress',
       'submitted',
+      'pending_admin_review',
       'review',
       'completed',
       'cancelled',
+      'needs_rework',
     ];
     const adventurerStatuses: AssignmentStatus[] = ['started', 'in_progress'];
     const allowedStatuses = user.role === 'admin' ? adminStatuses : adventurerStatuses;
