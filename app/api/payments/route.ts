@@ -233,7 +233,7 @@ export async function POST(request: NextRequest) {
     // Update company spending
     const { updateCompanySpending } = await import('@/lib/xp-utils');
     try {
-      await updateCompanySpending(body.from_userId, body.amount);
+      await updateCompanySpending(body.fromUserId, body.amount);
     } catch (e) {
       console.error('Error updating company spending:', e);
     }

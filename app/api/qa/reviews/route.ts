@@ -8,7 +8,7 @@ type ReviewStatus = (typeof VALID_REVIEW_STATUSES)[number];
 
 export async function GET(request: NextRequest) {
   try {
-    const authUser = await requireAuth('company', 'admin');
+    const authUser = await requireAuth(request, 'company', 'admin');
     if (!authUser) {
       return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const authUser = await requireAuth('company', 'admin');
+    const authUser = await requireAuth(request, 'company', 'admin');
     if (!authUser) {
       return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
@@ -220,7 +220,7 @@ export async function POST(request: NextRequest) {
 // API to get quality statistics
 export async function PUT(request: NextRequest) {
   try {
-    const authUser = await requireAuth('company', 'admin');
+    const authUser = await requireAuth(request, 'company', 'admin');
     if (!authUser) {
       return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
