@@ -50,10 +50,22 @@ export async function POST(request: NextRequest) {
     // Hash password
     const passwordHash = await bcrypt.hash(password, 12);
 
+    // Generate a unique username from the name
+    const baseUsername = name
+      .toLowerCase()
+      .replace(/[^a-z0-9]/g, '')
+      .slice(0, 20) || 'adventurer';
+    let username = baseUsername;
+    let suffix = 0;
+    while (await prisma.user.findUnique({ where: { username } })) {
+      suffix++;
+      username = `${baseUsername}${suffix}`;
+    }
+
     // Create user and profile in transaction
     const user = await withDbRetry(() => prisma.$transaction(async (tx) => {
       const newUser = await tx.user.create({
-        data: { name, email: normalizedEmail, passwordHash, role },
+        data: { name, email: normalizedEmail, passwordHash, role, username },
       });
 
       if (role === 'company') {
