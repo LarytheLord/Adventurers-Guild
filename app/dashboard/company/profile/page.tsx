@@ -56,9 +56,23 @@ export default function CompanyProfilePage() {
   const handleSave = async () => {
     setSaving(true);
     try {
+      const res = await fetch('/api/users/me', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: companyName.trim(),
+          companyName: companyName.trim(),
+          companyWebsite: website,
+          companyDescription: description,
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Failed to update profile');
+      }
       toast.success('Company profile updated successfully');
-    } catch {
-      toast.error('Failed to update profile');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to update profile');
     } finally {
       setSaving(false);
     }

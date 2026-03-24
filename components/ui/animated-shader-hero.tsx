@@ -296,6 +296,17 @@ void main(){gl_Position=position;}`;
   useEffect(() => {
     if (!canvasRef.current) return;
 
+    // Skip WebGL on low-end devices — go straight to CSS gradient fallback.
+    // navigator.deviceMemory (GB) and hardwareConcurrency (logical cores) are
+    // available in Chrome/Android — the primary low-end mobile environment.
+    const nav = navigator as Navigator & { deviceMemory?: number };
+    const lowMem = nav.deviceMemory !== undefined && nav.deviceMemory < 2;
+    const lowCpu = navigator.hardwareConcurrency !== undefined && navigator.hardwareConcurrency < 4;
+    if (lowMem || lowCpu) {
+      setWebglFailed(true);
+      return;
+    }
+
     const canvas = canvasRef.current;
     const dpr = Math.max(1, 0.5 * window.devicePixelRatio);
 

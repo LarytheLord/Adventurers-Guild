@@ -54,9 +54,11 @@ export async function GET(request: NextRequest) {
         'started',
         'in_progress',
         'submitted',
+        'pending_admin_review',
         'review',
         'completed',
         'cancelled',
+        'needs_rework',
       ];
       if (!validStatuses.includes(status as AssignmentStatus)) {
         return NextResponse.json({ error: 'Invalid status filter', success: false }, { status: 400 });
@@ -121,11 +123,29 @@ export async function POST(request: NextRequest) {
     // Check if the quest exists and is available
     const quest = await prisma.quest.findUnique({
       where: { id: questId },
-      select: { status: true, maxParticipants: true },
+      select: { status: true, maxParticipants: true, title: true, track: true },
     });
 
     if (!quest || quest.status !== 'available') {
       return NextResponse.json({ error: 'Quest not available', success: false }, { status: 400 });
+    }
+
+    // Task 1.4: Bootcamp tutorial gating
+    // Bootcamp-linked users who haven't completed tutorials can only apply to tutorial quests
+    if (user.role === 'adventurer') {
+      const bootcampLink = await prisma.bootcampLink.findUnique({
+        where: { userId },
+        select: { eligibleForRealQuests: true },
+      });
+      if (bootcampLink && !bootcampLink.eligibleForRealQuests) {
+        const isTutorial = quest.title.startsWith('Tutorial:');
+        if (!isTutorial) {
+          return NextResponse.json(
+            { error: 'Complete both tutorial quests first before applying to real quests', success: false },
+            { status: 403 }
+          );
+        }
+      }
     }
 
     // Check if the max number of accepted participants has been reached.
@@ -135,7 +155,7 @@ export async function POST(request: NextRequest) {
       const count = await prisma.questAssignment.count({
         where: {
           questId: questId,
-          status: { in: ['started', 'in_progress', 'submitted', 'review', 'completed'] },
+          status: { in: ['started', 'in_progress', 'submitted', 'pending_admin_review', 'review', 'needs_rework', 'completed'] },
         },
       });
 
@@ -144,11 +164,12 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Check if user is already assigned to this quest
+    // Check if user is already assigned to this quest (ignore cancelled)
     const existingAssignment = await prisma.questAssignment.findFirst({
       where: {
         questId: questId,
         userId,
+        status: { not: 'cancelled' },
       },
     });
 
@@ -203,9 +224,11 @@ export async function PUT(request: NextRequest) {
       'started',
       'in_progress',
       'submitted',
+      'pending_admin_review',
       'review',
       'completed',
       'cancelled',
+      'needs_rework',
     ];
     const adventurerStatuses: AssignmentStatus[] = ['started', 'in_progress'];
     const allowedStatuses = user.role === 'admin' ? adminStatuses : adventurerStatuses;

@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
     // Check if the assignment exists and belongs to the current user
     const assignment = await prisma.questAssignment.findUnique({
       where: { id: assignmentId },
-      select: { status: true, userId: true, questId: true },
+      select: { status: true, userId: true, questId: true, quest: { select: { track: true } } },
     });
 
     if (!assignment) {
@@ -119,9 +119,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized to submit for this assignment', success: false }, { status: 403 });
     }
 
-    if (!['assigned', 'started', 'in_progress'].includes(assignment.status)) {
+    if (!['assigned', 'started', 'in_progress', 'needs_rework'].includes(assignment.status)) {
       return NextResponse.json({ error: 'Invalid assignment state for submission', success: false }, { status: 400 });
     }
+
+    // BOOTCAMP and INTERN quests go to pending_admin_review (Open Paws QA gate)
+    // OPEN track goes directly to submitted (client sees immediately)
+    const postSubmitStatus =
+      assignment.quest.track !== 'OPEN' ? 'pending_admin_review' : 'submitted';
 
     const data = await prisma.$transaction(
       async (tx) => {
@@ -136,7 +141,7 @@ export async function POST(request: NextRequest) {
 
         await tx.questAssignment.update({
           where: { id: assignmentId },
-          data: { status: 'submitted' },
+          data: { status: postSubmitStatus },
         });
 
         await syncQuestLifecycleStatus(tx, assignment.questId);
@@ -190,6 +195,7 @@ export async function PUT(request: NextRequest) {
         quest: {
           select: {
             companyId: true,
+            title: true,
           },
         },
       },
@@ -239,7 +245,7 @@ export async function PUT(request: NextRequest) {
 
         await syncQuestLifecycleStatus(tx, assignmentData.questId);
 
-        let rewardsPayload: { userId: string; xpReward: number; skillPointsReward: number } | null = null;
+        let rewardsPayload: { userId: string; xpReward: number; skillPointsReward: number; questTitle: string } | null = null;
         if (status === 'approved' && !wasAlreadyApproved) {
           const quest = await tx.quest.findUnique({
             where: { id: assignmentData.questId },
@@ -275,6 +281,7 @@ export async function PUT(request: NextRequest) {
             userId: assignmentData.userId,
             xpReward: quest.xpReward,
             skillPointsReward: quest.skillPointsReward,
+            questTitle: assignmentData.quest?.title ?? '',
           };
         }
 
@@ -290,6 +297,26 @@ export async function PUT(request: NextRequest) {
         reviewResult.rewardsPayload.xpReward,
         reviewResult.rewardsPayload.skillPointsReward
       );
+
+      // Task 1.4: Tutorial quest completion tracking for bootcamp students
+      const { questTitle, userId: rewardUserId } = reviewResult.rewardsPayload;
+      if (questTitle.startsWith('Tutorial:')) {
+        const bootcampLink = await prisma.bootcampLink.findUnique({
+          where: { userId: rewardUserId },
+          select: { tutorialQuest1Complete: true, tutorialQuest2Complete: true },
+        });
+        if (bootcampLink) {
+          const updateData: { tutorialQuest1Complete?: boolean; tutorialQuest2Complete?: boolean; eligibleForRealQuests?: boolean } = {};
+          if (questTitle.startsWith('Tutorial: First Blood')) updateData.tutorialQuest1Complete = true;
+          if (questTitle.startsWith('Tutorial: Party Up')) updateData.tutorialQuest2Complete = true;
+          const tq1 = updateData.tutorialQuest1Complete ?? bootcampLink.tutorialQuest1Complete;
+          const tq2 = updateData.tutorialQuest2Complete ?? bootcampLink.tutorialQuest2Complete;
+          if (tq1 && tq2) updateData.eligibleForRealQuests = true;
+          if (Object.keys(updateData).length > 0) {
+            await prisma.bootcampLink.update({ where: { userId: rewardUserId }, data: updateData });
+          }
+        }
+      }
     }
 
     return NextResponse.json({ submission: reviewResult.submission, success: true });

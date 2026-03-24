@@ -1,32 +1,45 @@
-"use client"
+'use client';
 
-import { useState, useEffect } from "react"
-import { Button } from "./button"
-import { ChevronUp } from "lucide-react"
+import { useEffect, useState } from 'react';
+import { usePathname } from 'next/navigation';
+import { ChevronUp } from 'lucide-react';
+import { Button } from './button';
 
 export function GoToTop() {
-  const [isVisible, setIsVisible] = useState(false)
+  const pathname = usePathname();
+  const [isVisible, setIsVisible] = useState(false);
+
+  const hiddenRoutePrefixes = ['/dashboard', '/admin', '/login', '/register', '/register-company', '/forgot-password', '/reset-password'];
+  const shouldHide = !!pathname && hiddenRoutePrefixes.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
 
   useEffect(() => {
-    const toggleVisibility = () => {
-      // Show button after scrolling 300px
-      if (window.pageYOffset > 300) {
-        setIsVisible(true)
-      } else {
-        setIsVisible(false)
-      }
+    if (shouldHide) {
+      setIsVisible(false);
+      return;
     }
 
-    window.addEventListener("scroll", toggleVisibility)
-    return () => window.removeEventListener("scroll", toggleVisibility)
-  }, [])
+    const toggleVisibility = () => {
+      if (window.pageYOffset > 300) {
+        setIsVisible(true);
+      } else {
+        setIsVisible(false);
+      }
+    };
+
+    toggleVisibility();
+    window.addEventListener('scroll', toggleVisibility, { passive: true });
+
+    return () => window.removeEventListener('scroll', toggleVisibility);
+  }, [shouldHide]);
 
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
-      behavior: "smooth",
-    })
-  }
+      behavior: 'smooth',
+    });
+  };
+
+  if (shouldHide) return null;
 
   return (
     <>
@@ -40,5 +53,5 @@ export function GoToTop() {
         </Button>
       )}
     </>
-  )
-} 
+  );
+}

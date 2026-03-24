@@ -3,7 +3,9 @@ import { AssignmentStatus, Prisma, PrismaClient, QuestStatus } from '@prisma/cli
 const REVIEW_STATUSES: AssignmentStatus[] = ['submitted', 'review'];
 
 // Statuses that mean a company has accepted the adventurer (slot is filled)
-const FILLED_STATUSES: AssignmentStatus[] = ['started', 'in_progress', 'submitted', 'review', 'completed'];
+const FILLED_STATUSES: AssignmentStatus[] = [
+  'started', 'in_progress', 'submitted', 'pending_admin_review', 'review', 'needs_rework', 'completed',
+];
 
 function deriveQuestStatus(
   statuses: AssignmentStatus[],

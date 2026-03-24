@@ -10,8 +10,6 @@ import StatsSection from '@/components/landing/StatsSection';
 import CTASection from '@/components/landing/CTASection';
 import QuestShowcase from '@/components/landing/QuestShowcase';
 import LogoMarquee from '@/components/landing/LogoMarquee';
-import { RankBadge } from '@/components/ui/rank-badge';
-
 const RANKS = ['F', 'E', 'D', 'C', 'B', 'A', 'S'] as const;
 
 export default function HomePage() {
@@ -46,34 +44,7 @@ export default function HomePage() {
           }}
         />
 
-        {/* Floating quest card - desktop only */}
-        <div className="hidden xl:block absolute bottom-24 right-14 w-56 backdrop-blur-md bg-white/[0.06] border border-white/[0.10] rounded-xl p-4 shadow-2xl">
-          <div className="flex items-center justify-between mb-3">
-            <RankBadge rank="D" size="sm" glow />
-            <span className="text-[9px] font-semibold tracking-widest text-white/30 uppercase">Open</span>
-          </div>
-          <p className="text-white/90 text-xs font-semibold leading-snug mb-1">
-            Build Webhook Handler for Stripe
-          </p>
-          <p className="text-white/35 text-[10px] mb-3">by PayFlow Inc.</p>
-          <div className="flex items-center gap-2 text-[11px] font-semibold mb-3">
-            <span className="text-orange-400">$150</span>
-            <span className="text-white/20">/</span>
-            <span className="text-white/50">500 XP</span>
-          </div>
-          <div className="flex gap-1 flex-wrap">
-            {['React', 'Node.js', 'Stripe'].map((tag) => (
-              <span
-                key={tag}
-                className="text-[9px] px-1.5 py-0.5 bg-white/[0.05] border border-white/[0.08] rounded text-white/35"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        {/* Rank ladder - bottom center */}
+        {/* Rank ladder — bottom center */}
         <div className="hidden lg:flex absolute bottom-10 left-1/2 -translate-x-1/2 flex-col items-center gap-2">
           <div className="flex items-center gap-3">
             {RANKS.map((rank, i) => (

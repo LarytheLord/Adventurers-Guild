@@ -2,34 +2,25 @@
 
 import { useInView } from 'framer-motion';
 import { useRef, useEffect, useState } from 'react';
-import { Sword, Trophy, Scroll, Shield, ArrowUpRight } from 'lucide-react';
+import { Sword, Scroll, Shield, ArrowUpRight, Target } from 'lucide-react';
 
-const stats = [
-  { value: 500, suffix: '+', label: 'Adventurers', Icon: Sword },
-  { value: 50, prefix: '$', suffix: 'k+', label: 'Paid out', Icon: Trophy },
-  { value: 120, suffix: '+', label: 'Quests completed', Icon: Scroll },
-  { value: 15, label: 'Partner companies', Icon: Shield },
-];
+type StatItem = {
+  value: number;
+  label: string;
+  Icon: React.ComponentType<{ className?: string }>;
+};
 
 function Counter({
   value,
   label,
-  prefix = '',
-  suffix = '',
   Icon,
-}: {
-  value: number;
-  label: string;
-  prefix?: string;
-  suffix?: string;
-  Icon: React.ComponentType<{ className?: string }>;
-}) {
+}: StatItem) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true });
   const [count, setCount] = useState(0);
 
   useEffect(() => {
-    if (!isInView) return;
+    if (!isInView || value === 0) return;
     const duration = 1500;
     const steps = 40;
     const stepTime = duration / steps;
@@ -53,7 +44,7 @@ function Counter({
         <Icon className="w-5 h-5 text-orange-400" />
       </div>
       <div className="text-3xl md:text-4xl font-bold text-white tabular-nums mb-1">
-        {prefix}{count.toLocaleString()}{suffix}
+        {count.toLocaleString()}
       </div>
       <div className="text-sm text-slate-500">{label}</div>
     </div>
@@ -61,6 +52,30 @@ function Counter({
 }
 
 export default function StatsSection() {
+  const [stats, setStats] = useState<StatItem[]>([]);
+
+  useEffect(() => {
+    fetch('/api/public/stats')
+      .then((r) => r.json())
+      .then((data) => {
+        setStats([
+          { value: data.adventurers ?? 0, label: 'Adventurers', Icon: Sword },
+          { value: data.companies ?? 0, label: 'Partner companies', Icon: Shield },
+          { value: data.completedQuests ?? 0, label: 'Quests completed', Icon: Scroll },
+          { value: data.openQuests ?? 0, label: 'Open quests', Icon: Target },
+        ]);
+      })
+      .catch(() => {
+        // Silently fail — show zeros
+        setStats([
+          { value: 0, label: 'Adventurers', Icon: Sword },
+          { value: 0, label: 'Partner companies', Icon: Shield },
+          { value: 0, label: 'Quests completed', Icon: Scroll },
+          { value: 0, label: 'Open quests', Icon: Target },
+        ]);
+      });
+  }, []);
+
   return (
     <section className="border-y border-slate-800/70 bg-slate-950 py-16 md:py-20">
       <div className="container mx-auto max-w-5xl px-6">
@@ -85,7 +100,7 @@ export default function StatsSection() {
 
           <div className="mt-6 border-t border-slate-800 pt-4 text-center">
             <span className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-slate-400">
-              Metrics refresh daily
+              Live data from the guild
               <ArrowUpRight className="h-3.5 w-3.5 text-orange-400" />
             </span>
           </div>

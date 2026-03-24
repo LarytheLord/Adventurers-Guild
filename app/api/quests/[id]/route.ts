@@ -26,6 +26,26 @@ export async function GET(
             email: true,
           },
         },
+        parentQuest: {
+          select: {
+            id: true,
+            title: true,
+            track: true,
+            difficulty: true,
+            status: true,
+          },
+        },
+        subQuests: {
+          select: {
+            id: true,
+            title: true,
+            track: true,
+            difficulty: true,
+            status: true,
+            source: true,
+          },
+          orderBy: { createdAt: 'asc' },
+        },
         assignments: {
           include: {
             user: {
@@ -50,11 +70,36 @@ export async function GET(
             },
           },
         },
+        party: {
+          include: {
+            leader: { select: { id: true, name: true, rank: true } },
+            members: {
+              include: { user: { select: { id: true, name: true, rank: true } } },
+              orderBy: { joinedAt: 'asc' },
+            },
+          },
+        },
       },
     });
 
     if (!quest) {
       return NextResponse.json({ success: false, error: 'Quest not found' }, { status: 404 });
+    }
+
+    // Track enforcement: bootcamp students cannot access non-BOOTCAMP quests
+    if (user && user.role === 'adventurer') {
+      const bootcampLink = await prisma.bootcampLink.findUnique({
+        where: { userId: user.id },
+        select: { eligibleForRealQuests: true },
+      });
+      if (bootcampLink) {
+        if (quest.track !== 'BOOTCAMP') {
+          return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
+        }
+        if (!bootcampLink.eligibleForRealQuests && quest.source !== 'TUTORIAL') {
+          return NextResponse.json({ success: false, error: 'Complete tutorial quests first' }, { status: 403 });
+        }
+      }
     }
 
     const isAdmin = user?.role === 'admin';

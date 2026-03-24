@@ -77,9 +77,11 @@ enum AssignmentStatus {
   started
   in_progress
   submitted
+  pending_admin_review
   review
   completed
   cancelled
+  needs_rework
 }
 
 enum SubmissionStatus {
@@ -88,6 +90,27 @@ enum SubmissionStatus {
   approved
   needs_rework
   rejected
+}
+
+enum RevisionStatus {
+  PENDING
+  IN_PROGRESS
+  RESOLVED
+  ESCALATED
+}
+
+enum QuestTrack {
+  OPEN
+  INTERN
+  BOOTCAMP
+}
+
+enum QuestSource {
+  BACKLOG
+  HACKATHON
+  CLIENT_PORTAL
+  INTERNAL
+  TUTORIAL
 }
 
 enum TeamRole {
@@ -145,10 +168,13 @@ model User {
   bio           String?
   location      String?
   website       String?
-  discord       String?
-  github        String?
-  linkedin      String?
-  avatar        String?
+  discord           String?
+  github            String?
+  linkedin          String?
+  avatar            String?
+  mentorEligible    Boolean  @default(false) @map("mentor_eligible")
+  mentorTier        Int?     @map("mentor_tier") // 1 = junior (D-Rank+), 2 = senior (staff)
+  mentorBadgeCount  Int      @default(0) @map("mentor_badge_count")
 
   // Relations
   adventurerProfile   AdventurerProfile?
@@ -170,12 +196,34 @@ model User {
   mentorships         Mentorship[]          @relation("MentorUser")
   menteeships         Mentorship[]          @relation("MenteeUser")
   apiKeyBudgets       ApiKeyBudget[]
+  bootcampLink        BootcampLink?
+  ledParties          Party[]               @relation("PartyLeader")
+  partyMembers        PartyMember[]
 
   @@index([email])
   @@index([role])
   @@index([rank])
   @@index([isActive])
   @@map("users")
+}
+
+model BootcampLink {
+  id                     String    @id @default(uuid()) @db.Uuid
+  userId                 String    @unique @map("user_id") @db.Uuid
+  bootcampStudentId      String    @unique @map("bootcamp_student_id")
+  bootcampTrack          String    @map("bootcamp_track") // animal_advocacy | climate_action | ai_safety | hybrid
+  bootcampWeek           Int       @default(1) @map("bootcamp_week")
+  enrolledAt             DateTime  @default(now()) @map("enrolled_at") @db.Timestamptz
+  graduatedAt            DateTime? @map("graduated_at") @db.Timestamptz
+  tutorialQuest1Complete Boolean   @default(false) @map("tutorial_quest_1_complete")
+  tutorialQuest2Complete Boolean   @default(false) @map("tutorial_quest_2_complete")
+  eligibleForRealQuests  Boolean   @default(false) @map("eligible_for_real_quests")
+  createdAt              DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt              DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("bootcamp_links")
 }
 
 model AdventurerProfile {
@@ -186,7 +234,10 @@ model AdventurerProfile {
   questCompletionRate  Decimal            @default(0.00) @map("quest_completion_rate") @db.Decimal(5, 2)
   totalQuestsCompleted Int                @default(0) @map("total_quests_completed")
   currentStreak        Int                @default(0) @map("current_streak")
-  maxStreak            Int                @default(0) @map("max_streak")
+  maxStreak              Int                @default(0) @map("max_streak")
+  stripeAccountId        String?            @map("stripe_account_id")
+  razorpayContactId      String?            @map("razorpay_contact_id")
+  razorpayFundAccountId  String?            @map("razorpay_fund_account_id")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -200,9 +251,13 @@ model CompanyProfile {
   companyDescription String?      @map("company_description")
   industry           String?
   size               CompanySize?
-  isVerified         Boolean      @default(false) @map("is_verified")
-  questsPosted       Int          @default(0) @map("quests_posted")
-  totalSpent         Decimal      @default(0.00) @map("total_spent") @db.Decimal(10, 2)
+  isVerified           Boolean      @default(false) @map("is_verified")
+  questsPosted         Int          @default(0) @map("quests_posted")
+  totalSpent           Decimal      @default(0.00) @map("total_spent") @db.Decimal(10, 2)
+  stripeCustomerId     String?      @map("stripe_customer_id")
+  razorpayCustomerId   String?      @map("razorpay_customer_id")
+  subscriptionPlan     String       @default("starter") @map("subscription_plan")
+  stripeSubId          String?      @map("stripe_subscription_id")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -224,24 +279,67 @@ model Quest {
   requiredRank        UserRank?     @map("required_rank")
   maxParticipants     Int?          @map("max_participants")
   questCategory       QuestCategory @map("quest_category")
+  track               QuestTrack    @default(OPEN)
+  source              QuestSource   @default(CLIENT_PORTAL)
   companyId           String?       @map("company_id") @db.Uuid
   adminNotes          Json?         @map("admin_notes")
+  parentQuestId       String?       @map("parent_quest_id") @db.Uuid
+  maxRevisions        Int           @default(2) @map("max_revisions")
+  revisionCount       Int           @default(0) @map("revision_count")
+  hackathonEventId    String?       @map("hackathon_event_id")
+  partnerOrgName      String?       @map("partner_org_name")
   createdAt           DateTime      @default(now()) @map("created_at") @db.Timestamptz
   updatedAt           DateTime      @updatedAt @map("updated_at") @db.Timestamptz
   deadline            DateTime?     @db.Timestamptz
 
   company          User?             @relation("CompanyQuests", fields: [companyId], references: [id])
-  assignments      QuestAssignment[]
-  completions      QuestCompletion[]
-  transactions     Transaction[]
-  devSyncProject   DevSyncProjectMapping?
+  parentQuest      Quest?            @relation("SubQuests", fields: [parentQuestId], references: [id])
+  subQuests        Quest[]           @relation("SubQuests")
+  assignments        QuestAssignment[]
+  completions        QuestCompletion[]
+  transactions       Transaction[]
+  revisionRequests   RevisionRequest[]
+  party              Party?
 
   @@index([companyId])
   @@index([status])
   @@index([questCategory])
   @@index([difficulty])
+  @@index([track])
+  @@index([source])
+  @@index([parentQuestId])
   @@index([createdAt])
   @@map("quests")
+}
+
+model HackathonEvent {
+  id            String   @id @default(uuid()) @db.Uuid
+  name          String
+  location      String
+  date          DateTime @db.Timestamptz
+  totalTeams    Int?     @map("total_teams")
+  questsCreated Int      @default(0) @map("quests_created")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  @@map("hackathon_events")
+}
+
+model RevisionRequest {
+  id            String         @id @default(uuid()) @db.Uuid
+  questId       String         @map("quest_id") @db.Uuid
+  unmetCriteria String[]       @map("unmet_criteria")
+  description   String
+  isNewScope    Boolean        @default(false) @map("is_new_scope")
+  status        RevisionStatus @default(PENDING)
+  deadline      DateTime?      @db.Timestamptz
+  createdAt     DateTime       @default(now()) @map("created_at") @db.Timestamptz
+  resolvedAt    DateTime?      @map("resolved_at") @db.Timestamptz
+
+  quest Quest @relation(fields: [questId], references: [id], onDelete: Cascade)
+
+  @@index([questId])
+  @@index([status])
+  @@map("revision_requests")
 }
 
 model SkillCategory {
@@ -412,19 +510,24 @@ model VerificationRequest {
 }
 
 model Transaction {
-  id            String    @id @default(uuid()) @db.Uuid
-  fromUserId    String?   @map("from_user_id") @db.Uuid
-  toUserId      String?   @map("to_user_id") @db.Uuid
-  questId       String?   @map("quest_id") @db.Uuid
-  amount        Decimal   @db.Decimal(10, 2)
-  currency      String    @default("USD")
-  status        String    @default("pending")
-  paymentMethod String    @default("credit_card") @map("payment_method")
-  transactionId String?   @unique @map("transaction_id")
-  description   String?
-  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt     DateTime  @updatedAt @map("updated_at") @db.Timestamptz
-  completedAt   DateTime? @map("completed_at") @db.Timestamptz
+  id                    String    @id @default(uuid()) @db.Uuid
+  fromUserId            String?   @map("from_user_id") @db.Uuid
+  toUserId              String?   @map("to_user_id") @db.Uuid
+  questId               String?   @map("quest_id") @db.Uuid
+  amount                Decimal   @db.Decimal(10, 2)
+  currency              String    @default("USD")
+  status                String    @default("pending")
+  paymentMethod         String    @default("credit_card") @map("payment_method")
+  transactionId         String?   @unique @map("transaction_id")
+  description           String?
+  paymentProvider       String?   @map("payment_provider") // "stripe" | "razorpay" | "simulated"
+  providerPaymentId     String?   @map("provider_payment_id") // Stripe PaymentIntent ID or Razorpay payment_id
+  providerOrderId       String?   @map("provider_order_id") // Razorpay order_id
+  platformFee           Decimal?  @map("platform_fee") @db.Decimal(10, 2)
+  platformFeeRate       Decimal?  @map("platform_fee_rate") @db.Decimal(4, 4) // e.g. 0.1500 = 15%
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt             DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  completedAt           DateTime? @map("completed_at") @db.Timestamptz
 
   fromUser User?  @relation("TransactionFrom", fields: [fromUserId], references: [id])
   toUser   User?  @relation("TransactionTo", fields: [toUserId], references: [id])
@@ -487,16 +590,34 @@ model ErrorLog {
   @@map("error_logs")
 }
 
-model DevSyncProjectMapping {
-  id               String   @id @default(uuid()) @db.Uuid
-  questId          String   @unique @map("quest_id") @db.Uuid
-  devsyncProjectId String   @unique @map("devsync_project_id")
-  createdAt        DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt        DateTime @updatedAt @map("updated_at") @db.Timestamptz
+model Party {
+  id        String     @id @default(uuid()) @db.Uuid
+  questId   String     @unique @map("quest_id") @db.Uuid
+  leaderId  String     @map("leader_id") @db.Uuid
+  track     QuestTrack
+  maxSize   Int        @default(5) @map("max_size")
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime   @updatedAt @map("updated_at") @db.Timestamptz
 
-  quest Quest @relation(fields: [questId], references: [id], onDelete: Cascade)
+  quest   Quest         @relation(fields: [questId], references: [id])
+  leader  User          @relation("PartyLeader", fields: [leaderId], references: [id])
+  members PartyMember[]
 
-  @@map("devsync_project_mappings")
+  @@map("parties")
+}
+
+model PartyMember {
+  id       String   @id @default(uuid()) @db.Uuid
+  partyId  String   @map("party_id") @db.Uuid
+  userId   String   @map("user_id") @db.Uuid
+  isLeader Boolean  @default(false) @map("is_leader")
+  joinedAt DateTime @default(now()) @map("joined_at") @db.Timestamptz
+
+  party Party @relation(fields: [partyId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([partyId, userId])
+  @@map("party_members")
 }
 
 model ApiKeyBudget {

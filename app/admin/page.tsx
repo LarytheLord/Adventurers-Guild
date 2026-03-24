@@ -167,6 +167,13 @@ export default function AdminDashboard() {
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
+            <Button variant="outline" asChild className="border-orange-500/30 text-orange-400 hover:bg-orange-500/10">
+              <Link href="/admin/qa-queue">
+                <Shield className="h-4 w-4" />
+                QA Queue
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
             <Button variant="outline" asChild>
               <Link href="/dashboard/quests">
                 <Target className="h-4 w-4" />
