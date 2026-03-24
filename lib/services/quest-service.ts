@@ -92,7 +92,7 @@ export async function getQuests(searchParams: URLSearchParams, user: SessionUser
   const orderBy: Prisma.QuestOrderByWithRelationInput =
     sort === 'xp_desc'        ? { xpReward: 'desc' }
     : sort === 'pay_desc'     ? { monetaryReward: 'desc' }
-    : sort === 'deadline_asc' ? { deadline: { sort: 'asc', nulls: 'last' } }
+    : sort === 'deadline_asc' || sort === 'deadline_soon' ? { deadline: { sort: 'asc', nulls: 'last' } }
     : { createdAt: 'desc' };
 
   const quests = await prisma.quest.findMany({
