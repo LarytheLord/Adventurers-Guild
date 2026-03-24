@@ -18,10 +18,10 @@ import {
   User,
   Mail,
   Shield,
-  Calendar,
   Save,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useApiFetch } from '@/lib/hooks';
 
 interface UserProfile {
   xp: number;
@@ -43,39 +43,28 @@ const RANK_COLORS: Record<string, string> = {
 };
 
 export default function ProfilePage() {
-  const { data: session } = useSession();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const { data: session, status } = useSession();
   const [name, setName] = useState('');
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const { data, loading } = useApiFetch<Partial<UserProfile>>('/api/users/me/stats', {
+    skip: status !== 'authenticated',
+  });
 
   useEffect(() => {
     if (!session) return;
     setName(session.user?.name || '');
-
-    const fetchProfile = async () => {
-      try {
-        const res = await fetch('/api/users/me/stats');
-        if (res.ok) {
-          const data = await res.json();
-          setProfile({
-            xp: data.xp ?? 0,
-            level: data.level ?? 1,
-            rank: data.rank ?? 'F',
-            questsCompleted: data.questsCompleted ?? 0,
-            activeQuests: data.activeQuests ?? 0,
-            skillPoints: data.skillPoints ?? 0,
-          });
-        }
-      } catch (err) {
-        console.error('Error fetching profile:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProfile();
   }, [session]);
+
+  const profile = data
+    ? {
+        xp: data.xp ?? 0,
+        level: data.level ?? 1,
+        rank: data.rank ?? 'F',
+        questsCompleted: data.questsCompleted ?? 0,
+        activeQuests: data.activeQuests ?? 0,
+        skillPoints: data.skillPoints ?? 0,
+      }
+    : null;
 
   const handleSave = async () => {
     setSaving(true);
@@ -97,7 +86,7 @@ export default function ProfilePage() {
     }
   };
 
-  if (loading) {
+  if (status === 'loading' || loading) {
     return (
       <div className="min-h-[50vh] flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>

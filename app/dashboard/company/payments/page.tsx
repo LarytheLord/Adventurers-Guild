@@ -40,12 +40,13 @@ function paymentStatusClass(status: string) {
 export default function CompanyPaymentsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [searchTerm, setSearchTerm] = useState('');
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [totalSpent, setTotalSpent] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [searchTerm, setSearchTerm] = useState('');
+  const role = session?.user?.role;
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -53,20 +54,19 @@ export default function CompanyPaymentsPage() {
       return;
     }
 
-    if (status === 'authenticated' && session?.user?.role !== 'company' && session.user.role !== 'admin') {
+    if (status === 'authenticated' && role !== 'company' && role !== 'admin') {
       router.push('/dashboard');
-      return;
     }
+  }, [role, router, status]);
 
+  const shouldFetch = status === 'authenticated' && (role === 'company' || role === 'admin');
+
+  useEffect(() => {
     const fetchPayments = async () => {
+      if (!session?.user?.id) return;
       try {
         setLoading(true);
         setError(null);
-
-        if (!session?.user?.id) {
-          setError('User ID not found');
-          return;
-        }
 
         const payments = await getPaymentHistory(
           session.user.id,
@@ -132,6 +132,10 @@ export default function CompanyPaymentsPage() {
         </Button>
       </GuildPage>
     );
+  }
+
+  if (!shouldFetch) {
+    return null;
   }
 
   return (

@@ -22,6 +22,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { GuildCard, GuildHero, GuildKpi, GuildPage, GuildPanel } from '@/components/guild/primitives';
+import { useApiFetch } from '@/lib/hooks';
+import { getStatusColor } from '@/lib/status-utils';
 
 interface Quest {
   id: string;
@@ -45,30 +47,19 @@ interface Quest {
   };
 }
 
-function statusClass(status: string) {
-  switch (status) {
-    case 'available':
-      return 'bg-emerald-100 text-emerald-700 border-emerald-300';
-    case 'in_progress':
-      return 'bg-sky-100 text-sky-700 border-sky-300';
-    case 'review':
-      return 'bg-amber-100 text-amber-700 border-amber-300';
-    case 'completed':
-      return 'bg-violet-100 text-violet-700 border-violet-300';
-    case 'cancelled':
-      return 'bg-rose-100 text-rose-700 border-rose-300';
-    default:
-      return 'bg-slate-100 text-slate-700 border-slate-300';
-  }
-}
+const EMPTY_QUESTS: Quest[] = [];
 
 export default function CompanyQuestsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [quests, setQuests] = useState<Quest[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const shouldFetch =
+    status === 'authenticated' && (session?.user?.role === 'company' || session?.user?.role === 'admin');
+  const { data, loading, error } = useApiFetch<{ success: boolean; quests: Quest[]; error?: string }>(
+    '/api/company/quests?limit=80',
+    { skip: !shouldFetch }
+  );
+  const quests = data?.quests ?? EMPTY_QUESTS;
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -81,31 +72,6 @@ export default function CompanyQuestsPage() {
       return;
     }
 
-    const fetchCompanyQuests = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const response = await fetch('/api/company/quests?limit=80');
-        const data = await response.json();
-
-        if (!data.success) {
-          setError(data.error || 'Failed to fetch quests');
-          return;
-        }
-
-        setQuests(data.quests || []);
-      } catch (err) {
-        console.error('Error fetching company quests:', err);
-        setError('An error occurred while fetching quests');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (status === 'authenticated' && session?.user) {
-      fetchCompanyQuests();
-    }
   }, [status, session, router]);
 
   const filteredQuests = useMemo(
@@ -243,7 +209,7 @@ export default function CompanyQuestsPage() {
                       Created on {new Date(quest.createdAt).toLocaleDateString()}
                     </CardDescription>
                   </div>
-                  <Badge variant="outline" className={statusClass(quest.status)}>
+                  <Badge variant="outline" className={getStatusColor(quest.status)}>
                     {quest.status.replace('_', ' ')}
                   </Badge>
                 </div>

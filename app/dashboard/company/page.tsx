@@ -27,25 +27,9 @@ import {
   GuildListItem,
   GuildPage,
 } from '@/components/guild/primitives';
+import { getStatusColor } from '@/lib/status-utils';
 
 const ACTIVE_ASSIGNMENT_STATUSES = ['assigned', 'started', 'in_progress', 'submitted', 'review'] as const;
-
-function statusBadgeClass(status: string) {
-  switch (status) {
-    case 'available':
-      return 'bg-emerald-100 text-emerald-700 border-emerald-300';
-    case 'in_progress':
-      return 'bg-sky-100 text-sky-700 border-sky-300';
-    case 'review':
-      return 'bg-amber-100 text-amber-700 border-amber-300';
-    case 'completed':
-      return 'bg-violet-100 text-violet-700 border-violet-300';
-    case 'cancelled':
-      return 'bg-rose-100 text-rose-700 border-rose-300';
-    default:
-      return 'bg-slate-100 text-slate-700 border-slate-300';
-  }
-}
 
 export default async function CompanyDashboardPage() {
   const session = await getServerSession(authOptions);
@@ -335,7 +319,7 @@ export default async function CompanyDashboardPage() {
                         {quest.deadline && <span>Due {new Date(quest.deadline).toLocaleDateString()}</span>}
                       </div>
                     </div>
-                    <Badge variant="outline" className={statusBadgeClass(quest.status)}>
+                    <Badge variant="outline" className={getStatusColor(quest.status)}>
                       {quest.status.replace('_', ' ')}
                     </Badge>
                   </Link>

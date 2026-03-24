@@ -4,7 +4,6 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
 import { 
   BarChart, 
   Bar, 
@@ -17,14 +16,13 @@ import {
   Line,
   Legend
 } from 'recharts';
-import { 
-  Target, 
-  TrendingUp, 
-  Users, 
-  Trophy, 
-  Calendar,
-  Star,
+import {
+  Target,
+  TrendingUp,
+  Users,
+  Trophy,
   Activity,
+  Star,
   Zap
 } from 'lucide-react';
 import { format } from 'date-fns';

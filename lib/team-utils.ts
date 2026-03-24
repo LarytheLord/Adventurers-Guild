@@ -125,7 +125,7 @@ export async function fetchTeamMembers(teamId: string): Promise<TeamMemberInfo[]
 export async function inviteMemberToTeam(
   teamId: string,
   email: string,
-  _invitedBy: string
+  invitedBy: string
 ): Promise<boolean> {
   const user = await prisma.user.findUnique({ where: { email }, select: { id: true } });
   if (!user) throw new Error('User not found');

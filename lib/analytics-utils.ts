@@ -65,8 +65,8 @@ export async function getUserProgressOverTime(
 
 // Get top performing users
 export async function getTopPerformers(
-  _timeRange: '7d' | '30d' | '90d' | '1y' = '30d',
-  _limit: number = 10
+  timeRange: '7d' | '30d' | '90d' | '1y' = '30d',
+  limit: number = 10
 ): Promise<Array<{ id: string; name: string; rank: string; xp: number; questsCompleted: number }>> {
   return [
     { id: '1', name: 'Top Adventurer 1', rank: 'S', xp: 24500, questsCompleted: 120 },

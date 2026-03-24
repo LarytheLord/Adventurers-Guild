@@ -70,7 +70,7 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-slate-950 flex">
-      {/* Left panel — branding */}
+      {/* Left panel - branding */}
       <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 bg-slate-900 border-r border-slate-800">
         <Link href="/home" className="flex items-center gap-2.5 group w-fit">
           <div className="w-9 h-9 bg-orange-500 rounded-lg flex items-center justify-center shadow-lg shadow-orange-500/20 group-hover:bg-orange-600 transition-colors">
@@ -101,7 +101,7 @@ export default function LoginPage() {
             ))}
             <div className="flex flex-col items-center gap-2">
               <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center">
-                <span className="text-slate-500 text-xs font-bold">···</span>
+                <span className="text-slate-500 text-xs font-bold">...</span>
               </div>
             </div>
           </div>
@@ -115,10 +115,9 @@ export default function LoginPage() {
         </blockquote>
       </div>
 
-      {/* Right panel — form */}
-      <div className="flex-1 flex items-center justify-center p-8">
+      {/* Right panel - form */}
+      <div className="flex-1 flex items-center justify-center p-6 sm:p-8">
         <div className="w-full max-w-sm space-y-8">
-          {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-2.5 justify-center mb-2">
             <div className="w-9 h-9 bg-orange-500 rounded-lg flex items-center justify-center">
               <span className="text-black font-bold text-sm">AG</span>

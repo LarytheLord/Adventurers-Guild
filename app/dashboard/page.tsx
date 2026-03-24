@@ -377,7 +377,7 @@ export default async function DashboardPage() {
                   </div>
                   {quest.requiredSkills.length > 0 && (
                     <p className="mt-2 line-clamp-1 text-xs text-slate-500">
-                      {quest.requiredSkills.slice(0, 3).join(' · ')}
+                      {quest.requiredSkills.slice(0, 3).join(' / ')}
                     </p>
                   )}
                 </Link>

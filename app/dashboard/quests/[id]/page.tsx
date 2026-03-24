@@ -268,7 +268,7 @@ export default function QuestDetailPage() {
               )}
             </div>
           </div>
-          <Button variant="outline" onClick={() => router.push('/dashboard/quests')}>
+          <Button variant="outline" className="w-full sm:w-auto" onClick={() => router.push('/dashboard/quests')}>
             <ArrowLeft className="h-4 w-4" />
             Back to Quest Board
           </Button>
