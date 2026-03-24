@@ -4,6 +4,8 @@ import { prisma } from '@/lib/db';
 import { getAuthUser } from '@/lib/api-auth';
 import { Prisma, QuestStatus, QuestCategory, UserRank, QuestTrack } from '@prisma/client';
 
+type QuestSortOption = 'newest' | 'xp_desc' | 'pay_desc' | 'deadline_soon';
+
 export async function GET(request: NextRequest) {
   // Check authentication but don't require it - allow public access to available quests
   const user = await getAuthUser(request);
@@ -15,6 +17,8 @@ export async function GET(request: NextRequest) {
     const category = searchParams.get('category');
     const difficulty = searchParams.get('difficulty');
     const track = searchParams.get('track');
+    const search = searchParams.get('search')?.trim();
+    const sort = (searchParams.get('sort') as QuestSortOption | null) ?? 'newest';
     const companyId = searchParams.get('company_id');
     const limit = parseInt(searchParams.get('limit') || '10');
     const offset = parseInt(searchParams.get('offset') || '0');
@@ -28,62 +32,87 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Build where clause based on permissions
-    const where: Prisma.QuestWhereInput = {};
+    const filters: Prisma.QuestWhereInput[] = [];
 
     if (user) {
       if (user.role === 'company') {
         // Companies can see their own quests regardless of status
-        where.OR = [
-          { companyId: user.id },
-          { status: 'available' },
-        ];
+        filters.push({
+          OR: [
+            { companyId: user.id },
+            { status: 'available' },
+          ],
+        });
       } else if (user.role === 'admin') {
         // Admins can see all quests - no additional filter needed
       } else if (bootcampLink) {
         // Bootcamp students: ONLY see BOOTCAMP track quests (API-enforced)
-        where.track = 'BOOTCAMP';
+        const bootcampVisibility: Prisma.QuestWhereInput = {
+          track: 'BOOTCAMP',
+          OR: [
+            { status: 'available' },
+            { assignments: { some: { userId: user.id } } },
+          ],
+        };
         if (!bootcampLink.eligibleForRealQuests) {
           // Ineligible bootcamp students: only see TUTORIAL source quests
-          where.source = 'TUTORIAL';
+          bootcampVisibility.source = 'TUTORIAL';
         }
-        where.OR = [
-          { status: 'available' },
-          { assignments: { some: { userId: user.id } } },
-        ];
+        filters.push(bootcampVisibility);
       } else {
         // Regular adventurers: see OPEN quests + their assigned quests
-        where.OR = [
-          { status: 'available', track: 'OPEN' },
-          { assignments: { some: { userId: user.id } } },
-        ];
+        filters.push({
+          OR: [
+            { status: 'available', track: 'OPEN' },
+            { assignments: { some: { userId: user.id } } },
+          ],
+        });
       }
     } else {
       // Unauthenticated users: only see OPEN track available quests
-      where.status = 'available';
-      where.track = 'OPEN';
+      filters.push({ status: 'available', track: 'OPEN' });
     }
 
-    // Add filters if provided (track filter overridden for bootcamp users above)
+    // Add filters on top of role-based visibility.
     if (status && (!user || user.role !== 'company')) {
-      where.status = status as QuestStatus;
+      filters.push({ status: status as QuestStatus });
     }
-    if (category) {
-      where.questCategory = category as QuestCategory;
+    if (category && Object.values(QuestCategory).includes(category as QuestCategory)) {
+      filters.push({ questCategory: category as QuestCategory });
     }
-    if (difficulty) {
-      where.difficulty = difficulty as UserRank;
+    if (difficulty && Object.values(UserRank).includes(difficulty as UserRank)) {
+      filters.push({ difficulty: difficulty as UserRank });
     }
-    // Only allow track filter override for admin/company — bootcamp students are locked
-    if (track && Object.values(QuestTrack).includes(track as QuestTrack) && !bootcampLink) {
-      where.track = track as QuestTrack;
+    if (track && Object.values(QuestTrack).includes(track as QuestTrack)) {
+      filters.push({ track: track as QuestTrack });
     }
     if (companyId && user && (user.role === 'admin' || user.id === companyId)) {
-      where.companyId = companyId;
+      filters.push({ companyId });
     }
+    if (search) {
+      filters.push({
+        OR: [
+          { title: { contains: search, mode: 'insensitive' } },
+          { description: { contains: search, mode: 'insensitive' } },
+        ],
+      });
+    }
+
+    const where: Prisma.QuestWhereInput =
+      filters.length === 0 ? {} : filters.length === 1 ? filters[0] : { AND: filters };
+
+    const orderBy: Prisma.QuestOrderByWithRelationInput[] =
+      sort === 'xp_desc'
+        ? [{ xpReward: 'desc' }, { createdAt: 'desc' }]
+        : sort === 'pay_desc'
+          ? [{ monetaryReward: { sort: 'desc', nulls: 'last' } }, { createdAt: 'desc' }]
+          : sort === 'deadline_soon'
+            ? [{ deadline: { sort: 'asc', nulls: 'last' } }, { createdAt: 'desc' }]
+            : [{ createdAt: 'desc' }];
 
     const quests = await prisma.quest.findMany({
       where,
+      orderBy,
       include: {
         company: {
           select: {
