@@ -77,9 +77,11 @@ enum AssignmentStatus {
   started
   in_progress
   submitted
+  pending_admin_review
   review
   completed
   cancelled
+  needs_rework
 }
 
 enum SubmissionStatus {
@@ -194,6 +196,8 @@ model User {
   mentorships         Mentorship[]          @relation("MentorUser")
   menteeships         Mentorship[]          @relation("MenteeUser")
   bootcampLink        BootcampLink?
+  ledParties          Party[]               @relation("PartyLeader")
+  partyMembers        PartyMember[]
 
   @@index([email])
   @@index([role])
@@ -294,6 +298,7 @@ model Quest {
   completions        QuestCompletion[]
   transactions       Transaction[]
   revisionRequests   RevisionRequest[]
+  party              Party?
 
   @@index([companyId])
   @@index([status])
@@ -582,5 +587,35 @@ model ErrorLog {
   @@index([severity])
   @@index([timestamp])
   @@map("error_logs")
+}
+
+model Party {
+  id        String     @id @default(uuid()) @db.Uuid
+  questId   String     @unique @map("quest_id") @db.Uuid
+  leaderId  String     @map("leader_id") @db.Uuid
+  track     QuestTrack
+  maxSize   Int        @default(5) @map("max_size")
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime   @updatedAt @map("updated_at") @db.Timestamptz
+
+  quest   Quest         @relation(fields: [questId], references: [id])
+  leader  User          @relation("PartyLeader", fields: [leaderId], references: [id])
+  members PartyMember[]
+
+  @@map("parties")
+}
+
+model PartyMember {
+  id       String   @id @default(uuid()) @db.Uuid
+  partyId  String   @map("party_id") @db.Uuid
+  userId   String   @map("user_id") @db.Uuid
+  isLeader Boolean  @default(false) @map("is_leader")
+  joinedAt DateTime @default(now()) @map("joined_at") @db.Timestamptz
+
+  party Party @relation(fields: [partyId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id])
+
+  @@unique([partyId, userId])
+  @@map("party_members")
 }
 

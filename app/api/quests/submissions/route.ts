@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
     // Check if the assignment exists and belongs to the current user
     const assignment = await prisma.questAssignment.findUnique({
       where: { id: assignmentId },
-      select: { status: true, userId: true, questId: true },
+      select: { status: true, userId: true, questId: true, quest: { select: { track: true } } },
     });
 
     if (!assignment) {
@@ -119,9 +119,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized to submit for this assignment', success: false }, { status: 403 });
     }
 
-    if (!['assigned', 'started', 'in_progress'].includes(assignment.status)) {
+    if (!['assigned', 'started', 'in_progress', 'needs_rework'].includes(assignment.status)) {
       return NextResponse.json({ error: 'Invalid assignment state for submission', success: false }, { status: 400 });
     }
+
+    // BOOTCAMP and INTERN quests go to pending_admin_review (Open Paws QA gate)
+    // OPEN track goes directly to submitted (client sees immediately)
+    const postSubmitStatus =
+      assignment.quest.track !== 'OPEN' ? 'pending_admin_review' : 'submitted';
 
     const data = await prisma.$transaction(
       async (tx) => {
@@ -136,7 +141,7 @@ export async function POST(request: NextRequest) {
 
         await tx.questAssignment.update({
           where: { id: assignmentId },
-          data: { status: 'submitted' },
+          data: { status: postSubmitStatus },
         });
 
         await syncQuestLifecycleStatus(tx, assignment.questId);

@@ -68,7 +68,10 @@ function assignmentStatusClass(status: string) {
     case 'in_progress':
       return 'bg-amber-100 text-amber-700 border-amber-300';
     case 'submitted':
+    case 'pending_admin_review':
       return 'bg-violet-100 text-violet-700 border-violet-300';
+    case 'needs_rework':
+      return 'bg-orange-100 text-orange-700 border-orange-300';
     case 'completed':
       return 'bg-emerald-100 text-emerald-700 border-emerald-300';
     case 'cancelled':
@@ -167,7 +170,7 @@ export default function QuestDetailPage() {
 
   const isAssigned = !!assignment;
   const canAssign = quest?.status === 'available' && !isAssigned;
-  const canSubmit = !!assignment && ['assigned', 'started', 'in_progress'].includes(assignment.status);
+  const canSubmit = !!assignment && ['assigned', 'started', 'in_progress', 'needs_rework'].includes(assignment.status);
 
   const rewardCards = useMemo(
     () =>
@@ -337,15 +340,17 @@ export default function QuestDetailPage() {
                       </p>
                     </div>
                     <Badge variant="outline" className={assignmentStatusClass(assignment.status)}>
-                      {assignment.status.replace('_', ' ')}
+                      {assignment.status.replaceAll('_', ' ')}
                     </Badge>
                   </div>
                   <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
                     {assignment.status === 'completed'
                       ? 'This quest is complete on your ledger.'
-                      : assignment.status === 'submitted'
+                      : assignment.status === 'submitted' || assignment.status === 'pending_admin_review'
                         ? 'Your delivery is in review.'
-                        : 'You are currently responsible for this quest. Keep delivery momentum high.'}
+                        : assignment.status === 'needs_rework'
+                          ? 'Your submission needs revision. Check reviewer feedback and resubmit.'
+                          : 'You are currently responsible for this quest. Keep delivery momentum high.'}
                   </div>
                   {assignment.status === 'completed' && (
                     <div className="flex items-center gap-2 text-sm font-medium text-emerald-700">
@@ -376,6 +381,12 @@ export default function QuestDetailPage() {
                           body: JSON.stringify({ questId }),
                         });
 
+                        if (!response.ok && response.status === 401) {
+                          toast.error('Session expired — please log in again');
+                          router.push('/login');
+                          return;
+                        }
+
                         const data = await response.json();
                         if (!data.success) {
                           toast.error(data.error || 'Failed to assign to quest');
@@ -404,7 +415,7 @@ export default function QuestDetailPage() {
                   <div>
                     <h2 className="text-lg font-semibold text-slate-900">Quest not claimable</h2>
                     <p className="mt-1 text-sm text-slate-500">
-                      This quest is currently {quest.status.replace('_', ' ')}.
+                      This quest is currently {quest.status.replaceAll('_', ' ')}.
                     </p>
                   </div>
                 </div>
