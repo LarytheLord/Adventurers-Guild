@@ -20,6 +20,7 @@ import Link from 'next/link';
 import { RankBadge } from '@/components/ui/rank-badge';
 import type { Rank } from '@/components/ui/rank-badge';
 import { RANK_THRESHOLDS } from '@/lib/ranks';
+import { getAdventurerStreakSummary } from '@/lib/streak-utils';
 import {
   GuildCard,
   GuildChip,
@@ -31,6 +32,13 @@ import {
 } from '@/components/guild/primitives';
 
 const RANK_ORDER: Rank[] = ['F', 'E', 'D', 'C', 'B', 'A', 'S'];
+
+function formatMultiplier(multiplier: number): string {
+  const decimalPlaces =
+    Number.isInteger(multiplier) || Number.isInteger(multiplier * 10) ? 1 : 2;
+
+  return `${multiplier.toFixed(decimalPlaces)}x XP`;
+}
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -49,7 +57,7 @@ export default async function DashboardPage() {
 
   const userId = session.user.id;
 
-  const [user, activeAssignments, availableQuests] = await withDbRetry(() => Promise.all([
+  const [user, activeAssignments, availableQuests, streakSummary] = await withDbRetry(() => Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -107,6 +115,7 @@ export default async function DashboardPage() {
       orderBy: { createdAt: 'desc' },
       take: 24,
     }),
+    getAdventurerStreakSummary(userId),
   ]));
 
   const [completedCount, reviewCount, totalAdventurers] = await withDbRetry(() => Promise.all([
@@ -164,7 +173,11 @@ export default async function DashboardPage() {
             <div className="flex flex-wrap items-center gap-2">
               <GuildChip>{specialization}</GuildChip>
               <GuildChip>Level {level}</GuildChip>
-              <GuildChip>{user?.adventurerProfile?.currentStreak ?? 0} day streak</GuildChip>
+              <GuildChip>{streakSummary.currentStreak}-day streak</GuildChip>
+              <Badge className="rounded-full border border-orange-200 bg-orange-50 text-orange-700">
+                <Flame className="mr-1 h-3.5 w-3.5" />
+                {formatMultiplier(streakSummary.multiplier)}
+              </Badge>
             </div>
           </div>
 
@@ -377,7 +390,7 @@ export default async function DashboardPage() {
                   </div>
                   {quest.requiredSkills.length > 0 && (
                     <p className="mt-2 line-clamp-1 text-xs text-slate-500">
-                      {quest.requiredSkills.slice(0, 3).join(' · ')}
+                      {quest.requiredSkills.slice(0, 3).join(', ')}
                     </p>
                   )}
                 </Link>

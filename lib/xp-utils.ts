@@ -3,6 +3,7 @@
 import { prisma } from './db';
 import { getRankForXp, XP_PER_LEVEL } from './ranks';
 import { UserRank } from '@prisma/client';
+import { syncAdventurerStreak } from './streak-utils';
 
 /**
  * Update user XP, level, rank, and skill points in a single transaction.
@@ -11,8 +12,17 @@ import { UserRank } from '@prisma/client';
 export async function updateUserXpAndSkills(
   userId: string,
   xpGained: number,
-  skillPointsGained: number
-): Promise<{ newXp: number; newLevel: number; newRank: string; rankChanged: boolean }> {
+  skillPointsGained: number,
+  options?: { questId?: string }
+): Promise<{
+  newXp: number;
+  newLevel: number;
+  newRank: string;
+  rankChanged: boolean;
+  appliedMultiplier: number;
+  adjustedXpGained: number;
+  currentStreak: number;
+}> {
   return prisma.$transaction(async (tx) => {
     // Get current user stats
     const user = await tx.user.findUnique({
@@ -22,8 +32,10 @@ export async function updateUserXpAndSkills(
 
     if (!user) throw new Error('User not found');
 
-    const newXp = user.xp + xpGained;
-    const newLevel = user.level + Math.floor(xpGained / XP_PER_LEVEL);
+    const streakSummary = await syncAdventurerStreak(tx, userId);
+    const adjustedXpGained = Math.round(xpGained * streakSummary.multiplier);
+    const newXp = user.xp + adjustedXpGained;
+    const newLevel = user.level + Math.floor(adjustedXpGained / XP_PER_LEVEL);
     const newRank = getRankForXp(newXp) as UserRank;
     const rankChanged = user.rank !== newRank;
 
@@ -37,6 +49,18 @@ export async function updateUserXpAndSkills(
         skillPoints: { increment: skillPointsGained },
       },
     });
+
+    if (options?.questId) {
+      await tx.questCompletion.updateMany({
+        where: {
+          questId: options.questId,
+          userId,
+        },
+        data: {
+          xpEarned: adjustedXpGained,
+        },
+      });
+    }
 
     // Update adventurer profile stats
     const totalAssignments = await tx.questAssignment.count({
@@ -72,7 +96,15 @@ export async function updateUserXpAndSkills(
       });
     }
 
-    return { newXp, newLevel, newRank, rankChanged };
+    return {
+      newXp,
+      newLevel,
+      newRank,
+      rankChanged,
+      appliedMultiplier: streakSummary.multiplier,
+      adjustedXpGained,
+      currentStreak: streakSummary.currentStreak,
+    };
   });
 }
 

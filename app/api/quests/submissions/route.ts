@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 import { AssignmentStatus } from '@prisma/client';
 import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
 import { getAuthUser } from '@/lib/api-auth';
+import { previewUserStreakAfterCompletion } from '@/lib/streak-utils';
 
 export async function GET(request: NextRequest) {
   // Check authentication
@@ -240,7 +241,13 @@ export async function PUT(request: NextRequest) {
 
         await syncQuestLifecycleStatus(tx, assignmentData.questId);
 
-        let rewardsPayload: { userId: string; xpReward: number; skillPointsReward: number; questTitle: string } | null = null;
+        let rewardsPayload: {
+          userId: string;
+          xpReward: number;
+          skillPointsReward: number;
+          questTitle: string;
+          questId: string;
+        } | null = null;
         if (status === 'approved' && !wasAlreadyApproved) {
           const quest = await tx.quest.findUnique({
             where: { id: assignmentData.questId },
@@ -251,33 +258,47 @@ export async function PUT(request: NextRequest) {
             throw new Error('Quest not found for completion recording');
           }
 
-          await tx.questCompletion.upsert({
-            where: {
-              questId_userId: {
-                questId: assignmentData.questId,
-                userId: assignmentData.userId,
-              },
-            },
-            create: {
+          const completionKey = {
+            questId_userId: {
               questId: assignmentData.questId,
               userId: assignmentData.userId,
-              xpEarned: quest.xpReward,
-              skillPointsEarned: quest.skillPointsReward,
-              qualityScore: quality_score || null,
             },
-            update: {
-              xpEarned: quest.xpReward,
-              skillPointsEarned: quest.skillPointsReward,
-              qualityScore: quality_score || null,
-            },
+          };
+          const existingCompletion = await tx.questCompletion.findUnique({
+            where: completionKey,
+            select: { id: true },
           });
 
-          rewardsPayload = {
-            userId: assignmentData.userId,
-            xpReward: quest.xpReward,
-            skillPointsReward: quest.skillPointsReward,
-            questTitle: assignmentData.quest?.title ?? '',
-          };
+          if (existingCompletion) {
+            await tx.questCompletion.update({
+              where: completionKey,
+              data: {
+                skillPointsEarned: quest.skillPointsReward,
+                qualityScore: quality_score || null,
+              },
+            });
+          } else {
+            const streakPreview = await previewUserStreakAfterCompletion(tx, assignmentData.userId);
+            const adjustedXpReward = Math.round(quest.xpReward * streakPreview.multiplier);
+
+            await tx.questCompletion.create({
+              data: {
+                questId: assignmentData.questId,
+                userId: assignmentData.userId,
+                xpEarned: adjustedXpReward,
+                skillPointsEarned: quest.skillPointsReward,
+                qualityScore: quality_score || null,
+              },
+            });
+
+            rewardsPayload = {
+              userId: assignmentData.userId,
+              xpReward: quest.xpReward,
+              skillPointsReward: quest.skillPointsReward,
+              questTitle: assignmentData.quest?.title ?? '',
+              questId: assignmentData.questId,
+            };
+          }
         }
 
         return { submission: updatedSubmission, rewardsPayload };
@@ -290,7 +311,8 @@ export async function PUT(request: NextRequest) {
       await updateUserXpAndSkills(
         reviewResult.rewardsPayload.userId,
         reviewResult.rewardsPayload.xpReward,
-        reviewResult.rewardsPayload.skillPointsReward
+        reviewResult.rewardsPayload.skillPointsReward,
+        { questId: reviewResult.rewardsPayload.questId }
       );
 
       // Task 1.4: Tutorial quest completion tracking for bootcamp students

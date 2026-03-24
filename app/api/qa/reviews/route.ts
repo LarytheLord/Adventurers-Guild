@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/api-auth';
 import { prisma } from '@/lib/db';
 import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
+import { previewUserStreakAfterCompletion } from '@/lib/streak-utils';
 
 const VALID_REVIEW_STATUSES = ['pending', 'under_review', 'approved', 'needs_rework', 'rejected'] as const;
 type ReviewStatus = (typeof VALID_REVIEW_STATUSES)[number];
@@ -178,28 +179,51 @@ export async function POST(request: NextRequest) {
         throw new Error('Quest not found');
       }
 
-      // Record quest completion
-      try {
-        await prisma.questCompletion.create({
+      const completionKey = {
+        questId_userId: {
+          questId: existingSubmission.assignment.questId,
+          userId: existingSubmission.assignment.userId,
+        },
+      };
+      const existingCompletion = await prisma.questCompletion.findUnique({
+        where: completionKey,
+        select: { id: true },
+      });
+
+      if (existingCompletion) {
+        await prisma.questCompletion.update({
+          where: completionKey,
           data: {
-            questId: existingSubmission.assignment.questId,
-            userId: existingSubmission.assignment.userId,
-            xpEarned: quest.xpReward,
             skillPointsEarned: quest.skillPointsReward,
             qualityScore,
           },
         });
-      } catch (completionError) {
-        console.error('Error recording quest completion:', completionError);
-      }
+      } else {
+        const streakPreview = await previewUserStreakAfterCompletion(
+          prisma,
+          existingSubmission.assignment.userId
+        );
+        const adjustedXpReward = Math.round(quest.xpReward * streakPreview.multiplier);
 
-      // Update user XP, level, rank, and skill points
-      const { updateUserXpAndSkills } = await import('@/lib/xp-utils');
-      await updateUserXpAndSkills(
-        existingSubmission.assignment.userId,
-        quest.xpReward,
-        quest.skillPointsReward
-      );
+        await prisma.questCompletion.create({
+          data: {
+            questId: existingSubmission.assignment.questId,
+            userId: existingSubmission.assignment.userId,
+            xpEarned: adjustedXpReward,
+            skillPointsEarned: quest.skillPointsReward,
+            qualityScore,
+          },
+        });
+
+        // Update user XP, level, rank, and skill points
+        const { updateUserXpAndSkills } = await import('@/lib/xp-utils');
+        await updateUserXpAndSkills(
+          existingSubmission.assignment.userId,
+          quest.xpReward,
+          quest.skillPointsReward,
+          { questId: existingSubmission.assignment.questId }
+        );
+      }
     }
     else if (status === 'needs_rework' || status === 'rejected') {
       await prisma.questAssignment.update({

@@ -43,9 +43,11 @@ interface AnalyticsData {
     questCompletionRate?: number;
     totalQuestsCompleted?: number;
     currentStreak?: number;
-    maxStreak?: number;
+    longestStreak?: number;
+    streakMultiplier?: number;
     joinDate: string;
     lastLogin?: string;
+    lastActiveDate?: string;
   };
   stats?: {
     totalQuests: number;
