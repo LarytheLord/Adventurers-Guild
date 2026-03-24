@@ -1,9 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Prisma } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { requireAuth } from '@/lib/api-auth';
 
 const BOOTCAMP_WEEKLY_CAP = 5;
 const INTERN_WEEKLY_CAP = 10;
+const DEFAULT_WEEKLY_CAP = BOOTCAMP_WEEKLY_CAP;
 
 type UserTrack = 'BOOTCAMP' | 'INTERN';
 
@@ -21,8 +23,33 @@ function getDefaultCapForTrack(track: UserTrack) {
   return track === 'BOOTCAMP' ? BOOTCAMP_WEEKLY_CAP : INTERN_WEEKLY_CAP;
 }
 
+function inferTrackFromCap(cap: number): UserTrack {
+  return cap <= BOOTCAMP_WEEKLY_CAP ? 'BOOTCAMP' : 'INTERN';
+}
+
+function decimalToNumber(value: Prisma.Decimal | number | string) {
+  return value instanceof Prisma.Decimal ? value.toNumber() : Number(value);
+}
+
+async function hasBootcampLinksTable() {
+  const [result] = await prisma.$queryRaw<Array<{ exists: boolean }>>`
+    SELECT EXISTS (
+      SELECT 1
+      FROM information_schema.tables
+      WHERE table_schema = 'public'
+        AND table_name = 'bootcamp_links'
+    ) AS "exists"
+  `;
+
+  return Boolean(result?.exists);
+}
+
 async function getTrackMapForUsers(userIds: string[]) {
   if (userIds.length === 0) {
+    return new Map<string, UserTrack>();
+  }
+
+  if (!(await hasBootcampLinksTable())) {
     return new Map<string, UserTrack>();
   }
 
@@ -66,8 +93,8 @@ export async function POST(request: NextRequest) {
 
     const monday = getCurrentWeekStart();
     const trackMap = await getTrackMapForUsers([userId]);
-    const track = trackMap.get(userId) ?? 'INTERN';
-    const defaultCap = getDefaultCapForTrack(track);
+    const track = trackMap.get(userId);
+    const defaultCap = track ? getDefaultCapForTrack(track) : DEFAULT_WEEKLY_CAP;
 
     // Upsert budget record for this user/week
     const budget = await prisma.apiKeyBudget.upsert({
@@ -88,7 +115,11 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json(budget);
+    return NextResponse.json({
+      ...budget,
+      spent: decimalToNumber(budget.spent),
+      cap: decimalToNumber(budget.cap),
+    });
   } catch (error) {
     console.error('Error logging API budget:', error);
     return NextResponse.json(
@@ -140,10 +171,12 @@ export async function GET(request: NextRequest) {
 
     // Format response with cap determination
     const result = budgets.map((budget) => {
-      const track = trackMap.get(budget.userId) ?? 'INTERN';
-      const cap = budget.cap > 0 ? budget.cap : getDefaultCapForTrack(track);
-      const percentUsed = Math.round((budget.spent / cap) * 100);
-      const overCap = budget.spent > cap;
+      const spent = decimalToNumber(budget.spent);
+      const storedCap = decimalToNumber(budget.cap);
+      const track = trackMap.get(budget.userId) ?? inferTrackFromCap(storedCap > 0 ? storedCap : DEFAULT_WEEKLY_CAP);
+      const cap = storedCap > 0 ? storedCap : getDefaultCapForTrack(track);
+      const percentUsed = Math.round((spent / cap) * 100);
+      const overCap = spent > cap;
       const nearCap = !overCap && percentUsed >= 80;
 
       return {
@@ -151,7 +184,7 @@ export async function GET(request: NextRequest) {
         name: budget.user.name || budget.user.email.split('@')[0],
         rank: budget.user.rank,
         track,
-        spent: budget.spent,
+        spent,
         cap,
         percentUsed,
         overCap,
