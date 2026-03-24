@@ -46,6 +46,32 @@ export async function GET(
           },
           orderBy: { createdAt: 'asc' },
         },
+        party: {
+          include: {
+            leader: {
+              select: {
+                id: true,
+                name: true,
+                rank: true,
+                avatar: true,
+              },
+            },
+            members: {
+              orderBy: [{ isLeader: 'desc' }, { joinedAt: 'asc' }],
+              include: {
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    rank: true,
+                    avatar: true,
+                    email: true,
+                  },
+                },
+              },
+            },
+          },
+        },
         assignments: {
           include: {
             user: {

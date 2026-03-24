@@ -182,6 +182,8 @@ model User {
   questSubmissions    QuestSubmission[]     @relation("SubmittedBy")
   reviewedSubmissions QuestSubmission[]     @relation("ReviewedBy")
   questCompletions    QuestCompletion[]
+  ledParties          Party[]               @relation("PartyLeader")
+  partyMembers        PartyMember[]
   ownedTeams          Team[]                @relation("TeamOwner")
   teamMemberships     TeamMember[]
   skillProgress       SkillProgress[]
@@ -229,10 +231,12 @@ model AdventurerProfile {
   questCompletionRate  Decimal            @default(0.00) @map("quest_completion_rate") @db.Decimal(5, 2)
   totalQuestsCompleted Int                @default(0) @map("total_quests_completed")
   currentStreak        Int                @default(0) @map("current_streak")
-  maxStreak              Int                @default(0) @map("max_streak")
-  stripeAccountId        String?            @map("stripe_account_id")
-  razorpayContactId      String?            @map("razorpay_contact_id")
-  razorpayFundAccountId  String?            @map("razorpay_fund_account_id")
+  longestStreak        Int                @default(0) @map("longest_streak")
+  lastActiveDate       DateTime?          @map("last_active_date") @db.Date
+  streakMultiplier     Float              @default(1.0) @map("streak_multiplier")
+  stripeAccountId      String?            @map("stripe_account_id")
+  razorpayContactId    String?            @map("razorpay_contact_id")
+  razorpayFundAccountId String?           @map("razorpay_fund_account_id")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -290,6 +294,7 @@ model Quest {
   company          User?             @relation("CompanyQuests", fields: [companyId], references: [id])
   parentQuest      Quest?            @relation("SubQuests", fields: [parentQuestId], references: [id])
   subQuests        Quest[]           @relation("SubQuests")
+  party            Party?
   assignments        QuestAssignment[]
   completions        QuestCompletion[]
   transactions       Transaction[]
@@ -406,6 +411,36 @@ model TeamMember {
 
   @@unique([teamId, userId])
   @@map("team_members")
+}
+
+model Party {
+  id        String     @id @default(uuid()) @db.Uuid
+  questId   String     @unique @map("quest_id") @db.Uuid
+  leaderId  String     @map("leader_id") @db.Uuid
+  track     QuestTrack
+  maxSize   Int        @default(5) @map("max_size")
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime   @updatedAt @map("updated_at") @db.Timestamptz
+
+  quest    Quest         @relation(fields: [questId], references: [id], onDelete: Cascade)
+  leader   User          @relation("PartyLeader", fields: [leaderId], references: [id])
+  members  PartyMember[]
+
+  @@map("parties")
+}
+
+model PartyMember {
+  id       String   @id @default(uuid()) @db.Uuid
+  partyId  String   @map("party_id") @db.Uuid
+  userId   String   @map("user_id") @db.Uuid
+  isLeader Boolean  @default(false) @map("is_leader")
+  joinedAt DateTime @default(now()) @map("joined_at") @db.Timestamptz
+
+  party Party @relation(fields: [partyId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([partyId, userId])
+  @@map("party_members")
 }
 
 model QuestAssignment {
