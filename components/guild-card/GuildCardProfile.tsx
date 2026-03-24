@@ -63,12 +63,12 @@ interface Adventurer {
 }
 
 const RANK_THRESHOLDS: Record<string, { next: string; xpNeeded: number }> = {
-  F: { next: 'E', xpNeeded: 100 },
-  E: { next: 'D', xpNeeded: 300 },
-  D: { next: 'C', xpNeeded: 600 },
-  C: { next: 'B', xpNeeded: 1200 },
-  B: { next: 'A', xpNeeded: 2500 },
-  A: { next: 'S', xpNeeded: 5000 },
+  F: { next: 'E', xpNeeded: 1000 },
+  E: { next: 'D', xpNeeded: 3000 },
+  D: { next: 'C', xpNeeded: 6000 },
+  C: { next: 'B', xpNeeded: 10000 },
+  B: { next: 'A', xpNeeded: 15000 },
+  A: { next: 'S', xpNeeded: 25000 },
   S: { next: 'S', xpNeeded: 99999 },
 };
 
