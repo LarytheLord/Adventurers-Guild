@@ -11,6 +11,7 @@ import {
   Users,
   Target,
   TrendingUp,
+  BarChart3,
   Shield,
   Activity,
   Plus,
@@ -135,7 +136,7 @@ export default function AdminDashboard() {
         {/* Quick Actions (Phase 1 priorities) */}
         <Card className="border-primary/20 bg-primary/5">
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">Phase 1 — Quick Actions</CardTitle>
+            <CardTitle className="text-base">Phase 1 - Quick Actions</CardTitle>
             <CardDescription>Create and manage quests for intern pilots</CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-3">
@@ -150,6 +151,12 @@ export default function AdminDashboard() {
                 <ClipboardList className="h-4 w-4" />
                 Manage Quests
                 <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/admin/analytics">
+                <BarChart3 className="h-4 w-4" />
+                Analytics Dashboard
               </Link>
             </Button>
             <Button variant="outline" asChild>
