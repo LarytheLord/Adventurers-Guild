@@ -4,29 +4,28 @@ import { prisma } from './db';
 import { getRankForXp, XP_PER_LEVEL } from './ranks';
 import { UserRank } from '@prisma/client';
 import { logActivity } from './activity-logger';
-import { updateStreak } from './streak-utils';
+import { syncAdventurerStreak } from './streak-utils';
 import { checkAchievements } from './achievement-checker';
 
-/**
- * Calculate level from total XP.
- * Level = floor(XP / 100) + 1
- */
 export function calculateLevelFromXP(xp: number): number {
   return Math.floor(xp / 100) + 1;
 }
 
-/**
- * Update user XP, level, rank, and skill points in a single transaction.
- * Also updates adventurer_profiles stats (questsCompleted, completionRate).
- */
 export async function updateUserXpAndSkills(
   userId: string,
   xpGained: number,
   skillPointsGained: number,
-  questId?: string
-): Promise<{ newXp: number; newLevel: number; newRank: string; rankChanged: boolean }> {
+  options?: { questId?: string }
+): Promise<{
+  newXp: number;
+  newLevel: number;
+  newRank: string;
+  rankChanged: boolean;
+  appliedMultiplier: number;
+  adjustedXpGained: number;
+  currentStreak: number;
+}> {
   return prisma.$transaction(async (tx) => {
-    // Get current user stats
     const user = await tx.user.findUnique({
       where: { id: userId },
       select: { xp: true, level: true, rank: true },
@@ -34,14 +33,9 @@ export async function updateUserXpAndSkills(
 
     if (!user) throw new Error('User not found');
 
-    const profile = await tx.adventurerProfile.findUnique({
-      where: { userId },
-      select: { streakMultiplier: true },
-    });
-
-    const multiplier = profile?.streakMultiplier ?? 1.0;
-    const newXp = user.xp + Math.round(xpGained * Number(multiplier));
-    const newLevel = user.level + Math.floor(xpGained / XP_PER_LEVEL);
+    const streakSummary = await syncAdventurerStreak(tx, userId);
+    const adjustedXpGained = Math.round(xpGained * streakSummary.multiplier);
+    const newXp = user.xp + adjustedXpGained;
     const newRank = getRankForXp(newXp) as UserRank;
     const rankChanged = user.rank !== newRank;
 
@@ -55,6 +49,18 @@ export async function updateUserXpAndSkills(
         skillPoints: { increment: skillPointsGained },
       },
     });
+
+    if (options?.questId) {
+      await tx.questCompletion.updateMany({
+        where: {
+          questId: options.questId,
+          userId,
+        },
+        data: {
+          xpEarned: adjustedXpGained,
+        },
+      });
+    }
 
     // Update adventurer profile stats
     const totalAssignments = await tx.questAssignment.count({
@@ -77,11 +83,9 @@ export async function updateUserXpAndSkills(
       },
     });
 
-    await updateStreak(userId, tx);
-
     // Log quest completion activity
-    if (questId) {
-      await logActivity(userId, 'quest_complete', { questId, xp: xpGained }, tx);
+    if (options?.questId) {
+      await logActivity(userId, 'quest_complete', { questId: options.questId, xp: xpGained }, tx);
     }
 
     // Check for quest completion achievements
@@ -106,7 +110,15 @@ export async function updateUserXpAndSkills(
       await checkAchievements(userId, 'rank_up', { newRank });
     }
 
-    return { newXp, newLevel, newRank, rankChanged };
+    return {
+      newXp,
+      newLevel,
+      newRank,
+      rankChanged,
+      appliedMultiplier: streakSummary.multiplier,
+      adjustedXpGained,
+      currentStreak: streakSummary.currentStreak,
+    };
   });
 }
 

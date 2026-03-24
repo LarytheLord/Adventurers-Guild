@@ -1,58 +1,165 @@
-import { Prisma } from '@prisma/client';
+import { prisma, withDbRetry } from '@/lib/db';
 
-function getUtcDay(date: Date): Date {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+const MS_PER_DAY = 86_400_000;
+
+const STREAK_MILESTONES = [
+  { days: 3, multiplier: 1.1 },
+  { days: 7, multiplier: 1.25 },
+  { days: 14, multiplier: 1.5 },
+  { days: 30, multiplier: 2.0 },
+] as const;
+
+type StreakDbClient = Pick<typeof prisma, 'questCompletion' | 'adventurerProfile'>;
+
+export interface StreakMilestone {
+  days: number;
+  multiplier: number;
 }
 
-function calculateMultiplier(streak: number): number {
-  if (streak >= 30) return 2.0;
-  if (streak >= 14) return 1.5;
-  if (streak >= 7) return 1.25;
-  if (streak >= 3) return 1.1;
+export interface AdventurerStreakSummary {
+  currentStreak: number;
+  longestStreak: number;
+  multiplier: number;
+  lastActiveDate: string | null;
+  nextMilestone: StreakMilestone | null;
+}
+
+function toUtcDayNumber(date: Date): number {
+  return Math.floor(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()) / MS_PER_DAY
+  );
+}
+
+function utcDayNumberToDateString(dayNumber: number): string {
+  return new Date(dayNumber * MS_PER_DAY).toISOString().slice(0, 10);
+}
+
+function dateStringToUtcDate(dateString: string): Date {
+  return new Date(`${dateString}T00:00:00.000Z`);
+}
+
+function uniqueSortedCompletionDays(completionDates: Date[]): number[] {
+  return [...new Set(completionDates.map(toUtcDayNumber))].sort((left, right) => left - right);
+}
+
+export function getStreakMultiplier(streakDays: number): number {
+  if (streakDays >= 30) return 2.0;
+  if (streakDays >= 14) return 1.5;
+  if (streakDays >= 7) return 1.25;
+  if (streakDays >= 3) return 1.1;
   return 1.0;
 }
 
-export async function updateStreak(userId: string, tx: Prisma.TransactionClient): Promise<void> {
-  const profile = await tx.adventurerProfile.findUnique({
-    where: { userId },
-    select: {
-      currentStreak: true,
-      longestStreak: true,
-      maxStreak: true,
-      lastStreakDate: true,
-    },
-  });
+export function getNextStreakMilestone(streakDays: number): StreakMilestone | null {
+  return STREAK_MILESTONES.find((milestone) => streakDays < milestone.days) ?? null;
+}
 
-  if (!profile) return;
+export function summarizeStreakFromCompletionDates(
+  completionDates: Date[],
+  referenceDate: Date = new Date()
+): AdventurerStreakSummary {
+  const uniqueDays = uniqueSortedCompletionDays(completionDates);
 
-  const todayUtc = getUtcDay(new Date());
-  const lastStreakUtc = profile.lastStreakDate ? getUtcDay(new Date(profile.lastStreakDate)) : null;
-
-  const diffDays = lastStreakUtc
-    ? Math.floor((todayUtc.getTime() - lastStreakUtc.getTime()) / (1000 * 60 * 60 * 24))
-    : null;
-
-  let newStreak = profile.currentStreak;
-
-  if (diffDays === null || diffDays > 1) {
-    newStreak = 1;
-  } else if (diffDays === 1) {
-    newStreak = profile.currentStreak + 1;
+  if (uniqueDays.length === 0) {
+    return {
+      currentStreak: 0,
+      longestStreak: 0,
+      multiplier: 1.0,
+      lastActiveDate: null,
+      nextMilestone: getNextStreakMilestone(0),
+    };
   }
 
-  const newMaxStreak = Math.max(profile.maxStreak, newStreak);
-  const newLongestStreak = Math.max(profile.longestStreak, newStreak);
-  const newMultiplier = calculateMultiplier(newStreak);
+  let longestStreak = 1;
+  let runningStreak = 1;
 
-  await tx.adventurerProfile.update({
+  for (let index = 1; index < uniqueDays.length; index += 1) {
+    const diff = uniqueDays[index] - uniqueDays[index - 1];
+    runningStreak = diff === 1 ? runningStreak + 1 : 1;
+    longestStreak = Math.max(longestStreak, runningStreak);
+  }
+
+  let trailingStreak = 1;
+  for (let index = uniqueDays.length - 2; index >= 0; index -= 1) {
+    const diff = uniqueDays[index + 1] - uniqueDays[index];
+    if (diff !== 1) break;
+    trailingStreak += 1;
+  }
+
+  const referenceDay = toUtcDayNumber(referenceDate);
+  const lastActiveDay = uniqueDays[uniqueDays.length - 1];
+  const daysSinceLastActive = referenceDay - lastActiveDay;
+  const currentStreak = daysSinceLastActive <= 1 ? trailingStreak : 0;
+
+  return {
+    currentStreak,
+    longestStreak,
+    multiplier: getStreakMultiplier(currentStreak),
+    lastActiveDate: utcDayNumberToDateString(lastActiveDay),
+    nextMilestone: getNextStreakMilestone(currentStreak),
+  };
+}
+
+export async function getAdventurerStreakSummary(
+  userId: string,
+  referenceDate: Date = new Date()
+): Promise<AdventurerStreakSummary> {
+  const completions = await withDbRetry(() =>
+    prisma.questCompletion.findMany({
+      where: { userId },
+      select: { completionDate: true },
+      orderBy: { completionDate: 'desc' },
+    })
+  );
+
+  return summarizeStreakFromCompletionDates(
+    completions.map((completion) => completion.completionDate),
+    referenceDate
+  );
+}
+
+export async function previewUserStreakAfterCompletion(
+  db: StreakDbClient,
+  userId: string,
+  completionDate: Date = new Date()
+): Promise<AdventurerStreakSummary> {
+  const completions = await db.questCompletion.findMany({
+    where: { userId },
+    select: { completionDate: true },
+    orderBy: { completionDate: 'desc' },
+  });
+
+  return summarizeStreakFromCompletionDates(
+    [...completions.map((completion) => completion.completionDate), completionDate],
+    completionDate
+  );
+}
+
+export async function syncAdventurerStreak(
+  db: StreakDbClient,
+  userId: string,
+  referenceDate: Date = new Date()
+): Promise<AdventurerStreakSummary> {
+  const completions = await db.questCompletion.findMany({
+    where: { userId },
+    select: { completionDate: true },
+    orderBy: { completionDate: 'desc' },
+  });
+
+  const summary = summarizeStreakFromCompletionDates(
+    completions.map((completion) => completion.completionDate),
+    referenceDate
+  );
+
+  await db.adventurerProfile.updateMany({
     where: { userId },
     data: {
-      currentStreak: newStreak,
-      maxStreak: newMaxStreak,
-      longestStreak: newLongestStreak,
-      lastStreakDate: todayUtc,
-      lastActiveDate: todayUtc,
-      streakMultiplier: newMultiplier,
+      currentStreak: summary.currentStreak,
+      longestStreak: summary.longestStreak,
+      lastActiveDate: summary.lastActiveDate ? dateStringToUtcDate(summary.lastActiveDate) : null,
+      streakMultiplier: summary.multiplier,
     },
   });
+
+  return summary;
 }
