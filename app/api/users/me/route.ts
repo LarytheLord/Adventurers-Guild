@@ -15,6 +15,17 @@ export async function PATCH(request: NextRequest) {
     // Build user update payload (only allowed fields)
     const userUpdate: Record<string, string | null> = {};
     if (typeof body.name === 'string') userUpdate.name = body.name.trim() || null;
+    if (typeof body.username === 'string') {
+      const username = body.username.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+      if (username.length < 3 || username.length > 30) {
+        return Response.json({ error: 'Username must be 3-30 characters (letters, numbers, - _)', success: false }, { status: 400 });
+      }
+      const taken = await prisma.user.findUnique({ where: { username }, select: { id: true } });
+      if (taken && taken.id !== authUser.id) {
+        return Response.json({ error: 'Username already taken', success: false }, { status: 409 });
+      }
+      userUpdate.username = username;
+    }
     if (typeof body.bio === 'string') userUpdate.bio = body.bio.trim() || null;
     if (typeof body.location === 'string') userUpdate.location = body.location.trim() || null;
     if (typeof body.website === 'string') userUpdate.website = body.website.trim() || null;
@@ -29,7 +40,7 @@ export async function PATCH(request: NextRequest) {
     const updated = await prisma.user.update({
       where: { id: authUser.id },
       data: userUpdate,
-      select: { id: true, name: true, email: true, bio: true, location: true, website: true, github: true, linkedin: true, discord: true },
+      select: { id: true, name: true, username: true, email: true, bio: true, location: true, website: true, github: true, linkedin: true, discord: true },
     });
 
     // If company role, also update company profile fields
