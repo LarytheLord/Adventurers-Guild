@@ -3,7 +3,7 @@
 [![GitHub contributors](https://img.shields.io/github/contributors/LarytheLord/adventurers-guild?style=flat-square)](https://github.com/LarytheLord/adventurers-guild/graphs/contributors)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Discord](https://img.shields.io/discord/7hQYkEx5?label=Discord&logo=discord&style=flat-square)](https://discord.gg/7hQYkEx5)
 [![Website](https://img.shields.io/badge/Website-Live-blue?style=flat-square)](https://adventurersguild.vercel.app)
-[![Sponsor Me](https://img.shields.io/badge/Sponsor%20Me-Razorpay-0C73EB?style=for-the-badge&logo=razorpay&logoColor=white)](https://razorpay.me/@LarytheLord)
+[![Sponsor Us](https://img.shields.io/badge/Sponsor%20Us-Razorpay-0C73EB?style=for-the-badge&logo=razorpay&logoColor=white)](https://razorpay.me/@LarytheLord)
 
 ## Revolutionizing Computer Science Education
 
