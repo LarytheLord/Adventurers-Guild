@@ -1,222 +1,219 @@
-# Quest Posting Guide for External Projects
+# Quest Posting Guide — For AI Agents
 
-> How to post quests from your project onto the Adventurers Guild quest board.
-> This guide is designed for AI agents (Claude, Cursor, Copilot) assisting project maintainers.
-
----
-
-## Overview
-
-Adventurers Guild is a developer marketplace where developers ("Adventurers") complete real coding tasks ("Quests") and earn XP + rank. By posting your project's tasks as quests, you get access to ranked developers who deliver verified work.
+> You are an AI agent with access to the Neon MCP server, GitHub CLI, and the local filesystem.
+> This guide tells you how to post quests from your project onto the Adventurers Guild quest board.
 
 ---
 
-## Step 1: Prepare Your Quest
+## What You Have Access To
 
-Every quest needs these fields. Fill them ALL — adventurers rely on this info to decide whether to claim and how to deliver.
-
-### Required Fields
-
-| Field | Description | Example |
-|-------|-------------|---------|
-| **title** | Short, action-oriented title (under 80 chars) | `AI Therapy Chat UI — Patient Session Interface` |
-| **description** | 1-3 sentence summary of what needs to be built | `Build the patient-facing chat interface for AI therapy sessions...` |
-| **detailedDescription** | Full spec (see template below) | Markdown with repo link, issue link, setup, acceptance criteria |
-| **difficulty** | F / E / D / C / B / A / S (see Difficulty Guide below) | `D` |
-| **xpReward** | XP awarded on completion (see XP Guide below) | `3000` |
-| **questCategory** | One of: `frontend`, `backend`, `fullstack`, `mobile`, `ai_ml`, `devops`, `security`, `qa`, `design`, `data_science` | `frontend` |
-| **requiredSkills** | Array of skill tags | `["React", "TypeScript", "Next.js"]` |
-| **maxParticipants** | How many adventurers can work on this (usually 1) | `1` |
-| **deadline** | ISO date string or null | `2026-04-15T00:00:00Z` |
-
-### Optional Fields
-
-| Field | Description | Default |
-|-------|-------------|---------|
-| **monetaryReward** | Payment in USD (null = XP only) | `null` |
-| **requiredRank** | Minimum rank to claim (null = any rank) | `null` |
-| **skillPointsReward** | Skill points awarded | `0` |
+- **Neon MCP**: `mcp__Neon__run_sql` tool with project ID `empty-night-45827202`
+- **GitHub CLI**: `gh` commands for creating issues, discussions, PRs
+- **Local filesystem**: The AG codebase at `/Users/abi/Documents/Adventurers-Guild`
+- **Prisma schema**: `prisma/schema.prisma` is the source of truth for the DB
 
 ---
 
-## Step 2: Write the Detailed Description
+## How to Post a Quest
 
-This is what the adventurer sees when they open the quest. It must contain EVERYTHING they need to start working. Use this template:
+### Step 1: Find or create a company user
 
-```markdown
-## Repository
-https://github.com/YOUR_ORG/YOUR_REPO
+Every quest needs a `company_id` (the client who posted it). Check if your project already has one:
 
-## GitHub Issue
-https://github.com/YOUR_ORG/YOUR_REPO/issues/NUMBER
-
-## What to Build
-- Bullet point list of exactly what needs to be created
-- Be specific: file paths, component names, API endpoints
-- Include any architecture decisions already made
-
-## Tech Stack
-- List every technology the adventurer needs to know
-- Include versions if they matter (e.g., "Next.js 15 App Router")
-
-## Setup
-```bash
-git clone https://github.com/YOUR_ORG/YOUR_REPO
-cd YOUR_REPO
-npm install  # or pip install -r requirements.txt
-npm run dev  # or python main.py
+```sql
+-- Run via mcp__Neon__run_sql, projectId: empty-night-45827202
+SELECT id, name, email, role FROM users WHERE role = 'company' ORDER BY created_at;
 ```
 
-## Key Files
-| File | Purpose |
-|------|---------|
-| `src/components/Feature.tsx` | Where the new component goes |
-| `src/api/endpoint.ts` | API route to integrate with |
-| `prisma/schema.prisma` | Database schema (if relevant) |
+Existing company accounts:
+- `11111111-1111-1111-1111-111111111111` — Knight Medicare
+- `e5d3e1a0-e486-42aa-9e58-7e0af7f783ce` — Open Paws (Abid)
 
-## Design Reference
-- Link to Figma, screenshot, or description of visual requirements
-- Or: "Match existing design patterns in the codebase"
+If your project doesn't have a company account, create one:
 
-## Acceptance Criteria
-- [ ] Criterion 1 (testable, specific)
-- [ ] Criterion 2
-- [ ] Criterion 3
-- [ ] Mobile responsive
-- [ ] Type-check passes (`npx tsc --noEmit` or equivalent)
-- [ ] No lint errors
+```sql
+INSERT INTO users (id, name, email, role, rank, xp, password, created_at, updated_at)
+VALUES (
+  gen_random_uuid(),
+  'Your Project Name',
+  'contact@yourproject.com',
+  'company', 'F', 0,
+  '$2a$12$placeholder', -- not a real login, just a board identity
+  NOW(), NOW()
+);
+-- Then get the id:
+SELECT id FROM users WHERE email = 'contact@yourproject.com';
 ```
 
----
+### Step 2: Insert the quest
 
-## Step 3: Post the Quest
-
-### Option A: Via the AG Admin Panel (Recommended)
-
-1. Log in as admin at `adventurersguild.space/admin`
-2. Go to Quests > Create New Quest
-3. Fill all fields from Step 1
-4. Paste the detailed description from Step 2
-
-### Option B: Via the API
-
-```bash
-curl -X POST https://adventurersguild.space/api/admin/quests \
-  -H "Content-Type: application/json" \
-  -H "Cookie: next-auth.session-token=YOUR_SESSION" \
-  -d '{
-    "title": "Your Quest Title",
-    "description": "Short summary",
-    "detailedDescription": "Full markdown spec (see template above)",
-    "difficulty": "D",
-    "xpReward": 3000,
-    "skillPointsReward": 150,
-    "questCategory": "frontend",
-    "requiredSkills": ["React", "TypeScript"],
-    "maxParticipants": 1,
-    "deadline": "2026-04-15T00:00:00Z",
-    "track": "OPEN",
-    "status": "available"
-  }'
-```
-
-### Option C: Via Neon MCP (Direct DB — for trusted internal use)
+Use this exact SQL pattern. Fill EVERY field — adventurers need complete info to start working.
 
 ```sql
 INSERT INTO quests (
   id, title, description, detailed_description,
   quest_type, status, difficulty, xp_reward, skill_points_reward,
   required_skills, quest_category, track, source,
-  company_id, max_participants, deadline, created_at, updated_at
+  company_id, max_participants, deadline,
+  created_at, updated_at
 ) VALUES (
   gen_random_uuid(),
-  'Your Quest Title',
-  'Short summary of the task',
-  E'## Repository\nhttps://github.com/...\n\n## GitHub Issue\n...\n\n## What to Build\n...',
-  'commission', 'available', 'D', 3000, 150,
-  ARRAY['React', 'TypeScript'],
-  'frontend', 'OPEN', 'CLIENT_PORTAL',
-  'YOUR_COMPANY_USER_UUID', 1,
-  '2026-04-15 00:00:00+00', NOW(), NOW()
+  'Your Quest Title — Concise Action Description',
+  'One to three sentence summary. What is being built and why.',
+  E'## Repository\nhttps://github.com/ORG/REPO\n\n## GitHub Issue\nhttps://github.com/ORG/REPO/issues/NUMBER\n\n## What to Build\n- Specific bullet points\n- File paths where work goes\n- API endpoints to create or modify\n\n## Tech Stack\n- Language, framework, libraries\n\n## Setup\n```bash\ngit clone https://github.com/ORG/REPO\ncd REPO\nnpm install && npm run dev\n```\n\n## Key Files\n| File | Purpose |\n|------|---------|\n| `src/thing.tsx` | Where the new code goes |\n| `src/api/route.ts` | API to integrate with |\n\n## Acceptance Criteria\n- [ ] Criterion 1\n- [ ] Criterion 2\n- [ ] Mobile responsive\n- [ ] Type-check passes\n- [ ] No lint errors',
+  'commission',     -- quest_type: always 'commission' for external projects
+  'available',      -- status: 'available' means it shows on the board
+  'D',              -- difficulty: F/E/D/C/B/A/S (see guide below)
+  3000,             -- xp_reward: see XP guide below
+  150,              -- skill_points_reward
+  ARRAY['React', 'TypeScript', 'Next.js'],  -- required_skills
+  'frontend',       -- quest_category: see categories below
+  'OPEN',           -- track: OPEN for external projects
+  'CLIENT_PORTAL',  -- source: always CLIENT_PORTAL
+  'YOUR-COMPANY-UUID-HERE',  -- company_id from Step 1
+  1,                -- max_participants: usually 1
+  '2026-04-15 00:00:00+00',  -- deadline (or NULL)
+  NOW(), NOW()      -- created_at, updated_at: ALWAYS include these
 );
 ```
 
-**Neon project ID:** `empty-night-45827202`
+### Step 3: Verify it's on the board
+
+```sql
+SELECT id, title, difficulty, status FROM quests ORDER BY created_at DESC LIMIT 5;
+```
 
 ---
 
-## Difficulty Guide
+## The Detailed Description — THIS IS CRITICAL
 
-Match your task to the right rank. Adventurers use this to gauge effort and whether they're qualified.
+The `detailed_description` field is what adventurers read to understand the full quest. If this is incomplete, nobody will claim it. Use escaped newlines (`\n`) in SQL or `E'...'` Postgres syntax.
 
-| Rank | Complexity | Time Estimate | Examples |
-|------|-----------|---------------|---------|
-| **F** | Trivial, follow-the-pattern | 1-2 hours | Fix a typo, add a CSS class, update copy |
-| **E** | Small feature, single file | 2-4 hours | Add a filter dropdown, create a simple API endpoint |
-| **D** | Feature with 3-5 files | 4-8 hours | Build a dashboard page, create a CRUD API, integrate a library |
-| **C** | Multi-component feature | 1-2 days | Real-time chat, payment flow, complex form with validation |
-| **B** | Architectural work | 2-4 days | Design a system, refactor a module, build an integration layer |
-| **A** | Major subsystem | 1-2 weeks | Auth system, payment infrastructure, CI/CD pipeline |
-| **S** | Whole product feature | 2+ weeks | Full marketplace module, AI pipeline, distributed system |
+**Every detailed description MUST have these sections:**
 
-## XP Reward Guide
+```
+## Repository
+Direct link to the repo
 
-| Rank | Suggested XP | Suggested Skill Points |
-|------|-------------|----------------------|
-| F | 50-100 | 10-25 |
-| E | 100-200 | 25-75 |
-| D | 200-500 or 2000-3000 (paid) | 100-200 |
-| C | 350-700 or 4000-5000 (paid) | 200-300 |
-| B | 500-1000 or 6000-8000 (paid) | 300-400 |
-| A | 1000-2000 or 8000-12000 (paid) | 400-600 |
-| S | 2000+ or 12000+ (paid) | 600+ |
+## GitHub Issue
+Direct link to the issue (so adventurer can see discussion/context)
 
-Lower XP = AG platform quests (contributors building AG itself).
-Higher XP = external project quests (real client work).
+## What to Build
+- Exact file paths to create or modify
+- Component/function names
+- API routes and their request/response shapes
+- Any architecture decisions already made
 
----
+## Tech Stack
+- Every technology they need to know
+- Versions if they matter
 
-## Quest Category Reference
+## Setup
+Exact clone + install + run commands
+The adventurer should go from zero to running in under 5 minutes
 
-| Category | When to Use |
-|----------|-------------|
-| `frontend` | UI components, pages, styling, animations |
-| `backend` | API routes, database, server logic |
-| `fullstack` | Spans both frontend and backend |
-| `mobile` | Mobile-specific UI or React Native |
-| `ai_ml` | Machine learning, LLM integration, NLP |
-| `devops` | CI/CD, deployment, infrastructure |
-| `security` | Auth, encryption, vulnerability fixes |
-| `qa` | Testing, E2E tests, test infrastructure |
-| `design` | UI/UX design, design system work |
-| `data_science` | Data pipelines, analytics, visualization |
+## Key Files
+Table of existing files they need to understand before starting
+
+## Acceptance Criteria
+Checkboxes. Testable. Specific.
+Always include:
+- [ ] The actual feature works
+- [ ] Mobile responsive (if frontend)
+- [ ] Type-check passes
+- [ ] No lint errors
+```
 
 ---
 
-## Checklist Before Posting
+## Reference Tables
 
-- [ ] Title is clear and action-oriented
-- [ ] Description tells an adventurer what they're building in 2 sentences
-- [ ] Detailed description has: repo link, issue link, setup instructions, acceptance criteria
-- [ ] Difficulty matches actual complexity (see guide)
-- [ ] Required skills are accurate (don't over-list)
-- [ ] Deadline is realistic
-- [ ] Quest is self-contained — adventurer doesn't need to DM you for missing context
-- [ ] If there are dependencies (other quests must be done first), mention them
+### Difficulty
+
+| Rank | Scope | Time | Use When |
+|------|-------|------|----------|
+| **F** | Single file, follow existing pattern | 1-2 hrs | Fix typo, add CSS, update copy |
+| **E** | Small feature, 1-2 files | 2-4 hrs | Add filter, simple endpoint, small component |
+| **D** | Feature across 3-5 files | 4-8 hrs | Dashboard page, CRUD API, library integration |
+| **C** | Multi-component feature | 1-2 days | Real-time chat, payment flow, complex form |
+| **B** | Architectural work | 2-4 days | System design, module refactor, integration layer |
+| **A** | Major subsystem | 1-2 weeks | Auth system, payment infra, CI/CD pipeline |
+| **S** | Whole product feature | 2+ weeks | Full marketplace module, AI pipeline |
+
+### XP Rewards
+
+| Rank | XP Range |
+|------|----------|
+| F | 50 - 100 |
+| E | 100 - 200 |
+| D | 2000 - 3000 |
+| C | 4000 - 5000 |
+| B | 6000 - 8000 |
+| A | 8000 - 12000 |
+| S | 12000+ |
+
+### Quest Categories (enum values)
+
+`frontend`, `backend`, `fullstack`, `mobile`, `ai_ml`, `devops`, `security`, `qa`, `design`, `data_science`
+
+### Track Values
+
+- `OPEN` — external projects, any adventurer can see
+- `INTERN` — Open Paws intern track only
+- `BOOTCAMP` — Open Paws bootcamp students only
+
+Use `OPEN` for all external project quests.
 
 ---
 
-## Example: Well-Written Quest
+## Also: Create a GitHub Issue on AG
 
-**Title:** `AI Therapy Chat UI — Patient Session Interface`
+After posting the quest to the DB, also create a matching GitHub issue so contributors can discover it through GitHub too:
 
-**Why this works:**
-- Title says exactly what it is
-- Description gives context (Knight Medicare + Chimera)
-- Detailed description has repo link, issue link, file paths, setup, and 6 testable acceptance criteria
-- Difficulty (D) matches scope (4-8 hours, 3-5 files)
-- Required skills are specific and accurate
-- Adventurer can clone, run, and start building immediately
+```bash
+gh issue create \
+  --repo LarytheLord/Adventurers-Guild \
+  --title "quest: Your Quest Title" \
+  --label "contributor-friendly" \
+  --body "Quest posted on the AG board.
+
+**Source repo:** https://github.com/ORG/REPO
+**Issue:** https://github.com/ORG/REPO/issues/NUMBER
+**Difficulty:** D-rank | **XP:** 3000 | **Category:** frontend
+
+See the quest board at adventurersguild.space for full details."
+```
+
+---
+
+## Common Mistakes
+
+1. **Forgetting `created_at, updated_at`** — the DB requires both. Always add `NOW(), NOW()` at the end.
+2. **Missing repo/issue links** in detailed_description — adventurers won't know where to work.
+3. **Vague acceptance criteria** — "make it work" is not a criterion. "Chat messages render in real-time with typing indicator" is.
+4. **Wrong difficulty** — a 2-day task rated F will frustrate adventurers. Rate honestly.
+5. **No setup instructions** — if the adventurer can't run the project in 5 minutes, they'll skip the quest.
+
+---
+
+## Quick Copy-Paste Template
+
+For the AI agent: copy this, fill the values, run via `mcp__Neon__run_sql` with `projectId: "empty-night-45827202"`:
+
+```sql
+INSERT INTO quests (id, title, description, detailed_description, quest_type, status, difficulty, xp_reward, skill_points_reward, required_skills, quest_category, track, source, company_id, max_participants, deadline, created_at, updated_at)
+VALUES (
+  gen_random_uuid(),
+  'TITLE',
+  'SHORT_DESCRIPTION',
+  E'## Repository\nURL\n\n## GitHub Issue\nURL\n\n## What to Build\n- DETAILS\n\n## Tech Stack\n- STACK\n\n## Setup\n```bash\nCOMMANDS\n```\n\n## Acceptance Criteria\n- [ ] CRITERIA',
+  'commission', 'available', 'DIFFICULTY', XP, SKILL_POINTS,
+  ARRAY['SKILL1', 'SKILL2'],
+  'CATEGORY', 'OPEN', 'CLIENT_PORTAL',
+  'COMPANY_UUID', 1, 'DEADLINE_OR_NULL',
+  NOW(), NOW()
+);
+```
 
 ---
 
