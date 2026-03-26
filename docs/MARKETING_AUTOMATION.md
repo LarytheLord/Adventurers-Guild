@@ -1,8 +1,9 @@
 # Marketing Automation Plan — 4 Accounts
 
-> Updated: 2026-03-23
-> Accounts: X (personal @LarytheLord + project @AG), LinkedIn (personal + project page)
+> Updated: 2026-03-26
+> Accounts: X (personal @LarytheLord + project @AG), LinkedIn (personal + company page)
 > Automation: Claude Cowork for drafting + scheduling
+> LinkedIn Company Page: https://www.linkedin.com/company/108034419/
 
 ---
 
@@ -23,7 +24,8 @@
 **Audience**: VCs, startup founders, HR/hiring managers, EdTech community
 **Content ratio**: 40% thought leadership, 30% milestone posts, 30% hiring/talent insights
 
-### Account 4: LinkedIn — Project Page (Adventurers Guild)
+### Account 4: LinkedIn — Company Page (Adventurers Guild)
+**URL**: https://www.linkedin.com/company/108034419/
 **Voice**: Product/company page. Feature-focused, credibility-building.
 **Audience**: Companies considering AG, developers evaluating platforms
 **Content ratio**: 50% product updates, 30% case studies/testimonials, 20% industry data
@@ -217,73 +219,294 @@ Output: 10 post drafts with platform labels
 
 ---
 
-## First Week Content (Ready to Post)
+## Current Platform State (For Content Accuracy)
 
-### Monday — X Personal (Build Log Thread)
+Use these REAL numbers. Do NOT inflate.
+
+```json
+{
+  "real_users": 14,
+  "seed_data": "REMOVED — clean DB",
+  "real_quests": 14,
+  "quest_sources": ["AG Platform (8)", "Knight Medicare (4)", "Project Chimera (2)"],
+  "features_live": [
+    "Guild Card — public adventurer profile at /adventurer/[username] with OG image",
+    "Quest board with 14 real quests across frontend, backend, AI/ML",
+    "Squad/Party System — teams of 3-5 for collaborative quests",
+    "Admin QA Mediation — review layer before client sees deliverables",
+    "F→S rank progression with XP engine",
+    "Two-track architecture (OPEN/INTERN/BOOTCAMP)",
+    "Session management with auto-refresh"
+  ],
+  "contributors": ["Adil2009700 (active)", "aryansondharva (new)", "abhiavi (new fork)", "25+ GSSoC alumni"],
+  "github_stats": {
+    "stars": "check current",
+    "forks": "27+",
+    "issues_open": 15,
+    "discussions": 12,
+    "prs_merged": "60+",
+    "commits": "180+"
+  },
+  "tech_stack": "Next.js 15, TypeScript, Prisma 6, Neon PostgreSQL, NextAuth v4, Tailwind CSS",
+  "deployment": "Vercel — adventurersguild.space",
+  "license": "MIT",
+  "key_differentiator": "Rank earned through QA-reviewed real work, not self-reported skills. Guild Card = verifiable credential."
+}
 ```
-Week 1 of building Adventurers Guild in public.
 
-This week we shipped:
-→ Squad/Party System — teams of 3-5 can now quest together
-→ Admin QA Mediation — every submission reviewed before client sees it
-→ Fixed a "Claim Quest" bug that was silently failing
+---
 
-54 files changed. 8500+ lines. 4 API bugs caught in a full codebase audit.
+## Content Weeks (Updated March 26, 2026)
 
-Next up: the Guild Card — your public, verifiable developer credential.
+### Week 1 — "Guild Card is Live" (Use Immediately)
 
-If your AG rank could replace a tech interview, would you grind for it?
+**Monday — X Personal (Build Log Thread)**
+```
+I just shipped the Guild Card for Adventurers Guild.
+
+It's a public, shareable developer credential:
+→ Your rank (F through S, earned through real work)
+→ Every quest you've completed
+→ Skills verified by QA review
+→ Quality scores
+
+Share it on your resume. Put it in your LinkedIn bio. Send it to recruiters.
+
+The link generates an OG image automatically — so when you share it on X or LinkedIn, it shows your rank, XP, and quest count as a card.
+
+This is what "verified developer credential" looks like.
+
+adventurersguild.space/adventurer/[your-username]
 ```
 
-### Monday — X Project (Quest of the Week)
+**Monday — X Project**
 ```
-⚔️ Quest of the Week
+Guild Card is LIVE.
 
-Looking for your first quest? We've got F-rank tasks perfect for getting started.
+Your developer credential — rank, quests completed, skills — all on one shareable page.
 
-Claim a quest → Complete it → Earn XP → Rank up
+Rank up from F to S through real coding quests.
+Every delivery reviewed. Every rank earned.
 
-Your journey from F-Rank to S-Rank starts with one quest.
+Claim your Guild Card: adventurersguild.space
 
-adventurersguild.space
+#devtools #buildinpublic
 ```
 
-### Tuesday — LinkedIn Personal (Thought Leadership)
+**Tuesday — LinkedIn Personal**
 ```
 Big Tech slashed entry-level hiring by 78% since 2019.
 
-Bootcamps are losing credibility. Degrees alone don't cut it anymore.
+Replit just shut down their coding Bounties program. Bootcamp credibility is declining.
 
-What employers actually want: proof you can ship. Deployed apps. Meaningful PRs. Real work.
+The question every junior developer faces: how do I prove I can ship?
 
-That's why I'm building Adventurers Guild — a platform where developers earn a verified rank by completing real coding quests for real companies.
+We just launched the Guild Card on Adventurers Guild — a public, verifiable developer credential.
 
-Your rank isn't self-reported. It's earned through QA-reviewed deliverables.
+Unlike a resume or LinkedIn profile, your Guild Card shows:
+- Rank earned through QA-reviewed deliverables (not self-reported)
+- Every quest completed with quality scores
+- Skills demonstrated in real projects
 
-The question isn't "can this replace a CS degree?" — it's "can verified work history become the new hiring signal?"
+We're about to onboard 50 bootcamp students in May. They'll rank up through real client work. Their Guild Cards will be the proof.
 
-We're about to find out. 50 bootcamp students start in May.
-
-What would you trust more in a candidate: a degree, or 30 completed and reviewed coding deliverables?
+Would you trust a developer's Guild Card more than a traditional resume? Curious what hiring managers think.
 
 #futureofwork #developertools #startupindia
 ```
 
-### Wednesday — LinkedIn Project (Feature Spotlight)
+**Wednesday — LinkedIn Company Page**
 ```
-Introducing the Rank System ⚔️
+Introducing: The Guild Card
 
-On Adventurers Guild, every developer starts at F-Rank and climbs through real work:
+Every adventurer on our platform now has a public credential page — their Guild Card.
 
-F → E → D → C → B → A → S
+What it shows:
+→ Rank (F through S, earned through real work)
+→ Completed quests with quality scores
+→ Verified skills demonstrated in actual projects
 
-Each rank is earned by completing quests reviewed by QA. No shortcuts. No self-reporting.
+What it means for companies:
+When you see a C-Rank developer, you know they've delivered 15+ QA-reviewed projects. No guessing. No interviewing for basic competence.
 
-What this means for companies: when you see a B-Rank developer, you know they've delivered 30+ verified projects.
+What it means for developers:
+Your rank follows you. Share it on LinkedIn. Put it in job applications. It's a credential that's earned, not claimed.
 
-What this means for developers: your rank is a credential that follows you. Shareable. Verifiable. Meaningful.
+14 real quests are live on the board right now — from AI therapy chatbots to developer dashboard UIs.
 
-Coming soon: the Guild Card — your public developer credential page.
+adventurersguild.space
 
-#developertools #hiringtrends
+#developertools #hiringtrends #credential
+```
+
+**Thursday — X Project (Adventurer Highlight)**
+```
+Shoutout to @Adil2009700.
+
+This week he shipped a 54-file PR that:
+→ Rewrote the mobile UX across 15+ dashboard pages
+→ Built the useApiFetch hook (eliminated 500 lines of boilerplate)
+→ Decomposed a 786-line component into 6 focused modules
+→ Added API budget tracking for the admin panel
+
+This is what consistent B-rank contribution looks like.
+
+Adventurers Guild — where your code speaks for itself.
+```
+
+**Friday — X Personal**
+```
+Week 1 stats for Adventurers Guild:
+
+14 real quests live (0 fake data — we purged all seed data)
+3 external projects posting quests
+2 active contributors + 2 new forks
+Guild Card launched — shareable dev credential
+Session expiry bug found and fixed (5 root causes)
+25 code reviews submitted
+
+Next week: landing page redesign + analytics dashboard.
+
+The quest board is open. Your first quest is waiting.
+adventurersguild.space
+```
+
+### Week 2 — "Real Quests from Real Projects"
+
+**Monday — X Personal**
+```
+Something I'm proud of with Adventurers Guild:
+
+Every quest on our board comes from a real project.
+
+→ Knight Medicare — AI therapy chat UI, crisis detection, psychologist dashboards
+→ Project Chimera — emotion detection ML pipeline, consciousness feedback loop
+→ AG Platform — Guild Card, analytics, party system UI
+
+No toy problems. No "build a todo app."
+
+Real code. Real clients. Real credential.
+```
+
+**Tuesday — LinkedIn Personal**
+```
+Replit raised $100M+ and still couldn't make coding bounties work. They shut down the program in 2025.
+
+The problem: quality control at scale. Too many low-quality submissions gaming the system. Companies didn't come back.
+
+Here's what we're doing differently with Adventurers Guild:
+
+1. Every submission goes through QA review before the client sees it
+2. Rank is earned through verified deliverables, not volume
+3. The Guild Card makes rank visible and verifiable externally
+4. Companies post real tasks (not hypothetical challenges)
+
+The credential IS the moat. An S-Rank adventurer is a known quantity.
+
+Early days — 14 real quests live, bootcamp cohort starting May. But the architecture is built for this exact problem.
+
+What do you think separates successful developer marketplaces from failed ones?
+
+#startups #developertools #futureofwork
+```
+
+**Wednesday — LinkedIn Company Page**
+```
+14 real quests are live on Adventurers Guild.
+
+Not tutorial exercises. Real tasks from real projects:
+
+AI/ML:
+→ Local emotion detection — HuggingFace integration (D-rank)
+→ Consciousness feedback loop — Meta-awareness for AI therapy (B-rank)
+
+Frontend:
+→ AI Therapy Chat UI — Real-time session interface (D-rank)
+→ Crisis Detection UI — Emergency alert system (C-rank)
+→ Psychologist Earnings Dashboard (D-rank)
+
+Platform:
+→ Admin Analytics Dashboard — DAU, completion rates, charts (D-rank)
+→ Quest Board Filters — Search, sort, difficulty filter (F-rank)
+→ Quest Streak System — XP multipliers for retention (E-rank)
+
+Difficulty ranges from F-rank (2 hours) to B-rank (2-4 days).
+
+Register and claim your first quest: adventurersguild.space
+
+#coding #opensourceindia #developertools
+```
+
+### Week 3 — "The Credential Engine"
+
+**Monday — X Personal**
+```
+Hot take: Adventurers Guild is not a freelancing platform.
+
+It's a credentialing engine.
+
+The marketplace (quest posting, quest completion, payments) is the mechanism.
+
+The product is the CREDENTIAL — a verified, public record that you can ship.
+
+That's why the Guild Card matters more than the payment pipe.
+
+If your AG rank gets you hired without a technical interview — we win.
+```
+
+**Tuesday — LinkedIn Personal**
+```
+The junior developer credential gap is real.
+
+CS degrees prove you attended class. LeetCode proves you can solve puzzles. GitHub shows you committed code.
+
+None of these prove you can:
+- Take a spec from a real client
+- Deliver working code under deadline
+- Pass QA review
+- Iterate based on feedback
+- Ship to production
+
+That's what Adventurers Guild measures.
+
+Every quest completed on AG is a verified work sample. Every rank-up is a proven milestone. The Guild Card is the portable proof.
+
+We're building the credentialing layer that the developer hiring market is missing.
+
+#hiringtrends #futureofwork #edtech
+```
+
+---
+
+## Replit Bounties — Ready-to-Post Thread (Use When Timely)
+
+```
+Thread: Why Replit Bounties failed, and what developer marketplaces get wrong.
+
+1/ Replit raised $100M+, had millions of users, and still couldn't make coding bounties work. They shut it down and moved everything to Contra.
+
+2/ The problem wasn't distribution. They had massive reach. The problem was:
+- Quality control at scale was unsolvable
+- Companies didn't come back after bad experiences
+- No trust signal for developer quality
+
+3/ The pattern is the same across every failed dev marketplace: high volume of low-quality submissions → client trust erosion → marketplace death spiral.
+
+4/ What's different about our approach with Adventurers Guild:
+
+Every submission passes through QA BEFORE the client sees it. Bad work never reaches the customer.
+
+5/ Rank is earned through verified deliverables. An S-Rank adventurer has 100+ reviewed completions. You can verify this on their Guild Card — a public, shareable credential page.
+
+6/ Companies post real tasks from real projects. Not hypothetical challenges. Not "build me a website for $50."
+
+14 quests live right now from 3 different projects (AI therapy, emotion detection, developer tools).
+
+7/ The credential IS the moat. Contra charges 0% commission. We charge 15%. But Contra profiles are self-reported. AG rank is verified.
+
+Would you pay 15% for a developer whose quality is guaranteed, or pay 0% and gamble?
+
+8/ Early days. 14 real quests. 14 real users. But the architecture is built for the exact failure mode that killed Replit Bounties.
+
+Try it: adventurersguild.space
 ```
