@@ -1,20 +1,53 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import Hero from '@/components/ui/animated-shader-hero';
-import BentoGrid from '@/components/landing/BentoGrid';
-import HowItWorks from '@/components/landing/HowItWorks';
-import StatsSection from '@/components/landing/StatsSection';
+import ProductPreview from '@/components/landing/ProductPreview';
 import CTASection from '@/components/landing/CTASection';
-import QuestShowcase from '@/components/landing/QuestShowcase';
+import HowItWorks from '@/components/landing/HowItWorks';
 import LogoMarquee from '@/components/landing/LogoMarquee';
+import QuestShowcase from '@/components/landing/QuestShowcase';
+import RankJourney from '@/components/landing/RankJourney';
+import TrustBar from '@/components/landing/TrustBar';
+import WhyAG from '@/components/landing/WhyAG';
+import Hero from '@/components/ui/animated-shader-hero';
+
 const RANKS = ['F', 'E', 'D', 'C', 'B', 'A', 'S'] as const;
+
+type LandingStats = {
+  adventurers: number;
+  companies: number;
+  completedQuests: number;
+  openQuests: number;
+};
+
+type PublicQuest = {
+  id: string;
+  title: string;
+  description: string;
+  company: string;
+  difficulty: (typeof RANKS)[number];
+  track: string;
+  source: string;
+  xpReward: number;
+  monetaryReward: number | null;
+  deadline: string | null;
+  requiredSkills: string[];
+  applicants: number;
+};
 
 export default function HomePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [stats, setStats] = useState<LandingStats>({
+    adventurers: 0,
+    companies: 0,
+    completedQuests: 0,
+    openQuests: 0,
+  });
+  const [quests, setQuests] = useState<PublicQuest[]>([]);
+  const [landingLoading, setLandingLoading] = useState(true);
 
   useEffect(() => {
     if (status === 'authenticated' && session?.user) {
@@ -25,14 +58,63 @@ export default function HomePage() {
     }
   }, [status, session, router]);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function fetchLandingData() {
+      try {
+        const [statsResponse, questsResponse] = await Promise.all([
+          fetch('/api/public/stats'),
+          fetch('/api/public/quests'),
+        ]);
+
+        const [statsData, questsData] = await Promise.all([
+          statsResponse.ok ? statsResponse.json() : Promise.resolve(null),
+          questsResponse.ok ? questsResponse.json() : Promise.resolve(null),
+        ]);
+
+        if (cancelled) {
+          return;
+        }
+
+        setStats({
+          adventurers: statsData?.adventurers ?? 0,
+          companies: statsData?.companies ?? 0,
+          completedQuests: statsData?.completedQuests ?? 0,
+          openQuests: statsData?.openQuests ?? 0,
+        });
+        setQuests(Array.isArray(questsData?.quests) ? questsData.quests : []);
+      } catch {
+        if (!cancelled) {
+          setStats({
+            adventurers: 0,
+            companies: 0,
+            completedQuests: 0,
+            openQuests: 0,
+          });
+          setQuests([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setLandingLoading(false);
+        }
+      }
+    }
+
+    void fetchLandingData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   return (
     <>
-      {/* Hero with game HUD overlays */}
       <div className="relative">
         <Hero
           trustBadge={{
-            text: 'Season 1 · Real projects · Real pay',
-            icons: ['⚔️', '🏆', '🔥'],
+            text: 'Season 1 / Real projects / Real pay',
+            icons: ['XP', 'QA', '$'],
           }}
           headline={{
             line1: 'Level Up Your Career',
@@ -45,14 +127,13 @@ export default function HomePage() {
           }}
         />
 
-        {/* Rank ladder — bottom center */}
         <div className="hidden lg:flex absolute bottom-10 left-1/2 -translate-x-1/2 flex-col items-center gap-2">
           <div className="flex items-center gap-3">
-            {RANKS.map((rank, i) => (
+            {RANKS.map((rank, index) => (
               <div
                 key={rank}
                 className={`rounded flex items-center justify-center font-bold text-[9px] transition-all ${
-                  i === 0
+                  index === 0
                     ? 'w-5 h-5 bg-orange-500 text-black shadow-md shadow-orange-500/40'
                     : 'w-4 h-4 bg-white/10 text-white/25'
                 }`}
@@ -61,27 +142,38 @@ export default function HomePage() {
               </div>
             ))}
           </div>
-          <p className="text-[10px] text-white/25 tracking-wide">Everyone starts at F-Rank</p>
+          <p className="text-[10px] tracking-wide text-white/25">Everyone starts at F-Rank</p>
         </div>
       </div>
 
-      <LogoMarquee />
-
-      <section id="features">
-        <StatsSection />
+      <section id="trust">
+        <TrustBar adventurers={stats.adventurers} openQuests={stats.openQuests} loading={landingLoading} />
       </section>
-      <section id="quests">
-        <QuestShowcase />
-      </section>
-      <section id="experience">
-        <BentoGrid />
+      <section id="product-preview">
+        <ProductPreview
+          quests={quests}
+          completedQuests={stats.completedQuests}
+          companies={stats.companies}
+          loading={landingLoading}
+        />
       </section>
       <section id="how-it-works">
         <HowItWorks />
       </section>
+      <section id="quests">
+        <QuestShowcase quests={quests} loading={landingLoading} />
+      </section>
+      <section id="why-ag">
+        <WhyAG />
+      </section>
+      <section id="rank-journey">
+        <RankJourney quests={quests} loading={landingLoading} />
+      </section>
       <section id="join">
         <CTASection />
       </section>
+
+      <LogoMarquee />
     </>
   );
 }
