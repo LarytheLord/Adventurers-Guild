@@ -22,7 +22,14 @@ export async function getAuthUser(request?: NextRequest): Promise<SessionUser | 
     const secret = process.env.NEXTAUTH_SECRET;
     if (!secret) return null;
 
-    const token = await getToken({ req: request, secret });
+    // Try multiple cookie modes — mirrors middleware.ts to prevent
+    // "middleware passes but API returns 401" mismatch
+    const token =
+      (await getToken({ req: request, secret })) ??
+      (await getToken({ req: request, secret, secureCookie: true })) ??
+      (await getToken({ req: request, secret, secureCookie: false })) ??
+      (await getToken({ req: request, secret, cookieName: '__Secure-next-auth.session-token' })) ??
+      (await getToken({ req: request, secret, cookieName: 'next-auth.session-token' }));
     if (!token) return null;
 
     const id = typeof token.id === 'string' ? token.id : token.sub;
