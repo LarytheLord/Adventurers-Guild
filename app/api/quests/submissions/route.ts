@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 import { AssignmentStatus } from '@prisma/client';
 import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
 import { getAuthUser } from '@/lib/api-auth';
+import { buildQuestWorkflowActor, recordQuestWorkflowEvent } from '@/lib/quest-workflow-events';
 
 export async function GET(request: NextRequest) {
   // Check authentication
@@ -98,6 +99,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { assignmentId, submissionContent, submissionNotes } = body;
     const userId = user.id; // Use authenticated user's ID
+    const actor = buildQuestWorkflowActor(user);
 
     // Validate required fields
     if (!assignmentId || !submissionContent) {
@@ -144,7 +146,39 @@ export async function POST(request: NextRequest) {
           data: { status: postSubmitStatus },
         });
 
-        await syncQuestLifecycleStatus(tx, assignment.questId);
+        await recordQuestWorkflowEvent(tx, {
+          questId: assignment.questId,
+          assignmentId,
+          submissionId: submission.id,
+          actorUserId: actor.userId,
+          actorRole: actor.role,
+          eventType: 'submission_created',
+          payload: {
+            submissionStatus: submission.status,
+            questTrack: assignment.quest.track,
+          },
+        });
+
+        await recordQuestWorkflowEvent(tx, {
+          questId: assignment.questId,
+          assignmentId,
+          submissionId: submission.id,
+          actorUserId: actor.userId,
+          actorRole: actor.role,
+          eventType: 'assignment_status_changed',
+          payload: {
+            previousStatus: assignment.status,
+            nextStatus: postSubmitStatus,
+            trigger: 'submission_created',
+          },
+        });
+
+        await syncQuestLifecycleStatus(tx, assignment.questId, {
+          ...actor,
+          assignmentId,
+          submissionId: submission.id,
+          trigger: 'submission_created',
+        });
         return submission;
       },
       { maxWait: 10_000, timeout: 20_000 }
@@ -168,6 +202,7 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { submissionId, status, review_notes, quality_score } = body;
     const reviewerId = user.id; // Use authenticated user's ID
+    const actor = buildQuestWorkflowActor(user);
 
     // Validate required fields
     if (!submissionId || !status) {
@@ -192,6 +227,7 @@ export async function PUT(request: NextRequest) {
       select: {
         questId: true,
         userId: true,
+        status: true,
         quest: {
           select: {
             companyId: true,
@@ -243,7 +279,42 @@ export async function PUT(request: NextRequest) {
           });
         }
 
-        await syncQuestLifecycleStatus(tx, assignmentData.questId);
+        await recordQuestWorkflowEvent(tx, {
+          questId: assignmentData.questId,
+          assignmentId: submission.assignmentId,
+          submissionId,
+          actorUserId: actor.userId,
+          actorRole: actor.role,
+          eventType: 'submission_reviewed',
+          payload: {
+            previousStatus: submission.status,
+            nextStatus: updatedSubmission.status,
+            qualityScore: quality_score || null,
+          },
+        });
+
+        if (newAssignmentStatus) {
+          await recordQuestWorkflowEvent(tx, {
+            questId: assignmentData.questId,
+            assignmentId: submission.assignmentId,
+            submissionId,
+            actorUserId: actor.userId,
+            actorRole: actor.role,
+            eventType: 'assignment_status_changed',
+            payload: {
+              previousStatus: assignmentData.status,
+              nextStatus: newAssignmentStatus,
+              trigger: 'submission_review',
+            },
+          });
+        }
+
+        await syncQuestLifecycleStatus(tx, assignmentData.questId, {
+          ...actor,
+          assignmentId: submission.assignmentId,
+          submissionId,
+          trigger: 'submission_review',
+        });
 
         let rewardsPayload: { userId: string; xpReward: number; skillPointsReward: number; questTitle: string } | null = null;
         if (status === 'approved' && !wasAlreadyApproved) {

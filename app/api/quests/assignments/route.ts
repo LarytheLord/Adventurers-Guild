@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 import { AssignmentStatus, Prisma } from '@prisma/client';
 import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
 import { getAuthUser } from '@/lib/api-auth';
+import { buildQuestWorkflowActor, recordQuestWorkflowEvent } from '@/lib/quest-workflow-events';
 
 export async function GET(request: NextRequest) {
   // Check authentication
@@ -114,6 +115,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { questId } = body;
     const userId = user.id; // Use authenticated user's ID
+    const actor = buildQuestWorkflowActor(user);
 
     // Validate required fields
     if (!questId) {
@@ -188,7 +190,24 @@ export async function POST(request: NextRequest) {
           },
         });
 
-        await syncQuestLifecycleStatus(tx, questId);
+        await recordQuestWorkflowEvent(tx, {
+          questId,
+          assignmentId: created.id,
+          actorUserId: actor.userId,
+          actorRole: actor.role,
+          eventType: 'assignment_created',
+          payload: {
+            status: created.status,
+            maxParticipants: quest.maxParticipants,
+            questTrack: quest.track,
+          },
+        });
+
+        await syncQuestLifecycleStatus(tx, questId, {
+          ...actor,
+          assignmentId: created.id,
+          trigger: 'assignment_created',
+        });
         return created;
       },
       { maxWait: 10_000, timeout: 20_000 }
@@ -212,6 +231,7 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { assignmentId, status, progress } = body;
     const userId = user.id; // Use authenticated user's ID
+    const actor = buildQuestWorkflowActor(user);
 
     // Validate required fields
     if (!assignmentId || !status) {
@@ -241,7 +261,7 @@ export async function PUT(request: NextRequest) {
     // Only the assigned user or an admin can update the assignment
     const assignment = await prisma.questAssignment.findUnique({
       where: { id: assignmentId },
-      select: { userId: true, questId: true },
+      select: { userId: true, questId: true, status: true },
     });
 
     if (!assignment) {
@@ -274,7 +294,24 @@ export async function PUT(request: NextRequest) {
           data: updateData,
         });
 
-        await syncQuestLifecycleStatus(tx, assignment.questId);
+        await recordQuestWorkflowEvent(tx, {
+          questId: assignment.questId,
+          assignmentId: updated.id,
+          actorUserId: actor.userId,
+          actorRole: actor.role,
+          eventType: 'assignment_status_changed',
+          payload: {
+            previousStatus: assignment.status,
+            nextStatus: updated.status,
+            progress: progress ?? null,
+          },
+        });
+
+        await syncQuestLifecycleStatus(tx, assignment.questId, {
+          ...actor,
+          assignmentId: updated.id,
+          trigger: 'assignment_status_changed',
+        });
         return updated;
       },
       { maxWait: 10_000, timeout: 20_000 }

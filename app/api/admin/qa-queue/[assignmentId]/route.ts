@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireAuth } from '@/lib/api-auth';
+import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
+import { buildQuestWorkflowActor, recordQuestWorkflowEvent } from '@/lib/quest-workflow-events';
 
 // PATCH /api/admin/qa-queue/[assignmentId] — approve or reject submission
 export async function PATCH(
@@ -12,6 +14,7 @@ export async function PATCH(
   const { id: adminId } = user;
 
   const { assignmentId } = await params;
+  const actor = buildQuestWorkflowActor(user);
 
   let body: { action?: string; notes?: string };
   try {
@@ -47,10 +50,34 @@ export async function PATCH(
   }
 
   if (action === 'approve') {
-    await prisma.questAssignment.update({
-      where: { id: assignmentId },
-      data: { status: 'review' },
+    await prisma.$transaction(async (tx) => {
+      await tx.questAssignment.update({
+        where: { id: assignmentId },
+        data: { status: 'review' },
+      });
+
+      await recordQuestWorkflowEvent(tx, {
+        questId: assignment.quest.id,
+        assignmentId,
+        submissionId: assignment.submissions[0]?.id ?? null,
+        actorUserId: actor.userId,
+        actorRole: actor.role,
+        eventType: 'assignment_status_changed',
+        payload: {
+          previousStatus: assignment.status,
+          nextStatus: 'review',
+          trigger: 'admin_qa_approve',
+        },
+      });
+
+      await syncQuestLifecycleStatus(tx, assignment.quest.id, {
+        ...actor,
+        assignmentId,
+        submissionId: assignment.submissions[0]?.id ?? null,
+        trigger: 'admin_qa_approve',
+      });
     });
+
     return NextResponse.json({ message: 'Submission approved — forwarded to client review', success: true });
   }
 
@@ -68,22 +95,59 @@ export async function PATCH(
   };
   const updatedNotes = JSON.stringify([...existingNotes, newNote]);
 
-  await prisma.$transaction([
-    prisma.questAssignment.update({
+  await prisma.$transaction(async (tx) => {
+    await tx.questAssignment.update({
       where: { id: assignmentId },
       data: { status: 'needs_rework' },
-    }),
-    prisma.quest.update({
+    });
+
+    await tx.quest.update({
       where: { id: assignment.quest.id },
       data: { revisionCount: { increment: 1 } },
-    }),
-    ...(latestSubmission
-      ? [prisma.questSubmission.update({
-          where: { id: latestSubmission.id },
-          data: { reviewNotes: updatedNotes },
-        })]
-      : []),
-  ]);
+    });
+
+    if (latestSubmission) {
+      await tx.questSubmission.update({
+        where: { id: latestSubmission.id },
+        data: { reviewNotes: updatedNotes },
+      });
+
+      await recordQuestWorkflowEvent(tx, {
+        questId: assignment.quest.id,
+        assignmentId,
+        submissionId: latestSubmission.id,
+        actorUserId: actor.userId,
+        actorRole: actor.role,
+        eventType: 'submission_reviewed',
+        payload: {
+          previousStatus: latestSubmission.status,
+          nextStatus: latestSubmission.status,
+          trigger: 'admin_qa_reject',
+        },
+      });
+    }
+
+    await recordQuestWorkflowEvent(tx, {
+      questId: assignment.quest.id,
+      assignmentId,
+      submissionId: latestSubmission?.id ?? null,
+      actorUserId: actor.userId,
+      actorRole: actor.role,
+      eventType: 'assignment_status_changed',
+      payload: {
+        previousStatus: assignment.status,
+        nextStatus: 'needs_rework',
+        trigger: 'admin_qa_reject',
+      },
+    });
+
+    await syncQuestLifecycleStatus(tx, assignment.quest.id, {
+      ...actor,
+      assignmentId,
+      submissionId: latestSubmission?.id ?? null,
+      trigger: 'admin_qa_reject',
+    });
+  });
 
   return NextResponse.json({ message: 'Submission rejected — returned to student for revision', success: true });
 }

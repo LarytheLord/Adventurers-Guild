@@ -1,4 +1,5 @@
 import { AssignmentStatus, Prisma, PrismaClient, QuestStatus } from '@prisma/client';
+import { QuestWorkflowActor, recordQuestWorkflowEvent } from '@/lib/quest-workflow-events';
 
 const REVIEW_STATUSES: AssignmentStatus[] = ['submitted', 'review'];
 
@@ -39,9 +40,16 @@ function deriveQuestStatus(
 
 type DbClient = Prisma.TransactionClient | PrismaClient;
 
+type QuestLifecycleEventContext = QuestWorkflowActor & {
+  assignmentId?: string | null;
+  submissionId?: string | null;
+  trigger?: string;
+};
+
 export async function syncQuestLifecycleStatus(
   db: DbClient,
-  questId: string
+  questId: string,
+  eventContext: QuestLifecycleEventContext = {}
 ): Promise<QuestStatus | null> {
   const quest = await db.quest.findUnique({
     where: { id: questId },
@@ -66,6 +74,22 @@ export async function syncQuestLifecycleStatus(
     await db.quest.update({
       where: { id: questId },
       data: { status: nextStatus },
+    });
+
+    await recordQuestWorkflowEvent(db, {
+      questId,
+      assignmentId: eventContext.assignmentId,
+      submissionId: eventContext.submissionId,
+      actorUserId: eventContext.userId,
+      actorRole: eventContext.role,
+      eventType: 'quest_status_changed',
+      payload: {
+        previousStatus: quest.status,
+        nextStatus,
+        assignmentStatuses: assignments.map(a => a.status),
+        maxParticipants: quest.maxParticipants,
+        trigger: eventContext.trigger ?? 'lifecycle_sync',
+      },
     });
   }
 

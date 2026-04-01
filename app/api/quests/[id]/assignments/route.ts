@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { AssignmentStatus } from '@prisma/client';
 import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
 import { getAuthUser } from '@/lib/api-auth';
+import { buildQuestWorkflowActor, recordQuestWorkflowEvent } from '@/lib/quest-workflow-events';
 
 // GET /api/quests/[id]/assignments — list all assignments for a quest (company/admin only)
 export async function GET(
@@ -70,6 +71,7 @@ export async function PUT(
   try {
     const body = await req.json();
     const { assignmentId, status } = body;
+    const actor = buildQuestWorkflowActor(user);
 
     if (!assignmentId || !status) {
       return NextResponse.json({ error: 'assignmentId and status are required', success: false }, { status: 400 });
@@ -122,7 +124,24 @@ export async function PUT(
           },
         });
 
-        await syncQuestLifecycleStatus(tx, params.id);
+        await recordQuestWorkflowEvent(tx, {
+          questId: params.id,
+          assignmentId: assignment.id,
+          actorUserId: actor.userId,
+          actorRole: actor.role,
+          eventType: 'assignment_status_changed',
+          payload: {
+            previousStatus: existingAssignment.status,
+            nextStatus: assignment.status,
+            decision: status,
+          },
+        });
+
+        await syncQuestLifecycleStatus(tx, params.id, {
+          ...actor,
+          assignmentId: assignment.id,
+          trigger: 'assignment_decision',
+        });
         return assignment;
       },
       { maxWait: 10_000, timeout: 20_000 }

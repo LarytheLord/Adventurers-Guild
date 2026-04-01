@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/api-auth';
 import { prisma } from '@/lib/db';
 import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
+import { buildQuestWorkflowActor, recordQuestWorkflowEvent } from '@/lib/quest-workflow-events';
 
 const VALID_REVIEW_STATUSES = ['pending', 'under_review', 'approved', 'needs_rework', 'rejected'] as const;
 type ReviewStatus = (typeof VALID_REVIEW_STATUSES)[number];
@@ -96,6 +97,7 @@ export async function POST(request: NextRequest) {
     if (!authUser) {
       return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
+    const actor = buildQuestWorkflowActor(authUser);
 
     const body = (await request.json()) as Record<string, unknown>;
     const requiredFields = ['submissionId', 'quality_score', 'status'];
@@ -132,6 +134,7 @@ export async function POST(request: NextRequest) {
           select: {
             questId: true,
             userId: true,
+            status: true,
             quest: {
               select: {
                 companyId: true,
@@ -150,67 +153,126 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: 'Forbidden', success: false }, { status: 403 });
     }
 
-    const data = await prisma.questSubmission.update({
-      where: { id: submissionId },
-      data: {
-        status,
-        reviewerId: authUser.id,
-        reviewedAt: new Date(),
-        reviewNotes: typeof body.review_notes === 'string' ? body.review_notes : null,
-        qualityScore,
-      },
-    });
-
     const wasAlreadyApproved = existingSubmission.status === 'approved';
-
-    if (status === 'approved' && !wasAlreadyApproved) {
-      await prisma.questAssignment.update({
-        where: { id: existingSubmission.assignmentId },
-        data: { status: 'completed', completedAt: new Date() },
+    const reviewResult = await prisma.$transaction(async (tx) => {
+      const data = await tx.questSubmission.update({
+        where: { id: submissionId },
+        data: {
+          status,
+          reviewerId: authUser.id,
+          reviewedAt: new Date(),
+          reviewNotes: typeof body.review_notes === 'string' ? body.review_notes : null,
+          qualityScore,
+        },
       });
 
-      const quest = await prisma.quest.findUnique({
-        where: { id: existingSubmission.assignment.questId },
-        select: { xpReward: true, skillPointsReward: true },
+      await recordQuestWorkflowEvent(tx, {
+        questId: existingSubmission.assignment.questId,
+        assignmentId: existingSubmission.assignmentId,
+        submissionId,
+        actorUserId: actor.userId,
+        actorRole: actor.role,
+        eventType: 'submission_reviewed',
+        payload: {
+          previousStatus: existingSubmission.status,
+          nextStatus: status,
+          qualityScore,
+        },
       });
 
-      if (!quest) {
-        throw new Error('Quest not found');
-      }
+      let rewardsPayload:
+        | { userId: string; xpReward: number; skillPointsReward: number }
+        | null = null;
 
-      // Record quest completion
-      try {
-        await prisma.questCompletion.create({
-          data: {
-            questId: existingSubmission.assignment.questId,
-            userId: existingSubmission.assignment.userId,
-            xpEarned: quest.xpReward,
-            skillPointsEarned: quest.skillPointsReward,
-            qualityScore,
+      if (status === 'approved' && !wasAlreadyApproved) {
+        await tx.questAssignment.update({
+          where: { id: existingSubmission.assignmentId },
+          data: { status: 'completed', completedAt: new Date() },
+        });
+
+        await recordQuestWorkflowEvent(tx, {
+          questId: existingSubmission.assignment.questId,
+          assignmentId: existingSubmission.assignmentId,
+          submissionId,
+          actorUserId: actor.userId,
+          actorRole: actor.role,
+          eventType: 'assignment_status_changed',
+          payload: {
+            previousStatus: existingSubmission.assignment.status,
+            nextStatus: 'completed',
+            trigger: 'qa_review',
           },
         });
-      } catch (completionError) {
-        console.error('Error recording quest completion:', completionError);
+
+        const quest = await tx.quest.findUnique({
+          where: { id: existingSubmission.assignment.questId },
+          select: { xpReward: true, skillPointsReward: true },
+        });
+
+        if (!quest) {
+          throw new Error('Quest not found');
+        }
+
+        try {
+          await tx.questCompletion.create({
+            data: {
+              questId: existingSubmission.assignment.questId,
+              userId: existingSubmission.assignment.userId,
+              xpEarned: quest.xpReward,
+              skillPointsEarned: quest.skillPointsReward,
+              qualityScore,
+            },
+          });
+        } catch (completionError) {
+          console.error('Error recording quest completion:', completionError);
+        }
+
+        rewardsPayload = {
+          userId: existingSubmission.assignment.userId,
+          xpReward: quest.xpReward,
+          skillPointsReward: quest.skillPointsReward,
+        };
+      } else if (status === 'needs_rework' || status === 'rejected') {
+        await tx.questAssignment.update({
+          where: { id: existingSubmission.assignmentId },
+          data: { status: 'in_progress' },
+        });
+
+        await recordQuestWorkflowEvent(tx, {
+          questId: existingSubmission.assignment.questId,
+          assignmentId: existingSubmission.assignmentId,
+          submissionId,
+          actorUserId: actor.userId,
+          actorRole: actor.role,
+          eventType: 'assignment_status_changed',
+          payload: {
+            previousStatus: existingSubmission.assignment.status,
+            nextStatus: 'in_progress',
+            trigger: 'qa_review',
+          },
+        });
       }
 
-      // Update user XP, level, rank, and skill points
+      await syncQuestLifecycleStatus(tx, existingSubmission.assignment.questId, {
+        ...actor,
+        assignmentId: existingSubmission.assignmentId,
+        submissionId,
+        trigger: 'qa_review',
+      });
+
+      return { submission: data, rewardsPayload };
+    });
+
+    if (reviewResult.rewardsPayload) {
       const { updateUserXpAndSkills } = await import('@/lib/xp-utils');
       await updateUserXpAndSkills(
-        existingSubmission.assignment.userId,
-        quest.xpReward,
-        quest.skillPointsReward
+        reviewResult.rewardsPayload.userId,
+        reviewResult.rewardsPayload.xpReward,
+        reviewResult.rewardsPayload.skillPointsReward
       );
     }
-    else if (status === 'needs_rework' || status === 'rejected') {
-      await prisma.questAssignment.update({
-        where: { id: existingSubmission.assignmentId },
-        data: { status: 'in_progress' },
-      });
-    }
 
-    await syncQuestLifecycleStatus(prisma, existingSubmission.assignment.questId);
-
-    return Response.json({ submission: data, success: true });
+    return Response.json({ submission: reviewResult.submission, success: true });
   } catch (error) {
     console.error('Error reviewing submission:', error);
     return Response.json({ error: 'Failed to review submission', success: false }, { status: 500 });

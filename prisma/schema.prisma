@@ -92,6 +92,14 @@ enum SubmissionStatus {
   rejected
 }
 
+enum QuestWorkflowEventType {
+  assignment_created
+  assignment_status_changed
+  submission_created
+  submission_reviewed
+  quest_status_changed
+}
+
 enum RevisionStatus {
   PENDING
   IN_PROGRESS
@@ -457,6 +465,24 @@ model QuestSubmission {
   @@index([assignmentId])
   @@index([status])
   @@map("quest_submissions")
+}
+
+model QuestWorkflowEvent {
+  id           String                 @id @default(uuid()) @db.Uuid
+  questId      String                 @map("quest_id") @db.Uuid
+  assignmentId String?                @map("assignment_id") @db.Uuid
+  submissionId String?                @map("submission_id") @db.Uuid
+  actorUserId  String?                @map("actor_user_id") @db.Uuid
+  actorRole    String?                @map("actor_role")
+  eventType    QuestWorkflowEventType @map("event_type")
+  payload      Json?
+  createdAt    DateTime               @default(now()) @map("created_at") @db.Timestamptz
+
+  @@index([questId, createdAt(sort: Desc)])
+  @@index([assignmentId, createdAt(sort: Desc)])
+  @@index([submissionId, createdAt(sort: Desc)])
+  @@index([actorUserId, createdAt(sort: Desc)])
+  @@map("quest_workflow_events")
 }
 
 model QuestCompletion {
