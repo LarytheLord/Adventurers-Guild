@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 import { AssignmentStatus } from '@prisma/client';
 import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
 import { getAuthUser } from '@/lib/api-auth';
+import { logActivity } from '@/lib/activity-logger';
 
 export async function GET(request: NextRequest) {
   // Check authentication
@@ -145,6 +146,10 @@ export async function POST(request: NextRequest) {
         });
 
         await syncQuestLifecycleStatus(tx, assignment.questId);
+        
+        // Log activity
+        await logActivity(userId, 'quest_submit', { questId: assignment.questId }, tx);
+        
         return submission;
       },
       { maxWait: 10_000, timeout: 20_000 }
@@ -295,7 +300,8 @@ export async function PUT(request: NextRequest) {
       await updateUserXpAndSkills(
         reviewResult.rewardsPayload.userId,
         reviewResult.rewardsPayload.xpReward,
-        reviewResult.rewardsPayload.skillPointsReward
+        reviewResult.rewardsPayload.skillPointsReward,
+        assignmentData.questId
       );
 
       // Task 1.4: Tutorial quest completion tracking for bootcamp students
