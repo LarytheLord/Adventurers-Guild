@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useApiFetch } from '@/lib/hooks';
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
 
 export default function CompanyProfilePage() {
   const { data: session, status } = useSession();
@@ -56,7 +57,7 @@ export default function CompanyProfilePage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const res = await fetch('/api/users/me', {
+      const res = await fetchWithAuth('/api/users/me', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

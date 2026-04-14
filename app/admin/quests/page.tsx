@@ -45,6 +45,7 @@ import {
 import { toast } from 'sonner';
 import { useApiFetch } from '@/lib/hooks';
 import { QUEST_STATUS_COLORS, QUEST_STATUS_LABELS, RANK_COLORS } from '@/lib/quest-constants';
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
 
 interface AdminNote {
   id: string;
@@ -147,7 +148,7 @@ export default function AdminQuestsPage() {
   const handleStatusChange = async (questId: string, newStatus: string) => {
     setChangingStatusId(questId);
     try {
-      const response = await fetch('/api/admin/quests', {
+      const response = await fetchWithAuth('/api/admin/quests', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ questId, status: newStatus }),
@@ -183,7 +184,7 @@ export default function AdminQuestsPage() {
 
     setSavingNote(true);
     try {
-      const response = await fetch('/api/admin/quests', {
+      const response = await fetchWithAuth('/api/admin/quests', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ questId: noteQuest.id, addNote: newNoteText.trim() }),
@@ -218,7 +219,7 @@ export default function AdminQuestsPage() {
     }
 
     try {
-      const response = await fetch('/api/admin/quests', {
+      const response = await fetchWithAuth('/api/admin/quests', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ questId }),
