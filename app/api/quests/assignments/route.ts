@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 import { AssignmentStatus, Prisma } from '@prisma/client';
 import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
 import { getAuthUser } from '@/lib/api-auth';
+import { logActivity } from '@/lib/activity-logger';
 
 export async function GET(request: NextRequest) {
   // Check authentication
@@ -189,6 +190,10 @@ export async function POST(request: NextRequest) {
         });
 
         await syncQuestLifecycleStatus(tx, questId);
+        
+        // Log activity
+        await logActivity(userId, 'quest_apply', { questId }, tx);
+        
         return created;
       },
       { maxWait: 10_000, timeout: 20_000 }

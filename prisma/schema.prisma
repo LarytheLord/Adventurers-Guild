@@ -200,6 +200,7 @@ model User {
   bootcampLink        BootcampLink?
   ledParties          Party[]               @relation("PartyLeader")
   partyMembers        PartyMember[]
+  activityLogs        ActivityLog[]
 
   @@index([email])
   @@index([username])
@@ -635,4 +636,20 @@ model ApiKeyBudget {
 
   @@unique([userId, weekStart])
   @@map("api_key_budgets")
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  action    String
+  points    Int      @default(0)
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("activity_logs")
 }
