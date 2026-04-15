@@ -97,8 +97,83 @@ export async function applyToQuest(questId: any, user: SessionUser): Promise<Ser
   }
 }
 
-export async function updateAssignment() {
-  
+export async function updateAssignment(body: any, user: SessionUser): Promise<ServiceResult<any>> {
+  try {
+    const { assignmentId, status, progress } = body;
+    const userId = user.id; // Use authenticated user's ID
+
+    // Validate required fields
+    if (!assignmentId || !status) {
+      return { data: null, error: 'Missing required fields', status: 400 };
+    }
+
+    const requestedStatus = status as AssignmentStatus;
+    const adminStatuses: AssignmentStatus[] = [
+      'assigned',
+      'started',
+      'in_progress',
+      'submitted',
+      'pending_admin_review',
+      'review',
+      'completed',
+      'cancelled',
+      'needs_rework',
+    ];
+    const adventurerStatuses: AssignmentStatus[] = ['started', 'in_progress'];
+    const allowedStatuses = user.role === 'admin' ? adminStatuses : adventurerStatuses;
+
+    if (!allowedStatuses.includes(requestedStatus)) {
+      return { data: null, error: 'Invalid assignment status transition', status: 400 };
+    }
+
+    // Check if the user has permission to update this assignment
+    // Only the assigned user or an admin can update the assignment
+    const assignment = await prisma.questAssignment.findUnique({
+      where: { id: assignmentId },
+      select: { userId: true, questId: true },
+    });
+
+    if (!assignment) {
+      return { data: null, error: 'Assignment not found', status: 404 };
+    }
+
+    if (assignment.userId !== userId && user.role !== 'admin') {
+      return { data: null, error: 'Unauthorized to update this assignment', status: 403 };
+    }
+
+    // Build update data
+    const updateData: Record<string, unknown> = { status: requestedStatus };
+    if (progress !== undefined) {
+      if (typeof progress !== 'number' || progress < 0 || progress > 100) {
+        return { data: null, error: 'progress must be a number between 0 and 100', status: 400 };
+      }
+      updateData.progress = progress;
+    }
+    if (requestedStatus === 'started') {
+      updateData.startedAt = new Date();
+    }
+    if (requestedStatus === 'completed') {
+      updateData.completedAt = new Date();
+    }
+
+    const updatedAssignment = await prisma.$transaction(
+      async (tx) => {
+        const updated = await tx.questAssignment.update({
+          where: { id: assignmentId },
+          data: updateData,
+        });
+
+        await syncQuestLifecycleStatus(tx, assignment.questId);
+        return updated;
+      },
+      { maxWait: 10_000, timeout: 20_000 }
+    );
+
+    return { data: updatedAssignment, error: null, status: 200 };
+  } catch (error) {
+    console.error('Error updating quest assignment:', error);
+    return { data: null, error: 'Failed to update quest assignment', status: 500 };
+  }
 }
 
 export async function getAssignments(searchParams: URLSearchParams, user: SessionUser): Promise<ServiceResult<any>> {
@@ -108,7 +183,7 @@ export async function getAssignments(searchParams: URLSearchParams, user: Sessio
     const status = searchParams.get('status');
     const limit = parseInt(searchParams.get('limit') || '10');
     const offset = parseInt(searchParams.get('offset') || '0');
-    
+
     const currentUserId = user.id;
     const currentUserRole = user.role;
     const where: Prisma.QuestAssignmentWhereInput = {};
