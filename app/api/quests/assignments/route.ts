@@ -5,7 +5,7 @@ import { AssignmentStatus, Prisma } from '@prisma/client';
 import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
 import { getAuthUser } from '@/lib/api-auth';
 import { logActivity } from '@/lib/activity-logger';
-import { applyToQuest } from '@/lib/services/assignment-service';
+import { applyToQuest, getAssignments } from '@/lib/services/assignment-service';
 
 export async function GET(request: NextRequest) {
   // Check authentication
@@ -13,89 +13,15 @@ export async function GET(request: NextRequest) {
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
   }
-
-  try {
     // Parse query parameters
-    const { searchParams } = new URL(request.url);
-    const requestedUserId = searchParams.get('userId');
-    const questId = searchParams.get('questId');
-    const status = searchParams.get('status');
-    const limit = parseInt(searchParams.get('limit') || '10');
-    const offset = parseInt(searchParams.get('offset') || '0');
-
-    const currentUserId = user.id;
-    const currentUserRole = user.role;
+    const { searchParams } = new URL(request.url);   
 
     // Build where clause based on permissions
-    const where: Prisma.QuestAssignmentWhereInput = {};
-
-    if (currentUserRole === 'adventurer') {
-      // Adventurers can only see their own assignments
-      where.userId = currentUserId;
-    } else if (currentUserRole === 'company') {
-      // Companies can see assignments for their quests
-      where.quest = { companyId: currentUserId };
-    } else if (currentUserRole === 'admin') {
-      // Admins can see all assignments - no additional filter needed
-    } else {
-      // Other roles are not allowed
-      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 403 });
+    const result = await getAssignments(searchParams, user);
+    if (result.error) {
+      return NextResponse.json({ error: result.error, success: false }, { status: result.status });
     }
-
-    // Add filters if provided (respecting permissions)
-    if (requestedUserId && currentUserRole === 'admin') {
-      // Only admins can request assignments for a specific user
-      where.userId = requestedUserId;
-    }
-    if (questId) {
-      where.questId = questId;
-    }
-    if (status) {
-      const validStatuses: AssignmentStatus[] = [
-        'assigned',
-        'started',
-        'in_progress',
-        'submitted',
-        'pending_admin_review',
-        'review',
-        'completed',
-        'cancelled',
-        'needs_rework',
-      ];
-      if (!validStatuses.includes(status as AssignmentStatus)) {
-        return NextResponse.json({ error: 'Invalid status filter', success: false }, { status: 400 });
-      }
-      where.status = status as AssignmentStatus;
-    }
-
-    const assignments = await prisma.questAssignment.findMany({
-      where,
-      include: {
-        quest: {
-          select: {
-            title: true,
-            description: true,
-            questType: true,
-            status: true,
-            difficulty: true,
-            xpReward: true,
-            skillPointsReward: true,
-            requiredSkills: true,
-            requiredRank: true,
-            questCategory: true,
-            deadline: true,
-          },
-        },
-      },
-      skip: offset,
-      take: limit,
-    });
-
-    return NextResponse.json({ assignments, success: true });
-  } catch (error) {
-    console.error('Error fetching quest assignments:', error);
-    return NextResponse.json({ error: 'Failed to fetch quest assignments', success: false }, { status: 500 });
-  }
+    return NextResponse.json({ assignments: result.data, success: true });
 }
 
 export async function POST(request: NextRequest) {
