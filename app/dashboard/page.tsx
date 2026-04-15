@@ -64,6 +64,7 @@ export default async function DashboardPage() {
             totalQuestsCompleted: true,
             questCompletionRate: true,
             currentStreak: true,
+            streakMultiplier: true
           },
         },
       },
@@ -164,7 +165,14 @@ export default async function DashboardPage() {
             <div className="flex flex-wrap items-center gap-2">
               <GuildChip>{specialization}</GuildChip>
               <GuildChip>Level {level}</GuildChip>
-              <GuildChip>{user?.adventurerProfile?.currentStreak ?? 0} day streak</GuildChip>
+              {
+                (user?.adventurerProfile?.currentStreak ?? 0) > 0 &&
+                (
+                  <GuildChip>
+                    🔥 {user?.adventurerProfile?.currentStreak}-day streak! {Number(user?.adventurerProfile?.streakMultiplier ?? 1.0)}x XP
+                  </GuildChip>
+                )
+              }
             </div>
           </div>
 
