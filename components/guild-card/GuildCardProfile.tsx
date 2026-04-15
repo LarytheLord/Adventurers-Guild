@@ -181,6 +181,13 @@ export function GuildCardProfile({ adventurer }: { adventurer: Adventurer }) {
         ))}
       </div>
 
+      {(a.profile?.currentStreak ?? 0) > 2 && (
+        <div className="flex items-center gap-2 rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm font-medium text-orange-700">
+          <Flame className="h-4 w-4 text-orange-500" />
+          🔥 {a.profile?.currentStreak}-day streak!
+        </div>
+      )}
+
       {/* Skills + Quest History */}
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
         {/* Skills panel */}
