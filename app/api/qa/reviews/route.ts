@@ -200,6 +200,10 @@ export async function POST(request: NextRequest) {
         quest.xpReward,
         quest.skillPointsReward
       );
+
+      const { updateStreak } = await import('@/lib/streak-utils');
+      await updateStreak(existingSubmission.assignment.userId);
+      
     }
     else if (status === 'needs_rework' || status === 'rejected') {
       await prisma.questAssignment.update({
