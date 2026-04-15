@@ -240,10 +240,10 @@ model AdventurerProfile {
   stripeAccountId        String?            @map("stripe_account_id")
   razorpayContactId      String?            @map("razorpay_contact_id")
   razorpayFundAccountId  String?            @map("razorpay_fund_account_id")
-  currentStreak Int @default(0) @map("current_streak")
-  longestStreak Int @default(0) @map("longest_streak")
-  lastActiveDate DateTime? @map("last_active_date") @db.Date
-  streakMultiplier Float @default(1.0) @map("streak_multiplier")
+  currentStreak        Int                @default(0) @map("current_streak")
+  longestStreak        Int                @default(0) @map("longest_streak")
+  lastActiveDate       DateTime?          @map("last_active_date") @db.Date
+  streakMultiplier     Float              @default(1.0) @map("streak_multiplier")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
