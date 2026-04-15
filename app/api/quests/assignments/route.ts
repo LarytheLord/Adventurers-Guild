@@ -1,10 +1,6 @@
 // app/api/quests/assignments/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
-import { AssignmentStatus, Prisma } from '@prisma/client';
-import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
 import { getAuthUser } from '@/lib/api-auth';
-import { logActivity } from '@/lib/activity-logger';
 import { applyToQuest, getAssignments, updateAssignment } from '@/lib/services/assignment-service';
 
 export async function GET(request: NextRequest) {
