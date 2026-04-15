@@ -5,6 +5,7 @@ import { AssignmentStatus, Prisma } from '@prisma/client';
 import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
 import { getAuthUser } from '@/lib/api-auth';
 import { logActivity } from '@/lib/activity-logger';
+import { applyToQuest } from '@/lib/services/assignment-service';
 
 export async function GET(request: NextRequest) {
   // Check authentication
@@ -110,100 +111,13 @@ export async function POST(request: NextRequest) {
       { status: 403 }
     );
   }
-
-  try {
-    const body = await request.json();
-    const { questId } = body;
-    const userId = user.id; // Use authenticated user's ID
-
-    // Validate required fields
-    if (!questId) {
-      return NextResponse.json({ error: 'Missing required fields', success: false }, { status: 400 });
-    }
-
-    // Check if the quest exists and is available
-    const quest = await prisma.quest.findUnique({
-      where: { id: questId },
-      select: { status: true, maxParticipants: true, title: true, track: true },
-    });
-
-    if (!quest || quest.status !== 'available') {
-      return NextResponse.json({ error: 'Quest not available', success: false }, { status: 400 });
-    }
-
-    // Task 1.4: Bootcamp tutorial gating
-    // Bootcamp-linked users who haven't completed tutorials can only apply to tutorial quests
-    if (user.role === 'adventurer') {
-      const bootcampLink = await prisma.bootcampLink.findUnique({
-        where: { userId },
-        select: { eligibleForRealQuests: true },
-      });
-      if (bootcampLink && !bootcampLink.eligibleForRealQuests) {
-        const isTutorial = quest.title.startsWith('Tutorial:');
-        if (!isTutorial) {
-          return NextResponse.json(
-            { error: 'Complete both tutorial quests first before applying to real quests', success: false },
-            { status: 403 }
-          );
-        }
-      }
-    }
-
-    // Check if the max number of accepted participants has been reached.
-    // Only count adventurers the company has accepted (started or beyond),
-    // matching the same statuses used in quest-lifecycle.ts to keep a slot "filled".
-    if (quest.maxParticipants) {
-      const count = await prisma.questAssignment.count({
-        where: {
-          questId: questId,
-          status: { in: ['started', 'in_progress', 'submitted', 'pending_admin_review', 'review', 'needs_rework', 'completed'] },
-        },
-      });
-
-      if (count >= quest.maxParticipants) {
-        return NextResponse.json({ error: 'Maximum participants reached for this quest', success: false }, { status: 400 });
-      }
-    }
-
-    // Check if user is already assigned to this quest (ignore cancelled)
-    const existingAssignment = await prisma.questAssignment.findFirst({
-      where: {
-        questId: questId,
-        userId,
-        status: { not: 'cancelled' },
-      },
-    });
-
-    if (existingAssignment) {
-      return NextResponse.json({ error: 'You are already assigned to this quest', success: false }, { status: 400 });
-    }
-
-    // Create the assignment
-    const assignment = await prisma.$transaction(
-      async (tx) => {
-        const created = await tx.questAssignment.create({
-          data: {
-            questId: questId,
-            userId,
-            status: 'assigned',
-          },
-        });
-
-        await syncQuestLifecycleStatus(tx, questId);
-        
-        // Log activity
-        await logActivity(userId, 'quest_apply', { questId }, tx);
-        
-        return created;
-      },
-      { maxWait: 10_000, timeout: 20_000 }
-    );
-
-    return NextResponse.json({ assignment, success: true }, { status: 201 });
-  } catch (error) {
-    console.error('Error creating quest assignment:', error);
-    return NextResponse.json({ error: 'Failed to create quest assignment', success: false }, { status: 500 });
+  const body = await request.json();
+  const { questId } = body;
+  const result = await applyToQuest(questId, user);
+  if (result.error) {
+    return NextResponse.json({ error: result.error, success: false }, { status: result.status });
   }
+  return NextResponse.json({ assignment: result.data, success: true }, { status: 201 });
 }
 
 export async function PUT(request: NextRequest) {
