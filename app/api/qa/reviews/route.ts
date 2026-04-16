@@ -198,7 +198,8 @@ export async function POST(request: NextRequest) {
       await updateUserXpAndSkills(
         existingSubmission.assignment.userId,
         quest.xpReward,
-        quest.skillPointsReward
+        quest.skillPointsReward,
+        existingSubmission.assignment.questId
       );
     }
     else if (status === 'needs_rework' || status === 'rejected') {
