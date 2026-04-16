@@ -2,6 +2,8 @@
 
 This document is the source of truth for how work gets done on this project — whether you're a human developer or an AI agent picking up a GitHub issue.
 
+> **NSoC 2026 participants** — Welcome! This project is part of Nexus Spring of Code 2026 (April 15 – May 30). Issues labeled `NSoC-2026` are the active contribution targets. Join our [Discord](https://discord.gg/7hQYkEx5) for help.
+
 ---
 
 ## Table of Contents
@@ -90,11 +92,8 @@ RAZORPAY_KEY_SECRET="..."
 # Generate Prisma client
 npx prisma generate
 
-# Apply migrations (dev only)
-npx prisma migrate dev
-
-# Seed with sample data
-npm run db:seed
+# Push schema to your Neon database (do NOT use migrate dev — Neon serverless requires db push)
+npm run db:push
 ```
 
 ### 4. Run the dev server
@@ -174,13 +173,13 @@ Never edit a file you haven't read in the current session. Check the surrounding
 
 ### 5. Schema changes
 
-Every schema change requires a migration:
+After editing `prisma/schema.prisma`, push the changes to your Neon database:
 
 ```bash
-npx prisma migrate dev --name describe-what-changed
+npm run db:push
 ```
 
-Always use `@default()` for new required fields so existing rows aren't broken.
+**Do NOT use `prisma migrate dev`** — this project uses Neon serverless PostgreSQL which requires `db push`. Always use `@default()` for new required fields so existing rows aren't broken.
 
 ### 6. Run checks before opening a PR
 
