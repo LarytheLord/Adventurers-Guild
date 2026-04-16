@@ -7,7 +7,6 @@ const protectedRoutes: { [key: string]: UserRole[] } = {
   '/dashboard': ['adventurer', 'company', 'admin'],
   '/dashboard/quests': ['adventurer', 'company', 'admin'],
   '/dashboard/my-quests': ['adventurer'],
-  '/dashboard/completed-quests': ['adventurer'],
   '/dashboard/skill-tree': ['adventurer'],
   '/dashboard/teams': ['adventurer', 'company', 'admin'],
   '/dashboard/leaderboard': ['adventurer', 'company', 'admin'],
