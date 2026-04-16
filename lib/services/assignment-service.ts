@@ -1,11 +1,11 @@
-import { ServiceResult } from "./types.js";
+import { ServiceResult } from "./types";
 import { prisma } from '@/lib/db';
 import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
 import { logActivity } from '@/lib/activity-logger';
-import { SessionUser } from "../api-auth.js";
-import { Prisma, AssignmentStatus } from '@prisma/client';
+import { SessionUser } from "../api-auth";
+import { Prisma, AssignmentStatus, QuestAssignment } from '@prisma/client';
 
-export async function applyToQuest(questId: any, user: SessionUser): Promise<ServiceResult<any>> {
+export async function applyToQuest(questId: any, user: SessionUser): Promise<ServiceResult<QuestAssignment>> {
   // Validate required fields
   try {
     if (!questId) {
@@ -97,7 +97,7 @@ export async function applyToQuest(questId: any, user: SessionUser): Promise<Ser
   }
 }
 
-export async function updateAssignment(body: any, user: SessionUser): Promise<ServiceResult<any>> {
+export async function updateAssignment(body: any, user: SessionUser): Promise<ServiceResult<QuestAssignment>> {
   try {
     const { assignmentId, status, progress } = body;
     const userId = user.id; // Use authenticated user's ID
@@ -176,7 +176,7 @@ export async function updateAssignment(body: any, user: SessionUser): Promise<Se
   }
 }
 
-export async function getAssignments(searchParams: URLSearchParams, user: SessionUser): Promise<ServiceResult<any>> {
+export async function getAssignments(searchParams: URLSearchParams, user: SessionUser): Promise<ServiceResult<QuestAssignment>> {
   try {
     const requestedUserId = searchParams.get('userId');
     const questId = searchParams.get('questId');
@@ -250,7 +250,7 @@ export async function getAssignments(searchParams: URLSearchParams, user: Sessio
       take: limit,
     });
 
-    return { data: assignments, error: null, status: 200 };
+    return { data: assignments[0], error: null, status: 200 };
   } catch (error) {
     console.error('Error fetching quest assignments:', error);
     return { data: null, error: 'Failed to fetch quest assignments', status: 500 };
