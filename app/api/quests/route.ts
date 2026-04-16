@@ -16,6 +16,8 @@ export async function GET(request: NextRequest) {
     const difficulty = searchParams.get('difficulty');
     const track = searchParams.get('track');
     const companyId = searchParams.get('company_id');
+    const search = searchParams.get('search') || '';
+    const sort = searchParams.get('sort') || 'newest';
     const limit = parseInt(searchParams.get('limit') || '10');
     const offset = parseInt(searchParams.get('offset') || '0');
 
@@ -68,6 +70,13 @@ export async function GET(request: NextRequest) {
     if (status && (!user || user.role !== 'company')) {
       where.status = status as QuestStatus;
     }
+    if (search) {
+      where.OR = [
+        ...(Array.isArray(where.OR) ? where.OR : []),
+        { title: { contains: search, mode: 'insensitive' } },
+        { description: { contains: search, mode: 'insensitive' } },
+      ];
+    }
     if (category) {
       where.questCategory = category as QuestCategory;
     }
@@ -82,6 +91,15 @@ export async function GET(request: NextRequest) {
       where.companyId = companyId;
     }
 
+    const orderBy: Prisma.QuestOrderByWithRelationInput =
+      sort === 'xp_desc'
+        ? { xpReward: 'desc' }
+        : sort === 'pay_desc'
+        ? { monetaryReward: 'desc' }
+        : sort === 'deadline_asc'
+        ? { deadline: { sort: 'asc', nulls: 'last' } }
+        : { createdAt: 'desc' };
+
     const quests = await prisma.quest.findMany({
       where,
       include: {
@@ -92,6 +110,7 @@ export async function GET(request: NextRequest) {
           },
         },
       },
+      orderBy,
       skip: offset,
       take: limit,
     });
