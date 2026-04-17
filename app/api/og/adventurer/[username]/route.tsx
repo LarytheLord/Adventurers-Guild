@@ -54,8 +54,9 @@ export async function GET(
     }
 
     const rankColor = RANK_COLORS[user.rank] || '#94a3b8';
-    const skills = user.adventurerProfile?.primarySkills?.slice(0, 4) || [];
+    const skills = user.adventurerProfile?.primarySkills?.slice(0, 3) || [];
     const quests = user.adventurerProfile?.totalQuestsCompleted || 0;
+    const displayName = user.name || user.username || 'Adventurer';
 
     return new ImageResponse(
       (
@@ -65,104 +66,156 @@ export async function GET(
             flexDirection: 'column',
             width: '100%',
             height: '100%',
-            background: 'linear-gradient(135deg, #0f172a 0%, #1e293b 100%)',
-            padding: '60px',
+            background: 'radial-gradient(circle at top right, rgba(249,115,22,0.22), transparent 42%), linear-gradient(135deg, #0b1220 0%, #0f172a 55%, #111827 100%)',
+            padding: '42px 54px',
             fontFamily: 'system-ui, sans-serif',
+            color: '#f8fafc',
+            position: 'relative',
           }}
         >
-          {/* Top: Guild branding */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '40px' }}>
-            <div style={{ display: 'flex', fontSize: '24px', color: '#f97316', fontWeight: 700, letterSpacing: '-0.5px' }}>
-              ADVENTURERS GUILD
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  width: '44px',
+                  height: '44px',
+                  borderRadius: '12px',
+                  background: 'linear-gradient(145deg, #fb923c, #f97316)',
+                  color: '#0f172a',
+                  fontSize: '26px',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 900,
+                }}
+              >
+                AG
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <div style={{ display: 'flex', fontSize: '27px', color: '#fb923c', fontWeight: 800, letterSpacing: '-0.3px' }}>
+                  Adventurers Guild
+                </div>
+                <div style={{ display: 'flex', fontSize: '17px', color: '#94a3b8' }}>
+                  Guild Card
+                </div>
+              </div>
             </div>
-            <div style={{ display: 'flex', fontSize: '18px', color: '#64748b' }}>
-              Guild Card
-            </div>
-          </div>
-
-          {/* Middle: Name + Rank */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '24px', marginBottom: '24px' }}>
             <div
               style={{
                 display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '80px',
-                height: '80px',
-                borderRadius: '16px',
-                background: rankColor,
-                fontSize: '40px',
-                fontWeight: 800,
-                color: '#fff',
+                borderRadius: '999px',
+                border: '1px solid rgba(251,146,60,0.55)',
+                background: 'rgba(249,115,22,0.12)',
+                padding: '10px 18px',
+                color: '#fdba74',
+                fontSize: '19px',
+                fontWeight: 700,
               }}
             >
-              {user.rank}
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <div style={{ display: 'flex', fontSize: '48px', fontWeight: 700, color: '#f8fafc', lineHeight: 1.1 }}>
-                {user.name || user.username || 'Adventurer'}
-              </div>
-              {user.username && (
-                <div style={{ display: 'flex', fontSize: '24px', color: '#94a3b8', marginTop: '4px' }}>
-                  @{user.username}
-                </div>
-              )}
+              Rank {user.rank}
             </div>
           </div>
 
-          {/* Stats row */}
-          <div style={{ display: 'flex', gap: '40px', marginBottom: '32px' }}>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <div style={{ display: 'flex', fontSize: '36px', fontWeight: 700, color: '#f97316' }}>
-                {user.xp.toLocaleString()}
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flex: 1,
+              marginTop: '18px',
+              marginBottom: '18px',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '18px', marginBottom: '16px' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  minWidth: '92px',
+                  height: '60px',
+                  padding: '0 20px',
+                  borderRadius: '999px',
+                  background: rankColor,
+                  color: '#fff',
+                  fontSize: '36px',
+                  fontWeight: 900,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.35)',
+                }}
+              >
+                {user.rank}
               </div>
-              <div style={{ display: 'flex', fontSize: '16px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                Total XP
+              <div style={{ display: 'flex', fontSize: '62px', fontWeight: 800, lineHeight: 1 }}>
+                {displayName}
               </div>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <div style={{ display: 'flex', fontSize: '36px', fontWeight: 700, color: '#22c55e' }}>
-                {quests}
+            {user.username && (
+              <div style={{ display: 'flex', fontSize: '26px', color: '#94a3b8', marginBottom: '26px' }}>
+                @{user.username}
               </div>
-              <div style={{ display: 'flex', fontSize: '16px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                Quests Done
+            )}
+            <div
+              style={{
+                display: 'flex',
+                width: '100%',
+                gap: '18px',
+                justifyContent: 'center',
+                marginBottom: '22px',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  borderRadius: '16px',
+                  border: '1px solid rgba(148,163,184,0.25)',
+                  background: 'rgba(15,23,42,0.6)',
+                  padding: '14px 24px',
+                  minWidth: '230px',
+                }}
+              >
+                <div style={{ display: 'flex', fontSize: '15px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.2px' }}>Total XP</div>
+                <div style={{ display: 'flex', fontSize: '38px', color: '#fb923c', fontWeight: 800 }}>{user.xp.toLocaleString()}</div>
+              </div>
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  borderRadius: '16px',
+                  border: '1px solid rgba(148,163,184,0.25)',
+                  background: 'rgba(15,23,42,0.6)',
+                  padding: '14px 24px',
+                  minWidth: '230px',
+                }}
+              >
+                <div style={{ display: 'flex', fontSize: '15px', color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '1.2px' }}>Quests Completed</div>
+                <div style={{ display: 'flex', fontSize: '38px', color: '#f8fafc', fontWeight: 800 }}>{quests}</div>
               </div>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <div style={{ display: 'flex', fontSize: '36px', fontWeight: 700, color: rankColor }}>
-                {user.rank}-Rank
-              </div>
-              <div style={{ display: 'flex', fontSize: '16px', color: '#64748b', textTransform: 'uppercase', letterSpacing: '1px' }}>
-                Rank
-              </div>
-            </div>
-          </div>
 
-          {/* Skills */}
-          {skills.length > 0 && (
-            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-              {skills.map((skill) => (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', justifyContent: 'center', minHeight: '52px' }}>
+              {(skills.length ? skills : ['No skills listed']).map((skill) => (
                 <div
                   key={skill}
                   style={{
                     display: 'flex',
-                    padding: '8px 20px',
+                    padding: '10px 18px',
                     borderRadius: '999px',
-                    background: 'rgba(249, 115, 22, 0.15)',
-                    border: '1px solid rgba(249, 115, 22, 0.3)',
-                    color: '#f97316',
-                    fontSize: '18px',
-                    fontWeight: 500,
+                    border: '1px solid rgba(251,146,60,0.45)',
+                    background: 'rgba(249,115,22,0.14)',
+                    color: '#fed7aa',
+                    fontSize: '20px',
+                    fontWeight: 700,
                   }}
                 >
-                  {skill}
+                  {skill === 'No skills listed' ? skill : `# ${skill}`}
                 </div>
               ))}
             </div>
-          )}
+          </div>
 
-          {/* Bottom: URL */}
-          <div style={{ display: 'flex', marginTop: 'auto', fontSize: '18px', color: '#475569' }}>
+          <div style={{ display: 'flex', marginTop: 'auto', fontSize: '18px', color: '#64748b' }}>
             adventurersguild.space/adventurer/{user.username || 'profile'}
           </div>
         </div>
