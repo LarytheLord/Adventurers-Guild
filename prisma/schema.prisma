@@ -214,7 +214,8 @@ model BootcampLink {
   id                     String    @id @default(uuid()) @db.Uuid
   userId                 String    @unique @map("user_id") @db.Uuid
   bootcampStudentId      String    @unique @map("bootcamp_student_id")
-  bootcampTrack          String    @map("bootcamp_track") // animal_advocacy | climate_action | ai_safety | hybrid
+  cohort                 String?   @map("cohort")
+  bootcampTrack          String    @map("bootcamp_track") // animal_advocacy | climate_action | ai_safety | hybrid | beginner
   bootcampWeek           Int       @default(1) @map("bootcamp_week")
   enrolledAt             DateTime  @default(now()) @map("enrolled_at") @db.Timestamptz
   graduatedAt            DateTime? @map("graduated_at") @db.Timestamptz
