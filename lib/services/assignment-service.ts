@@ -5,8 +5,9 @@ import { SessionUser } from "../api-auth";
 import { prisma } from "@/lib/db";
 import { Prisma, AssignmentStatus, QuestAssignment } from '@prisma/client';
 import { UpdateAssignmentBody } from './types';
+import { PrismaClient } from "@prisma/client";
 
-export async function applyToQuest(questId: string, user: SessionUser): Promise<ServiceResult<QuestAssignment>> {
+export async function applyToQuest(questId: string, user: SessionUser, tx: PrismaClient): Promise<ServiceResult<QuestAssignment>> {
   // Validate required fields
   try {
     if (!questId) {
@@ -17,7 +18,7 @@ export async function applyToQuest(questId: string, user: SessionUser): Promise<
     }
 
     // Check if the quest exists and is available
-    const quest = await prisma.quest.findUnique({
+    const quest = await tx.quest.findUnique({
       where: { id: questId },
       select: { status: true, maxParticipants: true, title: true, track: true },
     });
@@ -29,7 +30,7 @@ export async function applyToQuest(questId: string, user: SessionUser): Promise<
     // Task 1.4: Bootcamp tutorial gating
     // Bootcamp-linked users who haven't completed tutorials can only apply to tutorial quests
     if (user.role === 'adventurer') {
-      const bootcampLink = await prisma.bootcampLink.findUnique({
+      const bootcampLink = await tx.bootcampLink.findUnique({
         where: { userId: user.id },
         select: { eligibleForRealQuests: true },
       });
@@ -45,7 +46,7 @@ export async function applyToQuest(questId: string, user: SessionUser): Promise<
     // Only count adventurers the company has accepted (started or beyond),
     // matching the same statuses used in quest-lifecycle.ts to keep a slot "filled".
     if (quest.maxParticipants) {
-      const count = await prisma.questAssignment.count({
+      const count = await tx.questAssignment.count({
         where: {
           questId: questId,
           status: { in: ['started', 'in_progress', 'submitted', 'pending_admin_review', 'review', 'needs_rework', 'completed'] },
@@ -58,7 +59,7 @@ export async function applyToQuest(questId: string, user: SessionUser): Promise<
     }
 
     // Check if user is already assigned to this quest (ignore cancelled)
-    const existingAssignment = await prisma.questAssignment.findFirst({
+    const existingAssignment = await tx.questAssignment.findFirst({
       where: {
         questId: questId,
         userId: user.id,
@@ -70,8 +71,9 @@ export async function applyToQuest(questId: string, user: SessionUser): Promise<
       return { data: null, error: 'You are already assigned to this quest', status: 400 };
     }
 
+    // here we are using transaction
     // Create the assignment
-    const assignment = await prisma.$transaction(
+    const assignment = await tx.$transaction(
       async (tx) => {
         const created = await tx.questAssignment.create({
           data: {
@@ -98,7 +100,7 @@ export async function applyToQuest(questId: string, user: SessionUser): Promise<
   }
 }
 
-export async function updateAssignment(body: UpdateAssignmentBody, user: SessionUser): Promise<ServiceResult<QuestAssignment>> {
+export async function updateAssignment(body: UpdateAssignmentBody, user: SessionUser, tx: PrismaClient): Promise<ServiceResult<QuestAssignment>> {
   try {
     const { assignmentId, status, progress } = body;
     const userId = user.id; // Use authenticated user's ID
@@ -129,7 +131,7 @@ export async function updateAssignment(body: UpdateAssignmentBody, user: Session
 
     // Check if the user has permission to update this assignment
     // Only the assigned user or an admin can update the assignment
-    const assignment = await prisma.questAssignment.findUnique({
+    const assignment = await tx.questAssignment.findUnique({
       where: { id: assignmentId },
       select: { userId: true, questId: true },
     });
@@ -157,7 +159,8 @@ export async function updateAssignment(body: UpdateAssignmentBody, user: Session
       updateData.completedAt = new Date();
     }
 
-    const updatedAssignment = await prisma.$transaction(
+    // here we are using transaction
+    const updatedAssignment = await tx.$transaction(
       async (tx) => {
         const updated = await tx.questAssignment.update({
           where: { id: assignmentId },

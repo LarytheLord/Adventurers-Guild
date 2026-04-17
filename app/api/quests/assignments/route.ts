@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/api-auth';
 import { applyToQuest, getAssignments, updateAssignment } from '@/lib/services/assignment-service';
+import { prisma } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   // Check authentication
@@ -35,7 +36,7 @@ export async function POST(request: NextRequest) {
   }
   const body = await request.json();
   const { questId } = body;
-  const result = await applyToQuest(questId, user);
+  const result = await applyToQuest(questId, user, prisma);
   if (result.error) {
     return NextResponse.json({ error: result.error, success: false }, { status: result.status });
   }
@@ -49,7 +50,7 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
   }
   const body = await request.json();
-  const result = await updateAssignment(body, user);
+  const result = await updateAssignment(body, user, prisma);
   if (result.error) {
     return NextResponse.json({ error: result.error, success: false }, { status: result.status });
   }
