@@ -1,11 +1,12 @@
 import { ServiceResult } from "./types";
-import { prisma } from '@/lib/db';
 import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
 import { logActivity } from '@/lib/activity-logger';
 import { SessionUser } from "../api-auth";
+import { prisma } from "@/lib/db";
 import { Prisma, AssignmentStatus, QuestAssignment } from '@prisma/client';
+import { UpdateAssignmentBody } from './types';
 
-export async function applyToQuest(questId: any, user: SessionUser): Promise<ServiceResult<QuestAssignment>> {
+export async function applyToQuest(questId: string, user: SessionUser): Promise<ServiceResult<QuestAssignment>> {
   // Validate required fields
   try {
     if (!questId) {
@@ -97,7 +98,7 @@ export async function applyToQuest(questId: any, user: SessionUser): Promise<Ser
   }
 }
 
-export async function updateAssignment(body: any, user: SessionUser): Promise<ServiceResult<QuestAssignment>> {
+export async function updateAssignment(body: UpdateAssignmentBody, user: SessionUser): Promise<ServiceResult<QuestAssignment>> {
   try {
     const { assignmentId, status, progress } = body;
     const userId = user.id; // Use authenticated user's ID
