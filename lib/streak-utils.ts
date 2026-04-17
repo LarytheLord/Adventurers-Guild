@@ -1,4 +1,4 @@
-import prisma from "@/lib/db";
+import { prisma } from "@/lib/db";
 
 export async function updateStreak(userId: string): Promise<void> {
   const profile = await prisma.adventurerProfile.findUnique({
