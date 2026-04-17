@@ -1,8 +1,6 @@
 // app/api/quests/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
 import { getAuthUser } from '@/lib/api-auth';
-import { Prisma, QuestStatus, QuestCategory, UserRank, QuestTrack } from '@prisma/client';
 import { createQuest, getQuests } from '@/lib/services/quest-service';
 
 export async function GET(request: NextRequest) {
