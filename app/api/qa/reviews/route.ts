@@ -202,6 +202,10 @@ export async function POST(request: NextRequest) {
         existingSubmission.assignment.questId
       );
 
+      // Update streak
+      const { updateStreak } = await import('@/lib/streak-utils');
+      await updateStreak(existingSubmission.assignment.userId);
+
       // Bootcamp tutorial completion tracking (required for tutorial gating)
       if (quest.title.startsWith('Tutorial:')) {
         const bootcampLink = await prisma.bootcampLink.findUnique({
