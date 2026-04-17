@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireAuth } from '@/lib/api-auth';
+import crypto from 'crypto';
 
 // PATCH /api/admin/qa-queue/[assignmentId] — approve or reject submission
 export async function PATCH(
