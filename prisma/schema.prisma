@@ -233,7 +233,10 @@ model AdventurerProfile {
   questCompletionRate  Decimal            @default(0.00) @map("quest_completion_rate") @db.Decimal(5, 2)
   totalQuestsCompleted Int                @default(0) @map("total_quests_completed")
   currentStreak        Int                @default(0) @map("current_streak")
+  longestStreak        Int                @default(0) @map("longest_streak")
   maxStreak              Int                @default(0) @map("max_streak")
+  lastActiveDate       DateTime?          @map("last_active_date") @db.Date
+  streakMultiplier     Float              @default(1.0) @map("streak_multiplier")
   stripeAccountId        String?            @map("stripe_account_id")
   razorpayContactId      String?            @map("razorpay_contact_id")
   razorpayFundAccountId  String?            @map("razorpay_fund_account_id")
