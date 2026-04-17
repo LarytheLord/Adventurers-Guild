@@ -3,30 +3,43 @@ import { prisma, withDbRetry } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 
-const VALID_BOOTCAMP_TRACKS = ['animal_advocacy', 'climate_action', 'ai_safety', 'hybrid'] as const;
+const VALID_BOOTCAMP_TRACKS = ['animal_advocacy', 'climate_action', 'ai_safety', 'hybrid', 'beginner'] as const;
 
 interface OnboardPayload {
   bootcampStudentId: string;
   name: string;
   email: string;
+  cohort?: string;
   bootcampTrack: (typeof VALID_BOOTCAMP_TRACKS)[number];
-  bootcampWeek: number;
-  webhookSecret: string;
+  bootcampWeek?: number;
+  webhookSecret?: string; // legacy: allow secret in body
+  initialPassword?: string; // optional: provided by bootcamp system for initial login
+}
+
+function readBearerToken(req: NextRequest): string | null {
+  const authHeader = req.headers.get('authorization') ?? req.headers.get('Authorization');
+  if (!authHeader) return null;
+  const match = authHeader.match(/^Bearer\s+(.+)$/i);
+  return match?.[1]?.trim() || null;
 }
 
 export async function POST(request: NextRequest) {
   try {
     const body: OnboardPayload = await request.json();
 
-    // 1. Validate webhook secret
+    // 1. Validate webhook secret (Authorization: Bearer ... OR body.webhookSecret)
     const expectedSecret = process.env.BOOTCAMP_WEBHOOK_SECRET;
-    if (!expectedSecret || body.webhookSecret !== expectedSecret) {
+    const providedSecret = readBearerToken(request) ?? body.webhookSecret ?? null;
+    if (!expectedSecret || !providedSecret || providedSecret !== expectedSecret) {
       return Response.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // 2. Validate required fields
     if (!body.bootcampStudentId || !body.name || !body.email || !body.bootcampTrack) {
-      return Response.json({ error: 'Missing required fields: bootcampStudentId, name, email, bootcampTrack' }, { status: 400 });
+      return Response.json(
+        { error: 'Missing required fields: bootcampStudentId, name, email, bootcampTrack' },
+        { status: 400 }
+      );
     }
 
     const normalizedEmail = body.email.trim().toLowerCase();
@@ -87,8 +100,11 @@ export async function POST(request: NextRequest) {
     }
 
     // 5. Create User + AdventurerProfile + BootcampLink in transaction
-    const generatedPassword = crypto.randomBytes(16).toString('hex');
-    const passwordHash = await bcrypt.hash(generatedPassword, 12);
+    const passwordPlaintext =
+      typeof body.initialPassword === 'string' && body.initialPassword.trim().length >= 8
+        ? body.initialPassword.trim()
+        : crypto.randomBytes(16).toString('hex');
+    const passwordHash = await bcrypt.hash(passwordPlaintext, 12);
 
     const user = await withDbRetry(() =>
       prisma.$transaction(async (tx) => {
@@ -110,6 +126,7 @@ export async function POST(request: NextRequest) {
           data: {
             userId: newUser.id,
             bootcampStudentId: body.bootcampStudentId,
+            cohort: body.cohort?.trim() || null,
             bootcampTrack: body.bootcampTrack,
             bootcampWeek,
             eligibleForRealQuests: false,
@@ -120,11 +137,14 @@ export async function POST(request: NextRequest) {
       })
     );
 
+    const shouldReturnPassword = process.env.BOOTCAMP_ONBOARD_RETURN_PASSWORD === 'true';
+
     return Response.json(
       {
         success: true,
         adventurerId: user.id,
         rank: 'F',
+        ...(shouldReturnPassword ? { initialPassword: passwordPlaintext } : {}),
       },
       { status: 201 }
     );

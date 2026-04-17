@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { GuildCard, GuildChip, GuildHero, GuildKpi, GuildPage, GuildPanel } from '@/components/guild/primitives';
+import { PartyPanel, type Party } from '@/components/quest/PartyPanel';
 import { fetchWithAuth } from '@/lib/fetch-with-auth';
 
 interface Quest {
@@ -48,6 +49,7 @@ interface Quest {
     name: string;
     email?: string;
   };
+  party?: Party | null;
 }
 
 interface Assignment {
@@ -172,6 +174,7 @@ export default function QuestDetailPage() {
   const isAssigned = !!assignment;
   const canAssign = quest?.status === 'available' && !isAssigned;
   const canSubmit = !!assignment && ['assigned', 'started', 'in_progress', 'needs_rework'].includes(assignment.status);
+  const showPartyPanel = (quest?.maxParticipants ?? 1) > 1;
 
   const rewardCards = useMemo(
     () =>
@@ -423,6 +426,22 @@ export default function QuestDetailPage() {
               </GuildPanel>
             </GuildCard>
           )}
+
+          {showPartyPanel && session?.user?.id ? (
+            <PartyPanel
+              questId={quest.id}
+              party={quest.party ?? null}
+              maxParticipants={quest.maxParticipants ?? 1}
+              isAssigned={isAssigned}
+              currentUserId={session.user.id}
+              onPartyCreated={(party) =>
+                setQuest((previous) => (previous ? { ...previous, party } : previous))
+              }
+              onMemberAdded={() => {
+                // Reserved for parent-side reactions to membership changes.
+              }}
+            />
+          ) : null}
 
           <GuildCard className="border-slate-200/80">
             <GuildPanel asChild className="border-0 bg-transparent shadow-none">
