@@ -14,6 +14,9 @@ const RANK_COLORS: Record<string, string> = {
   S: '#f97316',
 };
 
+const OG_BACKGROUND = 'radial-gradient(circle at top right, rgba(249,115,22,0.22), transparent 42%), linear-gradient(135deg, #0b1220 0%, #0f172a 55%, #111827 100%)';
+const SKILL_PREFIX = '#';
+
 export async function GET(
   _req: NextRequest,
   props: { params: Promise<{ username: string }> }
@@ -65,7 +68,7 @@ export async function GET(
             flexDirection: 'column',
             width: '100%',
             height: '100%',
-            background: 'radial-gradient(circle at top right, rgba(249,115,22,0.22), transparent 42%), linear-gradient(135deg, #0b1220 0%, #0f172a 55%, #111827 100%)',
+            background: OG_BACKGROUND,
             padding: '42px 54px',
             fontFamily: 'system-ui, sans-serif',
             color: '#f8fafc',
@@ -209,7 +212,7 @@ export async function GET(
                       fontWeight: 700,
                     }}
                   >
-                    # {skill}
+                    {SKILL_PREFIX} {skill}
                   </div>
                 ))}
               </div>
