@@ -15,7 +15,7 @@ const RANK_COLORS: Record<string, string> = {
 };
 
 const OG_BACKGROUND = 'radial-gradient(circle at top right, rgba(249,115,22,0.22), transparent 42%), linear-gradient(135deg, #0b1220 0%, #0f172a 55%, #111827 100%)';
-const SKILL_PREFIX = '#';
+const SKILL_HASHTAG = '#';
 
 export async function GET(
   _req: NextRequest,
@@ -212,7 +212,7 @@ export async function GET(
                       fontWeight: 700,
                     }}
                   >
-                    {SKILL_PREFIX} {skill}
+                    {SKILL_HASHTAG}{skill}
                   </div>
                 ))}
               </div>
