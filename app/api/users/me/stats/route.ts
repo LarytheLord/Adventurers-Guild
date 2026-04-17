@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
     const activeCount = await prisma.questAssignment.count({
       where: {
         userId,
-        status: { in: ['assigned', 'in_progress'] },
+        status: { in: ['assigned', 'started', 'in_progress', 'submitted', 'pending_admin_review', 'review', 'needs_rework'] },
       },
     });
 

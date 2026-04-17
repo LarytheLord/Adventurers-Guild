@@ -30,6 +30,7 @@ import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { GuildCard, GuildChip, GuildHero, GuildPage } from '@/components/guild/primitives';
 import { QUEST_CATEGORIES, QUEST_TYPES, DIFFICULTY_RANKS } from '@/lib/quest-constants';
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
 
 interface QuestData {
   id: string;
@@ -89,7 +90,7 @@ export default function EditQuestPage({ params }: { params: Promise<{ id: string
 
     const fetchQuest = async () => {
       try {
-        const res = await fetch(`/api/quests/${id}`);
+        const res = await fetchWithAuth(`/api/quests/${id}`);
         const data = await res.json();
         if (!data.success) {
           toast.error('Quest not found');
@@ -175,7 +176,7 @@ export default function EditQuestPage({ params }: { params: Promise<{ id: string
         deadline: form.deadline || null,
       };
 
-      const response = await fetch('/api/company/quests', {
+      const response = await fetchWithAuth('/api/company/quests', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),

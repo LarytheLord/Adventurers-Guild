@@ -31,8 +31,7 @@ export default function HomePage() {
       <div className="relative">
         <Hero
           trustBadge={{
-            text: 'Season 1 · Real projects · Real pay',
-            icons: ['⚔️', '🏆', '🔥'],
+            text: 'Season 1 / Real projects / Real pay',
           }}
           headline={{
             line1: 'Level Up Your Career',
@@ -65,8 +64,6 @@ export default function HomePage() {
         </div>
       </div>
 
-      <LogoMarquee />
-
       <section id="features">
         <StatsSection />
       </section>
@@ -82,6 +79,9 @@ export default function HomePage() {
       <section id="join">
         <CTASection />
       </section>
+      
+      {/* Trusted Partners section - moved below main CTA */}
+      <LogoMarquee />
     </>
   );
 }

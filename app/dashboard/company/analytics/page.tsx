@@ -1,9 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2, Users, CheckCircle, Clock, Briefcase } from 'lucide-react';
-import { toast } from 'sonner';
+import { useApiFetch } from '@/lib/hooks';
 
 interface CompanyStats {
   totalQuests: number;
@@ -15,28 +14,10 @@ interface CompanyStats {
 }
 
 export default function CompanyAnalyticsPage() {
-  const [stats, setStats] = useState<CompanyStats | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const res = await fetch('/api/analytics?type=company');
-        const data = await res.json();
-        if (data.success) {
-          setStats(data.stats);
-        } else {
-          toast.error(data.error || 'Failed to load analytics');
-        }
-      } catch (error) {
-        toast.error('Failed to load analytics');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchStats();
-  }, []);
+  const { data, loading } = useApiFetch<{ success: boolean; stats: CompanyStats; error?: string }>(
+    '/api/analytics?type=company'
+  );
+  const stats = data?.stats ?? null;
 
   if (loading) {
     return (

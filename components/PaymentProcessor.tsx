@@ -149,13 +149,13 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
 
   if (error) {
     return (
-      <div className="container mx-auto py-6">
+      <div className="container mx-auto px-4 py-6">
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>{error}</AlertDescription>
         </Alert>
-        <Button className="mt-4" onClick={() => router.back()}>
-          ← Back
+        <Button className="mt-4 w-full sm:w-auto" onClick={() => router.back()}>
+          Back
         </Button>
       </div>
     );
@@ -171,7 +171,7 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
 
   if (paymentSuccess) {
     return (
-      <div className="container mx-auto py-6 max-w-2xl">
+      <div className="container mx-auto max-w-2xl px-4 py-6">
         <Card className="text-center">
           <CardHeader>
             <div className="mx-auto bg-green-100 rounded-full p-3 w-16 h-16 flex items-center justify-center">
@@ -188,7 +188,7 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
                 <h3 className="font-medium">{quest.title}</h3>
                 <p className="text-sm text-muted-foreground">{quest.description}</p>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="flex items-center justify-center p-3 bg-muted rounded-lg">
                   <Coins className="w-5 h-5 mr-2 text-green-500" />
                   <span>{formatCurrency(quest.monetaryReward || 0)}</span>
@@ -210,7 +210,7 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
 
   if (showPaymentForm && quest.monetaryReward && selectedAdventurerId) {
     return (
-      <div className="container mx-auto py-6">
+      <div className="container mx-auto px-4 py-6">
         <PaymentForm
           questId={quest.id}
           companyId={session?.user?.id || ''}
@@ -225,16 +225,16 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
   }
 
   return (
-    <div className="container mx-auto py-6 max-w-2xl">
+    <div className="container mx-auto max-w-2xl px-4 py-6">
       <div className="mb-6">
-        <Button variant="outline" onClick={() => router.back()}>
-          ← Back to Quests
+        <Button variant="outline" className="w-full sm:w-auto" onClick={() => router.back()}>
+          Back to Quests
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
               <CardTitle className="text-2xl">{quest.title}</CardTitle>
               <CardDescription>
@@ -251,7 +251,7 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
               <p className="text-muted-foreground">{quest.description}</p>
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4">
               <div className="text-center p-3 bg-muted rounded-lg">
                 <Target className="w-6 h-6 mx-auto text-yellow-500 mb-1" />
                 <div className="font-bold">{quest.xpReward} XP</div>
@@ -262,7 +262,7 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
                 <div className="text-xs text-muted-foreground">Skill Points</div>
               </div>
               {quest.monetaryReward && (
-                <div className="text-center p-3 bg-muted rounded-lg col-span-2 md:col-span-2">
+                <div className="text-center p-3 bg-muted rounded-lg sm:col-span-2 md:col-span-2">
                   <Coins className="w-6 h-6 mx-auto text-green-500 mb-1" />
                   <div className="font-bold text-lg">{formatCurrency(quest.monetaryReward)}</div>
                   <div className="text-xs text-muted-foreground">Monetary Reward</div>

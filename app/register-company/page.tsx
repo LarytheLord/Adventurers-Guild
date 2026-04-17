@@ -1,4 +1,3 @@
-// app/register-company/page.tsx
 'use client';
 
 import { useState } from 'react';
@@ -6,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 
@@ -23,14 +22,14 @@ export default function RegisterCompanyPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
     }
 
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters');
       return;
     }
 
@@ -63,13 +62,11 @@ export default function RegisterCompanyPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4 sm:p-6">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">Register Company</CardTitle>
-          <CardDescription>
-            Create your company account to post quests
-          </CardDescription>
+          <CardDescription>Create your company account to post quests</CardDescription>
         </CardHeader>
         <CardContent>
           {error && (
@@ -78,16 +75,14 @@ export default function RegisterCompanyPage() {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          
+
           {success ? (
-            <div className="text-center py-8">
-              <h3 className="text-lg font-medium mb-2">Registration Successful!</h3>
-              <p className="text-muted-foreground mb-4">
-                Please check your email to verify your account.
+            <div className="py-8 text-center">
+              <h3 className="mb-2 text-lg font-medium">Registration Successful!</h3>
+              <p className="mb-4 text-muted-foreground">
+                Your company account is ready. You can sign in with your new credentials.
               </p>
-              <p className="text-sm text-muted-foreground">
-                Redirecting to login...
-              </p>
+              <p className="text-sm text-muted-foreground">Redirecting to login...</p>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -102,7 +97,7 @@ export default function RegisterCompanyPage() {
                   required
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="companyName">Company Name</Label>
                 <Input
@@ -114,7 +109,7 @@ export default function RegisterCompanyPage() {
                   required
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -126,31 +121,31 @@ export default function RegisterCompanyPage() {
                   required
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <Input
                   id="password"
                   type="password"
-                  placeholder="••••••"
+                  placeholder="Enter a secure password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
                 />
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
-                  placeholder="•••••"
+                  placeholder="Re-enter your password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                 />
               </div>
-              
+
               <Button type="submit" className="w-full" disabled={loading}>
                 {loading ? 'Creating Account...' : 'Create Company Account'}
               </Button>
@@ -158,19 +153,21 @@ export default function RegisterCompanyPage() {
           )}
         </CardContent>
         <CardFooter className="flex flex-col space-y-2">
-          <p className="text-sm text-muted-foreground text-center">
+          <p className="text-center text-sm text-muted-foreground">
             Already have an account?{' '}
-            <button 
-              onClick={() => router.push('/login')} 
+            <button
+              type="button"
+              onClick={() => router.push('/login')}
               className="text-orange-500 hover:text-orange-400 hover:underline"
             >
               Sign in
             </button>
           </p>
-          <p className="text-sm text-muted-foreground text-center">
+          <p className="text-center text-sm text-muted-foreground">
             Are you an adventurer?{' '}
-            <button 
-              onClick={() => router.push('/register')} 
+            <button
+              type="button"
+              onClick={() => router.push('/register')}
               className="text-orange-500 hover:text-orange-400 hover:underline"
             >
               Register as adventurer

@@ -1,8 +1,8 @@
 // components/TeamManagement.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState } from 'react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,19 +16,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { 
-  Users, 
-  UserPlus, 
-  UserX, 
-  Settings, 
-  Plus, 
-  Edit, 
-  Trash2, 
+import {
+  Users,
+  UserPlus,
+  UserX,
+  Plus,
   Eye,
-  Check,
   X
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useGet } from '@/lib/hooks';
 
 // Types
 interface TeamMember {
@@ -63,9 +60,6 @@ interface TeamManagementProps {
 }
 
 export default function TeamManagement({ userId }: TeamManagementProps) {
-  const [teams, setTeams] = useState<Team[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('my-teams');
   const [newTeam, setNewTeam] = useState({
     name: '',
     description: '',
@@ -75,31 +69,9 @@ export default function TeamManagement({ userId }: TeamManagementProps) {
   const [invitingToTeam, setInvitingToTeam] = useState<string | null>(null);
   const [inviteEmail, setInviteEmail] = useState('');
 
-  // Fetch user's teams
-  useEffect(() => {
-    const fetchTeams = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch('/api/teams');
-        const data = await response.json();
-        
-        if (data.success) {
-          setTeams(data.teams);
-        } else {
-          toast.error(data.error || 'Failed to fetch teams');
-        }
-      } catch (error) {
-        console.error('Error fetching teams:', error);
-        toast.error('Error fetching teams');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (userId) {
-      fetchTeams();
-    }
-  }, [userId, activeTab]);
+  // Fetch user's teams using useGet hook
+  const { data: teamsData, loading, refetch } = useGet<{ success: boolean; teams: Team[] }>('/api/teams');
+  const teams = teamsData?.teams || [];
 
   const handleCreateTeam = async () => {
     try {
@@ -122,13 +94,7 @@ export default function TeamManagement({ userId }: TeamManagementProps) {
         setShowCreateTeam(false);
         setNewTeam({ name: '', description: '', maxMembers: 5 });
         
-        // Refresh the team list
-        const updatedTeamsResponse = await fetch('/api/teams');
-        const updatedTeamsData = await updatedTeamsResponse.json();
-        
-        if (updatedTeamsData.success) {
-          setTeams(updatedTeamsData.teams);
-        }
+        await refetch();
       } else {
         toast.error(data.error || 'Failed to create team');
       }
@@ -163,13 +129,7 @@ export default function TeamManagement({ userId }: TeamManagementProps) {
         setInviteEmail('');
         setInvitingToTeam(null);
         
-        // Refresh the team data to show the new member
-        const updatedTeamsResponse = await fetch('/api/teams');
-        const updatedTeamsData = await updatedTeamsResponse.json();
-        
-        if (updatedTeamsData.success) {
-          setTeams(updatedTeamsData.teams);
-        }
+        await refetch();
       } else {
         toast.error(data.error || 'Failed to invite member');
       }
@@ -211,13 +171,7 @@ export default function TeamManagement({ userId }: TeamManagementProps) {
 
       toast.success('Successfully left the team');
       
-      // Refresh the team list
-      const updatedTeamsResponse = await fetch('/api/teams');
-      const updatedTeamsData = await updatedTeamsResponse.json();
-      
-      if (updatedTeamsData.success) {
-        setTeams(updatedTeamsData.teams);
-      }
+      await refetch();
     } catch (error) {
       console.error('Error leaving team:', error);
       toast.error('Error leaving team');
@@ -248,13 +202,7 @@ export default function TeamManagement({ userId }: TeamManagementProps) {
 
       toast.success('Member removed from team');
       
-      // Refresh the team data to show the updated member list
-      const updatedTeamsResponse = await fetch('/api/teams');
-      const updatedTeamsData = await updatedTeamsResponse.json();
-      
-      if (updatedTeamsData.success) {
-        setTeams(updatedTeamsData.teams);
-      }
+      await refetch();
     } catch (error) {
       console.error('Error removing member:', error);
       toast.error('Error removing member');

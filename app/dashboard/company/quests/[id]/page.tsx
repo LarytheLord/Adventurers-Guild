@@ -33,6 +33,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
 
 interface Submission {
   id: string;
@@ -91,7 +92,7 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
 
     const fetchQuestDetails = async () => {
       try {
-        const response = await fetch(`/api/quests/${id}`);
+        const response = await fetchWithAuth(`/api/quests/${id}`);
         const data = await response.json();
 
         if (data.success) {
@@ -116,7 +117,7 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
     setProcessingId(assignmentId);
     const dbStatus: Applicant['status'] = action === 'accepted' ? 'started' : 'cancelled';
     try {
-      const response = await fetch(`/api/quests/${id}/assignments`, {
+      const response = await fetchWithAuth(`/api/quests/${id}/assignments`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ assignmentId, status: action }),
@@ -150,7 +151,7 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
   ) => {
     setProcessingId(assignmentId);
     try {
-      const response = await fetch('/api/quests/submissions', {
+      const response = await fetchWithAuth('/api/quests/submissions', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ submissionId, status: action }),
@@ -185,7 +186,7 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
 
     try {
       setIsClosing(true);
-      const response = await fetch('/api/company/quests', {
+      const response = await fetchWithAuth('/api/company/quests', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ questId: quest.id }),

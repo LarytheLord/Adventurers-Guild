@@ -3,6 +3,7 @@
 import { prisma } from './db';
 import { getRankForXp, XP_PER_LEVEL } from './ranks';
 import { UserRank } from '@prisma/client';
+import { logActivity } from './activity-logger';
 
 /**
  * Update user XP, level, rank, and skill points in a single transaction.
@@ -11,7 +12,8 @@ import { UserRank } from '@prisma/client';
 export async function updateUserXpAndSkills(
   userId: string,
   xpGained: number,
-  skillPointsGained: number
+  skillPointsGained: number,
+  questId?: string
 ): Promise<{ newXp: number; newLevel: number; newRank: string; rankChanged: boolean }> {
   return prisma.$transaction(async (tx) => {
     // Get current user stats
@@ -65,6 +67,11 @@ export async function updateUserXpAndSkills(
       },
     });
 
+    // Log quest completion activity
+    if (questId) {
+      await logActivity(userId, 'quest_complete', { questId, xp: xpGained }, tx);
+    }
+
     // Send rank-up notification if rank changed
     if (rankChanged) {
       await tx.notification.create({
@@ -76,6 +83,9 @@ export async function updateUserXpAndSkills(
           data: { newRank, previousRank: user.rank },
         },
       });
+
+      // Log rank up activity
+      await logActivity(userId, 'rank_up', { fromRank: user.rank, toRank: newRank }, tx);
     }
 
     return { newXp, newLevel, newRank, rankChanged };

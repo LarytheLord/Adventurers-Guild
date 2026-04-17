@@ -153,6 +153,7 @@ enum VerificationStatus {
 model User {
   id            String    @id @default(uuid()) @db.Uuid
   name          String?
+  username      String?   @unique
   email         String    @unique
   passwordHash  String    @map("password_hash")
   role          UserRole  @default(adventurer)
@@ -195,11 +196,14 @@ model User {
   passwordResetTokens PasswordResetToken[]
   mentorships         Mentorship[]          @relation("MentorUser")
   menteeships         Mentorship[]          @relation("MenteeUser")
+  apiKeyBudgets       ApiKeyBudget[]
   bootcampLink        BootcampLink?
   ledParties          Party[]               @relation("PartyLeader")
   partyMembers        PartyMember[]
+  activityLogs        ActivityLog[]
 
   @@index([email])
+  @@index([username])
   @@index([role])
   @@index([rank])
   @@index([isActive])
@@ -210,7 +214,8 @@ model BootcampLink {
   id                     String    @id @default(uuid()) @db.Uuid
   userId                 String    @unique @map("user_id") @db.Uuid
   bootcampStudentId      String    @unique @map("bootcamp_student_id")
-  bootcampTrack          String    @map("bootcamp_track") // animal_advocacy | climate_action | ai_safety | hybrid
+  cohort                 String?   @map("cohort")
+  bootcampTrack          String    @map("bootcamp_track") // animal_advocacy | climate_action | ai_safety | hybrid | beginner
   bootcampWeek           Int       @default(1) @map("bootcamp_week")
   enrolledAt             DateTime  @default(now()) @map("enrolled_at") @db.Timestamptz
   graduatedAt            DateTime? @map("graduated_at") @db.Timestamptz
@@ -622,3 +627,33 @@ model PartyMember {
   @@map("party_members")
 }
 
+model ApiKeyBudget {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  weekStart DateTime @map("week_start") @db.Timestamptz
+  spent     Decimal  @default(0.00) @db.Decimal(10, 2)
+  cap       Decimal  @default(5.00) @db.Decimal(10, 2)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, weekStart])
+  @@map("api_key_budgets")
+}
+
+model ActivityLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  action    String
+  points    Int      @default(0)
+  metadata  Json?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("activity_logs")
+}

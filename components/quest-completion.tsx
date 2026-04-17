@@ -6,17 +6,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { 
-  Trophy, 
-  Star, 
-  CheckCircle, 
-  Zap,
+import {
+  Trophy,
+  Star,
+  CheckCircle,
   Code,
   Database,
   Brain,
   Server,
-  Award,
-  Sparkles
+  Award
 } from 'lucide-react'
 
 interface QuestReward {
@@ -102,7 +100,6 @@ const sampleQuests: Quest[] = [
 ]
 
 export function QuestCompletion() {
-  const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null)
   const [isOpen, setIsOpen] = useState(false)
   const [completedQuests, setCompletedQuests] = useState<string[]>([])
 

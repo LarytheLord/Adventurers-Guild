@@ -24,6 +24,8 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { GuildCard, GuildChip, GuildHero, GuildKpi, GuildPage, GuildPanel } from '@/components/guild/primitives';
+import { PartyPanel, type Party } from '@/components/quest/PartyPanel';
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
 
 interface Quest {
   id: string;
@@ -47,6 +49,7 @@ interface Quest {
     name: string;
     email?: string;
   };
+  party?: Party | null;
 }
 
 interface Assignment {
@@ -68,7 +71,10 @@ function assignmentStatusClass(status: string) {
     case 'in_progress':
       return 'bg-amber-100 text-amber-700 border-amber-300';
     case 'submitted':
+    case 'pending_admin_review':
       return 'bg-violet-100 text-violet-700 border-violet-300';
+    case 'needs_rework':
+      return 'bg-orange-100 text-orange-700 border-orange-300';
     case 'completed':
       return 'bg-emerald-100 text-emerald-700 border-emerald-300';
     case 'cancelled':
@@ -124,7 +130,7 @@ export default function QuestDetailPage() {
         setLoading(true);
         setError(null);
 
-        const questResponse = await fetch(`/api/quests/${questId}`);
+        const questResponse = await fetchWithAuth(`/api/quests/${questId}`);
         const questData = await questResponse.json();
 
         if (!questData.success) {
@@ -141,7 +147,7 @@ export default function QuestDetailPage() {
         setQuest(normalizedQuest);
 
         if (session?.user?.id) {
-          const assignmentResponse = await fetch(
+          const assignmentResponse = await fetchWithAuth(
             `/api/quests/assignments?userId=${session.user.id}&questId=${questId}`
           );
           const assignmentData = await assignmentResponse.json();
@@ -167,7 +173,8 @@ export default function QuestDetailPage() {
 
   const isAssigned = !!assignment;
   const canAssign = quest?.status === 'available' && !isAssigned;
-  const canSubmit = !!assignment && ['assigned', 'started', 'in_progress'].includes(assignment.status);
+  const canSubmit = !!assignment && ['assigned', 'started', 'in_progress', 'needs_rework'].includes(assignment.status);
+  const showPartyPanel = (quest?.maxParticipants ?? 1) > 1;
 
   const rewardCards = useMemo(
     () =>
@@ -265,7 +272,7 @@ export default function QuestDetailPage() {
               )}
             </div>
           </div>
-          <Button variant="outline" onClick={() => router.push('/dashboard/quests')}>
+          <Button variant="outline" className="w-full sm:w-auto" onClick={() => router.push('/dashboard/quests')}>
             <ArrowLeft className="h-4 w-4" />
             Back to Quest Board
           </Button>
@@ -337,15 +344,17 @@ export default function QuestDetailPage() {
                       </p>
                     </div>
                     <Badge variant="outline" className={assignmentStatusClass(assignment.status)}>
-                      {assignment.status.replace('_', ' ')}
+                      {assignment.status.replaceAll('_', ' ')}
                     </Badge>
                   </div>
                   <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
                     {assignment.status === 'completed'
                       ? 'This quest is complete on your ledger.'
-                      : assignment.status === 'submitted'
+                      : assignment.status === 'submitted' || assignment.status === 'pending_admin_review'
                         ? 'Your delivery is in review.'
-                        : 'You are currently responsible for this quest. Keep delivery momentum high.'}
+                        : assignment.status === 'needs_rework'
+                          ? 'Your submission needs revision. Check reviewer feedback and resubmit.'
+                          : 'You are currently responsible for this quest. Keep delivery momentum high.'}
                   </div>
                   {assignment.status === 'completed' && (
                     <div className="flex items-center gap-2 text-sm font-medium text-emerald-700">
@@ -370,11 +379,17 @@ export default function QuestDetailPage() {
                     className="w-full"
                     onClick={async () => {
                       try {
-                        const response = await fetch('/api/quests/assignments', {
+                        const response = await fetchWithAuth('/api/quests/assignments', {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({ questId }),
                         });
+
+                        if (!response.ok && response.status === 401) {
+                          toast.error('Session expired — please log in again');
+                          router.push('/login');
+                          return;
+                        }
 
                         const data = await response.json();
                         if (!data.success) {
@@ -404,13 +419,29 @@ export default function QuestDetailPage() {
                   <div>
                     <h2 className="text-lg font-semibold text-slate-900">Quest not claimable</h2>
                     <p className="mt-1 text-sm text-slate-500">
-                      This quest is currently {quest.status.replace('_', ' ')}.
+                      This quest is currently {quest.status.replaceAll('_', ' ')}.
                     </p>
                   </div>
                 </div>
               </GuildPanel>
             </GuildCard>
           )}
+
+          {showPartyPanel && session?.user?.id ? (
+            <PartyPanel
+              questId={quest.id}
+              party={quest.party ?? null}
+              maxParticipants={quest.maxParticipants ?? 1}
+              isAssigned={isAssigned}
+              currentUserId={session.user.id}
+              onPartyCreated={(party) =>
+                setQuest((previous) => (previous ? { ...previous, party } : previous))
+              }
+              onMemberAdded={() => {
+                // Reserved for parent-side reactions to membership changes.
+              }}
+            />
+          ) : null}
 
           <GuildCard className="border-slate-200/80">
             <GuildPanel asChild className="border-0 bg-transparent shadow-none">
@@ -487,7 +518,7 @@ export default function QuestDetailPage() {
                   setIsSubmitting(true);
 
                   try {
-                    const response = await fetch('/api/quests/submissions', {
+                    const response = await fetchWithAuth('/api/quests/submissions', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({

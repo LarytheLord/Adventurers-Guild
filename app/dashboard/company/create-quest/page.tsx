@@ -31,6 +31,7 @@ import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 import { GuildCard, GuildChip, GuildHero, GuildPage } from '@/components/guild/primitives';
 import { QUEST_CATEGORIES, QUEST_TYPES, DIFFICULTY_RANKS, getQuestListPath } from '@/lib/quest-constants';
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
 
 export default function CreateQuestPage() {
   const { data: session, status } = useSession();
@@ -108,7 +109,7 @@ export default function CreateQuestPage() {
         deadline: form.deadline || null,
       };
 
-      const response = await fetch('/api/company/quests', {
+      const response = await fetchWithAuth('/api/company/quests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
