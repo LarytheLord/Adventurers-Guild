@@ -56,7 +56,6 @@ export async function GET(
     const rankColor = RANK_COLORS[user.rank] || '#94a3b8';
     const skills = user.adventurerProfile?.primarySkills?.slice(0, 3) || [];
     const quests = user.adventurerProfile?.totalQuestsCompleted || 0;
-    const displayName = user.name || user.username || 'Adventurer';
 
     return new ImageResponse(
       (
@@ -147,7 +146,7 @@ export async function GET(
                 {user.rank}
               </div>
               <div style={{ display: 'flex', fontSize: '62px', fontWeight: 800, lineHeight: 1 }}>
-                {displayName}
+                {user.name || user.username || 'Adventurer'}
               </div>
             </div>
             {user.username && (
@@ -194,25 +193,40 @@ export async function GET(
               </div>
             </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', justifyContent: 'center', minHeight: '52px' }}>
-              {(skills.length ? skills : ['No skills listed']).map((skill) => (
-                <div
-                  key={skill}
-                  style={{
-                    display: 'flex',
-                    padding: '10px 18px',
-                    borderRadius: '999px',
-                    border: '1px solid rgba(251,146,60,0.45)',
-                    background: 'rgba(249,115,22,0.14)',
-                    color: '#fed7aa',
-                    fontSize: '20px',
-                    fontWeight: 700,
-                  }}
-                >
-                  {skill === 'No skills listed' ? skill : `# ${skill}`}
-                </div>
-              ))}
-            </div>
+            {skills.length > 0 ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', justifyContent: 'center', minHeight: '52px' }}>
+                {skills.map((skill) => (
+                  <div
+                    key={skill}
+                    style={{
+                      display: 'flex',
+                      padding: '10px 18px',
+                      borderRadius: '999px',
+                      border: '1px solid rgba(251,146,60,0.45)',
+                      background: 'rgba(249,115,22,0.14)',
+                      color: '#fed7aa',
+                      fontSize: '20px',
+                      fontWeight: 700,
+                    }}
+                  >
+                    # {skill}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  minHeight: '52px',
+                  fontSize: '20px',
+                  color: '#94a3b8',
+                }}
+              >
+                No primary skills listed
+              </div>
+            )}
           </div>
 
           <div style={{ display: 'flex', marginTop: 'auto', fontSize: '18px', color: '#64748b' }}>
