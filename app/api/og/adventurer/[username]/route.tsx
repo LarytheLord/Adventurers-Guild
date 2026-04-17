@@ -14,9 +14,9 @@ const RANK_COLORS: Record<string, string> = {
   S: '#f97316',
 };
 
-const OG_RADIAL_ACCENT = 'radial-gradient(circle at top right, rgba(249,115,22,0.22), transparent 42%)';
-const OG_LINEAR_BASE = 'linear-gradient(135deg, #0b1220 0%, #0f172a 55%, #111827 100%)';
-const OG_BACKGROUND = `${OG_RADIAL_ACCENT}, ${OG_LINEAR_BASE}`;
+const RADIAL_ACCENT = 'radial-gradient(circle at top right, rgba(249,115,22,0.22), transparent 42%)';
+const LINEAR_BASE = 'linear-gradient(135deg, #0b1220 0%, #0f172a 55%, #111827 100%)';
+const BACKGROUND = `${RADIAL_ACCENT}, ${LINEAR_BASE}`;
 
 export async function GET(
   _req: NextRequest,
@@ -69,7 +69,7 @@ export async function GET(
             flexDirection: 'column',
             width: '100%',
             height: '100%',
-            background: OG_BACKGROUND,
+            background: BACKGROUND,
             padding: '42px 54px',
             fontFamily: 'system-ui, sans-serif',
             color: '#f8fafc',
