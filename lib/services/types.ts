@@ -1,6 +1,5 @@
 import { AssignmentStatus, QuestType, UserRank, QuestTrack, QuestSource,QuestCategory } from "@prisma/client";
 
-
 export type ServiceResult<T> = {
   data: T | null;
   error: string | null;
