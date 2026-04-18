@@ -1,4 +1,4 @@
-import { AssignmentStatus } from "@prisma/client";
+import { AssignmentStatus, QuestType, UserRank, QuestTrack, QuestSource,QuestCategory } from "@prisma/client";
 
 export type ServiceResult<T> = {
   data: T | null;
@@ -10,4 +10,23 @@ export type UpdateAssignmentBody = {
   assignmentId: string;
   status: AssignmentStatus;
   progress?: number;
+};
+
+export type CreateQuestBody = {
+  title: string;
+  description: string;
+  questType: QuestType;
+  difficulty: UserRank;
+  xpReward: number;
+  detailedDescription?: string;
+  skillPointsReward?: number;
+  monetaryReward?: number;
+  requiredSkills?: string[];
+  requiredRank?: UserRank;
+  maxParticipants?: number;
+  questCategory: QuestCategory;
+  track?: QuestTrack;
+  source?: QuestSource;
+  parentQuestId?: string | null;
+  deadline?: string | null;
 };
