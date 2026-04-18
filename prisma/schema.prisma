@@ -241,6 +241,7 @@ model AdventurerProfile {
   longestStreak        Int                @default(0) @map("longest_streak")
   maxStreak              Int                @default(0) @map("max_streak")
   lastActiveDate       DateTime?          @map("last_active_date") @db.Date
+  lastStreakDate       DateTime?          @map("last_streak_date") @db.Date
   streakMultiplier     Float              @default(1.0) @map("streak_multiplier")
   stripeAccountId        String?            @map("stripe_account_id")
   razorpayContactId      String?            @map("razorpay_contact_id")
