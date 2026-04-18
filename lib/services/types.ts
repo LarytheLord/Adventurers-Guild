@@ -15,18 +15,18 @@ export type UpdateAssignmentBody = {
 export type CreateQuestBody = {
   title: string;
   description: string;
-  detailedDescription: string;
   questType: QuestType;
   difficulty: UserRank;
   xpReward: number;
-  skillPointsReward: number;
-  monetaryReward: number;
-  requiredSkills: string[];
-  requiredRank: UserRank;
-  maxParticipants: number;
+  detailedDescription?: string;
+  skillPointsReward?: number;
+  monetaryReward?: number;
+  requiredSkills?: string[];
+  requiredRank?: UserRank;
+  maxParticipants?: number;
   questCategory: QuestCategory;
-  track: QuestTrack;
-  source: QuestSource;
-  parentQuestId: string;
-  deadline: string;
+  track?: QuestTrack;
+  source?: QuestSource;
+  parentQuestId?: string | null;
+  deadline?: string | null;
 };
