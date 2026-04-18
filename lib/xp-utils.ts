@@ -4,6 +4,7 @@ import { prisma } from './db';
 import { getRankForXp, XP_PER_LEVEL } from './ranks';
 import { UserRank } from '@prisma/client';
 import { logActivity } from './activity-logger';
+import { updateStreak } from './streak-utils';
 
 /**
  * Update user XP, level, rank, and skill points in a single transaction.
@@ -66,6 +67,8 @@ export async function updateUserXpAndSkills(
         questCompletionRate: completionRate,
       },
     });
+
+    await updateStreak(userId, tx);
 
     // Log quest completion activity
     if (questId) {
