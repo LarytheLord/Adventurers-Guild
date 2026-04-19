@@ -29,9 +29,7 @@ export async function GET(request: NextRequest) {
         adventurerProfile: {
           select: {
             totalQuestsCompleted: true,
-            UserRank: true,
             currentStreak: true,
-            ledParties: true,
           },
         },
       },
