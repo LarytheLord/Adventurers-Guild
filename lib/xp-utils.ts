@@ -4,6 +4,8 @@ import { prisma } from './db';
 import { getRankForXp, XP_PER_LEVEL } from './ranks';
 import { UserRank } from '@prisma/client';
 import { logActivity } from './activity-logger';
+import { updateStreak } from './streak-utils';
+import { checkAchievements } from './achievement-checker';
 
 /**
  * Update user XP, level, rank, and skill points in a single transaction.
@@ -67,10 +69,15 @@ export async function updateUserXpAndSkills(
       },
     });
 
+    await updateStreak(userId, tx);
+
     // Log quest completion activity
     if (questId) {
       await logActivity(userId, 'quest_complete', { questId, xp: xpGained }, tx);
     }
+
+    // Check for quest completion achievements
+    await checkAchievements(userId, 'quest_complete');
 
     // Send rank-up notification if rank changed
     if (rankChanged) {
@@ -86,6 +93,9 @@ export async function updateUserXpAndSkills(
 
       // Log rank up activity
       await logActivity(userId, 'rank_up', { fromRank: user.rank, toRank: newRank }, tx);
+
+      // Check for rank-up achievements
+      await checkAchievements(userId, 'rank_up', { newRank });
     }
 
     return { newXp, newLevel, newRank, rankChanged };
