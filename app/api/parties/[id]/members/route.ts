@@ -36,7 +36,8 @@ export async function POST(
   if (!party) {
     return NextResponse.json({ error: 'Party not found', success: false }, { status: 404 });
   }
-  if (role !== 'admin' && party.leaderId !== callerId) {
+  const isSelfJoin = targetUserId === callerId;
+  if (role !== 'admin' && party.leaderId !== callerId && !isSelfJoin) {
     return NextResponse.json({ error: 'Only the party leader can add members', success: false }, { status: 403 });
   }
   if (party.members.length >= party.maxSize) {
