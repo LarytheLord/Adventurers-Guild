@@ -182,7 +182,7 @@ export async function updateAssignment(body: UpdateAssignmentBody, user: Session
   }
 }
 
-export async function getAssignments(searchParams: URLSearchParams, user: SessionUser): Promise<ServiceResult<QuestAssignment>> {
+export async function getAssignments(searchParams: URLSearchParams, user: SessionUser): Promise<ServiceResult<QuestAssignment[]>> {
   try {
     const requestedUserId = searchParams.get('userId');
     const questId = searchParams.get('questId');
@@ -256,7 +256,7 @@ export async function getAssignments(searchParams: URLSearchParams, user: Sessio
       take: limit,
     });
 
-    return { data: assignments[0], error: null, status: 200 };
+    return { data: assignments, error: null, status: 200 };
   } catch (error) {
     console.error('Error fetching quest assignments:', error);
     return { data: null, error: 'Failed to fetch quest assignments', status: 500 };
