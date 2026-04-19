@@ -27,6 +27,26 @@ interface RazorpayWebhookPayload {
         notes?: Record<string, string>;
       };
     };
+    transfer?: {
+      entity: {
+        id: string;
+        fund_account_id: string;
+        amount: number;
+        currency: string;
+        status: string;
+        reference_id: string;
+        notes?: Record<string, string>;
+      };
+    };
+    fund_account?: {
+      entity: {
+        id: string;
+        contact_id: string;
+        status: string;
+        bank_name?: string;
+        ifsc?: string;
+      };
+    };
   };
 }
 
@@ -52,6 +72,7 @@ export async function POST(request: NextRequest) {
 
   try {
     switch (payload.event) {
+      // Existing payment events
       case 'payment.captured': {
         const payment = payload.payload.payment?.entity;
         if (!payment) break;
@@ -91,11 +112,48 @@ export async function POST(request: NextRequest) {
         const order = payload.payload.order?.entity;
         if (!order) break;
 
-        // Redundant with payment.captured but ensures order is marked paid
         await prisma.transaction.updateMany({
           where: { providerOrderId: order.id, status: 'pending' },
           data: { status: 'completed', completedAt: new Date() },
         });
+        break;
+      }
+
+      // 🆕 Transfer events (payouts)
+      case 'transfer.processed': {
+        const transfer = payload.payload.transfer?.entity;
+        if (!transfer) break;
+
+        await prisma.transaction.updateMany({
+          where: { providerPaymentId: transfer.id },
+          data: { status: 'completed' },
+        });
+        console.log(`Transfer ${transfer.id} marked as completed`);
+        break;
+      }
+
+      case 'transfer.failed': {
+        const transfer = payload.payload.transfer?.entity;
+        if (!transfer) break;
+
+        await prisma.transaction.updateMany({
+          where: { providerPaymentId: transfer.id },
+          data: { status: 'failed' },
+        });
+        console.error(`Transfer ${transfer.id} failed`);
+        break;
+      }
+
+      case 'fund_account.rejected': {
+        const fundAccount = payload.payload.fund_account?.entity;
+        if (!fundAccount) break;
+
+        // Clear the rejected fund account from adventurer profile
+        await prisma.adventurerProfile.updateMany({
+          where: { razorpayFundAccountId: fundAccount.id },
+          data: { razorpayFundAccountId: null },
+        });
+        console.log(`Fund account ${fundAccount.id} rejected, cleared from profile`);
         break;
       }
 

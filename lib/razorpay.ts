@@ -104,6 +104,50 @@ export async function createRazorpayPayout(params: {
   });
   return { id: payout.id, status: payout.status };
 }
+/**
+ /**
+ * Create a Razorpay Contact for an adventurer.
+ */
+export async function createRazorpayContact(params: {
+  name: string;
+  email: string;
+  contact: string;
+  referenceId: string;
+}): Promise<{ id: string }> {
+  const rp = getRazorpay();
+  // @ts-expect-error - Razorpay types don't include 'contacts' but it exists at runtime
+  const contact = await rp.contacts.create({
+    name: params.name,
+    email: params.email,
+    contact: params.contact,
+    type: 'individual',
+    reference_id: params.referenceId,
+  });
+  return { id: contact.id };
+}
+
+/**
+ * Create a Razorpay Fund Account (bank account) for a contact.
+ */
+export async function createRazorpayFundAccount(params: {
+  contactId: string;
+  name: string;
+  ifsc: string;
+  accountNumber: string;
+}): Promise<{ id: string }> {
+  const rp = getRazorpay();
+  // @ts-expect-error - Razorpay types don't include 'fundAccounts' but it exists at runtime
+  const fundAccount = await rp.fundAccounts.create({
+    contact_id: params.contactId,
+    account_type: 'bank_account',
+    bank_account: {
+      name: params.name,
+      ifsc: params.ifsc,
+      account_number: params.accountNumber,
+    },
+  });
+  return { id: fundAccount.id };
+}
 
 /**
  * Verify a Razorpay webhook signature.

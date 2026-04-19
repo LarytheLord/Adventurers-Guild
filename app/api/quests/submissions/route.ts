@@ -5,6 +5,7 @@ import { AssignmentStatus } from '@prisma/client';
 import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
 import { getAuthUser } from '@/lib/api-auth';
 import { logActivity } from '@/lib/activity-logger';
+import { processQuestPayment } from '@/lib/razorpay-payout';
 
 export async function GET(request: NextRequest) {
   // Check authentication
@@ -251,15 +252,21 @@ export async function PUT(request: NextRequest) {
         await syncQuestLifecycleStatus(tx, assignmentData.questId);
 
         let rewardsPayload: { userId: string; xpReward: number; skillPointsReward: number; questTitle: string } | null = null;
+        let paymentInfo: { questId: string; userId: string; track: string; source: string; monetaryReward: number } | null = null;
+
         if (status === 'approved' && !wasAlreadyApproved) {
           const quest = await tx.quest.findUnique({
             where: { id: assignmentData.questId },
-            select: { xpReward: true, skillPointsReward: true },
+            select: { 
+              xpReward: true, 
+              skillPointsReward: true,
+              track: true,
+              source: true,
+              monetaryReward: true,
+            },
           });
 
-          if (!quest) {
-            throw new Error('Quest not found for completion recording');
-          }
+          if (!quest) throw new Error('Quest not found for completion recording');
 
           await tx.questCompletion.upsert({
             where: {
@@ -288,13 +295,25 @@ export async function PUT(request: NextRequest) {
             skillPointsReward: quest.skillPointsReward,
             questTitle: assignmentData.quest?.title ?? '',
           };
+
+          // Prepare payment info only if monetary reward exists and not BOOTCAMP/TUTORIAL
+          if (quest.monetaryReward && quest.track !== 'BOOTCAMP' && quest.source !== 'TUTORIAL') {
+            paymentInfo = {
+              questId: assignmentData.questId,
+              userId: assignmentData.userId,
+              track: quest.track,
+              source: quest.source,
+              monetaryReward: Number(quest.monetaryReward),
+            };
+          }
         }
 
-        return { submission: updatedSubmission, rewardsPayload };
+        return { submission: updatedSubmission, rewardsPayload, paymentInfo };
       },
       { maxWait: 10_000, timeout: 20_000 }
     );
 
+    // Process XP and skill points (existing logic)
     if (reviewResult.rewardsPayload) {
       const { updateUserXpAndSkills } = await import('@/lib/xp-utils');
       await updateUserXpAndSkills(
@@ -322,6 +341,24 @@ export async function PUT(request: NextRequest) {
             await prisma.bootcampLink.update({ where: { userId: rewardUserId }, data: updateData });
           }
         }
+      }
+    }
+
+    // Process payment (Razorpay or simulated)
+    if (reviewResult.paymentInfo && 
+        reviewResult.paymentInfo.track !== 'BOOTCAMP' && 
+        reviewResult.paymentInfo.source !== 'TUTORIAL' && 
+        reviewResult.paymentInfo.monetaryReward > 0) {
+      const paymentResult = await processQuestPayment(
+        reviewResult.paymentInfo.questId,
+        reviewResult.paymentInfo.userId,
+        reviewResult.paymentInfo.monetaryReward,
+        'INR'
+      );
+      if (!paymentResult.success) {
+        console.error('Payment failed for quest', reviewResult.paymentInfo.questId, paymentResult.error);
+      } else {
+        console.log('Payment successful', paymentResult);
       }
     }
 
