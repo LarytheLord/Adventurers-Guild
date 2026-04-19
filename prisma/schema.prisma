@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // ─── Enums ────────────────────────────────────────────────
@@ -151,56 +151,57 @@ enum VerificationStatus {
 // ─── Models ───────────────────────────────────────────────
 
 model User {
-  id            String    @id @default(uuid()) @db.Uuid
-  name          String?
-  username      String?   @unique
-  email         String    @unique
-  passwordHash  String    @map("password_hash")
-  role          UserRole  @default(adventurer)
-  rank          UserRank  @default(F)
-  xp            Int       @default(0)
-  skillPoints   Int       @default(0) @map("skill_points")
-  level         Int       @default(1)
-  isActive      Boolean   @default(true) @map("is_active")
-  isVerified    Boolean   @default(false) @map("is_verified")
-  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt     DateTime  @updatedAt @map("updated_at") @db.Timestamptz
-  lastLoginAt   DateTime? @map("last_login_at") @db.Timestamptz
-  bio           String?
-  location      String?
-  website       String?
-  discord           String?
-  github            String?
-  linkedin          String?
-  avatar            String?
-  mentorEligible    Boolean  @default(false) @map("mentor_eligible")
-  mentorTier        Int?     @map("mentor_tier") // 1 = junior (D-Rank+), 2 = senior (staff)
-  mentorBadgeCount  Int      @default(0) @map("mentor_badge_count")
+  id               String    @id @default(uuid()) @db.Uuid
+  name             String?
+  username         String?   @unique
+  email            String    @unique
+  passwordHash     String    @map("password_hash")
+  role             UserRole  @default(adventurer)
+  rank             UserRank  @default(F)
+  xp               Int       @default(0)
+  skillPoints      Int       @default(0) @map("skill_points")
+  level            Int       @default(1)
+  isActive         Boolean   @default(true) @map("is_active")
+  isVerified       Boolean   @default(false) @map("is_verified")
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt        DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  lastLoginAt      DateTime? @map("last_login_at") @db.Timestamptz
+  bio              String?
+  location         String?
+  website          String?
+  discord          String?
+  github           String?
+  linkedin         String?
+  avatar           String?
+  mentorEligible   Boolean   @default(false) @map("mentor_eligible")
+  mentorTier       Int?      @map("mentor_tier") // 1 = junior (D-Rank+), 2 = senior (staff)
+  mentorBadgeCount Int       @default(0) @map("mentor_badge_count")
 
   // Relations
-  adventurerProfile   AdventurerProfile?
-  companyProfile      CompanyProfile?
-  quests              Quest[]               @relation("CompanyQuests")
-  questAssignments    QuestAssignment[]
-  questSubmissions    QuestSubmission[]     @relation("SubmittedBy")
-  reviewedSubmissions QuestSubmission[]     @relation("ReviewedBy")
-  questCompletions    QuestCompletion[]
-  ownedTeams          Team[]                @relation("TeamOwner")
-  teamMemberships     TeamMember[]
-  skillProgress       SkillProgress[]
-  notifications       Notification[]
+  adventurerProfile    AdventurerProfile?
+  companyProfile       CompanyProfile?
+  quests               Quest[]               @relation("CompanyQuests")
+  questAssignments     QuestAssignment[]
+  questSubmissions     QuestSubmission[]     @relation("SubmittedBy")
+  reviewedSubmissions  QuestSubmission[]     @relation("ReviewedBy")
+  questCompletions     QuestCompletion[]
+  ownedTeams           Team[]                @relation("TeamOwner")
+  teamMemberships      TeamMember[]
+  skillProgress        SkillProgress[]
+  notifications        Notification[]
   verificationRequests VerificationRequest[] @relation("RequestedBy")
-  adminVerifications  VerificationRequest[] @relation("AdminVerifier")
-  sentTransactions    Transaction[]         @relation("TransactionFrom")
-  receivedTransactions Transaction[]        @relation("TransactionTo")
-  passwordResetTokens PasswordResetToken[]
-  mentorships         Mentorship[]          @relation("MentorUser")
-  menteeships         Mentorship[]          @relation("MenteeUser")
-  apiKeyBudgets       ApiKeyBudget[]
-  bootcampLink        BootcampLink?
-  ledParties          Party[]               @relation("PartyLeader")
-  partyMembers        PartyMember[]
-  activityLogs        ActivityLog[]
+  adminVerifications   VerificationRequest[] @relation("AdminVerifier")
+  sentTransactions     Transaction[]         @relation("TransactionFrom")
+  receivedTransactions Transaction[]         @relation("TransactionTo")
+  passwordResetTokens  PasswordResetToken[]
+  mentorships          Mentorship[]          @relation("MentorUser")
+  menteeships          Mentorship[]          @relation("MenteeUser")
+  apiKeyBudgets        ApiKeyBudget[]
+  bootcampLink         BootcampLink?
+  ledParties           Party[]               @relation("PartyLeader")
+  partyMembers         PartyMember[]
+  activityLogs         ActivityLog[]
+  achievements         Achievement[]
 
   @@index([email])
   @@index([username])
@@ -231,21 +232,21 @@ model BootcampLink {
 }
 
 model AdventurerProfile {
-  userId               String             @id @map("user_id") @db.Uuid
-  specialization       String?
-  primarySkills        String[]           @map("primary_skills")
-  availabilityStatus   AvailabilityStatus @default(available) @map("availability_status")
-  questCompletionRate  Decimal            @default(0.00) @map("quest_completion_rate") @db.Decimal(5, 2)
-  totalQuestsCompleted Int                @default(0) @map("total_quests_completed")
-  currentStreak        Int                @default(0) @map("current_streak")
-  longestStreak        Int                @default(0) @map("longest_streak")
-  maxStreak              Int                @default(0) @map("max_streak")
-  lastActiveDate       DateTime?          @map("last_active_date") @db.Date
-  lastStreakDate       DateTime?          @map("last_streak_date") @db.Date
-  streakMultiplier     Float              @default(1.0) @map("streak_multiplier")
-  stripeAccountId        String?            @map("stripe_account_id")
-  razorpayContactId      String?            @map("razorpay_contact_id")
-  razorpayFundAccountId  String?            @map("razorpay_fund_account_id")
+  userId                String             @id @map("user_id") @db.Uuid
+  specialization        String?
+  primarySkills         String[]           @map("primary_skills")
+  availabilityStatus    AvailabilityStatus @default(available) @map("availability_status")
+  questCompletionRate   Decimal            @default(0.00) @map("quest_completion_rate") @db.Decimal(5, 2)
+  totalQuestsCompleted  Int                @default(0) @map("total_quests_completed")
+  currentStreak         Int                @default(0) @map("current_streak")
+  longestStreak         Int                @default(0) @map("longest_streak")
+  maxStreak             Int                @default(0) @map("max_streak")
+  lastActiveDate        DateTime?          @map("last_active_date") @db.Date
+  lastStreakDate        DateTime?          @map("last_streak_date") @db.Date
+  streakMultiplier      Float              @default(1.0) @map("streak_multiplier")
+  stripeAccountId       String?            @map("stripe_account_id")
+  razorpayContactId     String?            @map("razorpay_contact_id")
+  razorpayFundAccountId String?            @map("razorpay_fund_account_id")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -259,13 +260,13 @@ model CompanyProfile {
   companyDescription String?      @map("company_description")
   industry           String?
   size               CompanySize?
-  isVerified           Boolean      @default(false) @map("is_verified")
-  questsPosted         Int          @default(0) @map("quests_posted")
-  totalSpent           Decimal      @default(0.00) @map("total_spent") @db.Decimal(10, 2)
-  stripeCustomerId     String?      @map("stripe_customer_id")
-  razorpayCustomerId   String?      @map("razorpay_customer_id")
-  subscriptionPlan     String       @default("starter") @map("subscription_plan")
-  stripeSubId          String?      @map("stripe_subscription_id")
+  isVerified         Boolean      @default(false) @map("is_verified")
+  questsPosted       Int          @default(0) @map("quests_posted")
+  totalSpent         Decimal      @default(0.00) @map("total_spent") @db.Decimal(10, 2)
+  stripeCustomerId   String?      @map("stripe_customer_id")
+  razorpayCustomerId String?      @map("razorpay_customer_id")
+  subscriptionPlan   String       @default("starter") @map("subscription_plan")
+  stripeSubId        String?      @map("stripe_subscription_id")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -303,11 +304,11 @@ model Quest {
   company          User?             @relation("CompanyQuests", fields: [companyId], references: [id])
   parentQuest      Quest?            @relation("SubQuests", fields: [parentQuestId], references: [id])
   subQuests        Quest[]           @relation("SubQuests")
-  assignments        QuestAssignment[]
-  completions        QuestCompletion[]
-  transactions       Transaction[]
-  revisionRequests   RevisionRequest[]
-  party              Party?
+  assignments      QuestAssignment[]
+  completions      QuestCompletion[]
+  transactions     Transaction[]
+  revisionRequests RevisionRequest[]
+  party            Party?
 
   @@index([companyId])
   @@index([status])
@@ -518,24 +519,24 @@ model VerificationRequest {
 }
 
 model Transaction {
-  id                    String    @id @default(uuid()) @db.Uuid
-  fromUserId            String?   @map("from_user_id") @db.Uuid
-  toUserId              String?   @map("to_user_id") @db.Uuid
-  questId               String?   @map("quest_id") @db.Uuid
-  amount                Decimal   @db.Decimal(10, 2)
-  currency              String    @default("USD")
-  status                String    @default("pending")
-  paymentMethod         String    @default("credit_card") @map("payment_method")
-  transactionId         String?   @unique @map("transaction_id")
-  description           String?
-  paymentProvider       String?   @map("payment_provider") // "stripe" | "razorpay" | "simulated"
-  providerPaymentId     String?   @map("provider_payment_id") // Stripe PaymentIntent ID or Razorpay payment_id
-  providerOrderId       String?   @map("provider_order_id") // Razorpay order_id
-  platformFee           Decimal?  @map("platform_fee") @db.Decimal(10, 2)
-  platformFeeRate       Decimal?  @map("platform_fee_rate") @db.Decimal(4, 4) // e.g. 0.1500 = 15%
-  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt             DateTime  @updatedAt @map("updated_at") @db.Timestamptz
-  completedAt           DateTime? @map("completed_at") @db.Timestamptz
+  id                String    @id @default(uuid()) @db.Uuid
+  fromUserId        String?   @map("from_user_id") @db.Uuid
+  toUserId          String?   @map("to_user_id") @db.Uuid
+  questId           String?   @map("quest_id") @db.Uuid
+  amount            Decimal   @db.Decimal(10, 2)
+  currency          String    @default("USD")
+  status            String    @default("pending")
+  paymentMethod     String    @default("credit_card") @map("payment_method")
+  transactionId     String?   @unique @map("transaction_id")
+  description       String?
+  paymentProvider   String?   @map("payment_provider") // "stripe" | "razorpay" | "simulated"
+  providerPaymentId String?   @map("provider_payment_id") // Stripe PaymentIntent ID or Razorpay payment_id
+  providerOrderId   String?   @map("provider_order_id") // Razorpay order_id
+  platformFee       Decimal?  @map("platform_fee") @db.Decimal(10, 2)
+  platformFeeRate   Decimal?  @map("platform_fee_rate") @db.Decimal(4, 4) // e.g. 0.1500 = 15%
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt         DateTime  @updatedAt @map("updated_at") @db.Timestamptz
+  completedAt       DateTime? @map("completed_at") @db.Timestamptz
 
   fromUser User?  @relation("TransactionFrom", fields: [fromUserId], references: [id])
   toUser   User?  @relation("TransactionTo", fields: [toUserId], references: [id])
@@ -551,16 +552,16 @@ model Transaction {
 }
 
 model Mentorship {
-  id        String   @id @default(uuid()) @db.Uuid
-  mentorId  String   @map("mentor_id") @db.Uuid
-  menteeId  String   @map("mentee_id") @db.Uuid
-  status    String   @default("pending")
+  id        String    @id @default(uuid()) @db.Uuid
+  mentorId  String    @map("mentor_id") @db.Uuid
+  menteeId  String    @map("mentee_id") @db.Uuid
+  status    String    @default("pending")
   startDate DateTime? @map("start_date") @db.Timestamptz
   endDate   DateTime? @map("end_date") @db.Timestamptz
   goals     String[]
-  progress  Int      @default(0)
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
+  progress  Int       @default(0)
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz
 
   mentor User @relation("MentorUser", fields: [mentorId], references: [id], onDelete: Cascade)
   mentee User @relation("MenteeUser", fields: [menteeId], references: [id], onDelete: Cascade)
@@ -571,12 +572,12 @@ model Mentorship {
 }
 
 model PasswordResetToken {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @map("user_id") @db.Uuid
-  token     String   @unique
-  expiresAt DateTime @map("expires_at") @db.Timestamptz
+  id        String    @id @default(uuid()) @db.Uuid
+  userId    String    @map("user_id") @db.Uuid
+  token     String    @unique
+  expiresAt DateTime  @map("expires_at") @db.Timestamptz
   usedAt    DateTime? @map("used_at") @db.Timestamptz
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -657,4 +658,18 @@ model ActivityLog {
   @@index([action])
   @@index([createdAt])
   @@map("activity_logs")
+}
+
+model Achievement {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  type       String
+  unlockedAt DateTime @default(now()) @map("unlocked_at") @db.Timestamptz
+  metadata   Json?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type])
+  @@index([userId])
+  @@map("achievements")
 }
