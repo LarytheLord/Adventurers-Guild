@@ -658,3 +658,17 @@ model ActivityLog {
   @@index([createdAt])
   @@map("activity_logs")
 }
+
+model Achievement {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  type       String
+  unlockedAt DateTime @default(now()) @map("unlocked_at") @db.Timestamptz
+  metadata   Json?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type])
+  @@index([userId])
+  @@map("achievements")
+}
