@@ -109,6 +109,32 @@ export async function GET(request: NextRequest) {
             email: true,
           },
         },
+        party: {
+          select: {
+            id: true,
+            leaderId: true,
+            track: true,
+            maxSize: true,
+            members: {
+              select: {
+                id: true,
+                userId: true,
+                isLeader: true,
+                user: {
+                  select: {
+                    id: true,
+                    name: true,
+                    rank: true,
+                    avatar: true,
+                  },
+                },
+              },
+              orderBy: {
+                joinedAt: 'asc',
+              },
+            },
+          },
+        },
       },
       orderBy,
       skip: offset,
