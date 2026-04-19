@@ -28,8 +28,10 @@ export async function applyToQuest(questId: string, user: SessionUser, tx: Prism
     }
 
     // Task 1.4: Bootcamp tutorial gating
-    // Bootcamp-linked users who haven't completed tutorials can only apply to tutorial quests
-    if (user.role === 'adventurer') {
+    // Admins bypass all gating — only adventurers are subject to tutorial requirements
+    if (user.role === 'admin') {
+      // Admin bypasses bootcamp tutorial gating
+    } else if (user.role === 'adventurer') {
       const bootcampLink = await tx.bootcampLink.findUnique({
         where: { userId: user.id },
         select: { eligibleForRealQuests: true },

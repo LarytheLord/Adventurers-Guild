@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireAuth } from '@/lib/api-auth';
 import { QuestTrack, UserRank } from '@prisma/client';
+import { checkAchievements } from '@/lib/achievement-checker';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -81,6 +82,9 @@ export async function POST(request: NextRequest) {
       },
     });
   });
+
+  // Check for party creation achievement
+  await checkAchievements(userId, 'party_create');
 
   return NextResponse.json({ party, success: true }, { status: 201 });
 }
