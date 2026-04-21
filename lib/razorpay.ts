@@ -19,6 +19,27 @@ export function isRazorpayConfigured(): boolean {
 }
 
 /**
+ * Retry helper with exponential backoff
+ */
+async function withRetry<T>(
+  fn: () => Promise<T>,
+  maxAttempts = 3,
+  baseDelay = 1000
+): Promise<T> {
+  for (let i = 0; i < maxAttempts; i++) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (i === maxAttempts - 1) throw error;
+      const delay = baseDelay * Math.pow(2, i);
+      console.log(`Retrying after ${delay}ms... (attempt ${i + 1}/${maxAttempts})`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  throw new Error('Retry exhausted');
+}
+
+/**
  * Create a Razorpay Order for a quest payment.
  * Company pays quest reward + platform fee in INR.
  */
@@ -29,12 +50,14 @@ export async function createRazorpayOrder(params: {
   notes: Record<string, string>;
 }): Promise<{ id: string; amount: number; currency: string; receipt: string }> {
   const rp = getRazorpay();
-  const order = await rp.orders.create({
-    amount: params.amount,
-    currency: params.currency.toUpperCase(),
-    receipt: params.receipt,
-    notes: params.notes,
-  });
+  const order = await withRetry(() =>
+    rp.orders.create({
+      amount: params.amount,
+      currency: params.currency.toUpperCase(),
+      receipt: params.receipt,
+      notes: params.notes,
+    })
+  );
   return {
     id: order.id,
     amount: order.amount as number,
@@ -70,7 +93,7 @@ export async function fetchRazorpayPayment(
   paymentId: string
 ): Promise<{ id: string; status: string; amount: number; currency: string; method: string }> {
   const rp = getRazorpay();
-  const payment = await rp.payments.fetch(paymentId);
+  const payment = await withRetry(() => rp.payments.fetch(paymentId));
   return {
     id: payment.id,
     status: payment.status as string,
@@ -93,19 +116,21 @@ export async function createRazorpayPayout(params: {
 }): Promise<{ id: string; status: string }> {
   const rp = getRazorpay();
   // RazorpayX payout API — only available on RazorpayX accounts
-  const payout = await (rp as unknown as { payouts: { create: (opts: Record<string, unknown>) => Promise<{ id: string; status: string }> } }).payouts.create({
-    account_number: process.env.RAZORPAY_ACCOUNT_NUMBER,
-    fund_account_id: params.fundAccountId,
-    amount: params.amount,
-    currency: params.currency.toUpperCase(),
-    mode: 'NEFT',
-    purpose: params.purpose,
-    reference_id: params.referenceId,
-  });
+  const payout = await withRetry(() =>
+    (rp as unknown as { payouts: { create: (opts: Record<string, unknown>) => Promise<{ id: string; status: string }> } }).payouts.create({
+      account_number: process.env.RAZORPAY_ACCOUNT_NUMBER,
+      fund_account_id: params.fundAccountId,
+      amount: params.amount,
+      currency: params.currency.toUpperCase(),
+      mode: 'NEFT',
+      purpose: params.purpose,
+      reference_id: params.referenceId,
+    })
+  );
   return { id: payout.id, status: payout.status };
 }
+
 /**
- /**
  * Create a Razorpay Contact for an adventurer.
  */
 export async function createRazorpayContact(params: {
@@ -115,13 +140,15 @@ export async function createRazorpayContact(params: {
   referenceId: string;
 }): Promise<{ id: string }> {
   const rp = getRazorpay();
-  // @ts-expect-error - Razorpay types don't include 'contacts' but it exists at runtime
-  const contact = await rp.contacts.create({
-    name: params.name,
-    email: params.email,
-    contact: params.contact,
-    type: 'individual',
-    reference_id: params.referenceId,
+  const contact = await withRetry(async () => {
+    // @ts-expect-error - Razorpay types don't include 'contacts' but it exists at runtime
+    return await rp.contacts.create({
+      name: params.name,
+      email: params.email,
+      contact: params.contact,
+      type: 'individual',
+      reference_id: params.referenceId,
+    });
   });
   return { id: contact.id };
 }
@@ -136,15 +163,17 @@ export async function createRazorpayFundAccount(params: {
   accountNumber: string;
 }): Promise<{ id: string }> {
   const rp = getRazorpay();
-  // @ts-expect-error - Razorpay types don't include 'fundAccounts' but it exists at runtime
-  const fundAccount = await rp.fundAccounts.create({
-    contact_id: params.contactId,
-    account_type: 'bank_account',
-    bank_account: {
-      name: params.name,
-      ifsc: params.ifsc,
-      account_number: params.accountNumber,
-    },
+  const fundAccount = await withRetry(async () => {
+    // @ts-expect-error - Razorpay types don't include 'fundAccounts' but it exists at runtime
+    return await rp.fundAccounts.create({
+      contact_id: params.contactId,
+      account_type: 'bank_account',
+      bank_account: {
+        name: params.name,
+        ifsc: params.ifsc,
+        account_number: params.accountNumber,
+      },
+    });
   });
   return { id: fundAccount.id };
 }
