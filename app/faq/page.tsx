@@ -4,8 +4,6 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { ChevronDown } from 'lucide-react';
 
-export const metadata = { title: 'FAQ — Adventurers Guild' };
-
 const faqs = [
   {
     category: 'General',
@@ -117,7 +115,9 @@ export default function FaqPage() {
                         </span>
                         <ChevronDown
                           className={`w-4 h-4 transition-transform ${
-                            isOpen ? 'rotate-180 text-orange-400' : 'text-slate-500'
+                            isOpen
+                              ? 'rotate-180 text-orange-400'
+                              : 'text-slate-500'
                           }`}
                         />
                       </button>
@@ -125,7 +125,9 @@ export default function FaqPage() {
                       {/* Answer */}
                       <div
                         className={`px-5 transition-all duration-300 ease-in-out ${
-                          isOpen ? 'max-h-40 pb-5 opacity-100' : 'max-h-0 opacity-0'
+                          isOpen
+                            ? 'max-h-40 pb-5 opacity-100'
+                            : 'max-h-0 opacity-0'
                         } overflow-hidden`}
                       >
                         <p className="text-slate-400 text-sm leading-relaxed">
