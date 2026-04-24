@@ -74,12 +74,14 @@ export function PartyPanel({
   onMemberAdded,
 }: PartyPanelProps) {
   const [isCreatingParty, setIsCreatingParty] = useState(false);
+  const [isJoiningParty, setIsJoiningParty] = useState(false);
   const [isInviting, setIsInviting] = useState(false);
   const [inviteUserId, setInviteUserId] = useState('');
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [removingUserId, setRemovingUserId] = useState<string | null>(null);
 
   const isLeader = !!party && party.leader.id === currentUserId;
+  const isCurrentMember = !!party && party.members.some((member) => member.user.id === currentUserId);
   const isBootcamp = party?.track === 'BOOTCAMP';
   const partyLabel = isBootcamp ? 'Pair' : 'Squad';
   const capacity = party?.maxSize ?? maxParticipants;
@@ -88,6 +90,7 @@ export function PartyPanel({
   const emptySlots = Math.max(capacity - memberCount, 0);
 
   const canInvite = useMemo(() => !!party && isLeader && memberCount < capacity, [party, isLeader, memberCount, capacity]);
+  const canJoin = !!party && !isLeader && !isCurrentMember && memberCount < capacity;
 
   const refreshParty = async (partyId: string) => {
     const response = await fetchWithAuth(`/api/parties/${partyId}`);
@@ -156,6 +159,34 @@ export function PartyPanel({
       toast.error('An error occurred while adding member');
     } finally {
       setIsInviting(false);
+    }
+  };
+
+  const handleJoinParty = async () => {
+    if (!party || !currentUserId) return;
+
+    try {
+      setIsJoiningParty(true);
+      const response = await fetchWithAuth(`/api/parties/${party.id}/members`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: currentUserId }),
+      });
+
+      const data = await response.json();
+      if (!data.success || !data.party) {
+        toast.error(data.error || 'Failed to join party');
+        return;
+      }
+
+      onPartyCreated(data.party as Party);
+      onMemberAdded();
+      toast.success('Joined party successfully');
+    } catch (error) {
+      console.error('Error joining party:', error);
+      toast.error('An error occurred while joining party');
+    } finally {
+      setIsJoiningParty(false);
     }
   };
 
@@ -233,6 +264,12 @@ export function PartyPanel({
           </div>
 
           <Progress value={progressValue} className="h-2" />
+
+          {canJoin ? (
+            <Button className="w-full" onClick={() => void handleJoinParty()} disabled={isJoiningParty}>
+              {isJoiningParty ? 'Joining Party...' : 'Join Party'}
+            </Button>
+          ) : null}
 
           <div className="space-y-2">
             {party.members.map((member) => {
