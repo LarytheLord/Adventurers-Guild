@@ -6,6 +6,7 @@ export const metadata = {
     'Learn how Adventurers Guild collects, uses, and protects your personal data.',
 };
 
+
 export default function PrivacyPage() {
   return (
     <main className="min-h-screen bg-slate-950 text-slate-200 py-20">
