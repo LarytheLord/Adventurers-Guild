@@ -16,7 +16,7 @@ async function getQuests(searchParams: URLSearchParams, user: SessionUser | null
   const companyId = searchParams.get('company_id');
   const limit = parseInt(searchParams.get('limit') || '10');
   const offset = parseInt(searchParams.get('offset') || '0');
-  const sort = searchParams.get('sort') || 'createdAt_desc';
+  const sort = searchParams.get('sort') || 'newest';
   const search = searchParams.get('search');
 
   // Check if user is a bootcamp student (has BootcampLink)
