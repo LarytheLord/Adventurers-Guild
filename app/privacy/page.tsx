@@ -174,7 +174,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">
-              9. Children's Privacy
+              9. Children&apos;s Privacy
             </h2>
             <p>
               Adventurers Guild is not intended for children under the age of 13.
