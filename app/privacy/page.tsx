@@ -281,6 +281,7 @@ export default function PrivacyPage() {
             <p>
               Requests are typically processed within a reasonable timeframe.
               9. Children's Privacy
+              9. Children&apos;s Privacy
             </h2>
             <p>
               Adventurers Guild is not intended for children under the age of 13.
