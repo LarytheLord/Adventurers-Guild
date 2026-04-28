@@ -235,6 +235,7 @@ model AdventurerProfile {
   currentStreak        Int                @default(0) @map("current_streak")
   maxStreak              Int                @default(0) @map("max_streak")
   stripeAccountId        String?            @map("stripe_account_id")
+  stripeOnboardingDone   Boolean            @default(false) @map("stripe_onboarding_done")
   razorpayContactId      String?            @map("razorpay_contact_id")
   razorpayFundAccountId  String?            @map("razorpay_fund_account_id")
 
@@ -521,6 +522,7 @@ model Transaction {
   description           String?
   paymentProvider       String?   @map("payment_provider") // "stripe" | "razorpay" | "simulated"
   providerPaymentId     String?   @map("provider_payment_id") // Stripe PaymentIntent ID or Razorpay payment_id
+  stripePaymentIntentId String?   @map("stripe_payment_intent_id")
   providerOrderId       String?   @map("provider_order_id") // Razorpay order_id
   platformFee           Decimal?  @map("platform_fee") @db.Decimal(10, 2)
   platformFeeRate       Decimal?  @map("platform_fee_rate") @db.Decimal(4, 4) // e.g. 0.1500 = 15%

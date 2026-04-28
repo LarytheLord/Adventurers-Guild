@@ -36,9 +36,9 @@ export async function processPayment(
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        from_userId: fromUserId,
-        to_userId: toUserId,
-        questId: questId,
+        fromUserId,
+        toUserId,
+        questId,
         amount,
         currency,
         description,

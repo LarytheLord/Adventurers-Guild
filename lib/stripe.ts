@@ -1,6 +1,6 @@
 import Stripe from 'stripe';
 
-// Singleton Stripe client — only initialized when keys are configured
+// Singleton Stripe client, only initialized when keys are configured.
 let stripeInstance: Stripe | null = null;
 
 export function getStripe(): Stripe {
@@ -9,6 +9,7 @@ export function getStripe(): Stripe {
     if (!key) throw new Error('STRIPE_SECRET_KEY is not configured');
     stripeInstance = new Stripe(key, { apiVersion: '2026-02-25.clover' });
   }
+
   return stripeInstance;
 }
 
@@ -16,12 +17,33 @@ export function isStripeConfigured(): boolean {
   return !!process.env.STRIPE_SECRET_KEY;
 }
 
+export async function createStripeCustomer(params: {
+  email?: string | null;
+  name?: string | null;
+  userId: string;
+}): Promise<Stripe.Customer> {
+  const stripe = getStripe();
+  return stripe.customers.create({
+    email: params.email ?? undefined,
+    name: params.name ?? undefined,
+    metadata: {
+      platform: 'adventurers-guild',
+      userId: params.userId,
+    },
+  });
+}
+
+export async function getStripeAccount(accountId: string): Promise<Stripe.Account> {
+  const stripe = getStripe();
+  return stripe.accounts.retrieve(accountId);
+}
+
 /**
  * Create a Stripe PaymentIntent for a quest payment.
  * Company pays quest reward + platform fee. Adventurer receives via Connect transfer.
  */
 export async function createStripePaymentIntent(params: {
-  amount: number; // in smallest currency unit (cents for USD)
+  amount: number;
   currency: string;
   companyStripeCustomerId?: string;
   metadata: Record<string, string>;
@@ -32,12 +54,12 @@ export async function createStripePaymentIntent(params: {
     currency: params.currency.toLowerCase(),
     customer: params.companyStripeCustomerId || undefined,
     metadata: params.metadata,
-    capture_method: 'manual', // Hold funds until quest approved
+    capture_method: 'manual',
   });
 }
 
 /**
- * Capture a held PaymentIntent (after quest approval).
+ * Capture a held PaymentIntent after quest approval.
  */
 export async function captureStripePayment(
   paymentIntentId: string
@@ -47,7 +69,7 @@ export async function captureStripePayment(
 }
 
 /**
- * Cancel a held PaymentIntent (quest rejected/cancelled).
+ * Cancel a held PaymentIntent when a quest is rejected or cancelled.
  */
 export async function cancelStripePayment(
   paymentIntentId: string
@@ -60,7 +82,7 @@ export async function cancelStripePayment(
  * Transfer funds to an adventurer's connected Stripe account.
  */
 export async function transferToAdventurer(params: {
-  amount: number; // in smallest currency unit
+  amount: number;
   currency: string;
   stripeAccountId: string;
   transferGroup: string;
@@ -89,6 +111,7 @@ export async function createConnectOnboardingLink(params: {
     refresh_url: params.refreshUrl,
     type: 'account_onboarding',
   });
+
   return link.url;
 }
 
@@ -107,7 +130,14 @@ export async function createConnectAccount(params: {
     capabilities: {
       transfers: { requested: true },
     },
-    ...(params.name ? { individual: { first_name: params.name.split(' ')[0], last_name: params.name.split(' ').slice(1).join(' ') || undefined } } : {}),
+    ...(params.name
+      ? {
+          individual: {
+            first_name: params.name.split(' ')[0],
+            last_name: params.name.split(' ').slice(1).join(' ') || undefined,
+          },
+        }
+      : {}),
   });
 }
 

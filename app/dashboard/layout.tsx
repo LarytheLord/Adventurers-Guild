@@ -79,7 +79,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
   const isCompany = user?.role === 'company';
   const isAdmin = user?.role === 'admin';
-  const profileHref = isCompany ? '/dashboard/company/profile' : '/dashboard/profile';
+  const profileHref = isCompany ? '/dashboard/company/profile' : '/dashboard/settings';
 
   const adventurerNav = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
@@ -88,6 +88,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: 'Skill Tree', href: '/dashboard/skill-tree', icon: Zap },
     { name: 'Teams', href: '/dashboard/teams', icon: Users },
     { name: 'Leaderboard', href: '/dashboard/leaderboard', icon: Trophy },
+    { name: 'Settings', href: '/dashboard/settings', icon: Settings },
   ];
 
   const companyNav = [
@@ -253,7 +254,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   <DropdownMenuItem asChild>
                     <Link href={profileHref}>
                       <Settings className="mr-2 h-4 w-4" />
-                      Profile Settings
+                      {isCompany ? 'Profile Settings' : 'Settings & Payouts'}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
