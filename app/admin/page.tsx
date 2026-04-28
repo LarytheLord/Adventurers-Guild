@@ -11,6 +11,7 @@ import {
   Users,
   Target,
   TrendingUp,
+  BarChart3,
   Shield,
   Activity,
   Plus,
@@ -156,6 +157,13 @@ export default function AdminDashboard() {
               <Link href="/dashboard/quests">
                 <Target className="h-4 w-4" />
                 Quest Board (Adventurer view)
+              </Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/admin/revenue">
+                <BarChart3 className="h-4 w-4" />
+                Revenue Dashboard
+                <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
           </CardContent>

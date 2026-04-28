@@ -24,6 +24,8 @@ export async function POST(request: NextRequest) {
       case 'payment_intent.succeeded': {
         const pi = event.data.object;
         const questId = pi.metadata?.questId;
+        const formattedAmount = typeof pi.amount === 'number' ? (pi.amount / 100).toFixed(2) : '0.00';
+        const formattedCurrency = pi.currency?.toUpperCase() ?? 'UNKNOWN';
 
         if (questId) {
           await prisma.transaction.updateMany({
@@ -34,7 +36,7 @@ export async function POST(request: NextRequest) {
             },
           });
 
-          await notifyDiscord('alerts', `Payment completed via Stripe for quest ${questId}: ${pi.currency?.toUpperCase()} ${(pi.amount / 100).toFixed(2)}`);
+          await notifyDiscord('alerts', `Payment completed via Stripe for quest ${questId}: ${formattedCurrency} ${formattedAmount}`);
         }
         break;
       }
