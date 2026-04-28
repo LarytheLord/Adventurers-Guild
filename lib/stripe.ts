@@ -1,13 +1,24 @@
-import Stripe from 'stripe';
+import type Stripe from 'stripe';
 
 // Singleton Stripe client — only initialized when keys are configured
 let stripeInstance: Stripe | null = null;
+
+type StripeConstructor = new (apiKey: string, config?: Record<string, unknown>) => Stripe;
+
+function loadStripe(): StripeConstructor {
+  try {
+    return eval('require')('stripe') as StripeConstructor;
+  } catch {
+    throw new Error('The Stripe SDK is not installed in this workspace');
+  }
+}
 
 export function getStripe(): Stripe {
   if (!stripeInstance) {
     const key = process.env.STRIPE_SECRET_KEY;
     if (!key) throw new Error('STRIPE_SECRET_KEY is not configured');
-    stripeInstance = new Stripe(key, { apiVersion: '2026-02-25.clover' });
+    const StripeClient = loadStripe();
+    stripeInstance = new StripeClient(key, { apiVersion: '2026-02-25.clover' });
   }
   return stripeInstance;
 }
