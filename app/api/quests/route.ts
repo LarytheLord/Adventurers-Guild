@@ -64,7 +64,6 @@ export async function GET(request: NextRequest) {
       where.track = 'OPEN';
     }
 
-    // Add filters if provided (track filter overridden for bootcamp users above)
     if (status && (!user || user.role !== 'company')) {
       where.status = status as QuestStatus;
     }
@@ -74,7 +73,7 @@ export async function GET(request: NextRequest) {
     if (difficulty) {
       where.difficulty = difficulty as UserRank;
     }
-    // Only allow track filter override for admin/company — bootcamp students are locked
+    // Only allow track filter override for admin/company - bootcamp students are locked
     if (track && Object.values(QuestTrack).includes(track as QuestTrack) && !bootcampLink) {
       where.track = track as QuestTrack;
     }
@@ -89,6 +88,17 @@ export async function GET(request: NextRequest) {
           select: {
             name: true,
             email: true,
+          },
+        },
+        party: {
+          select: {
+            id: true,
+            maxSize: true,
+            members: {
+              select: {
+                id: true,
+              },
+            },
           },
         },
       },

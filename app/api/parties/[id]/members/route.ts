@@ -2,6 +2,7 @@ import { UserRank } from '@prisma/client';
 import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireAuth } from '@/lib/api-auth';
+import { notifyDiscord } from '@/lib/discord-notify';
 
 const RANK_VALUES: Record<UserRank, number> = {
   F: 0,
@@ -44,6 +45,7 @@ async function getPartyForManage(id: string) {
     include: {
       quest: {
         select: {
+          title: true,
           difficulty: true,
         },
       },
@@ -148,6 +150,7 @@ export async function POST(
       include: {
         quest: {
           select: {
+            title: true,
             difficulty: true,
           },
         },
@@ -179,6 +182,8 @@ export async function POST(
       where: { id: userId },
       select: {
         id: true,
+        name: true,
+        email: true,
         role: true,
         isActive: true,
         rank: true,
@@ -217,6 +222,13 @@ export async function POST(
         include: PARTY_INCLUDE,
       });
     });
+
+    const inviterLabel = user.name || user.email || 'A party leader';
+    const invitedLabel = targetUser.name || targetUser.email || 'an adventurer';
+    await notifyDiscord(
+      'quests',
+      `${inviterLabel} invited ${invitedLabel} to the ${party.track.toLowerCase()} party for "${party.quest.title}".`
+    );
 
     return Response.json({ party: updatedParty, success: true }, { status: 201 });
   } catch (error) {
