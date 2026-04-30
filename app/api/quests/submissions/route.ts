@@ -220,7 +220,7 @@ export async function PUT(request: NextRequest) {
           data: {
             status,
             reviewNotes: review_notes || undefined,
-            qualityScore: quality_score || undefined,
+            qualityScore: quality_score ?? undefined,
             reviewerId,
             reviewedAt: status !== 'pending' ? new Date() : undefined,
           },
@@ -273,12 +273,12 @@ export async function PUT(request: NextRequest) {
               userId: assignmentData.userId,
               xpEarned: quest.xpReward,
               skillPointsEarned: quest.skillPointsReward,
-              qualityScore: quality_score || null,
+              qualityScore: quality_score ?? null,
             },
             update: {
               xpEarned: quest.xpReward,
               skillPointsEarned: quest.skillPointsReward,
-              qualityScore: quality_score || null,
+              qualityScore: quality_score ?? null,
             },
           });
 
