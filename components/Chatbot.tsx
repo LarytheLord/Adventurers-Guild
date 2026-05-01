@@ -15,6 +15,7 @@ export default function Chatbot() {
     const newMessages = [...messages, { role: 'user', text: input }];
     setMessages(newMessages);
     setInput('');
+    
 
     // Fake bot response (replace with API later)
     setTimeout(() => {
