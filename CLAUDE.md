@@ -16,7 +16,7 @@ The platform is expanding to integrate with the **Open Paws Bootcamp** — a 10-
 | Auth | NextAuth.js v4 (Credentials Provider, JWT strategy, 30-day sessions) |
 | UI | shadcn/ui + Tailwind CSS + Radix UI + Lucide React |
 | Deployment | Vercel |
-| Payments | Simulated (Stripe Connect integration planned) |
+| Payments | Razorpay (INR bank transfers via Contact + Fund Account API) |
 
 ## Repository Structure
 
@@ -113,11 +113,21 @@ Two distinct talent pools will share the same platform:
 6. **Design**: Orange-500 primary. One accent color only. Rank colors quarantined to `<RankBadge>`.
 7. **Navigation**: Root layout renders `<Navigation />` + `<SiteFooter />`. Dashboard has its own sidebar. Don't add nav/footer inline.
 
+## Maintainers
+
+| GitHub | Role |
+|--------|------|
+| [@LarytheLord](https://github.com/LarytheLord) | Co-maintainer — architecture, infra, payments, bootcamp pipeline |
+| [@Adil2009700](https://github.com/Adil2009700) | Co-maintainer — frontend, dashboard UX, landing, PR triage |
+
+Both have full merge and review authority across the entire codebase. See [MAINTAINERS.md](MAINTAINERS.md) for decision authority and escalation rules.
+
 ## Documentation Map
 
 | File | Purpose |
 |------|---------|
 | `CLAUDE.md` | This file — project context |
+| `MAINTAINERS.md` | Maintainer team, authority, and escalation rules |
 | `CLAUDE_CODE_INSTRUCTIONS.md` | Working rules for Claude Code sessions |
 | `docs/IMPLEMENTATION_TASKS.md` | Task queue with code-level specs |
 | `docs/QUEST_BRIEF_SCHEMA.md` | Quest data format reference |
