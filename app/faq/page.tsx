@@ -83,6 +83,7 @@ export default function FaqPage() {
         <h1 className="text-4xl font-bold text-white mb-3">
           Frequently Asked Questions
         </h1>
+
         <p className="text-slate-500 text-sm mb-12">
           Everything you need to know about the Guild.
         </p>
@@ -113,6 +114,7 @@ export default function FaqPage() {
                         <span className="text-white font-medium text-sm">
                           {faq.q}
                         </span>
+
                         <ChevronDown
                           className={`w-4 h-4 transition-transform ${
                             isOpen
@@ -124,11 +126,11 @@ export default function FaqPage() {
 
                       {/* Answer */}
                       <div
-                        className={`px-5 transition-all duration-300 ease-in-out ${
+                        className={`px-5 overflow-hidden transition-all duration-300 ${
                           isOpen
-                            ? 'max-h-40 pb-5 opacity-100'
+                            ? 'max-h-96 opacity-100 pb-5'
                             : 'max-h-0 opacity-0'
-                        } overflow-hidden`}
+                        }`}
                       >
                         <p className="text-slate-400 text-sm leading-relaxed">
                           {faq.a}
@@ -144,7 +146,10 @@ export default function FaqPage() {
 
         {/* Support Section */}
         <div className="mt-20 text-center border-t border-slate-800 pt-10">
-          <p className="text-slate-500 text-sm">Still have questions?</p>
+          <p className="text-slate-500 text-sm">
+            Still have questions?
+          </p>
+
           <p className="text-slate-400 text-sm mt-1">
             Email us at{' '}
             <span className="text-orange-400">
