@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
             greetingTimeout: 30000, // 30 seconds
             socketTimeout: 60000, // 60 seconds
             // Additional options for better reliability
-            ...(process.env.SMTP_TLS_INSECURE === 'true'
+            ...(process.env.SMTP_TLS_INSECURE === 'true' && process.env.NODE_ENV !== 'production'
                 ? {
                     tls: {
                         rejectUnauthorized: false
