@@ -5,6 +5,7 @@ import { AssignmentStatus } from '@prisma/client';
 import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
 import { getAuthUser } from '@/lib/api-auth';
 import { logActivity } from '@/lib/activity-logger';
+import { processQuestPayment } from '@/lib/razorpay-payout';
 
 export async function GET(request: NextRequest) {
   // Check authentication
@@ -172,26 +173,20 @@ export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
     const { submissionId, status, review_notes, quality_score } = body;
-    const reviewerId = user.id; // Use authenticated user's ID
+    const reviewerId = user.id;
 
-    // Validate required fields
     if (!submissionId || !status) {
       return NextResponse.json({ error: 'Missing required fields', success: false }, { status: 400 });
     }
 
-    // Check if the user has permission to update this submission
-    // Only admins, or company users for their own quests can review submissions
-    // First get the submission
     const submission = await prisma.questSubmission.findUnique({
       where: { id: submissionId },
       select: { id: true, assignmentId: true, status: true },
     });
-
     if (!submission) {
       return NextResponse.json({ error: 'Submission not found', success: false }, { status: 404 });
     }
 
-    // Then get the assignment to check quest details
     const assignmentData = await prisma.questAssignment.findUnique({
       where: { id: submission.assignmentId },
       select: {
@@ -205,12 +200,11 @@ export async function PUT(request: NextRequest) {
         },
       },
     });
-
     if (!assignmentData) {
       return NextResponse.json({ error: 'Assignment not found', success: false }, { status: 404 });
     }
 
-    // Check permissions
+    // Permission check
     if (user.role !== 'admin' &&
         (user.role !== 'company' || !assignmentData.quest || assignmentData.quest.companyId !== user.id)) {
       return NextResponse.json({ error: 'Unauthorized to review this submission', success: false }, { status: 403 });
@@ -218,6 +212,7 @@ export async function PUT(request: NextRequest) {
 
     const wasAlreadyApproved = submission.status === 'approved';
 
+    // Transaction for database updates (XP, status, etc.) – NO transaction creation here
     const reviewResult = await prisma.$transaction(
       async (tx) => {
         const updatedSubmission = await tx.questSubmission.update({
@@ -225,7 +220,7 @@ export async function PUT(request: NextRequest) {
           data: {
             status,
             reviewNotes: review_notes || undefined,
-            qualityScore: quality_score || undefined,
+            qualityScore: quality_score ?? undefined,
             reviewerId,
             reviewedAt: status !== 'pending' ? new Date() : undefined,
           },
@@ -251,15 +246,20 @@ export async function PUT(request: NextRequest) {
         await syncQuestLifecycleStatus(tx, assignmentData.questId);
 
         let rewardsPayload: { userId: string; xpReward: number; skillPointsReward: number; questTitle: string } | null = null;
+        let paymentInfo: { questId: string; userId: string; track: string; source: string; monetaryReward: number } | null = null;
+
         if (status === 'approved' && !wasAlreadyApproved) {
           const quest = await tx.quest.findUnique({
             where: { id: assignmentData.questId },
-            select: { xpReward: true, skillPointsReward: true },
+            select: { 
+              xpReward: true, 
+              skillPointsReward: true,
+              track: true,
+              source: true,
+              monetaryReward: true,
+            },
           });
-
-          if (!quest) {
-            throw new Error('Quest not found for completion recording');
-          }
+          if (!quest) throw new Error('Quest not found for completion recording');
 
           await tx.questCompletion.upsert({
             where: {
@@ -273,12 +273,12 @@ export async function PUT(request: NextRequest) {
               userId: assignmentData.userId,
               xpEarned: quest.xpReward,
               skillPointsEarned: quest.skillPointsReward,
-              qualityScore: quality_score || null,
+              qualityScore: quality_score ?? null,
             },
             update: {
               xpEarned: quest.xpReward,
               skillPointsEarned: quest.skillPointsReward,
-              qualityScore: quality_score || null,
+              qualityScore: quality_score ?? null,
             },
           });
 
@@ -288,13 +288,25 @@ export async function PUT(request: NextRequest) {
             skillPointsReward: quest.skillPointsReward,
             questTitle: assignmentData.quest?.title ?? '',
           };
+
+          // Prepare payment info (but do NOT create transaction yet)
+          if (quest.monetaryReward && quest.track !== 'BOOTCAMP' && quest.source !== 'TUTORIAL') {
+            paymentInfo = {
+              questId: assignmentData.questId,
+              userId: assignmentData.userId,
+              track: quest.track,
+              source: quest.source,
+              monetaryReward: Number(quest.monetaryReward),
+            };
+          }
         }
 
-        return { submission: updatedSubmission, rewardsPayload };
+        return { submission: updatedSubmission, rewardsPayload, paymentInfo };
       },
       { maxWait: 10_000, timeout: 20_000 }
     );
 
+    // Process XP and skills (outside transaction)
     if (reviewResult.rewardsPayload) {
       const { updateUserXpAndSkills } = await import('@/lib/xp-utils');
       await updateUserXpAndSkills(
@@ -304,7 +316,7 @@ export async function PUT(request: NextRequest) {
         assignmentData.questId
       );
 
-      // Task 1.4: Tutorial quest completion tracking for bootcamp students
+      // Bootcamp tutorial tracking (existing code)
       const { questTitle, userId: rewardUserId } = reviewResult.rewardsPayload;
       if (questTitle.startsWith('Tutorial:')) {
         const bootcampLink = await prisma.bootcampLink.findUnique({
@@ -312,7 +324,7 @@ export async function PUT(request: NextRequest) {
           select: { tutorialQuest1Complete: true, tutorialQuest2Complete: true },
         });
         if (bootcampLink) {
-          const updateData: { tutorialQuest1Complete?: boolean; tutorialQuest2Complete?: boolean; eligibleForRealQuests?: boolean } = {};
+         const updateData: { tutorialQuest1Complete?: boolean; tutorialQuest2Complete?: boolean; eligibleForRealQuests?: boolean } = {};
           if (questTitle.startsWith('Tutorial: First Blood')) updateData.tutorialQuest1Complete = true;
           if (questTitle.startsWith('Tutorial: Party Up')) updateData.tutorialQuest2Complete = true;
           const tq1 = updateData.tutorialQuest1Complete ?? bootcampLink.tutorialQuest1Complete;
@@ -322,6 +334,50 @@ export async function PUT(request: NextRequest) {
             await prisma.bootcampLink.update({ where: { userId: rewardUserId }, data: updateData });
           }
         }
+      }
+    }
+
+    // Process payment AFTER transaction – with proper status tracking
+    if (reviewResult.paymentInfo && reviewResult.paymentInfo.monetaryReward > 0) {
+      // Create a PENDING transaction first
+      const transactionRecord = await prisma.transaction.create({
+        data: {
+          toUserId: reviewResult.paymentInfo.userId,
+          questId: reviewResult.paymentInfo.questId,
+          amount: reviewResult.paymentInfo.monetaryReward * 0.85,
+          platformFee: reviewResult.paymentInfo.monetaryReward * 0.15,
+          platformFeeRate: 0.15,
+          status: 'pending',
+          paymentProvider: 'razorpay',
+        },
+      });
+
+      // Attempt the actual payment
+      const paymentResult = await processQuestPayment(
+        reviewResult.paymentInfo.questId,
+        reviewResult.paymentInfo.userId,
+        reviewResult.paymentInfo.monetaryReward,
+        'INR'
+      );
+
+      if (!paymentResult.success) {
+        // Payment failed – update transaction to failed
+        await prisma.transaction.update({
+          where: { id: transactionRecord.id },
+          data: { status: 'failed' },
+        });
+        console.error('Payment failed for quest', reviewResult.paymentInfo.questId, paymentResult.error);
+      } else {
+        // Payment succeeded – update transaction to completed
+        await prisma.transaction.update({
+          where: { id: transactionRecord.id },
+          data: {
+            status: 'completed',
+            providerPaymentId: paymentResult.transferId,
+            completedAt: new Date(),
+          },
+        });
+        console.log('Payment successful', paymentResult);
       }
     }
 

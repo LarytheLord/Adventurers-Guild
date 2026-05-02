@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
       .slice(0, 20) || 'adventurer';
     let username = baseUsername;
     let suffix = 0;
-    while (await prisma.user.findUnique({ where: { username } })) {
+    while (await withDbRetry(() => prisma.user.findUnique({ where: { username } }))) {
       suffix++;
       username = `${baseUsername}${suffix}`;
     }
