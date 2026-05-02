@@ -10,6 +10,7 @@ import StatsSection from '@/components/landing/StatsSection';
 import CTASection from '@/components/landing/CTASection';
 import QuestShowcase from '@/components/landing/QuestShowcase';
 import LogoMarquee from '@/components/landing/LogoMarquee';
+
 const RANKS = ['F', 'E', 'D', 'C', 'B', 'A', 'S'] as const;
 
 export default function HomePage() {
@@ -25,10 +26,22 @@ export default function HomePage() {
     }
   }, [status, session, router]);
 
+  // 🔥 Prevent UI flash before redirect
+  if (status === 'loading') {
+    return (
+      <div className="h-screen flex items-center justify-center text-white/60 text-sm">
+        Loading Guild...
+      </div>
+    );
+  }
+
   return (
-    <>
-      {/* Hero with game HUD overlays */}
+    <div className="bg-black text-white overflow-hidden">
+      {/* Hero Section */}
       <div className="relative">
+        {/* Glow background */}
+        <div className="absolute inset-0 bg-gradient-to-b from-orange-500/10 via-transparent to-transparent blur-2xl pointer-events-none" />
+
         <Hero
           trustBadge={{
             text: 'Season 1 / Real projects / Real pay',
@@ -37,51 +50,65 @@ export default function HomePage() {
             line1: 'Level Up Your Career',
             line2: 'One Quest at a Time',
           }}
-          subtitle="Connect with real companies. Complete coding quests. Earn XP, climb from F-Rank to S-Rank, and get paid for code that ships to production."
+          subtitle="Join the Adventurers Guild. Complete real-world coding quests, earn XP, climb from F-Rank to S-Rank, and get paid for production-ready work."
           buttons={{
-            primary: { text: 'Enter the Guild', href: '/register' },
-            secondary: { text: 'Browse Quests', href: '/register' },
+            primary: { text: '⚔ Enter the Guild', href: '/register' },
+            secondary: { text: '📜 Browse Quests', href: '/register' },
           }}
         />
 
-        {/* Rank ladder — bottom center */}
-        <div className="hidden lg:flex absolute bottom-10 left-1/2 -translate-x-1/2 flex-col items-center gap-2">
-          <div className="flex items-center gap-3">
+        {/* 🔥 Improved Rank Ladder */}
+        <div className="hidden lg:flex absolute bottom-10 left-1/2 -translate-x-1/2 flex-col items-center gap-3">
+          <div className="flex items-center gap-2 bg-white/5 backdrop-blur px-4 py-2 rounded-full border border-white/10">
             {RANKS.map((rank, i) => (
               <div
                 key={rank}
-                className={`rounded flex items-center justify-center font-bold text-[9px] transition-all ${
-                  i === 0
-                    ? 'w-5 h-5 bg-orange-500 text-black shadow-md shadow-orange-500/40'
-                    : 'w-4 h-4 bg-white/10 text-white/25'
-                }`}
+                className={`
+                  flex items-center justify-center font-bold text-[10px]
+                  transition-all duration-300
+                  ${
+                    i === 0
+                      ? 'w-6 h-6 bg-orange-500 text-black shadow-lg shadow-orange-500/50 scale-110'
+                      : 'w-5 h-5 bg-white/10 text-white/30 hover:bg-white/20'
+                  }
+                `}
               >
                 {rank}
               </div>
             ))}
           </div>
-          <p className="text-[10px] text-white/25 tracking-wide">Everyone starts at F-Rank</p>
+          <p className="text-[11px] text-white/40 tracking-wide">
+            Your journey begins at F-Rank ⚡
+          </p>
         </div>
       </div>
 
-      <section id="features">
+      {/* Sections with better spacing + transitions */}
+
+      <section id="features" className="relative py-20 border-t border-white/5">
         <StatsSection />
       </section>
-      <section id="quests">
+
+      <section id="quests" className="relative py-20 border-t border-white/5">
         <QuestShowcase />
       </section>
-      <section id="experience">
+
+      <section id="experience" className="relative py-20 border-t border-white/5">
         <BentoGrid />
       </section>
-      <section id="how-it-works">
+
+      <section id="how-it-works" className="relative py-20 border-t border-white/5">
         <HowItWorks />
       </section>
-      <section id="join">
+
+      <section id="join" className="relative py-20 border-t border-white/5">
         <CTASection />
       </section>
-      
-      {/* Trusted Partners section - moved below main CTA */}
-      <LogoMarquee />
-    </>
+
+      {/* Trusted Partners */}
+      <div className="border-t border-white/5 pt-10 pb-16">
+        <LogoMarquee />
+      </div>
+    </div>
   );
 }
