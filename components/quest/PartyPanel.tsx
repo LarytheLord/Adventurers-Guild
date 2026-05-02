@@ -1,7 +1,7 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { Crown, Trash2, UserPlus, Users } from 'lucide-react';
+import { Crown, Trash2, UserPlus, Users, Search as SearchIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { GuildCard, GuildPanel } from '@/components/guild/primitives';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -30,6 +30,15 @@ interface PartyMemberUser {
 interface PartyMember {
   user: PartyMemberUser;
   isLeader: boolean;
+  joinedAt?: string;
+}
+
+interface SearchResult {
+  id: string;
+  name: string | null;
+  email: string;
+  rank: string;
+  avatar: string | null;
 }
 
 export interface Party {
@@ -64,6 +73,28 @@ function toRank(rank: string | null): Rank | null {
   return VALID_RANKS.includes(rank as Rank) ? (rank as Rank) : null;
 }
 
+function formatJoinDate(joinedAt?: string): string {
+  if (!joinedAt) return 'N/A';
+  const date = new Date(joinedAt);
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  
+  if (diffDays === 0) {
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    if (diffHours === 0) {
+      const diffMins = Math.floor(diffMs / (1000 * 60));
+      return diffMins === 0 ? 'just now' : `${diffMins}m ago`;
+    }
+    return `${diffHours}h ago`;
+  }
+  if (diffDays === 1) return 'yesterday';
+  if (diffDays < 30) return `${diffDays}d ago`;
+  
+  const diffMonths = Math.floor(diffDays / 30);
+  return `${diffMonths}mo ago`;
+}
+
 export function PartyPanel({
   questId,
   party,
@@ -76,7 +107,9 @@ export function PartyPanel({
   const [isCreatingParty, setIsCreatingParty] = useState(false);
   const [isJoiningParty, setIsJoiningParty] = useState(false);
   const [isInviting, setIsInviting] = useState(false);
-  const [inviteUserId, setInviteUserId] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [removingUserId, setRemovingUserId] = useState<string | null>(null);
 
@@ -126,21 +159,43 @@ export function PartyPanel({
     }
   };
 
-  const handleInviteMember = async () => {
-    if (!party) return;
-
-    const targetUserId = inviteUserId.trim();
-    if (!targetUserId) {
-      toast.error('Enter an adventurer user ID');
+  const handleSearchUsers = async (query: string) => {
+    setSearchQuery(query);
+    
+    if (query.length < 2) {
+      setSearchResults([]);
       return;
     }
+
+    try {
+      setIsSearching(true);
+      const response = await fetchWithAuth(`/api/users/search?q=${encodeURIComponent(query)}`);
+      const data = await response.json();
+      
+      if (data.success && Array.isArray(data.results)) {
+        // Filter out users already in party
+        const filteredResults = data.results.filter(
+          (result: SearchResult) => !party?.members.some((m) => m.user.id === result.id)
+        );
+        setSearchResults(filteredResults);
+      }
+    } catch (error) {
+      console.error('Error searching users:', error);
+      toast.error('Failed to search users');
+    } finally {
+      setIsSearching(false);
+    }
+  };
+
+  const handleInviteMember = async (userId: string) => {
+    if (!party) return;
 
     try {
       setIsInviting(true);
       const response = await fetchWithAuth(`/api/parties/${party.id}/members`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ userId: targetUserId }),
+        body: JSON.stringify({ userId }),
       });
 
       const data = await response.json();
@@ -151,7 +206,8 @@ export function PartyPanel({
 
       onPartyCreated(data.party as Party);
       onMemberAdded();
-      setInviteUserId('');
+      setSearchQuery('');
+      setSearchResults([]);
       setIsInviteDialogOpen(false);
       toast.success('Member added to party');
     } catch (error) {
@@ -279,16 +335,19 @@ export function PartyPanel({
                   key={member.user.id}
                   className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 px-3 py-2"
                 >
-                  <div className="flex items-center gap-3">
-                    <Avatar className="h-9 w-9 border border-slate-200">
-                      <AvatarFallback className="bg-slate-100 text-xs font-semibold text-slate-700">
-                        {toInitials(member.user.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium text-slate-900">{member.user.name || 'Unknown Adventurer'}</p>
-                      {member.isLeader && <Crown className="h-4 w-4 text-amber-500" />}
+                  <div className="flex flex-col gap-1 flex-1">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-9 w-9 border border-slate-200">
+                        <AvatarFallback className="bg-slate-100 text-xs font-semibold text-slate-700">
+                          {toInitials(member.user.name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex items-center gap-2">
+                        <p className="text-sm font-medium text-slate-900">{member.user.name || 'Unknown Adventurer'}</p>
+                        {member.isLeader && <Crown className="h-4 w-4 text-amber-500" />}
+                      </div>
                     </div>
+                    <p className="text-xs text-slate-500 ml-12">joined {formatJoinDate(member.joinedAt)}</p>
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -327,24 +386,79 @@ export function PartyPanel({
                   Invite Member
                 </Button>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="max-w-md">
                 <DialogHeader>
                   <DialogTitle>Invite Adventurer</DialogTitle>
                   <DialogDescription>
-                    Enter the adventurer user ID to add them to this {partyLabel.toLowerCase()}.
+                    Search by name or email to invite someone to this {partyLabel.toLowerCase()}.
                   </DialogDescription>
                 </DialogHeader>
-                <Input
-                  value={inviteUserId}
-                  onChange={(event) => setInviteUserId(event.target.value)}
-                  placeholder="User ID (UUID)"
-                />
+                <div className="space-y-4">
+                  <div className="relative">
+                    <SearchIcon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+                    <Input
+                      placeholder="Search by name or email..."
+                      value={searchQuery}
+                      onChange={(e) => void handleSearchUsers(e.target.value)}
+                      className="pl-9"
+                      disabled={isSearching}
+                    />
+                  </div>
+
+                  {searchResults.length > 0 && (
+                    <div className="max-h-72 space-y-2 overflow-y-auto">
+                      {searchResults.map((result) => (
+                        <div
+                          key={result.id}
+                          className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50 p-3 hover:bg-slate-100 transition-colors"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <Avatar className="h-8 w-8 border border-slate-200 flex-shrink-0">
+                              <AvatarFallback className="bg-slate-100 text-xs font-semibold text-slate-700">
+                                {toInitials(result.name)}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-slate-900 truncate">
+                                {result.name || 'Unknown'}
+                              </p>
+                              <p className="text-xs text-slate-500 truncate">{result.email}</p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            {toRank(result.rank) ? (
+                              <RankBadge rank={toRank(result.rank)!} size="sm" />
+                            ) : null}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => void handleInviteMember(result.id)}
+                              disabled={isInviting}
+                            >
+                              Invite
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {searchQuery.length >= 2 && searchResults.length === 0 && !isSearching && (
+                    <div className="text-center py-8">
+                      <p className="text-sm text-slate-500">No adventurers found</p>
+                    </div>
+                  )}
+
+                  {searchQuery.length < 2 && (
+                    <div className="text-center py-8">
+                      <p className="text-sm text-slate-500">Type at least 2 characters to search</p>
+                    </div>
+                  )}
+                </div>
+
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setIsInviteDialogOpen(false)}>
                     Cancel
-                  </Button>
-                  <Button onClick={() => void handleInviteMember()} disabled={isInviting || !inviteUserId.trim()}>
-                    {isInviting ? 'Inviting...' : 'Add Member'}
                   </Button>
                 </DialogFooter>
               </DialogContent>

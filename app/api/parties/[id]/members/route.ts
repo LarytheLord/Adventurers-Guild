@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireAuth } from '@/lib/api-auth';
+import { notifyDiscord } from '@/lib/discord-notify';
 import { QuestTrack } from '@prisma/client';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -67,13 +68,36 @@ export async function POST(
   const updated = await prisma.party.findUnique({
     where: { id: partyId },
     include: {
+      quest: { select: { title: true } },
       leader: { select: { id: true, name: true, rank: true } },
       members: {
-        include: { user: { select: { id: true, name: true, rank: true } } },
+        include: { user: { select: { id: true, name: true, rank: true, email: true } } },
         orderBy: { joinedAt: 'asc' },
       },
     },
   });
+
+  // Send Discord notification for party invitation
+  if (updated) {
+    const invitedUser = await prisma.user.findUnique({
+      where: { id: targetUserId },
+      select: { name: true, email: true },
+    });
+    const invitedByUser = await prisma.user.findUnique({
+      where: { id: callerId },
+      select: { name: true },
+    });
+
+    if (invitedUser && updated.quest && invitedByUser) {
+      const message = `
+🎉 **Party Invitation**
+${invitedByUser.name} invited ${invitedUser.name} (${invitedUser.email}) to join the squad for **${updated.quest.title}**
+Track: ${party.track}
+Party: ${updated.members.length}/${updated.maxSize} members
+      `.trim();
+      await notifyDiscord('quests', message);
+    }
+  }
 
   return NextResponse.json({ party: updated, success: true }, { status: 201 });
 }
