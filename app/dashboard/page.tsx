@@ -197,7 +197,7 @@ export default async function DashboardPage() {
         </div>
       </GuildHero>
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-4 grid-cols-2 xl:grid-cols-4">
         <GuildKpi>
           <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Current Rank</p>
           <div className="mt-2 flex items-center gap-2">
@@ -353,7 +353,7 @@ export default async function DashboardPage() {
               No matching quests yet. Check back soon for new opportunities.
             </div>
           ) : (
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
               {recommendedQuests.map((quest) => (
                 <Link
                   key={quest.id}

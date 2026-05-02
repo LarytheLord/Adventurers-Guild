@@ -271,7 +271,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </header>
 
         {/* Page content */}
-        <main className="px-4 pb-8 pt-6 lg:px-8">{children}</main>
+        <main className="px-3 pb-8 pt-6 lg:px-8">{children}</main>
       </div>
     </div>
   );
