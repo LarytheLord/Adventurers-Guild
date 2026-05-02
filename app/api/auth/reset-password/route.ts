@@ -2,18 +2,19 @@ import { NextRequest, NextResponse } from 'next/server';
 import bcrypt from 'bcryptjs';
 import { createHash } from 'crypto';
 import { prisma } from '@/lib/db';
+import { resetPasswordSchema } from '@/lib/validation/schemas';
 
 export async function POST(request: NextRequest) {
   try {
-    const { token, password } = await request.json();
-
-    if (!token || !password) {
-      return NextResponse.json({ error: 'Token and password are required' }, { status: 400 });
+    const body = await request.json();
+    const parsedBody = resetPasswordSchema.safeParse(body);
+    if (!parsedBody.success) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: parsedBody.error.flatten() },
+        { status: 400 }
+      );
     }
-
-    if (password.length < 6) {
-      return NextResponse.json({ error: 'Password must be at least 6 characters' }, { status: 400 });
-    }
+    const { token, password } = parsedBody.data;
 
     const tokenHash = createHash('sha256').update(token).digest('hex');
 

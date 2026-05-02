@@ -3,6 +3,12 @@ import { NextRequest } from 'next/server';
 import { requireAuth } from '@/lib/api-auth';
 import { prisma } from '@/lib/db';
 import { Prisma, QuestStatus, QuestType, UserRank, QuestTrack, QuestSource } from '@prisma/client';
+import {
+  clampPaginationValue,
+  questCreateSchema,
+  questUpdateSchema,
+  sanitizeSearchTerm,
+} from '@/lib/validation/schemas';
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,13 +19,14 @@ export async function GET(request: NextRequest) {
 
     // Parse query parameters
     const { searchParams } = new URL(request.url);
-    const companyId = authUser.id;
+    const requestedCompanyId = searchParams.get('companyId') || searchParams.get('company_id');
+    const companyId = authUser.role === 'admin' && requestedCompanyId ? requestedCompanyId : authUser.id;
     const status = searchParams.get('status');
     const questType = searchParams.get('questType');
     const difficulty = searchParams.get('difficulty');
-    const search = searchParams.get('search');
-    const limit = searchParams.get('limit') || '10';
-    const offset = searchParams.get('offset') || '0';
+    const search = sanitizeSearchTerm(searchParams.get('search'));
+    const limit = clampPaginationValue(searchParams.get('limit'), { fallback: 10, min: 1, max: 100 });
+    const offset = clampPaginationValue(searchParams.get('offset'), { fallback: 0, min: 0, max: 10_000 });
 
     // Build where clause
     const where: Prisma.QuestWhereInput = { companyId };
@@ -64,8 +71,8 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-      skip: parseInt(offset),
-      take: parseInt(limit),
+      skip: offset,
+      take: limit,
       orderBy: { createdAt: 'desc' },
     });
 
@@ -84,44 +91,37 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const companyId = authUser.id;
-
-    // Validate required fields
-    const requiredFields = ['title', 'description', 'questType', 'difficulty', 'xpReward', 'questCategory'];
-    for (const field of requiredFields) {
-      if (body[field] == null || String(body[field]).trim() === '') {
-        return Response.json({ error: `${field} is required`, success: false }, { status: 400 });
-      }
+    const parsedBody = questCreateSchema.safeParse(body);
+    if (!parsedBody.success) {
+      return Response.json(
+        { error: 'Validation failed', details: parsedBody.error.flatten(), success: false },
+        { status: 400 }
+      );
     }
-
-    // Validate optional enums
-    if (body.track && !Object.values(QuestTrack).includes(body.track as QuestTrack)) {
-      return Response.json({ error: 'Invalid track value', success: false }, { status: 400 });
-    }
-    if (body.source && !Object.values(QuestSource).includes(body.source as QuestSource)) {
-      return Response.json({ error: 'Invalid source value', success: false }, { status: 400 });
-    }
+    const payload = parsedBody.data;
+    const requestedCompanyId = payload.companyId ?? '';
+    const companyId = authUser.role === 'admin' && requestedCompanyId ? requestedCompanyId : authUser.id;
 
     // Create the quest
     const data = await prisma.quest.create({
       data: {
-        title: body.title,
-        description: body.description,
-        detailedDescription: body.detailedDescription || null,
-        questType: body.questType,
-        difficulty: body.difficulty,
-        xpReward: body.xpReward,
-        skillPointsReward: body.skillPointsReward || 0,
-        monetaryReward: body.monetaryReward || null,
-        requiredSkills: body.requiredSkills || [],
-        requiredRank: body.requiredRank || null,
-        maxParticipants: body.maxParticipants || null,
-        questCategory: body.questCategory,
-        track: (body.track as QuestTrack) || undefined,
-        source: (body.source as QuestSource) || undefined,
-        parentQuestId: body.parentQuestId || null,
+        title: payload.title,
+        description: payload.description,
+        detailedDescription: payload.detailedDescription ?? null,
+        questType: payload.questType,
+        difficulty: payload.difficulty,
+        xpReward: payload.xpReward,
+        skillPointsReward: payload.skillPointsReward ?? 0,
+        monetaryReward: payload.monetaryReward,
+        requiredSkills: payload.requiredSkills ?? [],
+        requiredRank: payload.requiredRank ?? null,
+        maxParticipants: payload.maxParticipants ?? null,
+        questCategory: payload.questCategory,
+        track: (payload.track as QuestTrack) || undefined,
+        source: (payload.source as QuestSource) || undefined,
+        parentQuestId: payload.parentQuestId ?? null,
         companyId,
-        deadline: body.deadline ? new Date(body.deadline) : null,
+        deadline: payload.deadline ?? null,
       },
     });
 
@@ -148,43 +148,47 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { questId, ...rawUpdateFields } = body;
-    const updateFields: Record<string, unknown> = { ...rawUpdateFields };
-    delete updateFields.company_id;
-    const companyId = authUser.id;
-
-    // Validate required fields
-    if (!questId || !companyId) {
-      return Response.json({ error: 'Quest ID and Company ID are required', success: false }, { status: 400 });
+    const parsedBody = questUpdateSchema.safeParse(body);
+    if (!parsedBody.success) {
+      return Response.json(
+        { error: 'Validation failed', details: parsedBody.error.flatten(), success: false },
+        { status: 400 }
+      );
     }
+    const { questId, ...updateFields } = parsedBody.data;
 
-    // Verify the company owns this quest
+    // Verify the company owns this quest unless the current user is an admin.
     const quest = await prisma.quest.findUnique({
       where: { id: questId },
       select: { companyId: true },
     });
 
-    if (!quest || quest.companyId !== companyId) {
+    if (!quest) {
+      return Response.json({ error: 'Quest not found', success: false }, { status: 404 });
+    }
+
+    if (authUser.role !== 'admin' && quest.companyId !== authUser.id) {
       return Response.json({ error: 'Unauthorized: You do not own this quest', success: false }, { status: 403 });
     }
 
-    // Convert snake_case keys to camelCase for Prisma
-    const prismaUpdateFields: Record<string, unknown> = {};
-    const fieldMapping: Record<string, string> = {
-      detailedDescription: 'detailedDescription',
-      questType: 'questType',
-      xpReward: 'xpReward',
-      skillPointsReward: 'skillPointsReward',
-      monetaryReward: 'monetaryReward',
-      requiredSkills: 'requiredSkills',
-      requiredRank: 'requiredRank',
-      maxParticipants: 'maxParticipants',
-      questCategory: 'questCategory',
-    };
+    // Allowlist of fields that can be updated via this endpoint.
+    // Protected fields (companyId, status, createdAt, etc.) are blocked.
+    const UPDATABLE_FIELDS = new Set([
+      'title', 'description', 'detailedDescription', 'questType', 'difficulty',
+      'xpReward', 'skillPointsReward', 'monetaryReward', 'requiredSkills',
+      'requiredRank', 'maxParticipants', 'questCategory', 'deadline',
+      'track', 'source', 'parentQuestId',
+    ]);
 
+    const prismaUpdateFields: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(updateFields)) {
-      const camelKey = fieldMapping[key] || key;
-      prismaUpdateFields[camelKey] = value;
+      if (UPDATABLE_FIELDS.has(key) && value !== undefined) {
+        prismaUpdateFields[key] = value;
+      }
+    }
+
+    if (Object.keys(prismaUpdateFields).length === 0) {
+      return Response.json({ error: 'No valid quest fields were provided', success: false }, { status: 400 });
     }
 
     // Update the quest
@@ -209,20 +213,22 @@ export async function DELETE(request: NextRequest) {
 
     const body = await request.json();
     const { questId } = body;
-    const companyId = authUser.id;
-
     // Validate required fields
-    if (!questId || !companyId) {
-      return Response.json({ error: 'Quest ID and Company ID are required', success: false }, { status: 400 });
+    if (!questId) {
+      return Response.json({ error: 'Quest ID is required', success: false }, { status: 400 });
     }
 
-    // Verify the company owns this quest
+    // Verify the company owns this quest unless the current user is an admin.
     const quest = await prisma.quest.findUnique({
       where: { id: questId },
       select: { companyId: true },
     });
 
-    if (!quest || quest.companyId !== companyId) {
+    if (!quest) {
+      return Response.json({ error: 'Quest not found', success: false }, { status: 404 });
+    }
+
+    if (authUser.role !== 'admin' && quest.companyId !== authUser.id) {
       return Response.json({ error: 'Unauthorized: You do not own this quest', success: false }, { status: 403 });
     }
 

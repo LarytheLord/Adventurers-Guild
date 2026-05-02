@@ -28,9 +28,11 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
 import { Badge } from '@/components/ui/badge';
 import { GuildCard, GuildChip, GuildHero, GuildPage } from '@/components/guild/primitives';
 import { QUEST_CATEGORIES, QUEST_TYPES, DIFFICULTY_RANKS, getQuestListPath } from '@/lib/quest-constants';
+import { getErrorMessageFromPayload, getStatusFallbackMessage, readResponsePayload } from '@/lib/http';
 
 export default function CreateQuestPage() {
   const { data: session, status } = useSession();
@@ -108,23 +110,22 @@ export default function CreateQuestPage() {
         deadline: form.deadline || null,
       };
 
-      const response = await fetch('/api/company/quests', {
+      const response = await fetchWithAuth('/api/company/quests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
 
-      const data = await response.json();
+      const data = await readResponsePayload<Record<string, unknown>>(response);
 
-      if (data.success) {
+      if (response.ok && data?.success) {
         toast.success('Quest created successfully!');
         router.push(getQuestListPath(session?.user?.role ?? ''));
       } else {
-        setError(data.error || 'Failed to create quest');
+        setError(getErrorMessageFromPayload(data, getStatusFallbackMessage(response.status)));
       }
     } catch (submitError) {
-      console.error('Error creating quest:', submitError);
-      setError('An unexpected error occurred');
+      setError(submitError instanceof Error ? submitError.message : 'An unexpected error occurred');
     } finally {
       setLoading(false);
     }
@@ -184,6 +185,7 @@ export default function CreateQuestPage() {
                     placeholder="e.g. Build a user authentication API"
                     value={form.title}
                     onChange={(event) => updateField('title', event.target.value)}
+                    maxLength={160}
                     required
                     className="h-11"
                   />
@@ -197,6 +199,7 @@ export default function CreateQuestPage() {
                     value={form.description}
                     onChange={(event) => updateField('description', event.target.value)}
                     rows={4}
+                    maxLength={2000}
                     required
                   />
                 </div>
@@ -209,6 +212,7 @@ export default function CreateQuestPage() {
                     value={form.detailedDescription}
                     onChange={(event) => updateField('detailedDescription', event.target.value)}
                     rows={7}
+                    maxLength={10000}
                   />
                 </div>
 
@@ -219,6 +223,7 @@ export default function CreateQuestPage() {
                     placeholder="React, Node.js, PostgreSQL"
                     value={form.requiredSkills}
                     onChange={(event) => updateField('requiredSkills', event.target.value)}
+                    maxLength={500}
                   />
                   <p className="text-xs text-muted-foreground">Comma-separated</p>
                   {skillPreview.length > 0 && (

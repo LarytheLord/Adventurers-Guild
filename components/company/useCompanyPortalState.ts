@@ -1,9 +1,12 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { useApiFetch } from '@/lib/hooks';
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
 import type { CompanyQuest, QuestFormData } from './company-portal-types';
+import { getErrorMessageFromPayload, getStatusFallbackMessage, readResponsePayload } from '@/lib/http';
 
 interface CompanyQuestsResponse {
   success: boolean;
@@ -15,12 +18,12 @@ const EMPTY_COMPANY_QUESTS: CompanyQuest[] = [];
 
 export function useCompanyPortalState(companyId: string) {
   const [activeTab, setActiveTab] = useState('dashboard');
+  const router = useRouter();
   const shouldFetch = Boolean(companyId) && (activeTab === 'quests' || activeTab === 'dashboard');
   const {
     data,
     loading,
     refetch: loadCompanyQuests,
-    mutate,
   } = useApiFetch<CompanyQuestsResponse>(`/api/company/quests?company_id=${companyId}`, {
     skip: !shouldFetch,
   });
@@ -28,30 +31,28 @@ export function useCompanyPortalState(companyId: string) {
 
   const handleCreateQuest = async (formData: QuestFormData) => {
     try {
-      const response = await fetch('/api/company/quests', {
+      const response = await fetchWithAuth('/api/company/quests', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           ...formData,
-          company_id: companyId,
           requiredSkills: formData.requiredSkills.filter((skill) => skill.trim() !== ''),
         }),
       });
 
-      const data = await response.json();
+      const data = await readResponsePayload<Record<string, unknown>>(response);
 
-      if (data.success) {
+      if (response.ok && data?.success) {
         toast.success('Quest created successfully');
         await loadCompanyQuests();
         setActiveTab('quests');
       } else {
-        toast.error(data.error || 'Failed to create quest');
+        toast.error(getErrorMessageFromPayload(data, getStatusFallbackMessage(response.status)));
       }
     } catch (error) {
-      console.error('Error creating quest:', error);
-      toast.error('Error creating quest');
+      toast.error(error instanceof Error ? error.message : 'Error creating quest');
     }
   };
 
@@ -61,40 +62,35 @@ export function useCompanyPortalState(companyId: string) {
     }
 
     try {
-      const response = await fetch('/api/company/quests', {
+      const response = await fetchWithAuth('/api/company/quests', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           questId,
-          company_id: companyId,
         }),
       });
 
-      const data = await response.json();
+      const data = await readResponsePayload<Record<string, unknown>>(response);
 
-      if (data.success) {
+      if (response.ok && data?.success) {
         toast.success('Quest cancelled successfully');
-        mutate({
-          success: true,
-          quests: companyQuests.filter((quest) => quest.id !== questId),
-        });
+        await loadCompanyQuests();
       } else {
-        toast.error(data.error || 'Failed to cancel quest');
+        toast.error(getErrorMessageFromPayload(data, getStatusFallbackMessage(response.status)));
       }
     } catch (error) {
-      console.error('Error cancelling quest:', error);
-      toast.error('Error cancelling quest');
+      toast.error(error instanceof Error ? error.message : 'Error cancelling quest');
     }
   };
 
   const handleViewQuest = (questId: string) => {
-    console.log('View quest:', questId);
+    router.push(`/dashboard/company/quests/${questId}`);
   };
 
   const handleEditQuest = (questId: string) => {
-    console.log('Edit quest:', questId);
+    router.push(`/dashboard/company/quests/${questId}/edit`);
   };
 
   return {

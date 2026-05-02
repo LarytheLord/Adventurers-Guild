@@ -5,15 +5,8 @@ import Hero from "@/components/ui/animated-shader-hero";
 
 // Demo Component showing how to use the Hero
 const HeroDemo: React.FC = () => {
-  const handlePrimaryClick = () => {
-    console.log('Get Started clicked!');
-    // Add your logic here
-  };
-
-  const handleSecondaryClick = () => {
-    console.log('Explore Features clicked!');
-    // Add your logic here
-  };
+  const handlePrimaryClick = () => undefined;
+  const handleSecondaryClick = () => undefined;
 
   return (
     <div className="w-full">

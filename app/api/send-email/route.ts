@@ -2,44 +2,65 @@ export const runtime = 'nodejs';
 
 import { NextRequest, NextResponse } from 'next/server'
 import nodemailer from 'nodemailer'
+import { consumeRateLimit } from '@/lib/rate-limit'
 
 const RATE_LIMIT_WINDOW_MS = 60 * 1000
 const RATE_LIMIT_MAX_REQUESTS = 5
 
-type RateEntry = {
-    count: number
-    resetAt: number
-}
-
-const globalRateStore = globalThis as unknown as {
-    waitlistRateLimit?: Map<string, RateEntry>
-}
-
-const waitlistRateLimit = globalRateStore.waitlistRateLimit ?? new Map<string, RateEntry>()
-if (!globalRateStore.waitlistRateLimit) {
-    globalRateStore.waitlistRateLimit = waitlistRateLimit
-}
-
-function isRateLimited(key: string) {
-    const now = Date.now()
-    const entry = waitlistRateLimit.get(key)
-    if (!entry || now > entry.resetAt) {
-        waitlistRateLimit.set(key, { count: 1, resetAt: now + RATE_LIMIT_WINDOW_MS })
-        return false
-    }
-    entry.count += 1
-    waitlistRateLimit.set(key, entry)
-    return entry.count > RATE_LIMIT_MAX_REQUESTS
-}
+let cachedTransporter: nodemailer.Transporter | null = null
 
 function isValidEmail(email: string) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+}
+
+function escapeHtml(value: string) {
+    return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+}
+
+function getTransporter() {
+    if (cachedTransporter) {
+        return cachedTransporter
+    }
+
+    cachedTransporter = nodemailer.createTransport({
+        host: process.env.SMTP_HOST || 'smtp.gmail.com',
+        port: parseInt(process.env.SMTP_PORT || '587'),
+        secure: process.env.SMTP_PORT === '465', // true for 465, false for other ports
+        auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
+        },
+        pool: false, // Disable connection pooling for serverless
+        maxConnections: 1,
+        maxMessages: 1,
+        connectionTimeout: 60000, // 60 seconds
+        greetingTimeout: 30000, // 30 seconds
+        socketTimeout: 60000, // 60 seconds
+        ...(process.env.SMTP_TLS_INSECURE === 'true'
+            ? {
+                tls: {
+                    rejectUnauthorized: false
+                }
+            }
+            : {})
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    } as any)
+
+    return cachedTransporter
 }
 
 export async function POST(request: NextRequest) {
     try {
         const { name, email } = await request.json()
         const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : ''
+        const normalizedName = typeof name === 'string' ? name.trim().slice(0, 120) : ''
+        const safeName = normalizedName ? escapeHtml(normalizedName) : 'Not provided'
+        const safeEmail = escapeHtml(normalizedEmail)
 
         if (!normalizedEmail || !isValidEmail(normalizedEmail)) {
             return NextResponse.json({
@@ -51,7 +72,11 @@ export async function POST(request: NextRequest) {
         const forwardedFor = request.headers.get('x-forwarded-for')
         const ip = forwardedFor?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown'
         const rateKey = `${ip}:${normalizedEmail}`
-        if (isRateLimited(rateKey)) {
+        const rateLimit = consumeRateLimit('waitlist-email', rateKey, {
+            windowMs: RATE_LIMIT_WINDOW_MS,
+            maxRequests: RATE_LIMIT_MAX_REQUESTS,
+        })
+        if (!rateLimit.allowed) {
             return NextResponse.json({
                 message: 'Too many requests. Please try again later.',
                 success: false
@@ -67,44 +92,7 @@ export async function POST(request: NextRequest) {
             }, { status: 500 })
         }
 
-        // Create SMTP transporter with optimized settings for Vercel
-        const transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST || 'smtp.gmail.com',
-            port: parseInt(process.env.SMTP_PORT || '587'),
-            secure: process.env.SMTP_PORT === '465', // true for 465, false for other ports
-            auth: {
-                user: process.env.SMTP_USER,
-                pass: process.env.SMTP_PASS,
-            },
-            // Optimized settings for serverless environment
-            pool: false, // Disable connection pooling for serverless
-            maxConnections: 1,
-            maxMessages: 1,
-            connectionTimeout: 60000, // 60 seconds
-            greetingTimeout: 30000, // 30 seconds
-            socketTimeout: 60000, // 60 seconds
-            // Additional options for better reliability
-            ...(process.env.SMTP_TLS_INSECURE === 'true'
-                ? {
-                    tls: {
-                        rejectUnauthorized: false
-                    }
-                }
-                : {})
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        } as any)
-
-        // Verify transporter configuration
-        try {
-            await transporter.verify()
-            console.log('SMTP server is ready to take our messages')
-        } catch (verifyError) {
-            console.error('SMTP verification failed:', verifyError)
-            return NextResponse.json({
-                message: 'Email service verification failed',
-                success: false
-            }, { status: 500 })
-        }
+        const transporter = getTransporter()
 
         // Welcome email to the user
         const welcomeEmail = {
@@ -182,8 +170,8 @@ export async function POST(request: NextRequest) {
     <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 2px solid #667eea; border-radius: 8px;">
       <h2 style="color: #667eea;">⚔️ New Adventurer Joined The Guild!</h2>
       <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0;">
-        <p><strong>Name:</strong> ${name || 'Not provided'}</p>
-        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Name:</strong> ${safeName}</p>
+        <p><strong>Email:</strong> ${safeEmail}</p>
         <p><strong>Joined:</strong> ${new Date().toLocaleString()}</p>
       </div>
       <div style="background: #e3f2fd; padding: 15px; border-radius: 5px; margin: 15px 0;">
@@ -217,23 +205,18 @@ export async function POST(request: NextRequest) {
         }
 
         // Send emails sequentially instead of parallel to avoid rate limits
-        console.log('Sending welcome email...')
         const userEmailResult = await transporter.sendMail(welcomeEmail)
-        console.log('Welcome email sent:', userEmailResult.messageId)
+        void userEmailResult
 
         // Send admin email with error handling
         try {
-            console.log('Sending admin notification...')
-            const adminEmailResult = await transporter.sendMail(adminEmail)
-            console.log('Admin email sent:', adminEmailResult.messageId)
+            await transporter.sendMail(adminEmail)
         } catch (adminError) {
             console.error('Admin email failed (non-critical):', adminError)
             // Don't fail the request if admin email fails
         }
 
         // Close the transporter
-        transporter.close()
-
         return NextResponse.json({
             message: 'Welcome email sent successfully!',
             success: true

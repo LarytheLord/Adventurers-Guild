@@ -31,7 +31,9 @@ export default function LoginPage() {
   }, []);
 
   async function handleLogin() {
-    if (!email || !password) {
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail || !password) {
+      toast.error('Email and password are required');
       return;
     }
 
@@ -39,14 +41,16 @@ export default function LoginPage() {
 
     try {
       const result = await signIn('credentials', {
-        email,
+        email: normalizedEmail,
         password,
         callbackUrl: '/dashboard',
         redirect: false,
       });
 
       if (result?.error) {
-        toast.error('Invalid email or password');
+        toast.error(
+          result.error === 'CredentialsSignin' ? 'Invalid email or password' : result.error
+        );
       } else {
         toast.success('Logged in successfully');
         if (result?.url) {
@@ -150,6 +154,7 @@ export default function LoginPage() {
                 autoCorrect="off"
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
+                maxLength={254}
                 disabled={!isHydrated || isLoading}
                 required
                 className="bg-slate-900 border-slate-700 text-white placeholder:text-slate-500 focus:border-orange-500/50 focus:ring-orange-500/20 h-11"
@@ -172,6 +177,7 @@ export default function LoginPage() {
                 autoComplete="current-password"
                 value={password}
                 onChange={(event) => setPassword(event.target.value)}
+                maxLength={128}
                 disabled={!isHydrated || isLoading}
                 required
                 className="bg-slate-900 border-slate-700 text-white placeholder:text-slate-500 focus:border-orange-500/50 focus:ring-orange-500/20 h-11"

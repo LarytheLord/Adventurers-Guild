@@ -17,13 +17,13 @@ export async function updateUserXpAndSkills(
     // Get current user stats
     const user = await tx.user.findUnique({
       where: { id: userId },
-      select: { xp: true, level: true, rank: true },
+      select: { xp: true, rank: true },
     });
 
     if (!user) throw new Error('User not found');
 
     const newXp = user.xp + xpGained;
-    const newLevel = user.level + Math.floor(xpGained / XP_PER_LEVEL);
+    const newLevel = Math.max(1, Math.floor(newXp / XP_PER_LEVEL) + 1);
     const newRank = getRankForXp(newXp) as UserRank;
     const rankChanged = user.rank !== newRank;
 
@@ -51,10 +51,16 @@ export async function updateUserXpAndSkills(
       ? Math.round((completedAssignments / totalAssignments) * 10000) / 100
       : 0;
 
-    await tx.adventurerProfile.update({
+    await tx.adventurerProfile.upsert({
       where: { userId },
-      data: {
-        totalQuestsCompleted: { increment: 1 },
+      update: {
+        totalQuestsCompleted: completedAssignments,
+        questCompletionRate: completionRate,
+      },
+      create: {
+        userId,
+        primarySkills: [],
+        totalQuestsCompleted: completedAssignments,
         questCompletionRate: completionRate,
       },
     });

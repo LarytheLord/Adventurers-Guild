@@ -1,22 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma, withDbRetry } from '@/lib/db';
 import bcrypt from 'bcryptjs';
-import { z } from 'zod';
-
-const registerSchema = z.object({
-  name: z.string().min(2, 'Name must be at least 2 characters'),
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  role: z.enum(['adventurer', 'company']).default('adventurer'),
-  companyName: z.string().optional(),
-});
+import { registerPayloadSchema } from '@/lib/validation/schemas';
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
 
     // Validate input
-    const result = registerSchema.safeParse(body);
+    const result = registerPayloadSchema.safeParse(body);
     if (!result.success) {
       return NextResponse.json(
         { error: 'Validation failed', details: result.error.flatten() },
@@ -85,6 +77,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, userId: user.id }, { status: 201 });
   } catch (error) {
     console.error('Registration error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error', success: false }, { status: 500 });
   }
 }

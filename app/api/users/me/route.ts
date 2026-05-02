@@ -2,6 +2,56 @@
 import { NextRequest } from 'next/server';
 import { getAuthUser } from '@/lib/api-auth';
 import { prisma } from '@/lib/db';
+import { profilePatchSchema } from '@/lib/validation/schemas';
+
+export async function GET(request: NextRequest) {
+  try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: authUser.id },
+      select: {
+        id: true,
+        name: true,
+        username: true,
+        email: true,
+        role: true,
+        bio: true,
+        location: true,
+        website: true,
+        github: true,
+        linkedin: true,
+        discord: true,
+        createdAt: true,
+        companyProfile: {
+          select: {
+            companyName: true,
+            companyWebsite: true,
+            companyDescription: true,
+            industry: true,
+            size: true,
+            isVerified: true,
+            questsPosted: true,
+            totalSpent: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      return Response.json({ error: 'User not found', success: false }, { status: 404 });
+    }
+
+    const { companyProfile, ...userData } = user;
+    return Response.json({ user: userData, companyProfile, success: true });
+  } catch (error) {
+    console.error('Error fetching current user profile:', error);
+    return Response.json({ error: 'Failed to fetch profile', success: false }, { status: 500 });
+  }
+}
 
 export async function PATCH(request: NextRequest) {
   try {
@@ -11,12 +61,20 @@ export async function PATCH(request: NextRequest) {
     }
 
     const body = await request.json();
+    const parsedBody = profilePatchSchema.safeParse(body);
+    if (!parsedBody.success) {
+      return Response.json(
+        { error: 'Validation failed', details: parsedBody.error.flatten(), success: false },
+        { status: 400 }
+      );
+    }
+    const payload = parsedBody.data;
 
     // Build user update payload (only allowed fields)
     const userUpdate: Record<string, string | null> = {};
-    if (typeof body.name === 'string') userUpdate.name = body.name.trim() || null;
-    if (typeof body.username === 'string') {
-      const username = body.username.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+    if (payload.name !== undefined) userUpdate.name = payload.name ?? null;
+    if (typeof payload.username === 'string') {
+      const username = payload.username.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
       if (username.length < 3 || username.length > 30) {
         return Response.json({ error: 'Username must be 3-30 characters (letters, numbers, - _)', success: false }, { status: 400 });
       }
@@ -26,14 +84,19 @@ export async function PATCH(request: NextRequest) {
       }
       userUpdate.username = username;
     }
-    if (typeof body.bio === 'string') userUpdate.bio = body.bio.trim() || null;
-    if (typeof body.location === 'string') userUpdate.location = body.location.trim() || null;
-    if (typeof body.website === 'string') userUpdate.website = body.website.trim() || null;
-    if (typeof body.github === 'string') userUpdate.github = body.github.trim() || null;
-    if (typeof body.linkedin === 'string') userUpdate.linkedin = body.linkedin.trim() || null;
-    if (typeof body.discord === 'string') userUpdate.discord = body.discord.trim() || null;
+    if (payload.bio !== undefined) userUpdate.bio = payload.bio ?? null;
+    if (payload.location !== undefined) userUpdate.location = payload.location ?? null;
+    if (payload.website !== undefined) userUpdate.website = payload.website ?? null;
+    if (payload.github !== undefined) userUpdate.github = payload.github ?? null;
+    if (payload.linkedin !== undefined) userUpdate.linkedin = payload.linkedin ?? null;
+    if (payload.discord !== undefined) userUpdate.discord = payload.discord ?? null;
 
-    if (Object.keys(userUpdate).length === 0) {
+    // If company role, also update company profile fields
+    const canUpdateCompanyProfile =
+      authUser.role === 'company' &&
+      (payload.companyName !== undefined || payload.companyWebsite !== undefined || payload.companyDescription !== undefined);
+
+    if (Object.keys(userUpdate).length === 0 && !canUpdateCompanyProfile) {
       return Response.json({ error: 'No valid fields to update', success: false }, { status: 400 });
     }
 
@@ -44,11 +107,17 @@ export async function PATCH(request: NextRequest) {
     });
 
     // If company role, also update company profile fields
-    if ((authUser.role === 'company') && (body.companyName || body.companyWebsite || body.companyDescription)) {
+    if (canUpdateCompanyProfile) {
       const profileUpdate: Record<string, string | null> = {};
-      if (typeof body.companyName === 'string') profileUpdate.companyName = body.companyName.trim();
-      if (typeof body.companyWebsite === 'string') profileUpdate.companyWebsite = body.companyWebsite.trim() || null;
-      if (typeof body.companyDescription === 'string') profileUpdate.companyDescription = body.companyDescription.trim() || null;
+      if (payload.companyName !== undefined) {
+        const companyName = payload.companyName ?? '';
+        if (!companyName) {
+          return Response.json({ error: 'Company name cannot be empty', success: false }, { status: 400 });
+        }
+        profileUpdate.companyName = companyName;
+      }
+      if (payload.companyWebsite !== undefined) profileUpdate.companyWebsite = payload.companyWebsite ?? null;
+      if (payload.companyDescription !== undefined) profileUpdate.companyDescription = payload.companyDescription ?? null;
 
       if (Object.keys(profileUpdate).length > 0) {
         await prisma.companyProfile.update({

@@ -18,6 +18,7 @@ import {
   Calendar
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
 
 // Types
 interface Mentorship {
@@ -73,7 +74,7 @@ export default function MentorshipManager({ userId, userRole }: MentorshipManage
         params.append('userId', userId);
         params.append('role', userRole);
         
-        const response = await fetch(`/api/mentorship?${params.toString()}`);
+        const response = await fetchWithAuth(`/api/mentorship?${params.toString()}`);
         const data = await response.json();
         
         if (data.success) {
@@ -101,7 +102,7 @@ export default function MentorshipManager({ userId, userRole }: MentorshipManage
     }
 
     try {
-      const response = await fetch('/api/mentorship', {
+      const response = await fetchWithAuth('/api/mentorship', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -125,7 +126,7 @@ export default function MentorshipManager({ userId, userRole }: MentorshipManage
         params.append('userId', userId);
         params.append('role', 'mentor');
         
-        const refreshResponse = await fetch(`/api/mentorship?${params.toString()}`);
+        const refreshResponse = await fetchWithAuth(`/api/mentorship?${params.toString()}`);
         const refreshData = await refreshResponse.json();
         
         if (refreshData.success) {
@@ -142,7 +143,7 @@ export default function MentorshipManager({ userId, userRole }: MentorshipManage
 
   const handleMentorshipAction = async (mentorshipId: string, action: 'approve' | 'reject' | 'complete' | 'terminate') => {
     try {
-      const response = await fetch('/api/mentorship', {
+      const response = await fetchWithAuth('/api/mentorship', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -164,7 +165,7 @@ export default function MentorshipManager({ userId, userRole }: MentorshipManage
         params.append('userId', userId);
         params.append('role', userRole);
         
-        const refreshResponse = await fetch(`/api/mentorship?${params.toString()}`);
+        const refreshResponse = await fetchWithAuth(`/api/mentorship?${params.toString()}`);
         const refreshData = await refreshResponse.json();
         
         if (refreshData.success) {

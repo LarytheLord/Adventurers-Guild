@@ -3,7 +3,6 @@
 
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { 
   BarChart, 
   Bar, 
@@ -26,6 +25,7 @@ import {
   Zap
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
 
 // Types
 interface AnalyticsData {
@@ -46,11 +46,15 @@ interface AnalyticsData {
     lastLogin?: string;
   };
   stats?: {
-    totalQuests: number;
-    completedQuests: number;
+    totalQuests?: number;
+    completedQuests?: number;
     completionRate: number;
-    xpGained: number;
-    skillPointsGained: number;
+    xpGained?: number;
+    skillPointsGained?: number;
+    activeQuests?: number;
+    totalApplicants?: number;
+    totalCompletions?: number;
+    avgCompletionTime?: number;
   };
   recentActivity?: Array<{
     id: string;
@@ -93,7 +97,7 @@ interface AnalyticsData {
 
 interface AnalyticsDashboardProps {
   userId: string;
-  reportType: 'user' | 'quest' | 'platform';
+  reportType: 'user' | 'company' | 'quest' | 'platform';
   timeRange?: '7d' | '30d' | '90d' | '1y';
 }
 
@@ -105,13 +109,14 @@ export default function AnalyticsDashboard({
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedTimeRange, setSelectedTimeRange] = useState<'7d' | '30d' | '90d' | '1y'>(timeRange);
+  const apiReportType = reportType === 'quest' ? 'company' : reportType;
 
   // Fetch analytics data
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/analytics?type=${reportType}&userId=${userId}&time_range=${selectedTimeRange}`);
+        const response = await fetchWithAuth(`/api/analytics?type=${apiReportType}&userId=${userId}&time_range=${selectedTimeRange}`);
         const data = await response.json();
         
         if (data.success) {
@@ -129,7 +134,7 @@ export default function AnalyticsDashboard({
     if (userId) {
       fetchAnalytics();
     }
-  }, [userId, reportType, selectedTimeRange]);
+  }, [apiReportType, userId, selectedTimeRange]);
 
   const getRankColor = (rank: string) => {
     switch (rank) {
@@ -175,10 +180,10 @@ export default function AnalyticsDashboard({
             Analytics Dashboard
           </h2>
           <p className="text-muted-foreground">
-            {reportType === 'user' 
+            {apiReportType === 'user' 
               ? 'Your personal performance metrics' 
-              : reportType === 'quest'
-              ? 'Quest performance and statistics'
+              : apiReportType === 'company'
+              ? 'Quest performance and delivery metrics'
               : 'Platform-wide performance metrics'}
           </p>
         </div>
@@ -341,6 +346,55 @@ export default function AnalyticsDashboard({
             </Card>
           )}
         </>
+      )}
+
+      {apiReportType === 'company' && analyticsData.stats && (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Quests</CardTitle>
+              <Target className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{analyticsData.stats.totalQuests ?? 0}</div>
+              <p className="text-xs text-muted-foreground">
+                {analyticsData.stats.activeQuests ?? 0} currently active
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Applicants</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{analyticsData.stats.totalApplicants ?? 0}</div>
+              <p className="text-xs text-muted-foreground">Across all company quests</p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Completions</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{analyticsData.stats.totalCompletions ?? 0}</div>
+              <p className="text-xs text-muted-foreground">
+                Completion rate: {analyticsData.stats.completionRate.toFixed(1)}%
+              </p>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Avg Completion Time</CardTitle>
+              <Activity className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{analyticsData.stats.avgCompletionTime ?? 0}d</div>
+              <p className="text-xs text-muted-foreground">Average turnaround for completed work</p>
+            </CardContent>
+          </Card>
+        </div>
       )}
 
       {reportType === 'platform' && analyticsData.platformStats && (

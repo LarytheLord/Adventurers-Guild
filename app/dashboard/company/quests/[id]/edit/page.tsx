@@ -27,9 +27,11 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
 import { Badge } from '@/components/ui/badge';
 import { GuildCard, GuildChip, GuildHero, GuildPage } from '@/components/guild/primitives';
 import { QUEST_CATEGORIES, QUEST_TYPES, DIFFICULTY_RANKS } from '@/lib/quest-constants';
+import { getErrorMessageFromPayload, getStatusFallbackMessage, readResponsePayload } from '@/lib/http';
 
 interface QuestData {
   id: string;
@@ -89,14 +91,14 @@ export default function EditQuestPage({ params }: { params: Promise<{ id: string
 
     const fetchQuest = async () => {
       try {
-        const res = await fetch(`/api/quests/${id}`);
-        const data = await res.json();
-        if (!data.success) {
+        const res = await fetchWithAuth(`/api/quests/${id}`);
+        const data = await readResponsePayload<Record<string, unknown>>(res);
+        if (!res.ok || !data?.success) {
           toast.error('Quest not found');
           router.push('/dashboard/company/quests');
           return;
         }
-        const q: QuestData = data.quest;
+        const q = data.quest as QuestData;
         setQuestData(q);
 
         // Verify ownership (admin can edit any quest)
@@ -175,20 +177,20 @@ export default function EditQuestPage({ params }: { params: Promise<{ id: string
         deadline: form.deadline || null,
       };
 
-      const response = await fetch('/api/company/quests', {
+      const response = await fetchWithAuth('/api/company/quests', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
       });
 
-      const data = await response.json();
+      const data = await readResponsePayload<Record<string, unknown>>(response);
 
-      if (data.success) {
+      if (response.ok && data?.success) {
         toast.success('Quest updated successfully!');
         router.push(backHref);
         router.refresh();
       } else {
-        setError(data.error || 'Failed to update quest');
+        setError(getErrorMessageFromPayload(data, getStatusFallbackMessage(response.status)));
       }
     } catch {
       setError('An unexpected error occurred');
@@ -260,6 +262,7 @@ export default function EditQuestPage({ params }: { params: Promise<{ id: string
                     placeholder="e.g. Build a user authentication API"
                     value={form.title}
                     onChange={e => updateField('title', e.target.value)}
+                    maxLength={160}
                     required
                     className="h-11"
                   />
@@ -273,6 +276,7 @@ export default function EditQuestPage({ params }: { params: Promise<{ id: string
                     value={form.description}
                     onChange={e => updateField('description', e.target.value)}
                     rows={4}
+                    maxLength={2000}
                     required
                   />
                 </div>
@@ -285,6 +289,7 @@ export default function EditQuestPage({ params }: { params: Promise<{ id: string
                     value={form.detailedDescription}
                     onChange={e => updateField('detailedDescription', e.target.value)}
                     rows={7}
+                    maxLength={10000}
                   />
                 </div>
 
@@ -295,6 +300,7 @@ export default function EditQuestPage({ params }: { params: Promise<{ id: string
                     placeholder="React, Node.js, PostgreSQL"
                     value={form.requiredSkills}
                     onChange={e => updateField('requiredSkills', e.target.value)}
+                    maxLength={500}
                   />
                   <p className="text-xs text-muted-foreground">Comma-separated</p>
                   {skillPreview.length > 0 && (

@@ -25,6 +25,7 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
 
 // Types
 interface Submission {
@@ -110,7 +111,7 @@ export default function QualityAssuranceDashboard({ userId, userRole }: QualityA
         
         url += `?${params.toString()}`;
         
-        const response = await fetch(url);
+        const response = await fetchWithAuth(url);
         const data = await response.json();
         
         if (data.success) {
@@ -147,7 +148,7 @@ export default function QualityAssuranceDashboard({ userId, userRole }: QualityA
 
   const handleReviewSubmission = async () => {
     try {
-      const response = await fetch('/api/qa/reviews', {
+      const response = await fetchWithAuth('/api/qa/reviews', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -179,7 +180,7 @@ export default function QualityAssuranceDashboard({ userId, userRole }: QualityA
         const params = new URLSearchParams();
         params.append('status', activeTab === 'pending' ? 'pending' : activeTab);
         
-        const refreshResponse = await fetch(`/api/qa/reviews?${params.toString()}`);
+        const refreshResponse = await fetchWithAuth(`/api/qa/reviews?${params.toString()}`);
         const refreshData = await refreshResponse.json();
         
         if (refreshData.success) {
@@ -386,7 +387,7 @@ export default function QualityAssuranceDashboard({ userId, userRole }: QualityA
                               <Button 
                                 variant="outline" 
                                 size="sm"
-                                onClick={() => console.log('View details:', submission.id)}
+                                onClick={() => setSelectedSubmission(submission)}
                               >
                                 <Eye className="h-4 w-4" />
                               </Button>

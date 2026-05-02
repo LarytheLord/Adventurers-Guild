@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useDeferredValue, useEffect, useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -43,8 +43,10 @@ import {
   CalendarClock,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
 import { useApiFetch } from '@/lib/hooks';
 import { QUEST_STATUS_COLORS, QUEST_STATUS_LABELS, RANK_COLORS } from '@/lib/quest-constants';
+import { getErrorMessageFromPayload, getStatusFallbackMessage, readResponsePayload } from '@/lib/http';
 
 interface AdminNote {
   id: string;
@@ -89,6 +91,7 @@ export default function AdminQuestsPage() {
   const [newNoteText, setNewNoteText] = useState('');
   const [savingNote, setSavingNote] = useState(false);
   const [changingStatusId, setChangingStatusId] = useState<string | null>(null);
+  const deferredSearch = useDeferredValue(search.trim());
 
   const shouldFetch = status === 'authenticated' && session?.user?.role === 'admin';
   const questsEndpoint = useMemo(() => {
@@ -96,11 +99,11 @@ export default function AdminQuestsPage() {
     if (filterStatus !== 'all') {
       params.set('status', filterStatus);
     }
-    if (search.trim()) {
-      params.set('search', search.trim());
+    if (deferredSearch) {
+      params.set('search', deferredSearch);
     }
     return `/api/admin/quests?${params.toString()}`;
-  }, [filterStatus, search]);
+  }, [deferredSearch, filterStatus]);
 
   const {
     data,
@@ -147,14 +150,14 @@ export default function AdminQuestsPage() {
   const handleStatusChange = async (questId: string, newStatus: string) => {
     setChangingStatusId(questId);
     try {
-      const response = await fetch('/api/admin/quests', {
+      const response = await fetchWithAuth('/api/admin/quests', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ questId, status: newStatus }),
       });
-      const payload = await response.json();
+      const payload = await readResponsePayload<Record<string, unknown>>(response);
 
-      if (payload.success) {
+      if (response.ok && payload?.success) {
         mutateQuests((current) =>
           current.map((quest) =>
             quest.id === questId ? { ...quest, status: newStatus } : quest
@@ -162,10 +165,10 @@ export default function AdminQuestsPage() {
         );
         toast.success(`Quest status updated to ${QUEST_STATUS_LABELS[newStatus] ?? newStatus}`);
       } else {
-        toast.error(payload.error || 'Failed to update status');
+        toast.error(getErrorMessageFromPayload(payload, getStatusFallbackMessage(response.status)));
       }
-    } catch {
-      toast.error('Something went wrong');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Something went wrong');
     } finally {
       setChangingStatusId(null);
     }
@@ -183,15 +186,16 @@ export default function AdminQuestsPage() {
 
     setSavingNote(true);
     try {
-      const response = await fetch('/api/admin/quests', {
+      const response = await fetchWithAuth('/api/admin/quests', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ questId: noteQuest.id, addNote: newNoteText.trim() }),
       });
-      const payload = await response.json();
+      const payload = await readResponsePayload<Record<string, unknown>>(response);
 
-      if (payload.success) {
-        const updatedNotes = (payload.quest.adminNotes as AdminNote[]) || [];
+      if (response.ok && payload?.success) {
+        const updatedQuest = payload.quest as { adminNotes?: AdminNote[] } | undefined;
+        const updatedNotes = updatedQuest?.adminNotes || [];
         setNoteQuest((current) =>
           current ? { ...current, adminNotes: updatedNotes } : null
         );
@@ -203,10 +207,10 @@ export default function AdminQuestsPage() {
         setNewNoteText('');
         toast.success('Note saved');
       } else {
-        toast.error(payload.error || 'Failed to save note');
+        toast.error(getErrorMessageFromPayload(payload, getStatusFallbackMessage(response.status)));
       }
-    } catch {
-      toast.error('Something went wrong');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Something went wrong');
     } finally {
       setSavingNote(false);
     }
@@ -218,14 +222,14 @@ export default function AdminQuestsPage() {
     }
 
     try {
-      const response = await fetch('/api/admin/quests', {
+      const response = await fetchWithAuth('/api/admin/quests', {
         method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ questId }),
       });
-      const payload = await response.json();
+      const payload = await readResponsePayload<Record<string, unknown>>(response);
 
-      if (payload.success) {
+      if (response.ok && payload?.success) {
         mutateQuests((current) =>
           current.map((quest) =>
             quest.id === questId ? { ...quest, status: 'cancelled' } : quest
@@ -233,10 +237,10 @@ export default function AdminQuestsPage() {
         );
         toast.success('Quest cancelled');
       } else {
-        toast.error(payload.error || 'Failed to cancel quest');
+        toast.error(getErrorMessageFromPayload(payload, getStatusFallbackMessage(response.status)));
       }
-    } catch {
-      toast.error('Something went wrong');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Something went wrong');
     }
   };
 
@@ -318,6 +322,7 @@ export default function AdminQuestsPage() {
               placeholder="Search quests..."
               value={search}
               onChange={(event) => setSearch(event.target.value)}
+              maxLength={120}
               onKeyDown={(event) => {
                 if (event.key === 'Enter') {
                   void refetch();
@@ -530,6 +535,7 @@ export default function AdminQuestsPage() {
               rows={3}
               value={newNoteText}
               onChange={(event) => setNewNoteText(event.target.value)}
+              maxLength={2000}
             />
           </div>
 

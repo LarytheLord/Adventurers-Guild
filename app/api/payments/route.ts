@@ -6,7 +6,7 @@ import { prisma } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   try {
-    const authUser = await getAuthUser();
+    const authUser = await getAuthUser(request);
     if (!authUser) {
       return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
@@ -93,28 +93,48 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const authUser = await getAuthUser();
+    const authUser = await getAuthUser(request);
     if (!authUser) {
       return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     const body = await request.json();
+    const fromUserId =
+      typeof body.fromUserId === 'string'
+        ? body.fromUserId
+        : typeof body.from_userId === 'string'
+          ? body.from_userId
+          : '';
+    const toUserId =
+      typeof body.toUserId === 'string'
+        ? body.toUserId
+        : typeof body.to_userId === 'string'
+          ? body.to_userId
+          : '';
+    const questId = typeof body.questId === 'string' ? body.questId : '';
+    const amount = typeof body.amount === 'number' ? body.amount : Number(body.amount);
+    const currency = typeof body.currency === 'string' ? body.currency.trim().toUpperCase() : '';
+    const paymentInfo = body.paymentInfo ?? body.payment_info;
+    const paymentMethod =
+      typeof body.paymentMethod === 'string'
+        ? body.paymentMethod
+        : typeof body.payment_method === 'string'
+          ? body.payment_method
+          : 'credit_card';
+    const description = typeof body.description === 'string' ? body.description : undefined;
 
     // Validate required fields
-    const requiredFields = ['fromUserId', 'toUserId', 'questId', 'amount', 'currency'];
-    for (const field of requiredFields) {
-      if (body[field] === undefined) {
-        return Response.json({ error: `${field} is required`, success: false }, { status: 400 });
-      }
+    if (!fromUserId || !toUserId || !questId || !currency) {
+      return Response.json(
+        { error: 'fromUserId, toUserId, questId, amount, and currency are required', success: false },
+        { status: 400 }
+      );
     }
 
     if (
-      typeof body.fromUserId !== 'string' ||
-      typeof body.toUserId !== 'string' ||
-      typeof body.questId !== 'string' ||
-      !body.fromUserId.trim() ||
-      !body.toUserId.trim() ||
-      !body.questId.trim()
+      !fromUserId.trim() ||
+      !toUserId.trim() ||
+      !questId.trim()
     ) {
       return Response.json(
         { error: 'fromUserId, toUserId, and questId must be non-empty strings', success: false },
@@ -122,13 +142,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (authUser.role !== 'admin' && body.fromUserId !== authUser.id) {
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return Response.json({ error: 'amount must be a positive number', success: false }, { status: 400 });
+    }
+
+    if (authUser.role !== 'admin' && fromUserId !== authUser.id) {
       return Response.json(
         { error: 'You can only initiate payments from your own account', success: false },
         { status: 403 }
       );
     }
-    if (body.fromUserId === body.toUserId) {
+    if (fromUserId === toUserId) {
       return Response.json(
         { error: 'Sender and receiver cannot be the same user', success: false },
         { status: 400 }
@@ -136,11 +160,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate payment information
-    if (body.payment_info) {
+    if (paymentInfo) {
       const validation = validatePaymentInfo(
-        body.payment_info.card_number,
-        body.payment_info.expiry,
-        body.payment_info.cvc
+        paymentInfo.card_number,
+        paymentInfo.expiry,
+        paymentInfo.cvc
       );
 
       if (!validation.isValid) {
@@ -150,7 +174,7 @@ export async function POST(request: NextRequest) {
 
     // Verify that the quest exists and is completed
     const quest = await prisma.quest.findUnique({
-      where: { id: body.questId },
+      where: { id: questId },
       select: { title: true, status: true, xpReward: true, skillPointsReward: true, companyId: true },
     });
 
@@ -173,7 +197,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (authUser.role !== 'admin' && body.fromUserId !== quest.companyId) {
+    if (authUser.role !== 'admin' && fromUserId !== quest.companyId) {
       return Response.json(
         { error: 'fromUserId must match the quest owner', success: false },
         { status: 403 }
@@ -181,7 +205,7 @@ export async function POST(request: NextRequest) {
     }
 
     const recipient = await prisma.user.findUnique({
-      where: { id: body.toUserId },
+      where: { id: toUserId },
       select: { role: true, isActive: true },
     });
 
@@ -192,8 +216,8 @@ export async function POST(request: NextRequest) {
     const completionRecord = await prisma.questCompletion.findUnique({
       where: {
         questId_userId: {
-          questId: body.questId,
-          userId: body.toUserId,
+          questId,
+          userId: toUserId,
         },
       },
       select: { id: true },
@@ -209,8 +233,8 @@ export async function POST(request: NextRequest) {
     // Check if a payment already exists for this quest
     const existingPayment = await prisma.transaction.findFirst({
       where: {
-        questId: body.questId,
-        toUserId: body.toUserId,
+        questId,
+        toUserId,
       },
       select: { id: true },
     });
@@ -224,14 +248,14 @@ export async function POST(request: NextRequest) {
 
     const transaction = await prisma.transaction.create({
       data: {
-        fromUserId: body.fromUserId,
-        toUserId: body.toUserId,
-        questId: body.questId,
-        amount: body.amount,
-        currency: body.currency,
+        fromUserId,
+        toUserId,
+        questId,
+        amount,
+        currency,
         status: 'pending', // Initially pending until payment processor confirms
-        paymentMethod: body.paymentMethod || 'credit_card',
-        description: body.description || `Payment for quest completion: ${quest.title}`,
+        paymentMethod,
+        description: description || `Payment for quest completion: ${quest.title}`,
         transactionId: `txn_${Date.now()}`, // In real implementation, this would come from payment processor
       },
     });
@@ -249,7 +273,7 @@ export async function POST(request: NextRequest) {
     // Update company spending
     const { updateCompanySpending } = await import('@/lib/xp-utils');
     try {
-      await updateCompanySpending(body.fromUserId, body.amount);
+      await updateCompanySpending(fromUserId, amount);
     } catch (e) {
       console.error('Error updating company spending:', e);
     }
@@ -257,14 +281,14 @@ export async function POST(request: NextRequest) {
     // Send notification to receiving user
     await prisma.notification.create({
       data: {
-        userId: body.toUserId,
+        userId: toUserId,
         title: 'Payment Received',
-        message: `You've received payment of ${body.amount} ${body.currency} for completing the quest "${quest.title}"`,
+        message: `You've received payment of ${amount} ${currency} for completing the quest "${quest.title}"`,
         type: 'payment_received',
         data: {
-          questId: body.questId,
-          amount: body.amount,
-          currency: body.currency,
+          questId,
+          amount,
+          currency,
         },
       },
     });

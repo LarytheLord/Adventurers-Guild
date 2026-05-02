@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireAuth } from '@/lib/api-auth';
 import { Prisma, QuestStatus, QuestType, UserRank, QuestCategory, QuestTrack, QuestSource } from '@prisma/client';
+import { clampPaginationValue, sanitizeSearchTerm } from '@/lib/validation/schemas';
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -27,10 +28,9 @@ export async function GET(request: NextRequest) {
     const difficulty = searchParams.get('difficulty');
     const track = searchParams.get('track');
     const source = searchParams.get('source');
-    const search = searchParams.get('search');
-    const limitRaw = searchParams.get('limit') || '50';
-    const take = Math.min(Math.max(1, parseInt(limitRaw)), 200);
-    const offset = searchParams.get('offset') || '0';
+    const search = sanitizeSearchTerm(searchParams.get('search'));
+    const take = clampPaginationValue(searchParams.get('limit'), { fallback: 50, min: 1, max: 200 });
+    const offset = clampPaginationValue(searchParams.get('offset'), { fallback: 0, min: 0, max: 10_000 });
 
     const where: Prisma.QuestWhereInput = {};
 
@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
           select: { assignments: true },
         },
       },
-      skip: parseInt(offset),
+      skip: offset,
       take,
       orderBy: { createdAt: 'desc' },
     });
@@ -136,26 +136,41 @@ export async function POST(request: NextRequest) {
     if (body.source && !Object.values(QuestSource).includes(body.source as QuestSource)) {
       return Response.json({ error: 'Invalid source value', success: false }, { status: 400 });
     }
+    if (!Number.isFinite(Number(body.xpReward)) || Number(body.xpReward) <= 0 || Number(body.xpReward) > 100_000) {
+      return Response.json({ error: 'xpReward must be between 1 and 100000', success: false }, { status: 400 });
+    }
+    if (!Number.isFinite(Number(body.skillPointsReward ?? 0)) || Number(body.skillPointsReward ?? 0) < 0 || Number(body.skillPointsReward ?? 0) > 10_000) {
+      return Response.json({ error: 'skillPointsReward must be between 0 and 10000', success: false }, { status: 400 });
+    }
+    if (!Number.isFinite(Number(body.maxParticipants ?? 1)) || Number(body.maxParticipants ?? 1) < 1 || Number(body.maxParticipants ?? 1) > 100) {
+      return Response.json({ error: 'maxParticipants must be between 1 and 100', success: false }, { status: 400 });
+    }
+    if (typeof body.title === 'string' && body.title.trim().length > 160) {
+      return Response.json({ error: 'title must be 160 characters or fewer', success: false }, { status: 400 });
+    }
+    if (typeof body.description === 'string' && body.description.trim().length > 2000) {
+      return Response.json({ error: 'description must be 2000 characters or fewer', success: false }, { status: 400 });
+    }
 
     const data = await prisma.quest.create({
       data: {
-        title: body.title,
-        description: body.description,
-        detailedDescription: body.detailedDescription || null,
+        title: body.title.trim(),
+        description: body.description.trim(),
+        detailedDescription: typeof body.detailedDescription === 'string' ? body.detailedDescription.trim() || null : null,
         questType: body.questType as QuestType,
         difficulty: body.difficulty as UserRank,
-        xpReward: body.xpReward,
-        skillPointsReward: body.skillPointsReward || 0,
-        monetaryReward: body.monetaryReward || null,
-        requiredSkills: body.requiredSkills || [],
+        xpReward: Number(body.xpReward),
+        skillPointsReward: Number(body.skillPointsReward ?? 0),
+        monetaryReward: body.monetaryReward != null && body.monetaryReward !== '' ? Number(body.monetaryReward) : null,
+        requiredSkills: Array.isArray(body.requiredSkills) ? body.requiredSkills.filter((skill: any): skill is string => typeof skill === 'string').map((skill: string) => skill.trim()).filter(Boolean).slice(0, 20) : [],
         requiredRank: body.requiredRank || null,
-        maxParticipants: body.maxParticipants || null,
+        maxParticipants: Number(body.maxParticipants ?? 1),
         questCategory: body.questCategory as QuestCategory,
         track: (body.track as QuestTrack) || undefined,
         source: (body.source as QuestSource) || undefined,
         parentQuestId: body.parentQuestId || null,
-        partnerOrgName: body.partnerOrgName || null,
-        hackathonEventId: body.hackathonEventId || null,
+        partnerOrgName: typeof body.partnerOrgName === 'string' ? body.partnerOrgName.trim().slice(0, 120) || null : null,
+        hackathonEventId: typeof body.hackathonEventId === 'string' ? body.hackathonEventId.trim().slice(0, 120) || null : null,
         status: body.status || 'available',
         companyId: body.companyId || null,
         deadline: body.deadline ? new Date(body.deadline) : null,
@@ -190,6 +205,7 @@ export async function PUT(request: NextRequest) {
 
     // Handle observation note addition
     if (addNote && typeof addNote === 'string' && addNote.trim()) {
+      const trimmedNote = addNote.trim().slice(0, 2_000);
       const quest = await prisma.quest.findUnique({
         where: { id: questId },
         select: { adminNotes: true },
@@ -199,7 +215,7 @@ export async function PUT(request: NextRequest) {
         id: crypto.randomUUID(),
         timestamp: new Date().toISOString(),
         author: user.name ?? user.email ?? 'Admin',
-        note: addNote.trim(),
+        note: trimmedNote,
       };
       updateData.adminNotes = [...existing, newNote];
     }
@@ -212,8 +228,20 @@ export async function PUT(request: NextRequest) {
       }
       updateData.status = updateFields.status as QuestStatus;
     }
-    if (updateFields.title !== undefined) updateData.title = updateFields.title;
-    if (updateFields.description !== undefined) updateData.description = updateFields.description;
+    if (updateFields.title !== undefined) {
+      const trimmedTitle = String(updateFields.title).trim();
+      if (!trimmedTitle || trimmedTitle.length > 160) {
+        return Response.json({ error: 'title must be between 1 and 160 characters', success: false }, { status: 400 });
+      }
+      updateData.title = trimmedTitle;
+    }
+    if (updateFields.description !== undefined) {
+      const trimmedDescription = String(updateFields.description).trim();
+      if (!trimmedDescription || trimmedDescription.length > 2000) {
+        return Response.json({ error: 'description must be between 1 and 2000 characters', success: false }, { status: 400 });
+      }
+      updateData.description = trimmedDescription;
+    }
     if (updateFields.requiredRank !== undefined) {
       if (updateFields.requiredRank !== null && !Object.values(UserRank).includes(updateFields.requiredRank as UserRank)) {
         return Response.json({ error: 'Invalid requiredRank value', success: false }, { status: 400 });

@@ -17,6 +17,12 @@ export default function ForgotPasswordPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) {
+      setError('Email is required');
+      return;
+    }
+
     setLoading(true);
     setError('');
 
@@ -24,7 +30,7 @@ export default function ForgotPasswordPage() {
       const res = await fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: normalizedEmail }),
       });
 
       const data = await res.json();
@@ -36,7 +42,6 @@ export default function ForgotPasswordPage() {
       }
     } catch (err) {
       setError('An unexpected error occurred');
-      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -100,6 +105,7 @@ export default function ForgotPasswordPage() {
                     placeholder="your@email.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
+                    maxLength={254}
                     required
                     className="h-11"
                   />

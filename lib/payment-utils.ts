@@ -1,13 +1,14 @@
 // lib/payment-utils.ts
 // Note: This is a client-side utility that calls API routes.
 // No direct database access needed.
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
+import { getErrorMessageFromPayload, getStatusFallbackMessage, readResponsePayload } from '@/lib/http';
 
-// Types
 export interface Transaction {
   id: string;
-  fromUserId: string;
-  toUserId: string;
-  questId: string;
+  fromUserId?: string | null;
+  toUserId?: string | null;
+  questId?: string | null;
   amount: number;
   currency: string;
   status: string;
@@ -16,10 +17,34 @@ export interface Transaction {
   description?: string;
   createdAt: string;
   updatedAt: string;
-  completedAt?: string;
+  completedAt?: string | null;
   fromUser?: { name: string; email: string };
   toUser?: { name: string; email: string };
   quest?: { title: string };
+}
+
+function normalizeTransaction(transaction: Partial<Transaction> & { amount?: number | string | null }): Transaction {
+  return {
+    id: transaction.id || '',
+    fromUserId: transaction.fromUserId ?? null,
+    toUserId: transaction.toUserId ?? null,
+    questId: transaction.questId ?? null,
+    amount:
+      typeof transaction.amount === 'string'
+        ? Number.parseFloat(transaction.amount)
+        : Number(transaction.amount ?? 0),
+    currency: transaction.currency || 'USD',
+    status: transaction.status || 'pending',
+    paymentMethod: transaction.paymentMethod || 'credit_card',
+    transactionId: transaction.transactionId,
+    description: transaction.description,
+    createdAt: transaction.createdAt || new Date(0).toISOString(),
+    updatedAt: transaction.updatedAt || new Date(0).toISOString(),
+    completedAt: transaction.completedAt ?? null,
+    fromUser: transaction.fromUser,
+    toUser: transaction.toUser,
+    quest: transaction.quest,
+  };
 }
 
 // Process a payment for quest completion
@@ -32,25 +57,26 @@ export async function processPayment(
   description?: string
 ): Promise<Transaction | null> {
   try {
-    const response = await fetch('/api/payments', {
+    const response = await fetchWithAuth('/api/payments', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        from_userId: fromUserId,
-        to_userId: toUserId,
-        questId: questId,
+        fromUserId,
+        toUserId,
+        questId,
         amount,
         currency,
         description,
       }),
     });
 
-    const result = await response.json();
-    if (result.success) return result.transaction;
-    throw new Error(result.error || 'Payment failed');
+    const result = await readResponsePayload<Record<string, unknown>>(response);
+    if (response.ok && result?.success && result?.transaction) {
+      return normalizeTransaction(result.transaction as any);
+    }
+    throw new Error(getErrorMessageFromPayload(result, getStatusFallbackMessage(response.status)));
   } catch (error) {
-    console.error('Error processing payment:', error);
-    throw new Error('Failed to process payment');
+    throw new Error(error instanceof Error ? error.message : 'Failed to process payment');
   }
 }
 
@@ -65,11 +91,14 @@ export async function getPaymentHistory(
   params.append('type', type);
   if (status) params.append('status', status);
 
-  const response = await fetch(`/api/payments?${params.toString()}`);
-  const result = await response.json();
+  const response = await fetchWithAuth(`/api/payments?${params.toString()}`);
+  const result = await readResponsePayload<Record<string, unknown>>(response);
 
-  if (result.success) return result.transactions;
-  throw new Error(result.error || 'Failed to fetch payment history');
+  if (response.ok && result?.success) {
+    const transactions = Array.isArray(result?.transactions) ? result.transactions : [];
+    return transactions.map(normalizeTransaction);
+  }
+  throw new Error(getErrorMessageFromPayload(result, getStatusFallbackMessage(response.status)));
 }
 
 // Get pending payments for a user
@@ -79,24 +108,14 @@ export async function getPendingPayments(userId: string): Promise<Transaction[]>
 
 // Calculate total earnings for an adventurer
 export async function getTotalEarnings(userId: string): Promise<number> {
-  const response = await fetch(`/api/payments?userId=${userId}&type=incoming&status=completed`);
-  const result = await response.json();
-
-  if (result.success) {
-    return result.transactions.reduce((sum: number, t: Transaction) => sum + t.amount, 0);
-  }
-  throw new Error(result.error || 'Failed to calculate earnings');
+  const transactions = await getPaymentHistory(userId, 'incoming', 'completed');
+  return transactions.reduce((sum, transaction) => sum + transaction.amount, 0);
 }
 
 // Calculate total spending for a company
 export async function getTotalSpending(userId: string): Promise<number> {
-  const response = await fetch(`/api/payments?userId=${userId}&type=outgoing&status=completed`);
-  const result = await response.json();
-
-  if (result.success) {
-    return result.transactions.reduce((sum: number, t: Transaction) => sum + t.amount, 0);
-  }
-  throw new Error(result.error || 'Failed to calculate spending');
+  const transactions = await getPaymentHistory(userId, 'outgoing', 'completed');
+  return transactions.reduce((sum, transaction) => sum + transaction.amount, 0);
 }
 
 // Validate payment information
@@ -116,16 +135,17 @@ export function validatePaymentInfo(
   }
 
   const [month, year] = expiry.split('/').map(Number);
+
+  if (month < 1 || month > 12) {
+    return { isValid: false, error: 'Invalid expiry month' };
+  }
+
   const now = new Date();
   const currentYear = now.getFullYear() % 100;
   const currentMonth = now.getMonth() + 1;
 
   if (year < currentYear || (year === currentYear && month < currentMonth)) {
     return { isValid: false, error: 'Card has expired' };
-  }
-
-  if (month > 12) {
-    return { isValid: false, error: 'Invalid expiry month' };
   }
 
   if (cvc.length < 3 || cvc.length > 4 || !/^\d+$/.test(cvc)) {

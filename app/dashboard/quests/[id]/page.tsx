@@ -23,6 +23,7 @@ import {
   Zap,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
 import { GuildCard, GuildChip, GuildHero, GuildKpi, GuildPage, GuildPanel } from '@/components/guild/primitives';
 
 interface Quest {
@@ -127,7 +128,7 @@ export default function QuestDetailPage() {
         setLoading(true);
         setError(null);
 
-        const questResponse = await fetch(`/api/quests/${questId}`);
+        const questResponse = await fetchWithAuth(`/api/quests/${questId}`);
         const questData = await questResponse.json();
 
         if (!questData.success) {
@@ -144,7 +145,7 @@ export default function QuestDetailPage() {
         setQuest(normalizedQuest);
 
         if (session?.user?.id) {
-          const assignmentResponse = await fetch(
+          const assignmentResponse = await fetchWithAuth(
             `/api/quests/assignments?userId=${session.user.id}&questId=${questId}`
           );
           const assignmentData = await assignmentResponse.json();
@@ -375,17 +376,12 @@ export default function QuestDetailPage() {
                     className="w-full"
                     onClick={async () => {
                       try {
-                        const response = await fetch('/api/quests/assignments', {
+                        const response = await fetchWithAuth('/api/quests/assignments', {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({ questId }),
                         });
 
-                        if (!response.ok && response.status === 401) {
-                          toast.error('Session expired — please log in again');
-                          router.push('/login');
-                          return;
-                        }
 
                         const data = await response.json();
                         if (!data.success) {
@@ -498,7 +494,7 @@ export default function QuestDetailPage() {
                   setIsSubmitting(true);
 
                   try {
-                    const response = await fetch('/api/quests/submissions', {
+                    const response = await fetchWithAuth('/api/quests/submissions', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
                       body: JSON.stringify({

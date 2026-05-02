@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 const DEFAULT_PASSWORD = 'password123';
 
 async function main() {
-  console.log('🌱 Seeding database...');
+  console.info('🌱 Seeding database...');
 
   // Hash the default password
   const passwordHash = await bcrypt.hash(DEFAULT_PASSWORD, 12);
@@ -28,7 +28,7 @@ async function main() {
   await prisma.quest.deleteMany();
   await prisma.user.deleteMany();
 
-  console.log('  Cleared existing data');
+  console.info('  Cleared existing data');
 
   // ── Users ────────────────────────────────────────────────
   const users = await Promise.all([
@@ -236,7 +236,7 @@ async function main() {
       },
     }),
   ]);
-  console.log(`  Created ${users.length} users`);
+  console.info(`  Created ${users.length} users`);
 
   // ── Company Profiles ──────────────────────────────────────
   await prisma.companyProfile.createMany({
@@ -276,7 +276,7 @@ async function main() {
       },
     ],
   });
-  console.log('  Created company profiles');
+  console.info('  Created company profiles');
 
   // ── Adventurer Profiles ───────────────────────────────────
   await prisma.adventurerProfile.createMany({
@@ -291,7 +291,7 @@ async function main() {
       { userId: 'de00de00-de00-de00-de00-de00de00de00', specialization: 'Full-Stack Development', primarySkills: ['React', 'Node.js', 'MongoDB'], availabilityStatus: 'available', questCompletionRate: 85.7, totalQuestsCompleted: 10, currentStreak: 3, maxStreak: 5 },
     ],
   });
-  console.log('  Created adventurer profiles');
+  console.info('  Created adventurer profiles');
 
   // ── Skill Categories ──────────────────────────────────────
   await prisma.skillCategory.createMany({
@@ -303,7 +303,7 @@ async function main() {
       { id: 'ca500000-5555-5555-5555-555555555555', name: 'Mobile Development', description: 'Mobile app development', icon: '📱' },
     ],
   });
-  console.log('  Created skill categories');
+  console.info('  Created skill categories');
 
   // ── Skills ────────────────────────────────────────────────
   await prisma.skill.createMany({
@@ -324,7 +324,7 @@ async function main() {
       { id: '00000014-0000-0000-0000-000000000014', name: 'Flutter', description: 'Cross-platform mobile framework', categoryId: 'ca500000-5555-5555-5555-555555555555' },
     ],
   });
-  console.log('  Created skills');
+  console.info('  Created skills');
 
   // ── Quests ────────────────────────────────────────────────
   const now = new Date();
@@ -345,7 +345,7 @@ async function main() {
       { id: 'a0000010-0000-0000-0000-000000000010', title: 'Email Notification Service', description: 'Send automated emails', detailedDescription: 'Nodemailer service for welcome, password reset, weekly digest, Handlebars templates.', questType: 'commission', status: 'completed', difficulty: 'C', xpReward: 1400, skillPointsReward: 17, monetaryReward: 14000, requiredSkills: ['Node.js'], requiredRank: 'C', maxParticipants: 1, questCategory: 'backend', companyId: '33333333-3333-3333-3333-333333333333', deadline: daysAgo(20) },
     ],
   });
-  console.log('  Created 10 quests');
+  console.info('  Created 10 quests');
 
   // ── Quest Assignments ─────────────────────────────────────
   await prisma.questAssignment.createMany({
@@ -357,7 +357,7 @@ async function main() {
       { id: 'b0000004-0000-0000-0000-000000000004', questId: 'a0000009-0000-0000-0000-000000000009', userId: 'cccccccc-cccc-cccc-cccc-cccccccccccc', status: 'completed', assignedAt: daysAgo(20), startedAt: daysAgo(19), completedAt: daysAgo(12), progress: 100 },
     ],
   });
-  console.log('  Created quest assignments');
+  console.info('  Created quest assignments');
 
   // ── Quest Completions ─────────────────────────────────────
   await prisma.questCompletion.createMany({
@@ -368,7 +368,7 @@ async function main() {
       { id: 'c0000002-0000-0000-0000-000000000002', questId: 'a0000009-0000-0000-0000-000000000009', userId: 'cccccccc-cccc-cccc-cccc-cccccccccccc', completionDate: daysAgo(12), xpEarned: 800, skillPointsEarned: 10, qualityScore: 8 },
     ],
   });
-  console.log('  Created quest completions');
+  console.info('  Created quest completions');
 
   // ── Notifications ─────────────────────────────────────────
   await prisma.notification.createMany({
@@ -378,7 +378,7 @@ async function main() {
       { userId: 'de00de00-de00-de00-de00-de00de00de00', title: 'Rank Up!', message: 'Amazing! You\'ve reached C-Rank! Keep up the great work!', type: 'rank_up', data: { new_rank: 'C', old_rank: 'D' }, createdAt: daysAgo(15) },
     ],
   });
-  console.log('  Created notifications');
+  console.info('  Created notifications');
 
   // ── Transactions ──────────────────────────────────────────
   await prisma.transaction.createMany({
@@ -388,14 +388,14 @@ async function main() {
       { fromUserId: '33333333-3333-3333-3333-333333333333', toUserId: 'de00de00-de00-de00-de00-de00de00de00', questId: 'a0000010-0000-0000-0000-000000000010', amount: 14000, currency: 'INR', status: 'completed', paymentMethod: 'stripe', transactionId: 'txn_mno345pqr678', description: 'Payment for Email Notification Service quest', createdAt: daysAgo(20), completedAt: daysAgo(20) },
     ],
   });
-  console.log('  Created transactions');
+  console.info('  Created transactions');
 
-  console.log('\n✅ Seed complete!');
-  console.log('\n📋 Test accounts (all use password: password123):');
-  console.log('  Admin:      admin@adventurersguild.com');
-  console.log('  Demo:       demo@adventurersguild.com');
-  console.log('  Company:    contact@knightmedicare.com');
-  console.log('  Adventurer: priya.sharma@example.com');
+  console.info('\n✅ Seed complete!');
+  console.info('\n📋 Test accounts (all use password: password123):');
+  console.info('  Admin:      admin@adventurersguild.com');
+  console.info('  Demo:       demo@adventurersguild.com');
+  console.info('  Company:    contact@knightmedicare.com');
+  console.info('  Adventurer: priya.sharma@example.com');
 }
 
 main()

@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useGet } from '@/lib/hooks';
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
 
 // Types
 interface TeamMember {
@@ -75,7 +76,7 @@ export default function TeamManagement({ userId }: TeamManagementProps) {
 
   const handleCreateTeam = async () => {
     try {
-      const response = await fetch('/api/teams', {
+      const response = await fetchWithAuth('/api/teams', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -111,7 +112,7 @@ export default function TeamManagement({ userId }: TeamManagementProps) {
     }
 
     try {
-      const response = await fetch('/api/teams/members', {
+      const response = await fetchWithAuth('/api/teams/members', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -153,7 +154,7 @@ export default function TeamManagement({ userId }: TeamManagementProps) {
         return;
       }
 
-      const response = await fetch('/api/teams/members', {
+      const response = await fetchWithAuth('/api/teams/members', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -184,7 +185,7 @@ export default function TeamManagement({ userId }: TeamManagementProps) {
     }
 
     try {
-      const response = await fetch('/api/teams/members', {
+      const response = await fetchWithAuth('/api/teams/members', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

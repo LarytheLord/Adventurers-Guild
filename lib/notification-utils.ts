@@ -45,10 +45,11 @@ export async function createNotification(
 
 // Mark a notification as read
 export async function markNotificationAsRead(notificationId: string, userId: string) {
-  return prisma.notification.update({
+  const result = await prisma.notification.updateMany({
     where: { id: notificationId, userId },
     data: { readAt: new Date() },
   });
+  return result.count > 0;
 }
 
 // Mark all notifications as read for a user
@@ -62,10 +63,10 @@ export async function markAllNotificationsAsRead(userId: string): Promise<boolea
 
 // Delete a notification
 export async function deleteNotification(notificationId: string, userId: string): Promise<boolean> {
-  await prisma.notification.delete({
+  const result = await prisma.notification.deleteMany({
     where: { id: notificationId, userId },
   });
-  return true;
+  return result.count > 0;
 }
 
 // Get unread count for a user

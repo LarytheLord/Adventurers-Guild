@@ -17,6 +17,8 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Loader2, Upload } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { fetchWithAuth } from "@/lib/fetch-with-auth";
+import { getErrorMessageFromPayload, getStatusFallbackMessage, readResponsePayload } from "@/lib/http";
 
 interface QuestSubmissionDialogProps {
   questTitle: string;
@@ -32,27 +34,52 @@ export function QuestSubmissionDialog({ questTitle, assignmentId }: QuestSubmiss
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const trimmedContent = content.trim();
+    const trimmedLink = link.trim();
+
+    if (trimmedContent.length < 10) {
+      toast.error("Please include at least 10 characters describing your work.");
+      return;
+    }
+
+    if (trimmedContent.length > 10000) {
+      toast.error("Submission content must be 10000 characters or fewer.");
+      return;
+    }
+
+    if (trimmedLink) {
+      try {
+        const parsedLink = new URL(trimmedLink);
+        if (!['http:', 'https:'].includes(parsedLink.protocol)) {
+          throw new Error('Invalid link protocol');
+        }
+      } catch {
+        toast.error("Please enter a valid project link.");
+        return;
+      }
+    }
+
     setIsLoading(true);
 
     try {
-      const submissionContent = link
-        ? `${content}\n\nDeliverable link: ${link}`
-        : content;
+      const submissionContent = trimmedLink
+        ? `${trimmedContent}\n\nDeliverable link: ${trimmedLink}`
+        : trimmedContent;
 
-      const response = await fetch('/api/quests/submissions', {
+      const response = await fetchWithAuth('/api/quests/submissions', {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           assignmentId,
           submissionContent,
-          submissionNotes: link ? `Deliverable link: ${link}` : undefined,
+          submissionNotes: trimmedLink ? `Deliverable link: ${trimmedLink}` : undefined,
         }),
       });
 
-      const data = await response.json();
+      const data = await readResponsePayload<Record<string, unknown>>(response);
 
       if (!response.ok) {
-        throw new Error(data.error || data.message || "Failed to submit");
+        throw new Error(getErrorMessageFromPayload(data, getStatusFallbackMessage(response.status)));
       }
 
       toast.success("Work submitted successfully!");
@@ -91,6 +118,7 @@ export function QuestSubmissionDialog({ questTitle, assignmentId }: QuestSubmiss
                 placeholder="https://github.com/..."
                 value={link}
                 onChange={(e) => setLink(e.target.value)}
+                maxLength={2048}
               />
             </div>
             <div className="grid gap-2">
@@ -101,6 +129,7 @@ export function QuestSubmissionDialog({ questTitle, assignmentId }: QuestSubmiss
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 rows={4}
+                maxLength={10000}
                 required
               />
             </div>

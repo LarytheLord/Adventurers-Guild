@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { fetchWithAuth } from "@/lib/fetch-with-auth";
+import { getErrorMessageFromPayload, getStatusFallbackMessage, readResponsePayload } from "@/lib/http";
 
 interface QuestApplyButtonProps {
   questId: string;
@@ -18,7 +20,7 @@ export function QuestApplyButton({ questId, isApplied = false }: QuestApplyButto
   const handleApply = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/quests/assignments', {
+      const response = await fetchWithAuth('/api/quests/assignments', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -26,10 +28,10 @@ export function QuestApplyButton({ questId, isApplied = false }: QuestApplyButto
         body: JSON.stringify({ questId }),
       });
 
-      const data = await response.json();
+      const data = await readResponsePayload<Record<string, unknown>>(response);
 
       if (!response.ok) {
-        throw new Error(data.error || data.message || "Failed to apply");
+        throw new Error(getErrorMessageFromPayload(data, getStatusFallbackMessage(response.status)));
       }
 
       toast.success("Application submitted successfully!");

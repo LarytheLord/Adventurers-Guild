@@ -1,8 +1,16 @@
 // lib/hooks/useApiFetch.ts
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
+import {
+  getErrorMessageFromPayload,
+  getStatusFallbackMessage,
+  isAbortError,
+  readResponsePayload,
+  normalizeRequestError,
+} from '@/lib/http';
 
 interface ApiState<T> {
   data: T | null;
@@ -18,6 +26,9 @@ interface ApiOptions {
   successMessage?: string;
   errorMessage?: string;
   skip?: boolean;
+  headers?: HeadersInit;
+  timeoutMs?: number;
+  retryCount?: number;
 }
 
 interface UseApiFetchReturn<T> extends ApiState<T> {
@@ -56,8 +67,26 @@ export function useApiFetch<T = unknown>(
     loading: !initialOptions.skip,
     error: null,
   });
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const latestRequestIdRef = useRef(0);
+  const mountedRef = useRef(true);
+
+  useEffect(() => {
+    mountedRef.current = true;
+
+    return () => {
+      mountedRef.current = false;
+      abortControllerRef.current?.abort();
+    };
+  }, []);
 
   const fetchData = useCallback(async (options: ApiOptions = {}): Promise<T | null> => {
+    abortControllerRef.current?.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+    const requestId = latestRequestIdRef.current + 1;
+    latestRequestIdRef.current = requestId;
+
     const {
       method = initialOptions.method || 'GET',
       body,
@@ -65,6 +94,9 @@ export function useApiFetch<T = unknown>(
       showToast = true,
       successMessage,
       errorMessage,
+      headers = initialOptions.headers,
+      timeoutMs = initialOptions.timeoutMs,
+      retryCount = initialOptions.retryCount ?? ((initialOptions.method || 'GET') === 'GET' ? 1 : 0),
     } = options;
 
     setState(prev => ({ ...prev, loading: true, error: null }));
@@ -74,7 +106,9 @@ export function useApiFetch<T = unknown>(
         method,
         headers: {
           'Content-Type': 'application/json',
+          ...headers,
         },
+        signal: controller.signal,
       };
 
       if (cache) {
@@ -85,11 +119,21 @@ export function useApiFetch<T = unknown>(
         fetchOptions.body = JSON.stringify(body);
       }
 
-      const response = await fetch(endpoint, fetchOptions);
-      const data = await response.json();
+      const response = await fetchWithAuth(endpoint, {
+        ...fetchOptions,
+        timeoutMs,
+        retryCount,
+      });
+      const payload = await readResponsePayload<Record<string, unknown> | T>(response);
+
+      if (!mountedRef.current || latestRequestIdRef.current !== requestId) {
+        return null;
+      }
 
       if (!response.ok) {
-        const errorMsg = errorMessage || data.error || `Failed to ${method.toLowerCase()} data`;
+        const errorMsg =
+          errorMessage ||
+          getErrorMessageFromPayload(payload, getStatusFallbackMessage(response.status));
         if (showToast) {
           toast.error(errorMsg);
         }
@@ -97,31 +141,64 @@ export function useApiFetch<T = unknown>(
         return null;
       }
 
+      if (payload === null) {
+        const emptyData = null;
+        setState({
+          data: emptyData,
+          loading: false,
+          error: null,
+        });
+        if (showToast && successMessage) {
+          toast.success(successMessage);
+        }
+        return emptyData;
+      }
+
+      const responseData =
+        typeof payload === 'object' && payload !== null && 'data' in payload
+          ? ((payload as { data?: T | null }).data ?? null)
+          : (payload as T);
+
       if (showToast && successMessage) {
         toast.success(successMessage);
       }
 
       setState({
-        data: data.data || data,
+        data: responseData,
         loading: false,
         error: null,
       });
 
-      return data.data || data;
+      return responseData;
     } catch (error) {
-      const errorMsg = errorMessage || (error instanceof Error ? error.message : 'Network error occurred');
+      if (isAbortError(error)) {
+        return null;
+      }
+
+      const normalizedError = normalizeRequestError(error, 'Network error occurred');
+      const errorMsg = errorMessage || normalizedError.message;
       if (showToast) {
         toast.error(errorMsg);
       }
-      setState(prev => ({ ...prev, error: errorMsg, loading: false }));
+
+      if (mountedRef.current && latestRequestIdRef.current === requestId) {
+        setState(prev => ({ ...prev, error: errorMsg, loading: false }));
+      }
       return null;
     }
-  }, [endpoint, initialOptions.cache, initialOptions.method]);
+  }, [
+    endpoint,
+    initialOptions.cache,
+    initialOptions.headers,
+    initialOptions.method,
+    initialOptions.retryCount,
+    initialOptions.timeoutMs,
+  ]);
 
   // Auto-fetch on mount if not skipped
   useEffect(() => {
     if (!initialOptions.skip && initialOptions.method !== 'POST' && initialOptions.method !== 'PUT' && initialOptions.method !== 'DELETE' && initialOptions.method !== 'PATCH') {
-      fetchData();
+      void fetchData();
     }
   }, [endpoint, fetchData, initialOptions.skip, initialOptions.method]);
 

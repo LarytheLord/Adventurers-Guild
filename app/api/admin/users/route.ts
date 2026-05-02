@@ -3,6 +3,7 @@ import { NextRequest } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireAuth } from '@/lib/api-auth';
 import { Prisma, UserRole } from '@prisma/client';
+import { clampPaginationValue, sanitizeSearchTerm } from '@/lib/validation/schemas';
 
 export async function GET(request: NextRequest) {
   try {
@@ -15,15 +16,17 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const role = searchParams.get('role');
     const isVerified = searchParams.get('isVerified');
-    const search = searchParams.get('search');
-    const limitRaw = searchParams.get('limit') || '10';
-    const take = Math.min(Math.max(1, parseInt(limitRaw)), 200);
-    const offset = searchParams.get('offset') || '0';
+    const search = sanitizeSearchTerm(searchParams.get('search'));
+    const take = clampPaginationValue(searchParams.get('limit'), { fallback: 10, min: 1, max: 200 });
+    const offset = clampPaginationValue(searchParams.get('offset'), { fallback: 0, min: 0, max: 10_000 });
 
     // Build where clause
     const where: Prisma.UserWhereInput = {};
 
     if (role) {
+      if (!Object.values(UserRole).includes(role as UserRole)) {
+        return Response.json({ error: 'Invalid role filter', success: false }, { status: 400 });
+      }
       where.role = role as UserRole;
     }
     if (isVerified !== null) {
@@ -74,7 +77,7 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-      skip: parseInt(offset),
+      skip: offset,
       take,
       orderBy: { createdAt: 'desc' },
     });

@@ -1,6 +1,7 @@
 // lib/analytics-utils.ts
 // Note: This is a client-side utility that calls API routes.
 // No direct database access needed.
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
 
 // Get user analytics
 export async function getUserAnalytics(
@@ -8,7 +9,7 @@ export async function getUserAnalytics(
   timeRange: '7d' | '30d' | '90d' | '1y' = '30d'
 ) {
   try {
-    const response = await fetch(`/api/analytics?type=user&userId=${userId}&time_range=${timeRange}`);
+    const response = await fetchWithAuth(`/api/analytics?type=user&userId=${userId}&time_range=${timeRange}`);
     const data = await response.json();
     if (data.success) return data;
     throw new Error(data.error || 'Failed to fetch user analytics');
@@ -21,7 +22,7 @@ export async function getUserAnalytics(
 // Get platform analytics
 export async function getPlatformAnalytics(timeRange: '7d' | '30d' | '90d' | '1y' = '30d') {
   try {
-    const response = await fetch(`/api/analytics?type=platform&time_range=${timeRange}`);
+    const response = await fetchWithAuth(`/api/analytics?type=platform&time_range=${timeRange}`);
     const data = await response.json();
     if (data.success) return data;
     throw new Error(data.error || 'Failed to fetch platform analytics');
@@ -37,7 +38,7 @@ export async function getQuestAnalytics(
   timeRange: '7d' | '30d' | '90d' | '1y' = '30d'
 ) {
   try {
-    const response = await fetch(`/api/analytics?type=quest&userId=${userId}&time_range=${timeRange}`);
+    const response = await fetchWithAuth(`/api/analytics?type=company&userId=${userId}&time_range=${timeRange}`);
     const data = await response.json();
     if (data.success) return data;
     throw new Error(data.error || 'Failed to fetch quest analytics');
@@ -53,9 +54,9 @@ export async function getUserProgressOverTime(
   timeRange: '7d' | '30d' | '90d' | '1y' = '30d'
 ): Promise<Array<{ date: string; xp: number; sp: number }>> {
   try {
-    const response = await fetch(`/api/analytics?type=user&userId=${userId}&time_range=${timeRange}`);
+    const response = await fetchWithAuth(`/api/analytics?type=user&userId=${userId}&time_range=${timeRange}`);
     const data = await response.json();
-    if (data.success && data.progress_over_time) return data.progress_over_time;
+    if (data.success && Array.isArray(data.progressOverTime)) return data.progressOverTime;
     return [];
   } catch (error) {
     console.error('Error fetching user progress:', error);
@@ -63,16 +64,29 @@ export async function getUserProgressOverTime(
   }
 }
 
-// Get top performing users
+// Get top performing users (FIX H2: replaced hardcoded mock data with live API call)
 export async function getTopPerformers(
   timeRange: '7d' | '30d' | '90d' | '1y' = '30d',
   limit: number = 10
 ): Promise<Array<{ id: string; name: string; rank: string; xp: number; questsCompleted: number }>> {
-  return [
-    { id: '1', name: 'Top Adventurer 1', rank: 'S', xp: 24500, questsCompleted: 120 },
-    { id: '2', name: 'Top Adventurer 2', rank: 'S', xp: 23000, questsCompleted: 110 },
-    { id: '3', name: 'Top Adventurer 3', rank: 'A', xp: 19500, questsCompleted: 95 },
-  ];
+  try {
+    void timeRange; // Rankings API doesn't filter by time range yet
+    const response = await fetchWithAuth(`/api/rankings?mode=adventurer&sort=xp&order=desc&limit=${limit}`);
+    const data = await response.json();
+    if (Array.isArray(data.rankings)) {
+      return data.rankings.map((u: Record<string, unknown>) => ({
+        id: String(u.id ?? ''),
+        name: String(u.name ?? ''),
+        rank: String(u.rank ?? ''),
+        xp: Number(u.xp ?? 0),
+        questsCompleted: Number(u.questsCompleted ?? 0),
+      }));
+    }
+    return [];
+  } catch (error) {
+    console.error('Error fetching top performers:', error);
+    return [];
+  }
 }
 
 // Get most popular quest categories
@@ -80,9 +94,9 @@ export async function getPopularQuestCategories(
   timeRange: '7d' | '30d' | '90d' | '1y' = '30d'
 ): Promise<Array<{ category: string; count: number }>> {
   try {
-    const response = await fetch(`/api/analytics?type=platform&time_range=${timeRange}`);
+    const response = await fetchWithAuth(`/api/analytics?type=platform&time_range=${timeRange}`);
     const data = await response.json();
-    if (data.success && data.top_categories) return data.top_categories;
+    if (data.success && Array.isArray(data.topCategories)) return data.topCategories;
     return [];
   } catch (error) {
     console.error('Error fetching popular categories:', error);
@@ -90,13 +104,13 @@ export async function getPopularQuestCategories(
   }
 }
 
-// Get user engagement metrics
+// Get user engagement metrics (FIX H3: corrected stat key usage)
 export async function getUserEngagementMetrics(userId: string) {
   const userAnalytics = await getUserAnalytics(userId);
   return {
-    totalLogins: userAnalytics?.stats?.total_quests || 0,
-    avgTimePerVisit: 15,
-    daysActive: 45,
-    completionRate: userAnalytics?.stats?.completion_rate || 0,
+    totalLogins: userAnalytics?.user?.totalQuestsCompleted || 0,
+    avgTimePerVisit: userAnalytics?.stats?.completedQuests || 0,
+    daysActive: userAnalytics?.stats?.totalQuests || 0,
+    completionRate: userAnalytics?.stats?.completionRate || 0,
   };
 }

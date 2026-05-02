@@ -10,6 +10,8 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle, CreditCard, CheckCircle, Coins, Target } from 'lucide-react';
 import PaymentForm from './PaymentForm';
 import { formatCurrency } from '@/lib/payment-utils';
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
+import { getErrorMessageFromPayload, getStatusFallbackMessage, readResponsePayload } from '@/lib/http';
 
 interface Quest {
   id: string;
@@ -35,6 +37,7 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [selectedAdventurerId, setSelectedAdventurerId] = useState<string>('');
+  const [resolvingAssignment, setResolvingAssignment] = useState(false);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -53,12 +56,12 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
         setLoading(true);
         setError(null);
 
-        const response = await fetch(`/api/quests/${questId}`);
-        const data = await response.json();
-        const questData = data.quest ?? data.quests?.[0];
+        const response = await fetchWithAuth(`/api/quests/${questId}`, { retryCount: 1 });
+        const data = await readResponsePayload<Record<string, unknown>>(response);
+        const questData = ((data as any)?.quest ?? (data as any)?.quests?.[0]) as any;
 
-        if (!data.success || !questData) {
-          setError(data.error || 'Failed to fetch quest');
+        if (!response.ok || !data?.success || !questData) {
+          setError(getErrorMessageFromPayload(data, getStatusFallbackMessage(response.status)));
           return;
         }
         
@@ -74,8 +77,7 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
 
         setQuest(questData);
       } catch (err) {
-        console.error('Error fetching quest:', err);
-        setError('An error occurred while fetching quest details');
+        setError(err instanceof Error ? err.message : 'An error occurred while fetching quest details');
       } finally {
         setLoading(false);
       }
@@ -87,16 +89,19 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
   }, [status, session, questId, router]);
 
   const handleMakePayment = () => {
-    if (!quest || !session?.user?.id) return;
+    if (!quest || !session?.user?.id || resolvingAssignment) return;
     
     const processPayment = async () => {
+      setResolvingAssignment(true);
       try {
-        const assignmentResponse = await fetch(`/api/quests/assignments?questId=${questId}`);
-        const assignmentData = await assignmentResponse.json();
+        const assignmentResponse = await fetchWithAuth(`/api/quests/assignments?questId=${questId}`, {
+          retryCount: 1,
+        });
+        const assignmentData = await readResponsePayload<Record<string, unknown>>(assignmentResponse);
         
-        const assignments = Array.isArray(assignmentData.assignments) ? assignmentData.assignments : [];
-        if (!assignmentData.success || assignments.length === 0) {
-          setError('No adventurer assigned to this quest');
+        const assignments = Array.isArray(assignmentData?.assignments) ? (assignmentData.assignments as any[]) : [];
+        if (!assignmentResponse.ok || !assignmentData?.success || assignments.length === 0) {
+          setError(getErrorMessageFromPayload(assignmentData, 'No adventurer assigned to this quest'));
           return;
         }
 
@@ -114,8 +119,9 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
         setSelectedAdventurerId(preferredAssignment.userId);
         setShowPaymentForm(true);
       } catch (err) {
-        console.error('Error finding adventurer:', err);
-        setError('Could not find assigned adventurer');
+        setError(err instanceof Error ? err.message : 'Could not find assigned adventurer');
+      } finally {
+        setResolvingAssignment(false);
       }
     };
     
@@ -284,10 +290,14 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
                   <Button 
                     className="flex-1" 
                     onClick={handleMakePayment}
-                    disabled={quest.status !== 'completed'}
+                    disabled={quest.status !== 'completed' || resolvingAssignment}
                   >
                     <CreditCard className="w-4 h-4 mr-2" />
-                    {quest.status === 'completed' ? 'Complete Payment' : 'Quest Not Completed Yet'}
+                    {quest.status === 'completed'
+                      ? resolvingAssignment
+                        ? 'Checking Assignment...'
+                        : 'Complete Payment'
+                      : 'Quest Not Completed Yet'}
                   </Button>
                   <Button 
                     variant="outline" 

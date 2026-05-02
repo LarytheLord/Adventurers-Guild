@@ -13,7 +13,8 @@ export async function GET(request: NextRequest) {
     // Parse query parameters
     const { searchParams } = new URL(request.url);
     const userId = searchParams.get('userId');
-    const limit = searchParams.get('limit') || '10';
+    const parsedLimit = Number.parseInt(searchParams.get('limit') || '10', 10);
+    const limit = Number.isFinite(parsedLimit) && parsedLimit > 0 ? Math.min(parsedLimit, 20) : 10;
 
     // Validate user ID is provided
     if (!userId) {
@@ -81,7 +82,7 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-      take: parseInt(limit),
+      take: limit,
     });
 
     // If user is not an adventurer, return empty list
@@ -174,7 +175,7 @@ export async function GET(request: NextRequest) {
     // Sort by match score descending
     .sort((a, b) => b.matchScore - a.matchScore)
     // Take top matches
-    .slice(0, parseInt(limit));
+    .slice(0, limit);
 
     return Response.json({ matches: matchedQuests, success: true });
   } catch (error) {
@@ -192,7 +193,12 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { userId, num_recommendations = 5 } = body;
+    const { userId } = body;
+    const requestedRecommendations = Number.parseInt(String(body.num_recommendations ?? '5'), 10);
+    const numRecommendations =
+      Number.isFinite(requestedRecommendations) && requestedRecommendations > 0
+        ? Math.min(requestedRecommendations, 20)
+        : 5;
 
     // Validate required fields
     if (!userId) {
@@ -287,6 +293,12 @@ export async function POST(request: NextRequest) {
         companyId: true,
         createdAt: true,
         deadline: true,
+        company: {
+          select: {
+            name: true,
+            isVerified: true,
+          },
+        },
       },
       take: 50, // Limit to prevent performance issues
     });
@@ -339,7 +351,7 @@ export async function POST(request: NextRequest) {
       };
     })
     .sort((a, b) => b.recommendationScore - a.recommendationScore)
-    .slice(0, num_recommendations);
+    .slice(0, numRecommendations);
 
     return Response.json({ recommendations: recommendedQuests, success: true });
   } catch (error) {

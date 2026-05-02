@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable react-hooks/exhaustive-deps */
 
 import React, { useRef, useEffect, useState } from 'react';
 import Link from 'next/link';
@@ -293,6 +294,8 @@ void main(){gl_Position=position;}`;
     animationFrameRef.current = requestAnimationFrame(loop);
   };
 
+  // These renderer helpers are created inside the hook and intentionally initialized once.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (!canvasRef.current) return;
 

@@ -2,21 +2,38 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { sendEmail } from '@/lib/mail';
 import { createHash, randomBytes } from 'crypto';
+import { forgotPasswordSchema } from '@/lib/validation/schemas';
+import { consumeRateLimit } from '@/lib/rate-limit';
+
+const FORGOT_PASSWORD_WINDOW_MS = 15 * 60 * 1000;
+const FORGOT_PASSWORD_MAX_REQUESTS = 5;
+const GENERIC_SUCCESS_MESSAGE = 'If an account exists, a reset link has been sent.';
 
 export async function POST(request: NextRequest) {
   try {
-    const { email } = await request.json();
-    const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
+    const body = await request.json();
+    const parsedBody = forgotPasswordSchema.safeParse(body);
+    if (!parsedBody.success) {
+      return NextResponse.json({ error: 'Please enter a valid email address.' }, { status: 400 });
+    }
+    const normalizedEmail = parsedBody.data.email.trim().toLowerCase();
 
-    if (!normalizedEmail) {
-      return NextResponse.json({ error: 'Email is required' }, { status: 400 });
+    const rateLimit = consumeRateLimit('forgot-password', normalizedEmail, {
+      windowMs: FORGOT_PASSWORD_WINDOW_MS,
+      maxRequests: FORGOT_PASSWORD_MAX_REQUESTS,
+    });
+    if (!rateLimit.allowed) {
+      return NextResponse.json(
+        { error: 'Too many reset attempts. Please wait before trying again.' },
+        { status: 429 }
+      );
     }
 
     const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
 
     // Always return success to prevent email enumeration
     if (!user) {
-      return NextResponse.json({ message: 'If an account exists, a reset link has been sent.' });
+      return NextResponse.json({ message: GENERIC_SUCCESS_MESSAGE });
     }
 
     // Generate token
@@ -36,7 +53,8 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    const resetLink = `${process.env.NEXTAUTH_URL}/reset-password?token=${token}`;
+    const appUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const resetLink = `${appUrl}/reset-password?token=${token}`;
 
     await sendEmail({
       to: normalizedEmail,
@@ -44,12 +62,7 @@ export async function POST(request: NextRequest) {
       html: `<p>You requested a password reset. Click the link below to reset your password:</p><p><a href="${resetLink}">${resetLink}</a></p><p>This link expires in 1 hour.</p>`,
     });
 
-    // Log non-sensitive debug info in development
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`Password reset requested for ${normalizedEmail}`);
-    }
-
-    return NextResponse.json({ message: 'If an account exists, a reset link has been sent.' });
+    return NextResponse.json({ message: GENERIC_SUCCESS_MESSAGE });
   } catch (error) {
     console.error('Forgot password error:', error);
     return NextResponse.json({ error: 'Something went wrong' }, { status: 500 });

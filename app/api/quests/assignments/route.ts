@@ -4,6 +4,7 @@ import { prisma } from '@/lib/db';
 import { AssignmentStatus, Prisma } from '@prisma/client';
 import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
 import { getAuthUser } from '@/lib/api-auth';
+import { clampPaginationValue, questAssignmentApplySchema } from '@/lib/validation/schemas';
 
 export async function GET(request: NextRequest) {
   // Check authentication
@@ -18,8 +19,8 @@ export async function GET(request: NextRequest) {
     const requestedUserId = searchParams.get('userId');
     const questId = searchParams.get('questId');
     const status = searchParams.get('status');
-    const limit = parseInt(searchParams.get('limit') || '10');
-    const offset = parseInt(searchParams.get('offset') || '0');
+    const limit = clampPaginationValue(searchParams.get('limit'), { fallback: 10, min: 1, max: 100 });
+    const offset = clampPaginationValue(searchParams.get('offset'), { fallback: 0, min: 0, max: 10_000 });
 
     const currentUserId = user.id;
     const currentUserRole = user.role;
@@ -112,13 +113,15 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { questId } = body;
-    const userId = user.id; // Use authenticated user's ID
-
-    // Validate required fields
-    if (!questId) {
-      return NextResponse.json({ error: 'Missing required fields', success: false }, { status: 400 });
+    const parsedBody = questAssignmentApplySchema.safeParse(body);
+    if (!parsedBody.success) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: parsedBody.error.flatten(), success: false },
+        { status: 400 }
+      );
     }
+    const { questId } = parsedBody.data;
+    const userId = user.id; // Use authenticated user's ID
 
     // Check if the quest exists and is available
     const quest = await prisma.quest.findUnique({
@@ -196,6 +199,12 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ assignment, success: true }, { status: 201 });
   } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      return NextResponse.json(
+        { error: 'You are already assigned to this quest', success: false },
+        { status: 409 }
+      );
+    }
     console.error('Error creating quest assignment:', error);
     return NextResponse.json({ error: 'Failed to create quest assignment', success: false }, { status: 500 });
   }

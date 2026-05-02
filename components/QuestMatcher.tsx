@@ -14,6 +14,7 @@ import {
   Bot
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
 
 // Types
 interface Quest {
@@ -30,10 +31,10 @@ interface Quest {
   requiredRank?: string;
   maxParticipants?: number;
   questCategory: string;
-  company_id: string;
+  companyId?: string;
   createdAt: string;
   deadline?: string;
-  users?: {
+  company?: {
     name: string;
     isVerified: boolean;
   };
@@ -60,7 +61,7 @@ export default function QuestMatcher({ userId, onQuestSelect }: QuestMatcherProp
         
         if (activeTab === 'matches') {
           // Fetch matched quests
-          const response = await fetch(`/api/matching?userId=${userId}&limit=5`);
+          const response = await fetchWithAuth(`/api/matching?userId=${userId}&limit=5`);
           const data = await response.json();
           
           if (data.success) {
@@ -70,7 +71,7 @@ export default function QuestMatcher({ userId, onQuestSelect }: QuestMatcherProp
           }
         } else {
           // Fetch recommendations
-          const response = await fetch('/api/matching', {
+          const response = await fetchWithAuth('/api/matching', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -190,7 +191,7 @@ export default function QuestMatcher({ userId, onQuestSelect }: QuestMatcherProp
                     <div className="flex items-center mt-1 space-x-4 text-sm text-muted-foreground">
                       <div className="flex items-center">
                         <User className="h-4 w-4 mr-1" />
-                        {quest.users?.name || 'Unknown Company'}
+                        {quest.company?.name || 'Unknown Company'}
                       </div>
                       <div className="flex items-center">
                         <Target className="h-4 w-4 mr-1" />
@@ -276,7 +277,11 @@ export default function QuestMatcher({ userId, onQuestSelect }: QuestMatcherProp
                 </div>
                 <Button 
                   size="sm" 
-                  onClick={() => onQuestSelect ? onQuestSelect(quest.id) : window.location.assign(`/quests/${quest.id}`)}
+                  onClick={() =>
+                    onQuestSelect
+                      ? onQuestSelect(quest.id)
+                      : window.location.assign(`/dashboard/quests/${quest.id}`)
+                  }
                 >
                   View Quest
                 </Button>

@@ -1,5 +1,6 @@
 // lib/team-utils.ts
 import { prisma } from './db';
+import { sendTeamInviteNotification } from './notification-utils';
 
 // Types
 export interface TeamMemberInfo {
@@ -121,7 +122,7 @@ export async function fetchTeamMembers(teamId: string): Promise<TeamMemberInfo[]
   }));
 }
 
-// Invite member to team
+// Invite member to team (FIX H4: now uses invitedBy to send notification)
 export async function inviteMemberToTeam(
   teamId: string,
   email: string,
@@ -130,9 +131,22 @@ export async function inviteMemberToTeam(
   const user = await prisma.user.findUnique({ where: { email }, select: { id: true } });
   if (!user) throw new Error('User not found');
 
+  // Fetch team name and inviter name for the notification
+  const [team, inviter] = await Promise.all([
+    prisma.team.findUnique({ where: { id: teamId }, select: { name: true } }),
+    prisma.user.findUnique({ where: { id: invitedBy }, select: { name: true } }),
+  ]);
+
   await prisma.teamMember.create({
     data: { teamId, userId: user.id, role: 'member' },
   });
+
+  // Send team invitation notification to the invited user
+  await sendTeamInviteNotification(
+    user.id,
+    team?.name ?? 'Unknown Team',
+    inviter?.name ?? 'A team member'
+  );
 
   return true;
 }

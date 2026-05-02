@@ -24,6 +24,8 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
+import { getErrorMessageFromPayload, getStatusFallbackMessage, readResponsePayload } from '@/lib/http';
 
 // Types
 interface Notification {
@@ -32,8 +34,8 @@ interface Notification {
   title: string;
   message: string;
   type: string;
-  data?: Record<string, unknown>;
-  readAt?: string;
+  data?: Record<string, unknown> | null;
+  readAt?: string | null;
   createdAt: string;
 }
 
@@ -46,28 +48,39 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
+  const [pendingNotificationIds, setPendingNotificationIds] = useState<string[]>([]);
+  const [bulkActionLoading, setBulkActionLoading] = useState(false);
+
+  const getUnreadTotal = (items: Notification[]) => items.filter((notification) => !notification.readAt).length;
 
   // Fetch notifications
   useEffect(() => {
     const fetchNotifications = async () => {
-      if (!userId) return;
+      if (!userId) {
+        setNotifications([]);
+        setUnreadCount(0);
+        setLoading(false);
+        return;
+      }
       
       try {
         setLoading(true);
-        const response = await fetch(`/api/notifications?userId=${userId}&limit=10`);
-        const data = await response.json();
+        const response = await fetchWithAuth(`/api/notifications?userId=${userId}&limit=10`, {
+          retryCount: 1,
+        });
+        const data = await readResponsePayload<Record<string, unknown>>(response);
         
-        if (data.success) {
-          setNotifications(data.notifications);
-          // Calculate unread count
-          const unread = data.notifications.filter((n: Notification) => !n.readAt).length;
-          setUnreadCount(unread);
+        if (response.ok && data?.success) {
+          const nextNotifications = Array.isArray(data.notifications) ? data.notifications as Notification[] : [];
+          setNotifications(nextNotifications);
+          setUnreadCount(
+            typeof data.unreadCount === 'number' ? data.unreadCount : getUnreadTotal(nextNotifications)
+          );
         } else {
-          toast.error(data.error || 'Failed to fetch notifications');
+          toast.error(getErrorMessageFromPayload(data, getStatusFallbackMessage(response.status)));
         }
       } catch (error) {
-        console.error('Error fetching notifications:', error);
-        toast.error('Error fetching notifications');
+        toast.error(error instanceof Error ? error.message : 'Error fetching notifications');
       } finally {
         setLoading(false);
       }
@@ -87,96 +100,113 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
   }, [userId, open]);
 
   const markAsRead = async (notificationId: string) => {
+    if (pendingNotificationIds.includes(notificationId)) {
+      return;
+    }
+
+    setPendingNotificationIds((prev) => [...prev, notificationId]);
     try {
-      const response = await fetch('/api/notifications', {
+      const response = await fetchWithAuth('/api/notifications', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          notification_id: notificationId,
-          userId: userId,
-          is_read: true
+          notificationId,
+          userId,
+          isRead: true
         }),
       });
 
-      const data = await response.json();
+      const data = await readResponsePayload<Record<string, unknown>>(response);
       
-      if (data.success) {
-        // Update local state
-        setNotifications(prev => 
-          prev.map(n => 
-            n.id === notificationId ? { ...n, readAt: new Date().toISOString() } : n
-          )
-        );
-        setUnreadCount(prev => Math.max(0, prev - 1));
+      if (response.ok && data?.success) {
+        setNotifications((prev) => {
+          const nextNotifications = prev.map((notification) =>
+            notification.id === notificationId
+              ? { ...notification, readAt: new Date().toISOString() }
+              : notification
+          );
+          setUnreadCount(getUnreadTotal(nextNotifications));
+          return nextNotifications;
+        });
       } else {
-        toast.error(data.error || 'Failed to mark notification as read');
+        toast.error(getErrorMessageFromPayload(data, getStatusFallbackMessage(response.status)));
       }
     } catch (error) {
-      console.error('Error marking notification as read:', error);
-      toast.error('Error marking notification as read');
+      toast.error(error instanceof Error ? error.message : 'Error marking notification as read');
+    } finally {
+      setPendingNotificationIds((prev) => prev.filter((id) => id !== notificationId));
     }
   };
 
   const markAllAsRead = async () => {
+    if (bulkActionLoading) {
+      return;
+    }
+
+    setBulkActionLoading(true);
     try {
-      const response = await fetch('/api/notifications', {
+      const response = await fetchWithAuth('/api/notifications', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          userId: userId
+          userId
         }),
       });
 
-      const data = await response.json();
+      const data = await readResponsePayload<Record<string, unknown>>(response);
       
-      if (data.success) {
-        // Update local state
-        setNotifications(prev => 
-          prev.map(n => ({ ...n, readAt: new Date().toISOString() }))
-        );
+      if (response.ok && data?.success) {
+        setNotifications((prev) => prev.map((notification) => ({ ...notification, readAt: new Date().toISOString() })));
         setUnreadCount(0);
         toast.success('All notifications marked as read');
       } else {
-        toast.error(data.error || 'Failed to mark all as read');
+        toast.error(getErrorMessageFromPayload(data, getStatusFallbackMessage(response.status)));
       }
     } catch (error) {
-      console.error('Error marking all notifications as read:', error);
-      toast.error('Error marking all as read');
+      toast.error(error instanceof Error ? error.message : 'Error marking all as read');
+    } finally {
+      setBulkActionLoading(false);
     }
   };
 
   const deleteNotification = async (notificationId: string) => {
+    if (pendingNotificationIds.includes(notificationId)) {
+      return;
+    }
+
+    setPendingNotificationIds((prev) => [...prev, notificationId]);
     try {
-      const response = await fetch('/api/notifications', {
+      const response = await fetchWithAuth('/api/notifications', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          notification_id: notificationId,
-          userId: userId
+          notificationId,
+          userId
         }),
       });
 
-      const data = await response.json();
+      const data = await readResponsePayload<Record<string, unknown>>(response);
       
-      if (data.success) {
-        // Update local state
-        setNotifications(prev => prev.filter(n => n.id !== notificationId));
-        if (notifications.find(n => n.id === notificationId)?.readAt === null) {
-          setUnreadCount(prev => Math.max(0, prev - 1));
-        }
+      if (response.ok && data?.success) {
+        setNotifications((prev) => {
+          const nextNotifications = prev.filter((notification) => notification.id !== notificationId);
+          setUnreadCount(getUnreadTotal(nextNotifications));
+          return nextNotifications;
+        });
         toast.success('Notification deleted');
       } else {
-        toast.error(data.error || 'Failed to delete notification');
+        toast.error(getErrorMessageFromPayload(data, getStatusFallbackMessage(response.status)));
       }
     } catch (error) {
-      console.error('Error deleting notification:', error);
-      toast.error('Error deleting notification');
+      toast.error(error instanceof Error ? error.message : 'Error deleting notification');
+    } finally {
+      setPendingNotificationIds((prev) => prev.filter((id) => id !== notificationId));
     }
   };
 
@@ -217,7 +247,6 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
           variant="ghost" 
           size="icon" 
           className="relative rounded-full"
-          onClick={() => setOpen(!open)}
         >
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
@@ -238,7 +267,7 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
               variant="ghost" 
               size="sm" 
               onClick={markAllAsRead}
-              disabled={unreadCount === 0}
+              disabled={unreadCount === 0 || bulkActionLoading}
             >
               Mark all as read
             </Button>
@@ -285,6 +314,7 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
                         variant="ghost"
                         size="sm"
                         onClick={() => markAsRead(notification.id)}
+                        disabled={pendingNotificationIds.includes(notification.id)}
                       >
                         <Check className="h-4 w-4" />
                       </Button>
@@ -293,6 +323,7 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
                       variant="ghost"
                       size="sm"
                       onClick={() => deleteNotification(notification.id)}
+                      disabled={pendingNotificationIds.includes(notification.id)}
                     >
                       <X className="h-4 w-4" />
                     </Button>

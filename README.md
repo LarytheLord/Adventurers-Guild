@@ -49,42 +49,35 @@ Part of the **Open Paws** ecosystem, integrating with the Open Paws Bootcamp and
 - Git
 - Neon account (for serverless PostgreSQL)
 
-## Getting Started
+## How to Run Locally in 3 Steps
 
-### 1. Clone the Repository
+### 1. Install dependencies
 ```bash
 git clone https://github.com/LarytheLord/adventurers-guild.git
 cd adventurers-guild
-```
-
-### 2. Install Dependencies
-```bash
 npm install
 ```
 
-### 3. Environment Configuration
-Create a `.env.local` file in the root directory:
+### 2. Configure environment variables
+Copy `.env.example` to `.env.local` and fill in the required values:
 
 ```bash
-# Database
-DATABASE_URL="postgresql://user:password@your-neon-host.neon.tech/neondb?sslmode=require"
-DATABASE_URL_UNPOOLED="postgresql://user:password@your-neon-host-direct.neon.tech/neondb?sslmode=require"
-
-# Authentication
-NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=generate-with-openssl-rand-base64-32
-
-# Application
-NEXT_PUBLIC_APP_URL=http://localhost:3000
+cp .env.example .env.local
 ```
 
-### 4. Run Locally
+At minimum, set:
+- `DATABASE_URL`
+- `NEXTAUTH_SECRET`
+- `NEXTAUTH_URL=http://localhost:3000`
+- `NEXT_PUBLIC_APP_URL=http://localhost:3000`
+
+### 3. Generate Prisma client and start the app
 ```bash
 npx prisma generate
 npm run dev
 ```
 
-The application will be available at `http://localhost:3000`
+The application will be available at `http://localhost:3000`.
 
 ## User Roles
 

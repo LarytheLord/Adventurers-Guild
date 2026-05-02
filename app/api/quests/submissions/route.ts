@@ -1,9 +1,10 @@
 // app/api/quests/submissions/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { AssignmentStatus } from '@prisma/client';
+import { AssignmentStatus, SubmissionStatus } from '@prisma/client';
 import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
 import { getAuthUser } from '@/lib/api-auth';
+import { clampPaginationValue, questSubmissionCreateSchema } from '@/lib/validation/schemas';
 
 export async function GET(request: NextRequest) {
   // Check authentication
@@ -18,8 +19,8 @@ export async function GET(request: NextRequest) {
     const assignmentId = searchParams.get('assignmentId');
     const requestedUserId = searchParams.get('userId');
     const status = searchParams.get('status');
-    const limit = searchParams.get('limit') || '10';
-    const offset = searchParams.get('offset') || '0';
+    const limit = clampPaginationValue(searchParams.get('limit'), { fallback: 10, min: 1, max: 100 });
+    const offset = clampPaginationValue(searchParams.get('offset'), { fallback: 0, min: 0, max: 10_000 });
 
     const currentUserId = user.id;
     const currentUserRole = user.role;
@@ -57,6 +58,9 @@ export async function GET(request: NextRequest) {
       where.userId = requestedUserId;
     }
     if (status) {
+      if (!Object.values(SubmissionStatus).includes(status as SubmissionStatus)) {
+        return NextResponse.json({ error: 'Invalid submission status', success: false }, { status: 400 });
+      }
       where.status = status;
     }
 
@@ -76,8 +80,8 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-      skip: parseInt(offset),
-      take: parseInt(limit),
+      skip: offset,
+      take: limit,
     });
 
     return NextResponse.json({ submissions: data, success: true });
@@ -96,13 +100,15 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { assignmentId, submissionContent, submissionNotes } = body;
-    const userId = user.id; // Use authenticated user's ID
-
-    // Validate required fields
-    if (!assignmentId || !submissionContent) {
-      return NextResponse.json({ error: 'Missing required fields', success: false }, { status: 400 });
+    const parsedBody = questSubmissionCreateSchema.safeParse(body);
+    if (!parsedBody.success) {
+      return NextResponse.json(
+        { error: 'Validation failed', details: parsedBody.error.flatten(), success: false },
+        { status: 400 }
+      );
     }
+    const { assignmentId, submissionContent, submissionNotes } = parsedBody.data;
+    const userId = user.id; // Use authenticated user's ID
 
     // Check if the assignment exists and belongs to the current user
     const assignment = await prisma.questAssignment.findUnique({
@@ -130,18 +136,26 @@ export async function POST(request: NextRequest) {
 
     const data = await prisma.$transaction(
       async (tx) => {
+        const assignmentTransition = await tx.questAssignment.updateMany({
+          where: {
+            id: assignmentId,
+            userId: assignment.userId,
+            status: { in: ['assigned', 'started', 'in_progress', 'needs_rework'] },
+          },
+          data: { status: postSubmitStatus },
+        });
+
+        if (assignmentTransition.count === 0) {
+          throw new Error('This assignment is no longer ready for submission. Please refresh and try again.');
+        }
+
         const submission = await tx.questSubmission.create({
           data: {
             assignmentId: assignmentId,
             userId,
-            submissionContent: submissionContent,
-            submissionNotes: submissionNotes || null,
+            submissionContent,
+            submissionNotes: submissionNotes ?? null,
           },
-        });
-
-        await tx.questAssignment.update({
-          where: { id: assignmentId },
-          data: { status: postSubmitStatus },
         });
 
         await syncQuestLifecycleStatus(tx, assignment.questId);

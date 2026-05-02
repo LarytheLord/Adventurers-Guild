@@ -100,6 +100,7 @@ export function GuildCardProfile({ adventurer }: { adventurer: Adventurer }) {
           {/* Avatar / Rank */}
           <div className="flex-shrink-0">
             {a.avatar ? (
+              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={a.avatar}
                 alt={a.name || 'Adventurer'}

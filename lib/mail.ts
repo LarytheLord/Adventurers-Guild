@@ -6,8 +6,14 @@ interface SendEmailParams {
   html: string;
 }
 
-export async function sendEmail({ to, subject, html }: SendEmailParams) {
-  const transporter = nodemailer.createTransport({
+let cachedTransporter: nodemailer.Transporter | null = null;
+
+function getTransporter() {
+  if (cachedTransporter) {
+    return cachedTransporter;
+  }
+
+  cachedTransporter = nodemailer.createTransport({
     host: process.env.SMTP_HOST,
     port: Number(process.env.SMTP_PORT) || 587,
     secure: false, // true for 465, false for other ports
@@ -17,6 +23,12 @@ export async function sendEmail({ to, subject, html }: SendEmailParams) {
     },
   });
 
+  return cachedTransporter;
+}
+
+export async function sendEmail({ to, subject, html }: SendEmailParams) {
+  const transporter = getTransporter();
+
   try {
     const info = await transporter.sendMail({
       from: process.env.ADMIN_EMAIL || '"Adventurers Guild" <admin@adventurersguild.com>',
@@ -24,7 +36,6 @@ export async function sendEmail({ to, subject, html }: SendEmailParams) {
       subject,
       html,
     });
-    console.log('Message sent: %s', info.messageId);
     return { success: true, messageId: info.messageId };
   } catch (error) {
     console.error('Error sending email:', error);

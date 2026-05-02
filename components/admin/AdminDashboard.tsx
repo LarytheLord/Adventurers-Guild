@@ -1,7 +1,7 @@
 // components/admin/AdminDashboard.tsx
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useDeferredValue, useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,8 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
+import { getErrorMessageFromPayload, getStatusFallbackMessage, readResponsePayload } from '@/lib/http';
 
 // Types
 interface User {
@@ -80,23 +82,28 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [userSearch, setUserSearch] = useState('');
   const [questSearch, setQuestSearch] = useState('');
+  const [updatingUserId, setUpdatingUserId] = useState<string | null>(null);
+  const [updatingQuestId, setUpdatingQuestId] = useState<string | null>(null);
+  const deferredUserSearch = useDeferredValue(userSearch.trim());
+  const deferredQuestSearch = useDeferredValue(questSearch.trim());
 
   // Fetch users
   useEffect(() => {
     const fetchUsers = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/admin/users?search=${userSearch}`);
-        const data = await response.json();
+        const response = await fetchWithAuth(`/api/admin/users?search=${encodeURIComponent(deferredUserSearch)}`, {
+          retryCount: 1,
+        });
+        const data = await readResponsePayload<Record<string, unknown>>(response);
         
-        if (data.success) {
-          setUsers(data.users);
+        if (response.ok && data?.success) {
+          setUsers(Array.isArray(data.users) ? data.users as User[] : []);
         } else {
-          toast.error('Failed to fetch users');
+          toast.error(getErrorMessageFromPayload(data, getStatusFallbackMessage(response.status)));
         }
       } catch (error) {
-        console.error('Error fetching users:', error);
-        toast.error('Error fetching users');
+        toast.error(error instanceof Error ? error.message : 'Error fetching users');
       } finally {
         setLoading(false);
       }
@@ -105,24 +112,25 @@ export default function AdminDashboard() {
     if (activeTab === 'users') {
       fetchUsers();
     }
-  }, [activeTab, userSearch]);
+  }, [activeTab, deferredUserSearch]);
 
   // Fetch quests
   useEffect(() => {
     const fetchQuests = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/admin/quests?search=${questSearch}`);
-        const data = await response.json();
+        const response = await fetchWithAuth(`/api/admin/quests?search=${encodeURIComponent(deferredQuestSearch)}`, {
+          retryCount: 1,
+        });
+        const data = await readResponsePayload<Record<string, unknown>>(response);
         
-        if (data.success) {
-          setQuests(data.quests);
+        if (response.ok && data?.success) {
+          setQuests(Array.isArray(data.quests) ? data.quests as Quest[] : []);
         } else {
-          toast.error('Failed to fetch quests');
+          toast.error(getErrorMessageFromPayload(data, getStatusFallbackMessage(response.status)));
         }
       } catch (error) {
-        console.error('Error fetching quests:', error);
-        toast.error('Error fetching quests');
+        toast.error(error instanceof Error ? error.message : 'Error fetching quests');
       } finally {
         setLoading(false);
       }
@@ -131,11 +139,16 @@ export default function AdminDashboard() {
     if (activeTab === 'quests') {
       fetchQuests();
     }
-  }, [activeTab, questSearch]);
+  }, [activeTab, deferredQuestSearch]);
 
   const handleUserAction = async (userId: string, action: 'verify' | 'deactivate' | 'setRole', role?: string) => {
+    if (updatingUserId) {
+      return;
+    }
+
+    setUpdatingUserId(userId);
     try {
-      const response = await fetch('/api/admin/users', {
+      const response = await fetchWithAuth('/api/admin/users', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -148,29 +161,37 @@ export default function AdminDashboard() {
         }),
       });
 
-      const data = await response.json();
+      const data = await readResponsePayload<Record<string, unknown>>(response);
       
-      if (data.success) {
+      if (response.ok && data?.success) {
         toast.success('User updated successfully');
         // Refresh the user list
-        const updatedUsersResponse = await fetch(`/api/admin/users?search=${userSearch}`);
-        const updatedUsersData = await updatedUsersResponse.json();
+        const updatedUsersResponse = await fetchWithAuth(`/api/admin/users?search=${encodeURIComponent(deferredUserSearch)}`, {
+          retryCount: 1,
+        });
+        const updatedUsersData = await readResponsePayload<Record<string, unknown>>(updatedUsersResponse);
         
-        if (updatedUsersData.success) {
-          setUsers(updatedUsersData.users);
+        if (updatedUsersResponse.ok && updatedUsersData?.success) {
+          setUsers(Array.isArray(updatedUsersData.users) ? updatedUsersData.users as User[] : []);
         }
       } else {
-        toast.error(data.error || 'Failed to update user');
+        toast.error(getErrorMessageFromPayload(data, getStatusFallbackMessage(response.status)));
       }
     } catch (error) {
-      console.error('Error updating user:', error);
-      toast.error('Error updating user');
+      toast.error(error instanceof Error ? error.message : 'Error updating user');
+    } finally {
+      setUpdatingUserId(null);
     }
   };
 
   const handleQuestAction = async (questId: string, action: 'activate' | 'deactivate' | 'cancel') => {
+    if (updatingQuestId) {
+      return;
+    }
+
+    setUpdatingQuestId(questId);
     try {
-      const response = await fetch('/api/admin/quests', {
+      const response = await fetchWithAuth('/api/admin/quests', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -181,23 +202,26 @@ export default function AdminDashboard() {
         }),
       });
 
-      const data = await response.json();
+      const data = await readResponsePayload<Record<string, unknown>>(response);
       
-      if (data.success) {
+      if (response.ok && data?.success) {
         toast.success('Quest updated successfully');
         // Refresh the quest list
-        const updatedQuestsResponse = await fetch(`/api/admin/quests?search=${questSearch}`);
-        const updatedQuestsData = await updatedQuestsResponse.json();
+        const updatedQuestsResponse = await fetchWithAuth(`/api/admin/quests?search=${encodeURIComponent(deferredQuestSearch)}`, {
+          retryCount: 1,
+        });
+        const updatedQuestsData = await readResponsePayload<Record<string, unknown>>(updatedQuestsResponse);
         
-        if (updatedQuestsData.success) {
-          setQuests(updatedQuestsData.quests);
+        if (updatedQuestsResponse.ok && updatedQuestsData?.success) {
+          setQuests(Array.isArray(updatedQuestsData.quests) ? updatedQuestsData.quests as Quest[] : []);
         }
       } else {
-        toast.error(data.error || 'Failed to update quest');
+        toast.error(getErrorMessageFromPayload(data, getStatusFallbackMessage(response.status)));
       }
     } catch (error) {
-      console.error('Error updating quest:', error);
-      toast.error('Error updating quest');
+      toast.error(error instanceof Error ? error.message : 'Error updating quest');
+    } finally {
+      setUpdatingQuestId(null);
     }
   };
 
@@ -265,6 +289,7 @@ export default function AdminDashboard() {
                       className="pl-8 w-full sm:w-64"
                       value={userSearch}
                       onChange={(e) => setUserSearch(e.target.value)}
+                      maxLength={120}
                     />
                   </div>
                 </div>
@@ -341,7 +366,7 @@ export default function AdminDashboard() {
                               variant="outline" 
                               size="sm"
                               onClick={() => handleUserAction(user.id, 'verify')}
-                              disabled={user.isVerified}
+                              disabled={user.isVerified || updatingUserId === user.id}
                             >
                               {user.isVerified ? 'Verified' : 'Verify'}
                             </Button>
@@ -349,7 +374,7 @@ export default function AdminDashboard() {
                               variant="outline" 
                               size="sm"
                               onClick={() => handleUserAction(user.id, 'deactivate')}
-                              disabled={!user.isActive}
+                              disabled={!user.isActive || updatingUserId === user.id}
                             >
                               Deactivate
                             </Button>
@@ -380,6 +405,7 @@ export default function AdminDashboard() {
                       className="pl-8 w-full sm:w-64"
                       value={questSearch}
                       onChange={(e) => setQuestSearch(e.target.value)}
+                      maxLength={120}
                     />
                   </div>
                 </div>
@@ -454,7 +480,7 @@ export default function AdminDashboard() {
                               variant="outline" 
                               size="sm"
                               onClick={() => handleQuestAction(quest.id, 'activate')}
-                              disabled={quest.status === 'available'}
+                              disabled={quest.status === 'available' || updatingQuestId === quest.id}
                             >
                               Activate
                             </Button>
@@ -462,7 +488,7 @@ export default function AdminDashboard() {
                               variant="outline" 
                               size="sm"
                               onClick={() => handleQuestAction(quest.id, 'cancel')}
-                              disabled={quest.status === 'cancelled'}
+                              disabled={quest.status === 'cancelled' || updatingQuestId === quest.id}
                             >
                               Cancel
                             </Button>

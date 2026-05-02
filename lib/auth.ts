@@ -6,6 +6,10 @@ import bcrypt from 'bcryptjs';
 import { prisma } from './db';
 import { env } from '@/lib/env';
 import { UserRole, UserRank } from '@prisma/client';
+import { consumeRateLimit } from '@/lib/rate-limit';
+
+const LOGIN_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000;
+const LOGIN_RATE_LIMIT_MAX_REQUESTS = 10;
 
 export const authOptions: AuthOptions = {
   providers: [
@@ -20,6 +24,14 @@ export const authOptions: AuthOptions = {
           return null;
         }
         const normalizedEmail = credentials.email.trim().toLowerCase();
+        const loginRateLimit = consumeRateLimit('login-attempts', normalizedEmail, {
+          windowMs: LOGIN_RATE_LIMIT_WINDOW_MS,
+          maxRequests: LOGIN_RATE_LIMIT_MAX_REQUESTS,
+        });
+
+        if (!loginRateLimit.allowed) {
+          throw new Error('Too many login attempts. Please wait a few minutes and try again.');
+        }
 
         // Find user by email
         const user = await prisma.user.findUnique({
@@ -27,14 +39,15 @@ export const authOptions: AuthOptions = {
         });
 
         if (!user) {
-          if (process.env.NODE_ENV === 'development') console.log('[Auth] User not found:', normalizedEmail);
           return null;
+        }
+        if (!user.isActive) {
+          throw new Error('This account has been deactivated. Contact support if you believe this is a mistake.');
         }
 
         // Verify password
         const isValidPassword = await bcrypt.compare(credentials.password, user.passwordHash);
         if (!isValidPassword) {
-          if (process.env.NODE_ENV === 'development') console.log('[Auth] Invalid password for:', credentials.email);
           return null;
         }
 

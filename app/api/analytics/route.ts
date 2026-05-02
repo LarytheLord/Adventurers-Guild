@@ -1,7 +1,8 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { subDays, subYears } from 'date-fns';
 import { getAuthUser } from '@/lib/api-auth';
+import { XP_PER_LEVEL } from '@/lib/ranks';
 
 interface ProgressPoint {
   date: string;
@@ -9,14 +10,15 @@ interface ProgressPoint {
   sp: number;
 }
 
-export async function GET(req: Request) {
-  const authUser = await getAuthUser();
+export async function GET(req: NextRequest) {
+  const authUser = await getAuthUser(req);
   if (!authUser) {
     return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
   }
 
   const { searchParams } = new URL(req.url);
   const type = searchParams.get('type') || 'user';
+  const normalizedType = type === 'quest' ? 'company' : type;
   const userId = searchParams.get('userId') || authUser.id;
   const timeRange = searchParams.get('time_range') || '30d';
 
@@ -28,9 +30,9 @@ export async function GET(req: Request) {
   else startDate = subDays(startDate, 30);
 
   try {
-    if (type === 'user') {
+    if (normalizedType === 'user') {
       // Authorization check
-      if (userId !== authUser.id && authUser.role !== 'admin' && authUser.role !== 'company') {
+      if (userId !== authUser.id && authUser.role !== 'admin') {
         return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
       }
 
@@ -116,7 +118,7 @@ export async function GET(req: Request) {
         user: {
           ...user,
           skillPoints: Math.floor(user.xp / 10),
-          level: Math.floor(Math.sqrt(user.xp)) + 1,
+          level: Math.floor(user.xp / XP_PER_LEVEL) + 1,
           joinDate: user.createdAt.toISOString(),
           lastLogin: user.lastLoginAt?.toISOString(),
           questCompletionRate: totalAssignmentsCount > 0 ? (allCompletedAssignmentsCount / totalAssignmentsCount) * 100 : 0,
@@ -133,7 +135,7 @@ export async function GET(req: Request) {
         progressOverTime
       });
 
-    } else if (type === 'platform') {
+    } else if (normalizedType === 'platform') {
       if (authUser.role !== 'admin') {
         return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 403 });
       }
@@ -194,7 +196,7 @@ export async function GET(req: Request) {
         topCategories,
         rankDistribution
       });
-    } else if (type === 'company') {
+    } else if (normalizedType === 'company') {
       if (authUser.role !== 'company' && authUser.role !== 'admin') {
         return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 403 });
       }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,6 +22,7 @@ import {
   Save,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
 import { useApiFetch } from '@/lib/hooks';
 
 export default function CompanyProfilePage() {
@@ -31,8 +32,23 @@ export default function CompanyProfilePage() {
   const [companyName, setCompanyName] = useState('');
   const [description, setDescription] = useState('');
   const [website, setWebsite] = useState('');
+  const initializedProfile = useRef(false);
   const shouldFetch =
     status === 'authenticated' && (session?.user?.role === 'company' || session?.user?.role === 'admin');
+  const { data: profileData, loading: profileLoading, refetch: refetchProfile } = useApiFetch<{
+    success: boolean;
+    user: {
+      name?: string | null;
+      bio?: string | null;
+      website?: string | null;
+      createdAt: string;
+    };
+    companyProfile?: {
+      companyName?: string | null;
+      companyWebsite?: string | null;
+      companyDescription?: string | null;
+    } | null;
+  }>('/api/users/me', { skip: !shouldFetch });
   const { data, loading } = useApiFetch<{ success: boolean; quests: Array<{ status: string }> }>(
     '/api/company/quests',
     { skip: !shouldFetch }
@@ -49,27 +65,58 @@ export default function CompanyProfilePage() {
     }
   }, [status, session, router]);
 
+  useEffect(() => {
+    if (!profileData?.success || initializedProfile.current) {
+      return;
+    }
+
+    setCompanyName(profileData.companyProfile?.companyName || profileData.user.name || session?.user?.name || '');
+    setWebsite(profileData.companyProfile?.companyWebsite || profileData.user.website || '');
+    setDescription(profileData.companyProfile?.companyDescription || profileData.user.bio || '');
+    initializedProfile.current = true;
+  }, [profileData, session?.user?.name]);
+
   const quests = data?.quests || [];
   const questCount = quests.length;
   const completedCount = quests.filter((quest) => quest.status === 'completed').length;
+  const activeCount = quests.filter((quest) => !['completed', 'cancelled'].includes(quest.status)).length;
+  const memberSince =
+    profileData?.user?.createdAt
+      ? new Date(profileData.user.createdAt).getFullYear()
+      : 2025;
 
   const handleSave = async () => {
+    if (!companyName.trim()) {
+      toast.error('Company name is required');
+      return;
+    }
+
     setSaving(true);
     try {
-      const res = await fetch('/api/users/me', {
+      const payload: Record<string, string> = {
+        name: companyName.trim(),
+      };
+
+      if (session?.user?.role === 'company') {
+        payload.companyName = companyName.trim();
+        payload.companyWebsite = website.trim();
+        payload.companyDescription = description.trim();
+      } else {
+        payload.website = website.trim();
+        payload.bio = description.trim();
+      }
+
+      const res = await fetchWithAuth('/api/users/me', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: companyName.trim(),
-          companyName: companyName.trim(),
-          companyWebsite: website,
-          companyDescription: description,
-        }),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) {
         const data = await res.json();
         throw new Error(data.error || 'Failed to update profile');
       }
+      await refetchProfile();
+      router.refresh();
       toast.success('Company profile updated successfully');
     } catch (err) {
       toast.error(err instanceof Error ? err.message : 'Failed to update profile');
@@ -78,7 +125,7 @@ export default function CompanyProfilePage() {
     }
   };
 
-  if (status === 'loading' || loading) {
+  if (status === 'loading' || loading || profileLoading) {
     return (
       <div className="min-h-[50vh] flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
@@ -127,7 +174,7 @@ export default function CompanyProfilePage() {
                 </span>
                 <span className="flex items-center gap-1">
                   <Clock className="w-3.5 h-3.5" />
-                  Member since 2025
+                  Member since {memberSince}
                 </span>
               </div>
             </div>
@@ -154,7 +201,7 @@ export default function CompanyProfilePage() {
         <Card>
           <CardContent className="p-4 text-center">
             <Users className="w-5 h-5 mx-auto mb-1 text-muted-foreground" />
-            <div className="text-2xl font-bold">{questCount - completedCount}</div>
+            <div className="text-2xl font-bold">{activeCount}</div>
             <div className="text-xs text-muted-foreground">Active</div>
           </CardContent>
         </Card>

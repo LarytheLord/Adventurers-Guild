@@ -64,9 +64,6 @@ async function checkAuthAndRole(request: NextRequest, requiredRoles: UserRole[])
       }));
     
     if (!token) {
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[Middleware] No token found, redirecting to login:', request.url);
-      }
       // Redirect to login if not authenticated
       const url = new URL('/login', request.url);
       url.searchParams.set('callbackUrl', request.url);

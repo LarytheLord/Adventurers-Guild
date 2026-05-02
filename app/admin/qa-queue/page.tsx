@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/dialog';
 import { Shield, Clock, CheckCircle, XCircle, Loader2, ArrowLeft, ExternalLink } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
 
 interface QueueItem {
   id: string;
@@ -68,7 +69,7 @@ export default function QAQueuePage() {
 
   const fetchQueue = useCallback(async () => {
     setLoading(true);
-    const res = await fetch('/api/admin/qa-queue');
+    const res = await fetchWithAuth('/api/admin/qa-queue');
     const data = await res.json();
     setItems(data.assignments ?? []);
     setLoading(false);
@@ -78,7 +79,7 @@ export default function QAQueuePage() {
 
   const handleApprove = async (assignmentId: string) => {
     setSubmitting(true);
-    await fetch(`/api/admin/qa-queue/${assignmentId}`, {
+    await fetchWithAuth(`/api/admin/qa-queue/${assignmentId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'approve' }),
@@ -90,7 +91,7 @@ export default function QAQueuePage() {
   const handleReject = async () => {
     if (!rejectTarget || !rejectNotes.trim()) return;
     setSubmitting(true);
-    await fetch(`/api/admin/qa-queue/${rejectTarget.id}`, {
+    await fetchWithAuth(`/api/admin/qa-queue/${rejectTarget.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'reject', notes: rejectNotes.trim() }),
