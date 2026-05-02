@@ -35,14 +35,8 @@ const nullableUrlString = z.preprocess(
 );
 
 const nullableDateSchema = z.preprocess((value) => {
-  if (value == null) {
-    return null;
-  }
-
-  if (typeof value === 'string' && value.trim() === '') {
-    return null;
-  }
-
+  if (value == null) return null;
+  if (typeof value === 'string' && value.trim() === '') return null;
   const parsedDate = value instanceof Date ? value : new Date(String(value));
   return Number.isNaN(parsedDate.getTime()) ? z.NEVER : parsedDate;
 }, z.date().nullable().optional());
@@ -60,6 +54,12 @@ const nullablePositiveMoney = z.preprocess(
 
 export const registerPayloadSchema = z.object({
   name: trimmedString(100, 2),
+  username: z
+    .string()
+    .trim()
+    .min(3, 'Username must be at least 3 characters')
+    .max(30, 'Username must be 30 characters or fewer')
+    .regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores'),
   email: z.string().trim().email('Invalid email address').max(254),
   password: z
     .string()
@@ -155,9 +155,6 @@ export function clampPaginationValue(
   options: { fallback: number; min: number; max: number }
 ) {
   const parsedValue = Number.parseInt(value ?? '', 10);
-  if (!Number.isFinite(parsedValue)) {
-    return options.fallback;
-  }
-
+  if (!Number.isFinite(parsedValue)) return options.fallback;
   return Math.min(Math.max(parsedValue, options.min), options.max);
 }

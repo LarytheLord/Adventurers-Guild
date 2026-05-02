@@ -2,6 +2,7 @@
 
 import { Badge } from '@/components/ui/badge';
 import { RankBadge } from '@/components/ui/rank-badge';
+import { toast } from 'sonner';
 import {
   GuildCard,
   GuildPage,
@@ -49,10 +50,9 @@ interface Adventurer {
     skills: string[];
     specialization: string | null;
     totalQuestsCompleted: number;
-    completionRate: number;
+    completionRate: number | string;
     currentStreak: number;
     maxStreak: number;
-    availability: string;
   } | null;
   questHistory: QuestHistoryItem[];
   stats: {
@@ -85,12 +85,24 @@ function difficultyColor(d: string) {
   return map[d] || 'bg-slate-100 text-slate-600 border-slate-200';
 }
 
-export function GuildCardProfile({ adventurer }: { adventurer: Adventurer }) {
+export function GuildCardProfile({
+  adventurer,
+  isPublic = false
+}: {
+  adventurer: Adventurer;
+  isPublic?: boolean;
+}) {
   const a = adventurer;
   const threshold = RANK_THRESHOLDS[a.rank] || RANK_THRESHOLDS.F;
   const prevThreshold = Object.values(RANK_THRESHOLDS).find((t) => t.next === a.rank);
   const prevXp = prevThreshold?.xpNeeded || 0;
   const progress = a.rank === 'S' ? 100 : Math.min(100, Math.round(((a.xp - prevXp) / (threshold.xpNeeded - prevXp)) * 100));
+
+  const handleShare = () => {
+    const url = `${window.location.origin}/adventurer/${a.username || a.id}`;
+    navigator.clipboard.writeText(url);
+    toast.success('Profile link copied to clipboard!');
+  };
 
   return (
     <GuildPage>
@@ -165,9 +177,9 @@ export function GuildCardProfile({ adventurer }: { adventurer: Adventurer }) {
       {/* Stats grid */}
       <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
         {[
-          { label: 'Quests Completed', value: String(a.profile?.totalQuestsCompleted ?? 0), Icon: Swords, accent: 'text-orange-500' },
+          { label: 'Quests Completed', value: String(a.profile?.totalQuestsCompleted ?? 0), Icon: Swords, accent: 'text-orange-500' },      
           { label: 'Total XP', value: a.xp.toLocaleString(), Icon: Zap, accent: 'text-amber-500' },
-          { label: 'Avg Quality', value: a.stats.averageQuality ? `${a.stats.averageQuality}/10` : 'N/A', Icon: Star, accent: 'text-sky-500' },
+          { label: 'Avg Quality', value: a.stats.averageQuality ? `${Number(a.stats.averageQuality).toFixed(1)}/10` : 'N/A', Icon: Star, accent: 'text-sky-500' },
           { label: 'Best Streak', value: `${a.profile?.maxStreak ?? 0} days`, Icon: Flame, accent: 'text-rose-500' },
         ].map(({ label, value, Icon, accent }) => (
           <GuildCard key={label} className="border-slate-200/80">
@@ -267,12 +279,14 @@ export function GuildCardProfile({ adventurer }: { adventurer: Adventurer }) {
         <span>
           Verified Guild Card — Adventurers Guild
         </span>
-        <a
-          href={`https://adventurersguild.space/adventurer/${a.username || a.id}`}
-          className="flex items-center gap-1 font-medium text-orange-600 hover:text-orange-700"
-        >
-          <ExternalLink className="h-3.5 w-3.5" /> Share this card
-        </a>
+        {!isPublic && (
+          <button
+            onClick={handleShare}
+            className="flex items-center gap-1 font-medium text-orange-600 hover:text-orange-700 transition-colors"
+          >
+            <ExternalLink className="h-3.5 w-3.5" /> Share this card
+          </button>
+        )}
       </div>
     </GuildPage>
   );
