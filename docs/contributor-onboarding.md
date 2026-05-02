@@ -217,10 +217,40 @@ Warnings are fine. Errors block merge.
 
 ---
 
+## How Contributions Are Rewarded
+
+### NSoC 2026 XP
+All issues labelled `NSoC-2026` earn XP when merged. Points by rank:
+
+| Contribution | XP |
+|-------------|-----|
+| Bug report (accepted and fixed) | 5 XP |
+| Documentation / good first issue | 10 XP |
+| F-rank issue merged | 15 XP |
+| E-rank issue merged | 25 XP |
+| D-rank issue merged | 40 XP |
+| C-rank issue merged | 60 XP |
+| B-rank issue merged | 100 XP |
+| A/S-rank issue merged | 150 XP |
+
+Totals are tracked in issue #184. Leaderboard published at end of programme (May 30, 2026).
+
+### Recognition
+- Your name + contribution goes into [CONTRIBUTORS.md](../CONTRIBUTORS.md) on merge
+- Bug reporters are acknowledged in issue comments and commit references
+- Sustained contributors (3+ merged PRs) get invited as long-term collaborators
+- Top contributors are mentioned in project announcements and the Open Paws community
+
+### Path to Maintainer
+High-quality contributions across multiple areas → invite to co-maintainer role with merge authority. See [MAINTAINERS.md](../MAINTAINERS.md).
+
+---
+
 ## Where to Get Help
 
 - **Architecture questions**: `docs/ARCHITECTURE_DECISIONS.md`
 - **Task specs**: `docs/IMPLEMENTATION_TASKS.md` and the linked GitHub issues
 - **Issue resolution rules**: `docs/ISSUE_RESOLUTION_GUIDE.md`
 - **DB schema**: `prisma/schema.prisma`
+- **Contributors list**: `CONTRIBUTORS.md`
 - **Discord**: #guild-dev channel for real-time questions
