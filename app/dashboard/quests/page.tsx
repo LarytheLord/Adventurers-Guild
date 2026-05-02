@@ -114,6 +114,7 @@ export default function QuestsPage() {
   const [partyFilter, setPartyFilter] = useState<PartyFilter>('all');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [joiningPartyId, setJoiningPartyId] = useState<string | null>(null);
+  const [isBootcamp, setIsBootcamp] = useState(false);
 
   const isAdmin = session?.user?.role === 'admin';
   const shouldFetch = status === 'authenticated' && session?.user?.role !== 'company';
@@ -143,6 +144,26 @@ export default function QuestsPage() {
       return;
     }
   }, [status, session, router]);
+
+  // Fetch bootcamp status
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user?.role === 'adventurer') {
+      const fetchBootcampStatus = async () => {
+        try {
+          const response = await fetchWithAuth('/api/users/me/bootcamp');
+          const data = await response.json();
+          if (data.success && data.isBootcamp) {
+            setIsBootcamp(true);
+            // Auto-set track to BOOTCAMP for bootcamp users
+            setTrack('BOOTCAMP');
+          }
+        } catch (error) {
+          console.error('Error fetching bootcamp status:', error);
+        }
+      };
+      void fetchBootcampStatus();
+    }
+  }, [status, session]);
 
   const filteredQuests = quests.filter((quest) => {
     const isSquadQuest = (quest.maxParticipants ?? 1) > 1;
@@ -402,24 +423,26 @@ export default function QuestsPage() {
           </Select>
         </div>
 
-        <div className="flex flex-wrap gap-2">
-          {([
-            { value: 'all', label: 'All quests' },
-            { value: 'solo', label: 'Solo quests' },
-            { value: 'squad', label: 'Squad quests' },
-          ] as const).map((option) => (
-            <Button
-              key={option.value}
-              type="button"
-              size="sm"
-              variant={partyFilter === option.value ? 'default' : 'outline'}
-              onClick={() => setPartyFilter(option.value)}
-              className="rounded-full"
-            >
-              {option.label}
-            </Button>
-          ))}
-        </div>
+        {!isBootcamp && (
+          <div className="flex flex-wrap gap-2">
+            {([
+              { value: 'all', label: 'All quests' },
+              { value: 'solo', label: 'Solo quests' },
+              { value: 'squad', label: 'Squad quests' },
+            ] as const).map((option) => (
+              <Button
+                key={option.value}
+                type="button"
+                size="sm"
+                variant={partyFilter === option.value ? 'default' : 'outline'}
+                onClick={() => setPartyFilter(option.value)}
+                className="rounded-full"
+              >
+                {option.label}
+              </Button>
+            ))}
+          </div>
+        )}
 
         {/* Active filter chips */}
         {activeFilters.length > 0 && (
