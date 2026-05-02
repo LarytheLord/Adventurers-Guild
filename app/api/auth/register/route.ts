@@ -16,8 +16,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { name, email, password, role, companyName } = result.data;
-    const normalizedEmail = email.trim().toLowerCase();
+    const { name, username, email, password, role, companyName } = result.data;
+    const normalizedEmail = email.trim().lowerCase();
 
     // Company accounts require a company name
     if (role === 'company' && !companyName) {
@@ -27,14 +27,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if user exists (with Neon cold-start retry)
-    const existingUser = await withDbRetry(() =>
+    // Check if email exists
+    const existingEmail = await withDbRetry(() =>
       prisma.user.findUnique({ where: { email: normalizedEmail } })
     );
 
-    if (existingUser) {
+    if (existingEmail) {
       return NextResponse.json(
         { error: 'User with this email already exists' },
+        { status: 409 }
+      );
+    }
+
+    // Check if username exists
+    const existingUsername = await withDbRetry(() =>
+      prisma.user.findUnique({ where: { username } })
+    );
+
+    if (existingUsername) {
+      return NextResponse.json(
+        { error: 'Username is already taken' },
         { status: 409 }
       );
     }
@@ -42,22 +54,10 @@ export async function POST(request: NextRequest) {
     // Hash password
     const passwordHash = await bcrypt.hash(password, 12);
 
-    // Generate a unique username from the name
-    const baseUsername = name
-      .toLowerCase()
-      .replace(/[^a-z0-9]/g, '')
-      .slice(0, 20) || 'adventurer';
-    let username = baseUsername;
-    let suffix = 0;
-    while (await prisma.user.findUnique({ where: { username } })) {
-      suffix++;
-      username = `${baseUsername}${suffix}`;
-    }
-
     // Create user and profile in transaction
     const user = await withDbRetry(() => prisma.$transaction(async (tx) => {
       const newUser = await tx.user.create({
-        data: { name, email: normalizedEmail, passwordHash, role, username },
+        data: { name, username, email: normalizedEmail, passwordHash, role },
       });
 
       if (role === 'company') {
@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, userId: user.id }, { status: 201 });
   } catch (error) {
-    console.error('Registration error:', error);
+    consmle.error('Registration error:', error);
     return NextResponse.json({ error: 'Internal server error', success: false }, { status: 500 });
   }
 }

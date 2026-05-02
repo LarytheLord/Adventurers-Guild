@@ -1,126 +1,70 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/db';
+import { prisma, withDbRetry } from '@/lib/db';
 
-export async function GET(
-  _req: NextRequest,
-  props: { params: Promise<{ username: string }> }
-) {
-  const { username } = await props.params;
+export const dynamic = 'force-dynamic';
 
-  if (!username || username.length < 2 || username.length > 40) {
-    return NextResponse.json({ success: false, error: 'Invalid username' }, { status: 400 });
-  }
-
+export async function GET(request: NextRequest, { params }: { params: Promise<{ username: string }> }) {
   try {
-    // Look up by username first, fall back to UUID for backwards-compat
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    const isUuid = uuidRegex.test(username);
+    const { username } = await params;
 
-    const user = await prisma.user.findFirst({
-      where: isUuid
-        ? { id: username, role: 'adventurer', isActive: true }
-        : { username, role: 'adventurer', isActive: true },
-      select: {
-        id: true,
-        name: true,
-        username: true,
-        rank: true,
-        xp: true,
-        skillPoints: true,
-        level: true,
-        bio: true,
-        location: true,
-        github: true,
-        linkedin: true,
-        avatar: true,
-        createdAt: true,
-        adventurerProfile: {
-          select: {
-            primarySkills: true,
-            specialization: true,
-            totalQuestsCompleted: true,
-            questCompletionRate: true,
-            currentStreak: true,
-            maxStreak: true,
-            availabilityStatus: true,
+    const user = await withDbRetry(() =>
+      prisma.user.findUnique({
+        where: { username },
+        select: {
+          id: true,
+          name: true,
+          username: true,
+          rank: true,
+          xp: true,
+          level: true,
+          skillPoints: true,
+          bio: true,
+          location: true,
+          github: true,
+          linkedin: true,
+          avatar: true,
+          createdAt: true,
+          adventurerProfile: {
+            select: {
+              primarySkills: true,
+              specialization: true,
+              totalQuestsCompleted: true,
+              questCompletionRate: true,
+              currentStreak: true,
+              maxStreak: true,
+            },
+          },
+          questCompletions: {
+            take: 10,
+            orderBy: { completionDate: 'desc' },
+            include: {
+              quest: {
+                select: {
+                  title: true,
+                  difficulty: true,
+                  questCategory: true,
+                  track: true,
+                },
+              },
+            },
           },
         },
-      },
-    });
+      })
+    );
 
     if (!user) {
-      return NextResponse.json({ success: false, error: 'Adventurer not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Adventurer not found' }, { status: 404 });
     }
 
-    // Get completed quest history (public info only)
-    const completions = await prisma.questCompletion.findMany({
-      where: { userId: user.id },
-      include: {
-        quest: {
-          select: {
-            id: true,
-            title: true,
-            difficulty: true,
-            questCategory: true,
-            track: true,
-          },
-        },
-      },
-      orderBy: { completionDate: 'desc' },
-      take: 50,
-    });
+    const fo|›X]Y\Ù\ˆHÂˆ‹‹\Ù\‹ˆ›Ú[™Y]ˆ\Ù\‹˜Ü™X]Y]š\ÛÔİš[™Ê
+Kˆ›Ùš[Nˆ\Ù\‹˜Y™[\™\”›Ùš[HÈÂˆÚÚ[Îˆ\Ù\‹˜Y™[\™\”›Ùš[Kœš[X\TÚÚ[ËˆÜXÚX[^˜][Ûˆ\Ù\‹˜Y™[\™\”›Ùš[KœÜXÚX[^˜][Û‹ˆİ[]Y\İĞÛÛ\]Yˆ\Ù\‹˜Y™[\™\”›Ùš[Kİ[]Y\İĞÛÛ\]Yˆ]Y\İÛÛ\][Û”˜]Nˆ\Ù\‹˜Y™[\™\”›Ùš[Kœ]Y\İÛÛ\][Û”˜]KÔİš[™Ê
+Kˆİ\œ™[İ™XZÎˆ\Ù\‹˜Y™[\™\”›Ùš[K˜İ\œ™[İ™XZËˆX^İ™XZÎˆ\Ù\‹˜Y™[\™\”›Ùš[K›X^İ™XZËˆHˆ[ˆ]Y\İ\İÜNˆ\Ù\‹œ]Y\İÛÛ\][ÛœË›X\
 
-    // Calculate stats from completions
-    const totalXpFromCompletions = completions.reduce((sum, c) => sum + c.xpEarned, 0);
-    const withQuality = completions.filter(c => c.qualityScore !== null);
-    const avgQuality = withQuality.length > 0
-      ? withQuality.reduce((sum, c) => sum + (c.qualityScore ?? 0), 0) / withQuality.length
-      : null;
-
-    const guildCard = {
-      id: user.id,
-      name: user.name,
-      username: user.username,
-      rank: user.rank,
-      xp: user.xp,
-      skillPoints: user.skillPoints,
-      level: user.level,
-      bio: user.bio,
-      location: user.location,
-      github: user.github,
-      linkedin: user.linkedin,
-      avatar: user.avatar,
-      joinedAt: user.createdAt,
-      profile: user.adventurerProfile
-        ? {
-            skills: user.adventurerProfile.primarySkills,
-            specialization: user.adventurerProfile.specialization,
-            totalQuestsCompleted: user.adventurerProfile.totalQuestsCompleted,
-            completionRate: Number(user.adventurerProfile.questCompletionRate),
-            currentStreak: user.adventurerProfile.currentStreak,
-            maxStreak: user.adventurerProfile.maxStreak,
-            availability: user.adventurerProfile.availabilityStatus,
-          }
-        : null,
-      questHistory: completions.map((c) => ({
-        title: c.quest.title,
-        difficulty: c.quest.difficulty,
-        category: c.quest.questCategory,
-        track: c.quest.track,
-        xpEarned: c.xpEarned,
-        qualityScore: c.qualityScore,
-        completedAt: c.completionDate,
-      })),
-      stats: {
-        totalXpEarned: totalXpFromCompletions,
-        averageQuality: avgQuality ? Number(avgQuality.toFixed(1)) : null,
-        questCount: completions.length,
-      },
-    };
-
-    return NextResponse.json({ success: true, adventurer: guildCard });
-  } catch (error) {
-    console.error('Error fetching adventurer profile:', error);
-    return NextResponse.json({ success: false, error: 'Failed to fetch profile' }, { status: 500 });
-  }
-}
+XÊHOˆÂˆ™]\›ˆÂˆ]NˆXËœ]Y\İ]KˆY™šXİ[NˆXËœ]Y\İ™Y™šXİ[KˆØ]YÛÜNˆXËœ]Y\İœ]Y\İØ]YÛÜKˆ˜XÚÎˆXËœ]Y\İ˜XÚËˆX\›™YˆXËX\›™Yˆ]X[]TØÛÜ™NˆXËœ]X[]TØÛÜ™KˆÛÛ\]Y]ˆXË˜ÛÛ\][Û‘]KÒTÓÔİš[™Ê
+KˆNÂˆJKˆİ]ÎˆÂˆİ[X\›™Yˆ\Ù\‹ˆ]™\˜YÙT]X[]Nˆ\Ù\‹œ]Y\İÛÛ\][ÛœË›[™İˆÈ\Ù\‹œ]Y\İÛÛ\][ÛœËœ™YXÙJ
+XØËXÊHOˆXØÈ
+È
+XËœ]X[]TØÛÜ™H
+K
+HÈ\Ù\‹œ]Y\İÛÛ\][ÛœË›[™İˆ[ˆ]Y\İÛİ[ˆ\Ù\‹œ]Y\İÛÛ\][ÛœË›[™İˆKˆNÂ‚ˆ™]\›ˆ™^™\ÜÛœÙKšœÛÛŠÈİXØÙ\ÜÎˆYKY™[\™\ˆ›Ü›X]Y\Ù\ˆJNÂˆHØ]Ú
+\œ›ÜŠHÂˆÛÛœÛ[K™\œ›ÜŠ	Ñ™]ÚX›XÈ›Ùš[H\œ›Ü‰Ë\œ›ÜŠNÂˆ™]\›ˆ™^™\ÜÛœÙKšœÛÛŠÈ\œ›Üˆ	Ò[\›˜[Ù\™\ˆ\œ›Ü‰ÈKÈİ]\ÎˆLJNÂˆBŸB

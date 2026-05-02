@@ -1,10 +1,10 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { signIn } from 'next-auth/react';
 import { toast } from 'sonner';
-import { Briefcase, Building2, Loader2, Sword, User } from 'lucide-react';
+import { Briefcase, Building2, Loader2, Sword, User, AtSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -15,9 +15,11 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const [adventurerName, setAdventurerName] = useState('');
+  const [adventurerUsername, setAdventurerUsername] = useState('');
   const [adventurerEmail, setAdventurerEmail] = useState('');
   const [adventurerPassword, setAdventurerPassword] = useState('');
   const [companyName, setCompanyName] = useState('');
+  const [companyUsername, setCompanyUsername] = useState('');
   const [companyEmail, setCompanyEmail] = useState('');
   const [companyPassword, setCompanyPassword] = useState('');
 
@@ -29,20 +31,26 @@ export default function RegisterPage() {
     const email = (role === 'company' ? companyEmail : adventurerEmail).trim().toLowerCase();
     const password = role === 'company' ? companyPassword : adventurerPassword;
     const name = (role === 'company' ? companyName : adventurerName).trim();
+    const username = (role === 'company' ? companyUsername : adventurerUsername).trim().toLowerCase();
     const normalizedCompanyName = role === 'company' ? companyName.trim() : '';
 
-    if (!email || !password || !name) {
+    if (!email || !password || !name || !username) {
       toast.error('Please complete all required fields');
+      return;
+    }
+
+    if (username.length < 3) {
+      toast.error('Username must be at least 3 characters');
+      return;
+    }
+
+    if (!/^[a-z0-9_]+$/.test(username)) {
+      toast.error('Username can only contain lowercase letters, numbers, and underscores');
       return;
     }
 
     if (password.length < 8) {
       toast.error('Password must be at least 8 characters');
-      return;
-    }
-
-    if (name.length > 120 || normalizedCompanyName.length > 120) {
-      toast.error('Names must be 120 characters or fewer');
       return;
     }
 
@@ -56,6 +64,7 @@ export default function RegisterPage() {
           email,
           password,
           name,
+          username,
           role,
           companyName: normalizedCompanyName,
         }),
@@ -193,6 +202,13 @@ export default function RegisterPage() {
                   <Input id="name" name="name" placeholder="John Doe" type="text" autoCorrect="off" value={adventurerName} onChange={(event) => setAdventurerName(event.target.value)} disabled={!isHydrated || isLoading} required maxLength={100} className={inputClass} />
                 </div>
                 <div className="space-y-2">
+                  <Label htmlFor="username" className="text-sm font-medium text-slate-300">Username</Label>
+                  <div className="relative">
+                    <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+                    <Input id="username" name="username" placeholder="john_doe" type="text" autoCorrect="off" autoCapitalize="none" value={adventurerUsername} onChange={(event) => setAdventurerUsername(event.target.value)} disabled={!isHydrated || isLoading} required maxLength={30} className={inputClass + ' pl-10'} />
+                  </div>
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="email" className="text-sm font-medium text-slate-300">Email</Label>
                   <Input id="email" name="email" placeholder="name@example.com" type="email" autoCapitalize="none" autoCorrect="off" autoComplete="email" value={adventurerEmail} onChange={(event) => setAdventurerEmail(event.target.value)} disabled={!isHydrated || isLoading} required maxLength={254} className={inputClass} />
                 </div>
@@ -224,6 +240,13 @@ export default function RegisterPage() {
                 <div className="space-y-2">
                   <Label htmlFor="company" className="text-sm font-medium text-slate-300">Company Name</Label>
                   <Input id="company" name="company" placeholder="Acme Inc." type="text" value={companyName} onChange={(event) => setCompanyName(event.target.value)} disabled={!isHydrated || isLoading} required maxLength={120} className={inputClass} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="c-username" className="text-sm font-medium text-slate-300">Company Username</Label>
+                  <div className="relative">
+                    <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+                    <Input id="c-username" name="c-username" placeholder="acme_inc" type="text" autoCorrect="off" autoCapitalize="none" value={companyUsername} onChange={(event) => setCompanyUsername(event.target.value)} disabled={!isHydrated || isLoading} required maxLength={30} className={inputClass + ' pl-10'} />
+                  </div>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="work-email" className="text-sm font-medium text-slate-300">Work Email</Label>

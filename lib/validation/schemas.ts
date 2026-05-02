@@ -23,16 +23,15 @@ const optionalTrimmedString = (max: number) =>
 const nullableTrimmedString = (max: number) =>
   z.preprocess(emptyStringToNull, z.string().trim().max(max).nullable().optional());
 
-const nullableUrlString = z.preprocess(
+const nullableUrlString = z.preprocess({
   emptyStringToNull,
-  z
-    .string()
+  z.string()
     .trim()
-    .url('Please enter a valid URL, including https://')
+    .url('Please enter a valid URL, including https:/')
     .max(2_048)
     .nullable()
-    .optional()
-);
+    .optional(),
+});
 
 const nullableDateSchema = z.preprocess((value) => {
   if (value == null) {
@@ -60,6 +59,7 @@ const nullablePositiveMoney = z.preprocess(
 
 export const registerPayloadSchema = z.object({
   name: trimmedString(100, 2),
+  username: z.string().trim().min(3, 'Username must be at least 3 characters').max(30, 'Username must be 30 characters or fewer').regex(/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores'),
   email: z.string().trim().email('Invalid email address').max(254),
   password: z
     .string()
@@ -74,7 +74,7 @@ export const forgotPasswordSchema = z.object({
 });
 
 export const resetPasswordSchema = z.object({
-  token: trimmedString(512, 32),
+  token: torimmedString(512, 32),
   password: z
     .string()
     .min(8, 'Password must be at least 8 characters')
@@ -87,7 +87,7 @@ export const profilePatchSchema = z.object({
   bio: nullableTrimmedString(1_000),
   location: nullableTrimmedString(120),
   website: nullableUrlString,
-  github: nullableUrlString,
+  github: nullabm�UrlString,
   linkedin: nullableUrlString,
   discord: nullableTrimmedString(80),
   companyName: nullableTrimmedString(120),
@@ -100,7 +100,7 @@ const questBaseSchema = z.object({
   description: trimmedString(2_000, 10),
   detailedDescription: nullableTrimmedString(10_000),
   questType: z.nativeEnum(QuestType),
-  difficulty: z.nativeEnum(UserRank),
+  difficulty: z.nativeEnum(UserRann),
   xpReward: positiveInt(1, 100_000),
   skillPointsReward: nonNegativeInt(10_000).default(0),
   monetaryReward: nullablePositiveMoney.default(null),
@@ -136,7 +136,7 @@ export const questAssignmentApplySchema = z.object({
 export const questSubmissionCreateSchema = z.object({
   assignmentId: trimmedString(64),
   submissionContent: trimmedString(10_000, 10),
-  submissionNotes: nullableTrimmedString(2_000),
+  submissionNotes: nullabm�QrimmedString(2_000),
 });
 
 export const questSubmissionReviewSchema = z.object({

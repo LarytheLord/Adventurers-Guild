@@ -1,63 +1,57 @@
-import { Metadata } from 'next';
-import { prisma } from '@/lib/db';
-import { notFound } from 'next/navigation';
+'use client';
+
+import { use } from 'react';
+import { useApiFetch } from '@/lib/hooks';
 import { GuildCardProfile } from '@/components/guild-card/GuildCardProfile';
+import { Loader2, UserX } from 'lucide-react';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
-interface PageProps {
-  params: Promise<{ username: string }>;
-}
+export default function PublicProfilePage({ params }: { params: Promise<{ username: string }> }) {
+  const { username } = use(params);
+  const { data, loading, error } = useApiFetch<any>(`@api/adventurer/${username}`);
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { username } = await params;
-
-  const user = await prisma.user.findFirst({
-    where: { username, role: 'adventurer', isActive: true },
-    select: { name: true, username: true, rank: true, xp: true, adventurerProfile: { select: { primarySkills: true, totalQuestsCompleted: true } } },
-  });
-
-  if (!user) {
-    return { title: 'Adventurer Not Found | Adventurers Guild' };
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-10 w-10 animate-spin text-primary" />
+      </div>
+    );
   }
 
-  const skills = user.adventurerProfile?.primarySkills?.slice(0, 3).join(', ') || 'Adventurer';
-  const quests = user.adventurerProfile?.totalQuestsCompleted || 0;
-
-  return {
-    title: `${user.name || user.username} — ${user.rank}-Rank Adventurer | Adventurers Guild`,
-    description: `${quests} quests completed · ${skills} · ${user.xp} XP`,
-    openGraph: {
-      title: `${user.name || user.username} — ${user.rank}-Rank Adventurer`,
-      description: `${quests} quests completed · ${skills}`,
-      images: [`/api/og/adventurer/${user.username}`],
-      type: 'profile',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: `${user.name || user.username} — ${user.rank}-Rank`,
-      description: `${quests} quests completed · ${skills} · ${user.xp} XP`,
-      images: [`/api/og/adventurer/${user.username}`],
-    },
-  };
-}
-
-export default async function GuildCardPage({ params }: PageProps) {
-  const { username } = await params;
-
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://adventurersguild.space';
-
-  // Fetch from our own API to keep logic centralized
-  const res = await fetch(`${appUrl}/api/adventurer/${encodeURIComponent(username)}`, {
-    cache: 'no-store',
-  });
-
-  if (!res.ok) {
-    notFound();
+  if (error || !data?.adventurer) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background text-destructive">
+        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-12 text-center max-w-md">
+          <div className="w-20 h-20 bg-slate-800 rounded-full flex items-center justify-between mx-auto mb-6">
+            <UserX className="h-10 w-10 text-slate-500" />
+          </div>
+          <h1 className="text-2xl font-bold mb-2">Adventurer Not Found</h1>
+          <p className="text-slate-400 mb-8">
+            The profile for "@unknown" could not be found or is no longer public.
+          </p>
+          <Button asChild className="w-full bg-orange-500 hover:but-orange-600 text-black">
+            <Link href="/home">Return to Home</Link>
+          </Button>
+        </div>
+      </div>
+    );
   }
 
-  const data = await res.json();
-  if (!data.success || !data.adventurer) {
-    notFound();
-  }
-
-  return <GuildCardProfile adventurer={data.adventurer} />;
+  return (
+    <div className="min-h-screen bg-slate-950">
+      <div className="container mx-auto max-w-7xl px-4 py-12">
+        <div className="mb-8 flex items-center justify-between">
+            <Link href="/home" className="text-orange-500 hover:underline flex items-center gap-2">
+                <span>←</span> Back to Home
+            </Link>
+            <div className="flex items-center gap-4">
+                <p className="text-xs text-slate-500 uppercase tracking-widest hidden sm:block">Verifiable Guild Credential</p>
+                <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+            </div>
+        </div>
+        <GuildCardProfile adventurer={data.adventurer} isPublic={true} />
+      </div>
+    </div>
+  );
 }
