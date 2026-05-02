@@ -40,7 +40,7 @@ const faqs = [
     items: [
       {
         q: 'How does payment work?',
-        a: 'Payments are set by companies. Currently, Adventurers Guild tracks rewards but does not process payments.',
+        a: 'Payments are set by companies. "Adventurers receive 85% of the quest reward via Razorpay bank transfer. The platform takes a 15% fee',
       },
       {
         q: 'Is my code owned by me or the company?',
