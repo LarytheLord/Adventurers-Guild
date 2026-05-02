@@ -152,8 +152,9 @@ export default function QuestDetailPage() {
           );
           const assignmentData = await assignmentResponse.json();
 
-          if (assignmentData.success && assignmentData.assignments.length > 0) {
-            setAssignment(assignmentData.assignments[0]);
+          const assignments = Array.isArray(assignmentData.assignments) ? assignmentData.assignments : [];
+          if (assignmentData.success && assignments.length > 0) {
+            setAssignment(assignments[0]);
           } else {
             setAssignment(null);
           }
