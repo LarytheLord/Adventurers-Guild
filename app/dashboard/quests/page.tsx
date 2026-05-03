@@ -3,11 +3,13 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Select,
   SelectContent,
@@ -32,7 +34,30 @@ import {
 import Link from 'next/link';
 import { GuildCard, GuildHero, GuildKpi, GuildPage, GuildPanel } from '@/components/guild/primitives';
 import { useApiFetch } from '@/lib/hooks';
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
 import { DIFFICULTY_RANKS, QUEST_CATEGORIES } from '@/lib/quest-constants';
+
+interface QuestPartyMemberUser {
+  id: string;
+  name: string | null;
+  rank: string | null;
+  avatar?: string | null;
+}
+
+interface QuestPartyMember {
+  id: string;
+  userId: string;
+  isLeader: boolean;
+  user: QuestPartyMemberUser;
+}
+
+interface QuestParty {
+  id: string;
+  leaderId: string;
+  track: string;
+  maxSize: number;
+  members: QuestPartyMember[];
+}
 
 interface Quest {
   id: string;
@@ -52,6 +77,7 @@ interface Quest {
   companyId: string;
   createdAt: string;
   deadline?: string;
+  party?: QuestParty | null;
   company?: {
     name: string;
     email: string;
@@ -59,6 +85,7 @@ interface Quest {
 }
 
 type SortOption = 'newest' | 'xp_desc' | 'pay_desc' | 'deadline_asc';
+type PartyFilter = 'all' | 'solo' | 'squad';
 
 const TRACK_OPTIONS = [
   { value: 'OPEN', label: 'Open' },
@@ -84,7 +111,10 @@ export default function QuestsPage() {
   const [track, setTrack] = useState('all');
   const [category, setCategory] = useState('all');
   const [sort, setSort] = useState<SortOption>('newest');
+  const [partyFilter, setPartyFilter] = useState<PartyFilter>('all');
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [joiningPartyId, setJoiningPartyId] = useState<string | null>(null);
+  const [isBootcamp, setIsBootcamp] = useState(false);
 
   const isAdmin = session?.user?.role === 'admin';
   const shouldFetch = status === 'authenticated' && session?.user?.role !== 'company';
@@ -99,10 +129,9 @@ export default function QuestsPage() {
     return `/api/quests?${params.toString()}`;
   }, [searchTerm, difficulty, track, category, sort]);
 
-  const { data, loading, error } = useApiFetch<{ success: boolean; quests: Quest[]; error?: string }>(
-    apiUrl,
-    { skip: !shouldFetch }
-  );
+  const { data, loading, error, refetch } = useApiFetch<{ success: boolean; quests: Quest[]; error?: string }>(apiUrl, {
+    skip: !shouldFetch,
+  });
   const quests = data?.quests ?? EMPTY_QUESTS;
 
   useEffect(() => {
@@ -116,8 +145,39 @@ export default function QuestsPage() {
     }
   }, [status, session, router]);
 
-  // Server handles filtering/sorting — quests are already filtered
-  const filteredQuests = quests;
+  // Fetch bootcamp status
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user?.role === 'adventurer') {
+      const fetchBootcampStatus = async () => {
+        try {
+          const response = await fetchWithAuth('/api/users/me/bootcamp');
+          const data = await response.json();
+          if (data.success && data.isBootcamp) {
+            setIsBootcamp(true);
+            // Auto-set track to BOOTCAMP for bootcamp users
+            setTrack('BOOTCAMP');
+          }
+        } catch (error) {
+          console.error('Error fetching bootcamp status:', error);
+        }
+      };
+      void fetchBootcampStatus();
+    }
+  }, [status, session]);
+
+  const filteredQuests = quests.filter((quest) => {
+    const isSquadQuest = (quest.maxParticipants ?? 1) > 1;
+
+    if (partyFilter === 'solo') {
+      return !isSquadQuest;
+    }
+
+    if (partyFilter === 'squad') {
+      return isSquadQuest;
+    }
+
+    return true;
+  });
 
   const activeFilters: { key: string; label: string; clear: () => void }[] = [
     ...(searchTerm ? [{ key: 'search', label: `"${searchTerm}"`, clear: () => setSearchTerm('') }] : []),
@@ -131,7 +191,64 @@ export default function QuestsPage() {
     ...(sort !== 'newest'
       ? [{ key: 'sort', label: SORT_OPTIONS.find((s) => s.value === sort)?.label ?? sort, clear: () => setSort('newest') }]
       : []),
+    ...(partyFilter !== 'all'
+      ? [
+          {
+            key: 'party',
+            label: partyFilter === 'solo' ? 'Solo quests' : 'Squad quests',
+            clear: () => setPartyFilter('all'),
+          },
+        ]
+      : []),
   ];
+
+  function getInitials(name: string | null | undefined) {
+    if (!name) return '?';
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (parts.length === 0) return '?';
+    return parts.slice(0, 2).map((part) => part[0]?.toUpperCase() || '').join('');
+  }
+
+  function getQuestPartySize(quest: Quest) {
+    return quest.party?.members.length ?? 0;
+  }
+
+  function getQuestPartyCapacity(quest: Quest) {
+    return quest.party?.maxSize ?? quest.maxParticipants ?? 1;
+  }
+
+  function isCurrentUserPartyMember(quest: Quest) {
+    const userId = session?.user?.id;
+    if (!userId || !quest.party) return false;
+    return quest.party.members.some((member) => member.user.id === userId);
+  }
+
+  async function joinParty(quest: Quest) {
+    if (!session?.user?.id || !quest.party) return;
+
+    try {
+      setJoiningPartyId(quest.id);
+      const response = await fetchWithAuth(`/api/parties/${quest.party.id}/members`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId: session.user.id }),
+      });
+
+      const data = await response.json();
+      if (!data.success) {
+        toast.error(data.error || 'Failed to join party');
+        return;
+      }
+
+      toast.success('Joined party successfully');
+      await refetch();
+    } catch (joinError) {
+      console.error('Error joining party:', joinError);
+      toast.error('An error occurred while joining the party');
+    } finally {
+      setJoiningPartyId(null);
+    }
+  }
 
   function clearAllFilters() {
     setSearchTerm('');
@@ -139,6 +256,7 @@ export default function QuestsPage() {
     setTrack('all');
     setCategory('all');
     setSort('newest');
+    setPartyFilter('all');
   }
 
   if (status === 'loading' || loading) {
@@ -305,6 +423,27 @@ export default function QuestsPage() {
           </Select>
         </div>
 
+        {!isBootcamp && (
+          <div className="flex flex-wrap gap-2">
+            {([
+              { value: 'all', label: 'All quests' },
+              { value: 'solo', label: 'Solo quests' },
+              { value: 'squad', label: 'Squad quests' },
+            ] as const).map((option) => (
+              <Button
+                key={option.value}
+                type="button"
+                size="sm"
+                variant={partyFilter === option.value ? 'default' : 'outline'}
+                onClick={() => setPartyFilter(option.value)}
+                className="rounded-full"
+              >
+                {option.label}
+              </Button>
+            ))}
+          </div>
+        )}
+
         {/* Active filter chips */}
         {activeFilters.length > 0 && (
           <div className="flex flex-wrap items-center gap-2">
@@ -364,10 +503,70 @@ export default function QuestsPage() {
                       {quest.track.toLowerCase()}
                     </Badge>
                   )}
+                  {(quest.maxParticipants ?? 1) <= 1 ? (
+                    <Badge variant="outline" className="border-slate-300 bg-slate-50 text-slate-700">
+                      Solo
+                    </Badge>
+                  ) : (
+                    <Badge className="border border-orange-300 bg-orange-100 text-orange-700">
+                      Party: {getQuestPartySize(quest)}/{getQuestPartyCapacity(quest)}
+                    </Badge>
+                  )}
                 </div>
               </CardHeader>
               <CardContent>
                 <p className="line-clamp-2 text-sm text-slate-600">{quest.description}</p>
+
+                {(quest.maxParticipants ?? 1) > 1 && (
+                  <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3">
+                    <div className="flex items-center justify-between gap-3">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Party members</p>
+                        <p className="text-sm font-medium text-slate-900">
+                          {getQuestPartySize(quest) > 0
+                            ? `${getQuestPartySize(quest)} member${getQuestPartySize(quest) === 1 ? '' : 's'} joined`
+                            : 'No party formed yet'}
+                        </p>
+                      </div>
+                      {quest.party &&
+                      getQuestPartySize(quest) < getQuestPartyCapacity(quest) &&
+                      !isCurrentUserPartyMember(quest) ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => void joinParty(quest)}
+                          disabled={joiningPartyId === quest.id}
+                        >
+                          {joiningPartyId === quest.id ? 'Joining...' : 'Join Party'}
+                        </Button>
+                      ) : null}
+                    </div>
+
+                    {quest.party && getQuestPartySize(quest) > 0 ? (
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        <div className="flex -space-x-2">
+                          {quest.party.members.slice(0, 4).map((member) => (
+                            <Avatar key={member.id} className="h-8 w-8 border-2 border-white">
+                              <AvatarImage src={member.user.avatar ?? undefined} alt={member.user.name ?? 'Party member'} />
+                              <AvatarFallback className="bg-slate-100 text-[10px] font-semibold text-slate-700">
+                                {getInitials(member.user.name)}
+                              </AvatarFallback>
+                            </Avatar>
+                          ))}
+                        </div>
+                        {quest.party.members.length > 4 && (
+                          <div className="rounded-full border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-600 shadow-sm">
+                            +{quest.party.members.length - 4}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="mt-3 text-xs text-slate-500">
+                        Open squad slot{getQuestPartyCapacity(quest) > 1 ? 's' : ''} available for this quest.
+                      </p>
+                    )}
+                  </div>
+                )}
 
                 <div className="mt-4 grid grid-cols-2 gap-2 rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs">
                   <div className="flex items-center gap-1 text-slate-700">
