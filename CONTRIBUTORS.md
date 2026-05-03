@@ -24,6 +24,7 @@ Contributors with merged pull requests.
 | [@aryansondharva](https://github.com/aryansondharva) | Completed Quests page — `/dashboard/completed-quests` with full history view (PR #193) |
 | [@Dipanita45](https://github.com/Dipanita45) | HowItWorks landing section (PR #183); FAQ and privacy page improvements |
 | [@sadhami0519](https://github.com/sadhami0519) | Streak system (PR #161, in review) |
+| [@Sanila-577](https://github.com/Sanila-577) | Squad-aware quest board — party slot indicators, party join flow, party member API routes, user search (PR #189) |
 
 ---
 
@@ -43,7 +44,6 @@ Contributors with open PRs under active review.
 
 | GitHub | Working On |
 |--------|-----------|
-| [@Sanila-577](https://github.com/Sanila-577) | Squad-aware quest board UI with party indicators (PR #189, issue #111) |
 | [@Adil2009700](https://github.com/Adil2009700) | Admin Analytics Dashboard (#200), Admin Revenue Dashboard (#198), Quest Streak System (#201), Quest Board Filters (#203), Landing redesign (#204), Guild Card UI (#214) |
 | [@Dipanita45](https://github.com/Dipanita45) | FAQ accordion + privacy page improvements (PR #210) |
 | [@MaryamMohamedYahya](https://github.com/MaryamMohamedYahya) | Mobile responsiveness audit (issue #196) |
