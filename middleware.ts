@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { UserRole } from '@/types';
+import { strictRateLimit, apiRateLimit } from '@/lib/rate-limit';
 
 // Define protected routes and their required roles
 const protectedRoutes: { [key: string]: UserRole[] } = {
@@ -21,9 +22,25 @@ const protectedRoutes: { [key: string]: UserRole[] } = {
 };
 
 export async function middleware(request: NextRequest) {
+  // Apply rate limiting to API routes
+  if (request.nextUrl.pathname.startsWith('/api/')) {
+    const rateLimitResponse = apiRateLimit(request);
+    if (rateLimitResponse) return rateLimitResponse;
+  }
+
+  // Apply strict rate limiting to auth routes
+  if (
+    request.nextUrl.pathname.startsWith('/api/auth') ||
+    request.nextUrl.pathname === '/login' ||
+    request.nextUrl.pathname === '/register'
+  ) {
+    const rateLimitResponse = strictRateLimit(request);
+    if (rateLimitResponse) return rateLimitResponse;
+  }
+
   // Check if the route is protected
   const pathname = request.nextUrl.pathname;
-  
+
   // Find the most specific matching route (Longest Prefix Match)
   // This prevents /dashboard (adventurer) from overriding /dashboard/company (company only)
   const sortedRoutes = Object.keys(protectedRoutes).sort((a, b) => b.length - a.length);
