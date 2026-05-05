@@ -18,7 +18,7 @@ const REVIEW_XP_BY_DIFFICULTY: Record<string, number> = {
 
 export async function GET(request: NextRequest) {
   try {
-    const authUser = await requireAuth(request, 'company', 'admin');
+    const authUser = await requireAuth(request);
     if (!authUser) {
       return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
@@ -132,22 +132,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const data = await prisma.questSubmission.update({
-      where: { id: submissionId },
-      data: {
-        status,
-        reviewerId: authUser.id,
-        reviewedAt: new Date(),
-        reviewNotes: typeof body.review_notes === 'string' ? body.review_notes : null,
-        qualityScore,
-      },
-    });
-
     const existingSubmission = await prisma.questSubmission.findUnique({
       where: { id: submissionId },
       select: {
         id: true,
         status: true,
+        reviewerId: true,
         assignmentId: true,
         assignment: {
           select: {
@@ -168,11 +158,26 @@ export async function POST(request: NextRequest) {
       return Response.json({ error: 'Submission not found', success: false }, { status: 404 });
     }
 
-    if (authUser.role !== 'admin' && existingSubmission.assignment.quest?.companyId !== authUser.id) {
+    const isAdmin = authUser.role === 'admin';
+    const isQuestCompany = authUser.role === 'company' && existingSubmission.assignment.quest?.companyId === authUser.id;
+    const isAssignedPeerReviewer = authUser.role === 'adventurer' && existingSubmission.reviewerId === authUser.id;
+
+    if (!isAdmin && !isQuestCompany && !isAssignedPeerReviewer) {
       return Response.json({ error: 'Forbidden', success: false }, { status: 403 });
     }
 
     const wasAlreadyApproved = existingSubmission.status === 'approved';
+
+    const data = await prisma.questSubmission.update({
+      where: { id: submissionId },
+      data: {
+        status,
+        reviewerId: existingSubmission.reviewerId ?? authUser.id,
+        reviewedAt: new Date(),
+        reviewNotes: typeof body.review_notes === 'string' ? body.review_notes : null,
+        qualityScore,
+      },
+    });
 
     if (status === 'approved' && !wasAlreadyApproved) {
       await prisma.questAssignment.update({
@@ -269,7 +274,13 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    if (submissionWithDetails?.reviewerId === authUser.id && !submissionWithDetails.reviewXpAwarded) {
+    let awardedReviewXp: number | undefined;
+
+    if (
+      authUser.role === 'adventurer' &&
+      submissionWithDetails?.reviewerId === authUser.id &&
+      !submissionWithDetails.reviewXpAwarded
+    ) {
       const difficulty = submissionWithDetails.assignment?.quest?.difficulty ?? 'F';
       const reviewXp = REVIEW_XP_BY_DIFFICULTY[difficulty] ?? 5;
 
@@ -286,7 +297,7 @@ export async function POST(request: NextRequest) {
       if (user) {
         const { getRankForXp, XP_PER_LEVEL } = await import('@/lib/ranks');
         const newXp = user.xp + reviewXp;
-        const newLevel = user.level + Math.floor(reviewXp / XP_PER_LEVEL);
+        const newLevel = Math.floor(newXp / XP_PER_LEVEL) + 1;
         const newRank = getRankForXp(newXp);
 
         await prisma.user.update({
@@ -309,10 +320,12 @@ export async function POST(request: NextRequest) {
             },
           });
         }
+
+        awardedReviewXp = reviewXp;
       }
     }
 
-    return Response.json({ submission: data, success: true, reviewXp: submissionWithDetails?.reviewXpAwarded ? REVIEW_XP_BY_DIFFICULTY[submissionWithDetails.assignment?.quest?.difficulty ?? 'F'] : undefined });
+    return Response.json({ submission: data, success: true, reviewXp: awardedReviewXp });
   } catch (error) {
     console.error('Error reviewing submission:', error);
     return Response.json({ error: 'Failed to review submission', success: false }, { status: 500 });

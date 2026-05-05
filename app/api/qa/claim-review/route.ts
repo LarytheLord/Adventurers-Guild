@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireAuth } from '@/lib/api-auth';
+import { RANK_THRESHOLDS } from '@/lib/ranks';
 
-const B_RANK_THRESHOLD = 500;
+const B_RANK_THRESHOLD = RANK_THRESHOLDS.find(({ rank }) => rank === 'B')?.threshold ?? 10000;
 
 // POST /api/qa/claim-review — B-rank+ adventurer claims a submission for peer review
 export async function POST(request: NextRequest) {
@@ -12,7 +13,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
-    if (!authUser.xp || authUser.xp < B_RANK_THRESHOLD) {
+    const reviewer = await prisma.user.findUnique({
+      where: { id: authUser.id },
+      select: { xp: true },
+    });
+
+    if (!reviewer || reviewer.xp < B_RANK_THRESHOLD) {
       return NextResponse.json(
         { error: 'Must be B-rank or above to claim reviews', success: false },
         { status: 403 }
@@ -35,6 +41,7 @@ export async function POST(request: NextRequest) {
         assignment: {
           select: {
             userId: true,
+            status: true,
             quest: {
               select: {
                 title: true,
@@ -50,7 +57,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Submission not found', success: false }, { status: 404 });
     }
 
-    if (submission.status !== 'pending' && submission.status !== 'under_review') {
+    if (submission.status !== 'pending' || submission.assignment.status !== 'pending_admin_review') {
       return NextResponse.json(
         { error: 'Submission is not available for peer review', success: false },
         { status: 400 }
