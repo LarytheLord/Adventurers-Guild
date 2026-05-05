@@ -44,6 +44,7 @@ interface QueueItem {
     submissionNotes: string | null;
     submittedAt: string;
     reviewNotes: unknown;
+    reviewerId: string | null;
   }>;
 }
 
@@ -181,7 +182,14 @@ export default function QAQueuePage() {
                     {/* Submission content */}
                     {submission && (
                       <div>
-                        <p className="text-xs text-slate-500 mb-1.5 uppercase tracking-wide font-medium">Submission</p>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <p className="text-xs text-slate-500 uppercase tracking-wide font-medium">Submission</p>
+                          {submission.reviewerId && (
+                            <Badge className="text-xs bg-purple-500/10 text-purple-400 border-purple-500/20">
+                              Peer Review Claimed
+                            </Badge>
+                          )}
+                        </div>
                         <p className="text-sm text-slate-300 bg-slate-950/60 rounded-lg p-3 whitespace-pre-wrap line-clamp-4">
                           {submission.submissionContent}
                         </p>

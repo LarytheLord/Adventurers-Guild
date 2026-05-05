@@ -31,6 +31,7 @@ export async function GET(request: NextRequest) {
           submissionNotes: true,
           submittedAt: true,
           reviewNotes: true,
+          reviewerId: true,
         },
       },
     },

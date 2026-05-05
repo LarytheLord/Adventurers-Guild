@@ -6,6 +6,16 @@ import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
 const VALID_REVIEW_STATUSES = ['pending', 'under_review', 'approved', 'needs_rework', 'rejected'] as const;
 type ReviewStatus = (typeof VALID_REVIEW_STATUSES)[number];
 
+const REVIEW_XP_BY_DIFFICULTY: Record<string, number> = {
+  F: 5,
+  E: 8,
+  D: 12,
+  C: 15,
+  B: 20,
+  A: 25,
+  S: 30,
+};
+
 export async function GET(request: NextRequest) {
   try {
     const authUser = await requireAuth(request, 'company', 'admin');
@@ -122,6 +132,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    const data = await prisma.questSubmission.update({
+      where: { id: submissionId },
+      data: {
+        status,
+        reviewerId: authUser.id,
+        reviewedAt: new Date(),
+        reviewNotes: typeof body.review_notes === 'string' ? body.review_notes : null,
+        qualityScore,
+      },
+    });
+
     const existingSubmission = await prisma.questSubmission.findUnique({
       where: { id: submissionId },
       select: {
@@ -135,6 +156,7 @@ export async function POST(request: NextRequest) {
             quest: {
               select: {
                 companyId: true,
+                difficulty: true,
               },
             },
           },
@@ -149,17 +171,6 @@ export async function POST(request: NextRequest) {
     if (authUser.role !== 'admin' && existingSubmission.assignment.quest?.companyId !== authUser.id) {
       return Response.json({ error: 'Forbidden', success: false }, { status: 403 });
     }
-
-    const data = await prisma.questSubmission.update({
-      where: { id: submissionId },
-      data: {
-        status,
-        reviewerId: authUser.id,
-        reviewedAt: new Date(),
-        reviewNotes: typeof body.review_notes === 'string' ? body.review_notes : null,
-        qualityScore,
-      },
-    });
 
     const wasAlreadyApproved = existingSubmission.status === 'approved';
 
@@ -241,7 +252,67 @@ export async function POST(request: NextRequest) {
 
     await syncQuestLifecycleStatus(prisma, existingSubmission.assignment.questId);
 
-    return Response.json({ submission: data, success: true });
+    const submissionWithDetails = await prisma.questSubmission.findUnique({
+      where: { id: submissionId },
+      select: {
+        reviewXpAwarded: true,
+        reviewerId: true,
+        assignment: {
+          select: {
+            quest: {
+              select: {
+                difficulty: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (submissionWithDetails?.reviewerId === authUser.id && !submissionWithDetails.reviewXpAwarded) {
+      const difficulty = submissionWithDetails.assignment?.quest?.difficulty ?? 'F';
+      const reviewXp = REVIEW_XP_BY_DIFFICULTY[difficulty] ?? 5;
+
+      await prisma.questSubmission.update({
+        where: { id: submissionId },
+        data: { reviewXpAwarded: true },
+      });
+
+      const user = await prisma.user.findUnique({
+        where: { id: authUser.id },
+        select: { xp: true, level: true, rank: true },
+      });
+
+      if (user) {
+        const { getRankForXp, XP_PER_LEVEL } = await import('@/lib/ranks');
+        const newXp = user.xp + reviewXp;
+        const newLevel = user.level + Math.floor(reviewXp / XP_PER_LEVEL);
+        const newRank = getRankForXp(newXp);
+
+        await prisma.user.update({
+          where: { id: authUser.id },
+          data: {
+            xp: newXp,
+            level: newLevel,
+            rank: newRank,
+          },
+        });
+
+        if (user.rank !== newRank) {
+          await prisma.notification.create({
+            data: {
+              userId: authUser.id,
+              title: 'Rank Up!',
+              message: `Congratulations! You've been promoted to ${newRank}-Rank!`,
+              type: 'rank_up',
+              data: { newRank, previousRank: user.rank },
+            },
+          });
+        }
+      }
+    }
+
+    return Response.json({ submission: data, success: true, reviewXp: submissionWithDetails?.reviewXpAwarded ? REVIEW_XP_BY_DIFFICULTY[submissionWithDetails.assignment?.quest?.difficulty ?? 'F'] : undefined });
   } catch (error) {
     console.error('Error reviewing submission:', error);
     return Response.json({ error: 'Failed to review submission', success: false }, { status: 500 });

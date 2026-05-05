@@ -456,6 +456,7 @@ model QuestSubmission {
   reviewedAt        DateTime?        @map("reviewed_at") @db.Timestamptz
   reviewNotes       String?          @map("review_notes")
   qualityScore      Int?             @map("quality_score")
+  reviewXpAwarded   Boolean          @default(false)      @map("review_xp_awarded")
 
   assignment QuestAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
   user       User?           @relation("SubmittedBy", fields: [userId], references: [id])
