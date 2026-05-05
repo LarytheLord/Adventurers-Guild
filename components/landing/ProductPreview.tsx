@@ -1,5 +1,4 @@
 ﻿'use client';
-import { motion } from 'framer-motion';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { Target, Zap, ShieldCheck } from 'lucide-react';
