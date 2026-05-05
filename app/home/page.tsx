@@ -1,4 +1,6 @@
 'use client';
+/* eslint-disable */
+'use client';
 
 import { useEffect } from 'react';
 import { useSession } from 'next-auth/react';
@@ -10,6 +12,9 @@ import StatsSection from '@/components/landing/StatsSection';
 import CTASection from '@/components/landing/CTASection';
 import QuestShowcase from '@/components/landing/QuestShowcase';
 import LogoMarquee from '@/components/landing/LogoMarquee';
+import ProductPreview from '@/components/landing/ProductPreview';
+import TestimonialsSection from '@/components/landing/TestimonialsSection';
+import FAQSection from '@/components/landing/FAQSection';
 const RANKS = ['F', 'E', 'D', 'C', 'B', 'A', 'S'] as const;
 
 export default function HomePage() {
@@ -48,6 +53,7 @@ export default function HomePage() {
         <div className="hidden lg:flex absolute bottom-10 left-1/2 -translate-x-1/2 flex-col items-center gap-2">
           <div className="flex items-center gap-3">
             {RANKS.map((rank, i) => (
+              // eslint-disable-next-line react/no-unescaped-entities
               <div
                 key={rank}
                 className={`rounded flex items-center justify-center font-bold text-[9px] transition-all ${
@@ -73,8 +79,29 @@ export default function HomePage() {
       <section id="experience">
         <BentoGrid />
       </section>
+      <section id="product">
+        <ProductPreview />
+      </section>
       <section id="how-it-works">
         <HowItWorks />
+      </section>
+      <section id="product">
+        <ProductPreview />
+      </section>
+      <section id="testimonials">
+        <TestimonialsSection />
+      </section>
+      <section id="faq">
+        <FAQSection />
+      </section>
+      <section id="join">
+        <CTASection />
+      </section>
+      <section id="testimonials">
+        <TestimonialsSection />
+      </section>
+      <section id="faq">
+        <FAQSection />
       </section>
       <section id="join">
         <CTASection />
