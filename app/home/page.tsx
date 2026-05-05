@@ -97,6 +97,18 @@ export default function HomePage() {
       <section id="join">
         <CTASection />
       </section>
+      <section id="product">
+        <ProductPreview />
+      </section>
+      <section id="testimonials">
+        <TestimonialsSection />
+      </section>
+      <section id="faq">
+        <FAQSection />
+      </section>
+      <section id="join">
+        <CTASection />
+      </section>
       <section id="testimonials">
         <TestimonialsSection />
       </section>
