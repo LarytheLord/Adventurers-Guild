@@ -1,0 +1,97 @@
+RAZORPAY PARTNER ONBOARDING - ADVENTURERS GUILD
+====================================================
+
+BUSINESS DETAILS
+---------------
+Business Name: Adventurers Guild
+Website: https://adventurersguild.space
+Business Type: Open-source gamified developer marketplace
+Incorporation Status: In process (currently operating as sole proprietorship)
+GSTIN: Will provide before going live (currently in application process)
+
+PAYMENT GATEWAY USE CASE
+-------------------------
+Primary Use: Service marketplace payments (NOT e-commerce/goods)
+
+1. INBOUND PAYMENTS (Company to Platform)
+   - Companies post coding projects ("Quests") with defined monetary rewards
+   - When posting a Quest, company pays: Quest Reward + Platform Fee (15%)
+   - Payment Method: Razorpay Standard Checkout
+   - Currency: INR (Indian Rupee)
+   - Volume: 10-15 transactions/month (early access), scaling to 200+/month by Q3 2026
+   - Amount Range: Rs.3,000 - Rs.25,000 per transaction
+
+2. OUTBOUND PAYOUTS (Platform to Developers)
+   - Upon quest completion and client approval, developers receive payouts
+   - Payout Method: RazorpayX (Contact + Fund Account API)
+   - Developers link their Indian bank accounts via Razorpay Contact API
+   - Payout Amount = Quest Reward - 15% platform fee
+   - Frequency: Weekly batches (every Tuesday)
+   - Volume: 8-12 payouts/month (early), scaling to 150+/month
+
+3. TRANSACTION FLOW
+   Company posts Quest (sets reward: Rs.10,000)
+      |
+      v
+   Company clicks "Pay & Post" to Razorpay Checkout (Rs.10,000 + Rs.1,500 fee = Rs.11,500)
+      |
+      v
+   Razorpay processes payment to Webhook: /api/payments/webhooks/razorpay
+      |
+      v
+   Quest goes live on /dashboard/quests
+      |
+      v
+   Adventurer completes quest to Submits work
+      |
+      v
+   Company approves to triggers payout via RazorpayX
+      |
+      v
+   Developer receives Rs.8,500 in their bank account (Rs.10,000 - Rs.1,500 fee)
+
+TECHNICAL INTEGRATION
+--------------------
+Integration Type: Razorpay Standard Checkout + RazorpayX
+
+API Endpoints:
+   - POST /api/payments/razorpay/order - Create Razorpay order
+   - POST /api/payments/webhooks/razorpay - Webhook handler
+   - POST /api/admin/quests/[id]/approve - Trigger payout
+
+Libraries Used:
+   - razorpay: ^2.9.6 (Node.js/Next.js)
+   - Environment: Test mode (will switch to live after soft launch)
+
+Environment Variables:
+   - RAZORPAY_KEY_ID=rzp_test_xxxxx
+   - RAZORPAY_KEY_SECRET=xxxxx
+   - RAZORPAY_ACCOUNT_NUMBER=xxxxx (for RazorpayX)
+   - RAZORPAY_WEBHOOK_SECRET=xxxxx
+
+EXPECTED VOLUME (NEXT 3 MONTHS)
+-----------------------------
+Month 1: 15 inbound / 12 outbound (GMV: Rs.1.5L - Rs.2.3L)
+Month 2: 30 inbound / 25 outbound (GMV: Rs.3L - Rs.4.5L)
+Month 3: 50 inbound / 40 outbound (GMV: Rs.5L - Rs.8L)
+
+COMPLIANCE STATUS
+----------------
+- GSTIN: In process, will provide within 15 days
+- Business Type: Service marketplace (not e-commerce)
+- Currency: INR only (Indian market focus)
+- Refund Policy: 7-day window (stated in Terms: https://adventurersguild.space/legal/terms)
+- KYC: Developers verified via RazorpayX before first payout
+- Webhook Security: HMAC-SHA256 signature verification
+
+SUPPORT CONTACT
+---------------
+Name: Abi
+Role: Founder, Adventurers Guild
+Email: admin@adventurersguild.space
+Phone: [Your phone number]
+
+---
+Document prepared for Razorpay Partner Onboarding
+Date: May 5, 2026
+Website: https://adventurersguild.space
