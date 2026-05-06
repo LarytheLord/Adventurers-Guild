@@ -54,7 +54,7 @@ export async function PATCH(
     });
     return NextResponse.json({ message: 'Submission approved — forwarded to client review', success: true });
   }
-  
+
   //check tutorial quest completion
   const quest = await prisma.quest.findUnique({
     where: { id: assignment.questId },
@@ -67,7 +67,7 @@ export async function PATCH(
   if (!bootcampLink) return;
 
   //uses completion order to flip tutorial quest
-  let updateData: any = {};
+  const updateData: Record<string, boolean> = {};
   if (!bootcampLink.tutorialQuest1Complete) {
     updateData.tutorialQuest1Complete = true;
   } else if (!bootcampLink.tutorialQuest2Complete) {
