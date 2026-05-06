@@ -1,111 +1,137 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { requireAuth } from '@/lib/api-auth';
 import { prisma } from '@/lib/db';
-import { createRazorpayPayout, isRazorpayConfigured } from '@/lib/razorpay';
 
-export async function POST(req: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
-    if (!isRazorpayConfigured()) {
-      return NextResponse.json(
-        { error: 'Razorpay not configured. Use simulated payment.' },
-        { status: 501 }
-      );
-    }
-
-    const session = await getServerSession();
-    if (!session?.user?.email) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-      include: { companyProfile: true },
-    });
+    const user = await requireAuth(request, 'admin');
     if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
-    const isAdmin = user.role === 'admin';
-    const isCompany = !!user.companyProfile;
-    if (!isAdmin && !isCompany) {
-      return NextResponse.json(
-        { error: 'Forbidden: Only admins or companies can approve payments' },
-        { status: 403 }
-      );
-    }
+    const body = await request.json();
+    const { questId, userId, amount } = body;
 
-    const { questId, userId, amount, currency = 'INR' } = await req.json();
-    if (!questId || !userId || !amount || amount <= 0) {
+    if (!questId || !userId || amount == null) {
       return NextResponse.json(
-        { error: 'Missing required fields: questId, userId, amount' },
+        { error: 'questId, userId, and amount are required', success: false },
         { status: 400 }
       );
     }
 
+    if (typeof amount !== 'number' || amount <= 0) {
+      return NextResponse.json({ error: 'amount must be a positive number', success: false }, { status: 400 });
+    }
+
+    // Verify quest exists and has a monetary reward
     const quest = await prisma.quest.findUnique({
       where: { id: questId },
-      include: { company: true },
+      select: { id: true, title: true, monetaryReward: true, companyId: true, status: true },
     });
+
     if (!quest) {
-      return NextResponse.json({ error: 'Quest not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Quest not found', success: false }, { status: 404 });
     }
 
-    // 🚫 BOOTCAMP and TUTORIAL exclusion
-    if (quest.track === 'BOOTCAMP' || quest.source === 'TUTORIAL') {
+    if (!quest.monetaryReward || Number(quest.monetaryReward) <= 0) {
+      return NextResponse.json({ error: 'Quest has no monetary reward', success: false }, { status: 400 });
+    }
+
+    // Verify the assignment is completed
+    const assignment = await prisma.questAssignment.findFirst({
+      where: { questId, userId, status: 'completed' },
+      select: { id: true },
+    });
+
+    if (!assignment) {
       return NextResponse.json(
-        { error: 'BOOTCAMP or TUTORIAL quests do not support payments – XP only' },
+        { error: 'No completed assignment found for this quest and user', success: false },
         { status: 400 }
       );
     }
 
-    const adventurer = await prisma.adventurerProfile.findUnique({
-      where: { userId: userId },
-      select: { razorpayFundAccountId: true },
+    // Check if transaction already exists
+    const existingTx = await prisma.transaction.findFirst({
+      where: { questId, toUserId: userId },
+      select: { id: true },
     });
-    if (!adventurer?.razorpayFundAccountId) {
+
+    if (existingTx) {
       return NextResponse.json(
-        { error: 'Adventurer has not set up a bank account for payouts' },
-        { status: 400 }
+        { error: 'Payment already initiated for this quest', success: false },
+        { status: 409 }
       );
     }
 
-    const platformFee = Math.round(amount * 0.15);
-    const adventurerAmount = amount - platformFee;
-    const amountInPaise = Math.round(adventurerAmount * 100);
-
-    const payout = await createRazorpayPayout({
-      fundAccountId: adventurer.razorpayFundAccountId,
-      amount: amountInPaise,
-      currency: currency.toUpperCase(),
-      purpose: 'quest_reward',
-      referenceId: `quest_${questId}_user_${userId}`,
+    // Verify adventurer exists
+    const adventurer = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, name: true, role: true },
     });
 
+    if (!adventurer || adventurer.role !== 'adventurer') {
+      return NextResponse.json({ error: 'Invalid adventurer', success: false }, { status: 400 });
+    }
+
+    const rewardAmount = Number(quest.monetaryReward);
+    const platformFee = rewardAmount - amount;
+    const platformFeeRate = rewardAmount > 0 ? platformFee / rewardAmount : 0;
+
+    // Create the transaction record
     const transaction = await prisma.transaction.create({
       data: {
         fromUserId: quest.companyId ?? undefined,
         toUserId: userId,
-        questId: questId,
-        amount: adventurerAmount,
-        platformFee: platformFee,
-        platformFeeRate: 0.15,
+        questId,
+        amount,
+        currency: 'USD',
         status: 'completed',
+        paymentMethod: 'razorpay_transfer',
         paymentProvider: 'razorpay',
-        providerPaymentId: payout.id,
+        description: `Razorpay transfer for quest: ${quest.title}`,
+        platformFee,
+        platformFeeRate,
+        transactionId: `txn_rp_${Date.now()}`,
         completedAt: new Date(),
+      },
+    });
+
+    // Update company spending
+    if (quest.companyId) {
+      const { updateCompanySpending } = await import('@/lib/xp-utils');
+      try {
+        await updateCompanySpending(quest.companyId, rewardAmount);
+      } catch (e) {
+        console.error('Error updating company spending:', e);
+      }
+    }
+
+    // Notify the adventurer
+    await prisma.notification.create({
+      data: {
+        userId,
+        title: 'Payment Initiated',
+        message: `Your payment of $${amount.toFixed(2)} for "${quest.title}" has been processed.`,
+        type: 'payment_received',
+        data: { questId, amount, transactionId: transaction.id },
       },
     });
 
     return NextResponse.json({
       success: true,
-      transferId: payout.id,
-      transactionId: transaction.id,
-      amount: adventurerAmount,
-      platformFee: platformFee,
+      transaction: {
+        id: transaction.id,
+        amount: transaction.amount,
+        platformFee: transaction.platformFee,
+        status: transaction.status,
+      },
+      message: 'Transfer initiated successfully',
     });
-  } catch (error: unknown) {
-    console.error('Razorpay transfer error:', error);
-    const message = error instanceof Error ? error.message : 'Internal server error';
-    return NextResponse.json({ error: message }, { status: 500 });
+  } catch (error) {
+    console.error('Error initiating Razorpay transfer:', error);
+    return NextResponse.json(
+      { error: 'Failed to initiate transfer', success: false },
+      { status: 500 }
+    );
   }
 }
