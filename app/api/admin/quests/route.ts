@@ -162,7 +162,7 @@ export async function POST(request: NextRequest) {
         xpReward: Number(body.xpReward),
         skillPointsReward: Number(body.skillPointsReward ?? 0),
         monetaryReward: body.monetaryReward != null && body.monetaryReward !== '' ? Number(body.monetaryReward) : null,
-        requiredSkills: Array.isArray(body.requiredSkills) ? body.requiredSkills.filter((skill: any): skill is string => typeof skill === 'string').map((skill: string) => skill.trim()).filter(Boolean).slice(0, 20) : [],
+        requiredSkills: Array.isArray(body.requiredSkills) ? body.requiredSkills.filter((skill: unknown): skill is string => typeof skill === 'string').map((skill: string) => skill.trim()).filter(Boolean).slice(0, 20) : [],
         requiredRank: body.requiredRank || null,
         maxParticipants: Number(body.maxParticipants ?? 1),
         questCategory: body.questCategory as QuestCategory,

@@ -24,6 +24,22 @@ interface Quest {
   status: string;
 }
 
+interface QuestWithCompany extends Quest {
+  companyId?: string;
+  company_id?: string;
+}
+
+interface QuestResponse {
+  success?: boolean;
+  quest?: QuestWithCompany;
+  quests?: QuestWithCompany[];
+}
+
+interface QuestAssignmentSummary {
+  status?: string;
+  userId?: string;
+}
+
 interface PaymentProcessorProps {
   questId: string;
 }
@@ -57,8 +73,8 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
         setError(null);
 
         const response = await fetchWithAuth(`/api/quests/${questId}`, { retryCount: 1 });
-        const data = await readResponsePayload<Record<string, unknown>>(response);
-        const questData = ((data as any)?.quest ?? (data as any)?.quests?.[0]) as any;
+        const data = await readResponsePayload<QuestResponse>(response);
+        const questData = data?.quest ?? data?.quests?.[0];
 
         if (!response.ok || !data?.success || !questData) {
           setError(getErrorMessageFromPayload(data, getStatusFallbackMessage(response.status)));
@@ -99,7 +115,9 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
         });
         const assignmentData = await readResponsePayload<Record<string, unknown>>(assignmentResponse);
         
-        const assignments = Array.isArray(assignmentData?.assignments) ? (assignmentData.assignments as any[]) : [];
+        const assignments = Array.isArray(assignmentData?.assignments)
+          ? (assignmentData.assignments as QuestAssignmentSummary[])
+          : [];
         if (!assignmentResponse.ok || !assignmentData?.success || assignments.length === 0) {
           setError(getErrorMessageFromPayload(assignmentData, 'No adventurer assigned to this quest'));
           return;

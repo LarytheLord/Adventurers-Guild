@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useApiFetch } from '@/lib/hooks';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { GuildKpi } from '@/components/guild/primitives';
-import { Loader2, Users, Target, Activity, TrendingUp, Clock, FileCheck } from 'lucide-react';
+import { Loader2, Users, TrendingUp, Clock, FileCheck } from 'lucide-react';
 import {
   LineChart,
   Line,
@@ -139,7 +139,7 @@ export default function AnalyticsDashboard() {
                 <FileCheck className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{data.quests.completionRate.toFixed(1)}%</div>
+                <div className="text-2xl font-bold">{(data.quests.completionRate * 100).toFixed(1)}%</div>
                 <p className="text-xs text-muted-foreground">{data.quests.completed} total completed</p>
               </CardContent>
             </Card>
@@ -157,7 +157,7 @@ export default function AnalyticsDashboard() {
           </GuildKpi>
         </div>
 
-        <div className="grid gap-8 lh:grid-cols-2">
+        <div className="grid gap-8 lg:grid-cols-2">
           {/* Daily Activity Chart */}
           <Card>
             <CardHeader>

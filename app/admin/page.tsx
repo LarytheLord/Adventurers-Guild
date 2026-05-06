@@ -187,6 +187,13 @@ export default function AdminDashboard() {
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
+            <Button variant="outline" asChild>
+              <Link href="/admin/analytics">
+                <Activity className="h-4 w-4" />
+                Analytics
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
           </CardContent>
         </Card>
 
