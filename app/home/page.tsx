@@ -4,12 +4,15 @@ import { useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Hero from '@/components/ui/animated-shader-hero';
-import BentoGrid from '@/components/landing/BentoGrid';
 import HowItWorks from '@/components/landing/HowItWorks';
-import StatsSection from '@/components/landing/StatsSection';
 import CTASection from '@/components/landing/CTASection';
 import QuestShowcase from '@/components/landing/QuestShowcase';
 import LogoMarquee from '@/components/landing/LogoMarquee';
+import TrustBar from '@/components/landing/TrustBar';
+import ProductPreview from '@/components/landing/ProductPreview';
+import WhyAG from '@/components/landing/WhyAG';
+import RankJourney from '@/components/landing/RankJourney';
+
 const RANKS = ['F', 'E', 'D', 'C', 'B', 'A', 'S'] as const;
 
 export default function HomePage() {
@@ -64,23 +67,28 @@ export default function HomePage() {
         </div>
       </div>
 
-      <section id="features">
-        <StatsSection />
-      </section>
-      <section id="quests">
-        <QuestShowcase />
-      </section>
-      <section id="experience">
-        <BentoGrid />
-      </section>
-      <section id="how-it-works">
-        <HowItWorks />
-      </section>
-      <section id="join">
-        <CTASection />
-      </section>
-      
-      {/* Trusted Partners section - moved below main CTA */}
+      {/* Trust Bar — credibility right after hero */}
+      <TrustBar />
+
+      {/* Product Preview — show the product before explaining it */}
+      <ProductPreview />
+
+      {/* How It Works — 3-step redesigned */}
+      <HowItWorks />
+
+      {/* Quest Showcase — live quest cards */}
+      <QuestShowcase />
+
+      {/* Why AG — competitive differentiation */}
+      <WhyAG />
+
+      {/* Rank Journey — F-to-S interactive timeline */}
+      <RankJourney />
+
+      {/* CTA */}
+      <CTASection />
+
+      {/* Trusted Partners */}
       <LogoMarquee />
     </>
   );

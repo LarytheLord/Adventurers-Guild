@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useApiFetch } from '@/lib/hooks';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { GuildKpi } from '@/components/guild/primitives';
-import { Loader2, Users, Target, Activity, TrendingUp, Clock, FileCheck } from 'lucide-react';
+import { Loader2, Users, TrendingUp, Clock, FileCheck } from 'lucide-react';
 import {
   LineChart,
   Line,

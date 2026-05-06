@@ -72,7 +72,7 @@ export async function processPayment(
 
     const result = await readResponsePayload<Record<string, unknown>>(response);
     if (response.ok && result?.success && result?.transaction) {
-      return normalizeTransaction(result.transaction as any);
+      return normalizeTransaction(result.transaction as Partial<Transaction> & { amount?: number | string | null });
     }
     throw new Error(getErrorMessageFromPayload(result, getStatusFallbackMessage(response.status)));
   } catch (error) {

@@ -22,15 +22,15 @@ export async function GET(request: NextRequest) {
     const newUsers7d = await prisma.user.count({ where: { createdAt: { gte: sevenDaysAgo } } });
 
     const usersByRoleRaw = await prisma.user.groupBy({ by: ['role'], _count: true });
-    const usersByRole = usersByRoleRaw.reduce((acc: Record<string, number>, curr: any) => ({ ...acc, [curr.role]: curr._count }), {});
+    const usersByRole = usersByRoleRaw.reduce((acc: Record<string, number>, curr: { role: string; _count: number }) => ({ ...acc, [curr.role]: curr._count }), {});
 
     const rankDistributionRaw = await prisma.user.groupBy({ by: ['rank'], _count: true });
-    const rankDistribution = rankDistributionRaw.reduce((acc: Record<string, number>, curr: any) => ({ ...acc, [curr.rank]: curr._count }), {});
+    const rankDistribution = rankDistributionRaw.reduce((acc: Record<string, number>, curr: { rank: string; _count: number }) => ({ ...acc, [curr.rank]: curr._count }), {});
 
     // Quests
     const totalQuests = await prisma.quest.count();
     const questsByStatusRaw = await prisma.quest.groupBy({ by: ['status'], _count: true });
-    const questsByStatus = questsByStatusRaw.reduce((acc: Record<string, number>, curr: any) => ({ ...acc, [curr.status]: curr._count }), {});
+    const questsByStatus = questsByStatusRaw.reduce((acc: Record<string, number>, curr: { status: string; _count: number }) => ({ ...acc, [curr.status]: curr._count }), {});
     
     const availableQuests = (questsByStatus as Record<string, number>)['available'] || 0;
     const inProgressQuests = (questsByStatus as Record<string, number>)['in_progress'] || 0;
@@ -40,10 +40,10 @@ export async function GET(request: NextRequest) {
     const completionRate = totalQuests > 0 ? (completedQuests / totalQuests) * 100 : 0;
 
     const questsByTrackRaw = await prisma.quest.groupBy( { by: ['track'], _count: true });
-    const questsByTrack = questsByTrackRaw.reduce((acc: Record<string, number>, curr: any) => ({ ...acc, [curr.track]: curr._count }), {});
+    const questsByTrack = questsByTrackRaw.reduce((acc: Record<string, number>, curr: { track: string; _count: number }) => ({ ...acc, [curr.track]: curr._count }), {});
 
     const questsByDifficultyRaw = await prisma.quest.groupBy({ by: ['difficulty'], _count: true });
-    const questsByDifficulty = questsByDifficultyRaw.reduce((acc: Record<string, number>, curr: any) => ({ ...acc, [curr.difficulty]: curr._count }), {});
+    const questsByDifficulty = questsByDifficultyRaw.reduce((acc: Record<string, number>, curr: { difficulty: string; _count: number }) => ({ ...acc, [curr.difficulty]: curr._count }), {});
 
     // Average time to complete (raw SQL for Neon)
     const avgTimeToCompleteResult = await prisma.$queryRaw<[{ avg_days: number | null }]>`
@@ -78,7 +78,8 @@ export async function GET(request: NextRequest) {
       ORDER BY date ASC
     `;
 
-    const processDaily = (data: any[]) => 
+    type DailyRow = { date: Date; count: number };
+    const processDaily = (data: DailyRow[]) => 
       data.map(d => ({ date: d.date.toISOString().split('T')[0], count: d.count }));
 
     return NextResponse.json({

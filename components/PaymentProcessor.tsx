@@ -22,6 +22,8 @@ interface Quest {
   skillPointsReward: number;
   monetaryReward?: number;
   status: string;
+  companyId?: string;
+  company_id?: string;
 }
 
 interface PaymentProcessorProps {
@@ -58,7 +60,7 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
 
         const response = await fetchWithAuth(`/api/quests/${questId}`, { retryCount: 1 });
         const data = await readResponsePayload<Record<string, unknown>>(response);
-        const questData = ((data as any)?.quest ?? (data as any)?.quests?.[0]) as any;
+        const questData = (data?.quest ?? (data?.quests as { quest?: Record<string, unknown> }[] | undefined)?.[0]?.quest) as Quest | undefined;
 
         if (!response.ok || !data?.success || !questData) {
           setError(getErrorMessageFromPayload(data, getStatusFallbackMessage(response.status)));
@@ -99,7 +101,7 @@ export default function PaymentProcessor({ questId }: PaymentProcessorProps) {
         });
         const assignmentData = await readResponsePayload<Record<string, unknown>>(assignmentResponse);
         
-        const assignments = Array.isArray(assignmentData?.assignments) ? (assignmentData.assignments as any[]) : [];
+        const assignments = Array.isArray(assignmentData?.assignments) ? (assignmentData.assignments as Array<{ id?: string; status?: string; adventurerId?: string; userId?: string }>) : [];
         if (!assignmentResponse.ok || !assignmentData?.success || assignments.length === 0) {
           setError(getErrorMessageFromPayload(assignmentData, 'No adventurer assigned to this quest'));
           return;
