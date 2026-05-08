@@ -2,6 +2,38 @@
 
 import { useState } from 'react';
 
+const FAQ = [
+  {
+    keywords: ["pricing", "cost", "price"],
+    answer: "Our pricing starts from a free plan and scales based on usage 💰",
+  },
+  {
+    keywords: ["refund", "return"],
+    answer: "Refunds are processed within 5–7 business days after approval.",
+  },
+  {
+    keywords: ["support", "help", "contact"],
+    answer: "You can contact support via the Help page or email us anytime 📩",
+  },
+  {
+    keywords: ["login", "sign in"],
+    answer: "If you're unable to log in, try resetting your password.",
+  },
+];
+
+function getBotReply(message: string) {
+  const text = message.toLowerCase();
+
+  const match = FAQ.find((item) =>
+    item.keywords.some((k) => text.includes(k))
+  );
+
+  return (
+    match?.answer ||
+    "Sorry, I couldn’t find an answer. Please check the FAQ or rephrase your question."
+  );
+}
+
 export default function Chatbot() {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState([
@@ -12,18 +44,18 @@ export default function Chatbot() {
   const sendMessage = async () => {
     if (!input.trim()) return;
 
-    const newMessages = [...messages, { role: 'user', text: input }];
+    const userMessage = input;
+    const newMessages = [...messages, { role: 'user', text: userMessage }];
+    
     setMessages(newMessages);
     setInput('');
-    
 
-    // Fake bot response (replace with API later)
     setTimeout(() => {
       setMessages((prev) => [
         ...prev,
-        { role: 'bot', text: 'Got it! We will help you soon 🚀' },
+        { role: 'bot', text: getBotReply(userMessage) },
       ]);
-    }, 500);
+    }, 400);
   };
 
   return (
@@ -68,6 +100,7 @@ export default function Chatbot() {
               onChange={(e) => setInput(e.target.value)}
               className="flex-1 bg-slate-800 text-white px-3 py-2 rounded-md text-sm outline-none"
               placeholder="Type a message..."
+              onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
             />
             <button
               onClick={sendMessage}
