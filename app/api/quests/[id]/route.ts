@@ -96,15 +96,6 @@ export async function GET(
             },
           },
         },
-        party: {
-          include: {
-            leader: { select: { id: true, name: true, rank: true } },
-            members: {
-              include: { user: { select: { id: true, name: true, rank: true } } },
-              orderBy: { joinedAt: 'asc' },
-            },
-          },
-        },
       },
     });
 
