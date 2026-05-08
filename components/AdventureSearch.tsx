@@ -6,6 +6,7 @@ interface AdventureSearchProps {
   setQuery: (value: string) => void
 }
 
+
 const AdventureSearch: React.FC<AdventureSearchProps> = ({ query, setQuery }) => {
   return (
     <input
