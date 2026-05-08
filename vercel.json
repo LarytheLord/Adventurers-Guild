@@ -2,8 +2,8 @@
   "version": 2,
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
-  "env": {
-    "NEXTAUTH_URL": "@nextauth-url",
+    "env": {
+    "NEXTAUTH_URL": "https://adventurersguild.vercel.app",
     "NEXT_PUBLIC_APP_URL": "@app-url"
   },
   "build": {
