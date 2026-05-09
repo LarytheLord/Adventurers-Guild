@@ -153,7 +153,7 @@ enum VerificationStatus {
 model User {
   id               String    @id @default(uuid()) @db.Uuid
   name             String?
-  username         String?   @unique
+  username         String    @unique
   email            String    @unique
   passwordHash     String    @map("password_hash")
   role             UserRole  @default(adventurer)
