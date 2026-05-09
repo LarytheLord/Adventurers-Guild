@@ -1,5 +1,5 @@
 // app/api/admin/quests/route.ts
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireAuth } from '@/lib/api-auth';
 import { Prisma, QuestStatus, QuestType, UserRank, QuestCategory, QuestTrack, QuestSource } from '@prisma/client';
@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
   try {
     const user = await requireAuth(request, 'admin');
     if (!user) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -98,10 +98,10 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     });
 
-    return Response.json({ quests: data, success: true });
+    return NextResponse.json({ quests: data, success: true });
   } catch (error) {
     console.error('Error fetching quests:', error);
-    return Response.json({ error: 'Failed to fetch quests', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch quests', success: false }, { status: 500 });
   }
 }
 
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
   try {
     const user = await requireAuth(request, 'admin');
     if (!user) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     const body = await request.json();
@@ -117,24 +117,24 @@ export async function POST(request: NextRequest) {
     const requiredFields = ['title', 'description', 'questType', 'difficulty', 'xpReward', 'questCategory'];
     for (const field of requiredFields) {
       if (body[field] == null || String(body[field]).trim() === '') {
-        return Response.json({ error: `${field} is required`, success: false }, { status: 400 });
+        return NextResponse.json({ error: `${field} is required`, success: false }, { status: 400 });
       }
     }
 
     if (!Object.values(QuestType).includes(body.questType as QuestType)) {
-      return Response.json({ error: 'Invalid questType value', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid questType value', success: false }, { status: 400 });
     }
     if (!Object.values(UserRank).includes(body.difficulty as UserRank)) {
-      return Response.json({ error: 'Invalid difficulty value', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid difficulty value', success: false }, { status: 400 });
     }
     if (!Object.values(QuestCategory).includes(body.questCategory as QuestCategory)) {
-      return Response.json({ error: 'Invalid questCategory value', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid questCategory value', success: false }, { status: 400 });
     }
     if (body.track && !Object.values(QuestTrack).includes(body.track as QuestTrack)) {
-      return Response.json({ error: 'Invalid track value', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid track value', success: false }, { status: 400 });
     }
     if (body.source && !Object.values(QuestSource).includes(body.source as QuestSource)) {
-      return Response.json({ error: 'Invalid source value', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid source value', success: false }, { status: 400 });
     }
 
     const data = await prisma.quest.create({
@@ -162,10 +162,10 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return Response.json({ quest: data, success: true }, { status: 201 });
+    return NextResponse.json({ quest: data, success: true }, { status: 201 });
   } catch (error) {
     console.error('Error creating quest:', error);
-    return Response.json({ error: 'Failed to create quest', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to create quest', success: false }, { status: 500 });
   }
 }
 
@@ -173,17 +173,17 @@ export async function PUT(request: NextRequest) {
   try {
     const user = await requireAuth(request, 'admin');
     if (!user) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     const body = await request.json();
     const { questId, addNote, ...updateFields } = body;
 
     if (!questId) {
-      return Response.json({ error: 'Quest ID is required', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Quest ID is required', success: false }, { status: 400 });
     }
     if (!UUID_REGEX.test(questId)) {
-      return Response.json({ error: 'Invalid quest ID format', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid quest ID format', success: false }, { status: 400 });
     }
 
     const updateData: Prisma.QuestUpdateInput = {};
@@ -208,7 +208,7 @@ export async function PUT(request: NextRequest) {
     const validStatuses = Object.values(QuestStatus);
     if (updateFields.status !== undefined) {
       if (!validStatuses.includes(updateFields.status as QuestStatus)) {
-        return Response.json({ error: 'Invalid status value', success: false }, { status: 400 });
+        return NextResponse.json({ error: 'Invalid status value', success: false }, { status: 400 });
       }
       updateData.status = updateFields.status as QuestStatus;
     }
@@ -216,7 +216,7 @@ export async function PUT(request: NextRequest) {
     if (updateFields.description !== undefined) updateData.description = updateFields.description;
     if (updateFields.requiredRank !== undefined) {
       if (updateFields.requiredRank !== null && !Object.values(UserRank).includes(updateFields.requiredRank as UserRank)) {
-        return Response.json({ error: 'Invalid requiredRank value', success: false }, { status: 400 });
+        return NextResponse.json({ error: 'Invalid requiredRank value', success: false }, { status: 400 });
       }
       updateData.requiredRank = updateFields.requiredRank as UserRank | null;
     }
@@ -224,13 +224,13 @@ export async function PUT(request: NextRequest) {
     if (updateFields.xpReward !== undefined) updateData.xpReward = updateFields.xpReward;
     if (updateFields.track !== undefined) {
       if (!Object.values(QuestTrack).includes(updateFields.track as QuestTrack)) {
-        return Response.json({ error: 'Invalid track value', success: false }, { status: 400 });
+        return NextResponse.json({ error: 'Invalid track value', success: false }, { status: 400 });
       }
       updateData.track = updateFields.track as QuestTrack;
     }
     if (updateFields.source !== undefined) {
       if (!Object.values(QuestSource).includes(updateFields.source as QuestSource)) {
-        return Response.json({ error: 'Invalid source value', success: false }, { status: 400 });
+        return NextResponse.json({ error: 'Invalid source value', success: false }, { status: 400 });
       }
       updateData.source = updateFields.source as QuestSource;
     }
@@ -250,10 +250,10 @@ export async function PUT(request: NextRequest) {
       data: updateData,
     });
 
-    return Response.json({ quest: data, success: true });
+    return NextResponse.json({ quest: data, success: true });
   } catch (error) {
     console.error('Error updating quest:', error);
-    return Response.json({ error: 'Failed to update quest', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to update quest', success: false }, { status: 500 });
   }
 }
 
@@ -261,17 +261,17 @@ export async function DELETE(request: NextRequest) {
   try {
     const user = await requireAuth(request, 'admin');
     if (!user) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     const body = await request.json();
     const { questId } = body;
 
     if (!questId) {
-      return Response.json({ error: 'Quest ID is required', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Quest ID is required', success: false }, { status: 400 });
     }
     if (!UUID_REGEX.test(questId)) {
-      return Response.json({ error: 'Invalid quest ID format', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid quest ID format', success: false }, { status: 400 });
     }
 
     await prisma.quest.update({
@@ -279,9 +279,9 @@ export async function DELETE(request: NextRequest) {
       data: { status: 'cancelled' },
     });
 
-    return Response.json({ message: 'Quest cancelled successfully', success: true });
+    return NextResponse.json({ message: 'Quest cancelled successfully', success: true });
   } catch (error) {
     console.error('Error cancelling quest:', error);
-    return Response.json({ error: 'Failed to cancel quest', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to cancel quest', success: false }, { status: 500 });
   }
 }

@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/api-auth';
 import { prisma } from '@/lib/db';
 
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
   try {
     const authUser = await getAuthUser();
     if (!authUser) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
     const offset = toSafeInt(searchParams.get('offset'), 0, 0, 10000);
 
     if (requestedUserId && authUser.role !== 'admin' && requestedUserId !== authUser.id) {
-      return Response.json({ error: 'Forbidden', success: false }, { status: 403 });
+      return NextResponse.json({ error: 'Forbidden', success: false }, { status: 403 });
     }
 
     const targetUserId =
@@ -110,10 +110,10 @@ export async function GET(request: NextRequest) {
       })),
     }));
 
-    return Response.json({ teams, success: true });
+    return NextResponse.json({ teams, success: true });
   } catch (error) {
     console.error('Error fetching teams:', error);
-    return Response.json({ error: 'Failed to fetch teams', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch teams', success: false }, { status: 500 });
   }
 }
 
@@ -121,14 +121,14 @@ export async function POST(request: NextRequest) {
   try {
     const authUser = await getAuthUser();
     if (!authUser) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     const body = (await request.json()) as Record<string, unknown>;
     const name = typeof body.name === 'string' ? body.name.trim() : '';
 
     if (!name) {
-      return Response.json({ error: 'name is required', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'name is required', success: false }, { status: 400 });
     }
 
     const ownerUserId =
@@ -179,10 +179,10 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return Response.json({ team: fullTeam ?? team, success: true }, { status: 201 });
+    return NextResponse.json({ team: fullTeam ?? team, success: true }, { status: 201 });
   } catch (error) {
     console.error('Error creating team:', error);
-    return Response.json({ error: 'Failed to create team', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to create team', success: false }, { status: 500 });
   }
 }
 
@@ -190,13 +190,13 @@ export async function PUT(request: NextRequest) {
   try {
     const authUser = await getAuthUser();
     if (!authUser) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     const body = (await request.json()) as Record<string, unknown>;
     const teamId = typeof body.teamId === 'string' ? body.teamId : '';
     if (!teamId) {
-      return Response.json({ error: 'Team ID is required', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Team ID is required', success: false }, { status: 400 });
     }
 
     const team = await prisma.team.findUnique({
@@ -205,11 +205,11 @@ export async function PUT(request: NextRequest) {
     });
 
     if (!team || !team.isActive) {
-      return Response.json({ error: 'Team not found', success: false }, { status: 404 });
+      return NextResponse.json({ error: 'Team not found', success: false }, { status: 404 });
     }
 
     if (authUser.role !== 'admin' && team.ownerUserId !== authUser.id) {
-      return Response.json(
+      return NextResponse.json(
         { error: 'Only team owners can update team details', success: false },
         { status: 403 }
       );
@@ -230,7 +230,7 @@ export async function PUT(request: NextRequest) {
     }
 
     if (Object.keys(updateData).length === 0) {
-      return Response.json({ error: 'No valid fields to update', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'No valid fields to update', success: false }, { status: 400 });
     }
 
     const data = await prisma.team.update({
@@ -238,10 +238,10 @@ export async function PUT(request: NextRequest) {
       data: updateData,
     });
 
-    return Response.json({ team: data, success: true });
+    return NextResponse.json({ team: data, success: true });
   } catch (error) {
     console.error('Error updating team:', error);
-    return Response.json({ error: 'Failed to update team', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to update team', success: false }, { status: 500 });
   }
 }
 
@@ -249,13 +249,13 @@ export async function DELETE(request: NextRequest) {
   try {
     const authUser = await getAuthUser();
     if (!authUser) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     const body = (await request.json()) as Record<string, unknown>;
     const teamId = typeof body.teamId === 'string' ? body.teamId : '';
     if (!teamId) {
-      return Response.json({ error: 'Team ID is required', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Team ID is required', success: false }, { status: 400 });
     }
 
     const team = await prisma.team.findUnique({
@@ -264,11 +264,11 @@ export async function DELETE(request: NextRequest) {
     });
 
     if (!team || !team.isActive) {
-      return Response.json({ error: 'Team not found', success: false }, { status: 404 });
+      return NextResponse.json({ error: 'Team not found', success: false }, { status: 404 });
     }
 
     if (authUser.role !== 'admin' && team.ownerUserId !== authUser.id) {
-      return Response.json(
+      return NextResponse.json(
         { error: 'Only team owners can delete teams', success: false },
         { status: 403 }
       );
@@ -279,9 +279,9 @@ export async function DELETE(request: NextRequest) {
       data: { isActive: false },
     });
 
-    return Response.json({ message: 'Team deleted successfully', success: true });
+    return NextResponse.json({ message: 'Team deleted successfully', success: true });
   } catch (error) {
     console.error('Error deleting team:', error);
-    return Response.json({ error: 'Failed to delete team', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to delete team', success: false }, { status: 500 });
   }
 }

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
@@ -104,6 +104,23 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
 
 const EMPTY_QUESTS: Quest[] = [];
 
+// Debounce utility
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [value, delay]);
+
+  return debouncedValue;
+}
+
 export default function QuestsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -118,18 +135,21 @@ export default function QuestsPage() {
   const [joiningPartyId, setJoiningPartyId] = useState<string | null>(null);
   const [isBootcamp, setIsBootcamp] = useState(false);
 
+  // Debounce search term to avoid excessive API calls
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
+
   const isAdmin = session?.user?.role === 'admin';
   const shouldFetch = status === 'authenticated' && session?.user?.role !== 'company';
 
   const apiUrl = useMemo(() => {
     const params = new URLSearchParams({ status: 'available', limit: '60' });
-    if (searchTerm) params.set('search', searchTerm);
+    if (debouncedSearchTerm) params.set('search', debouncedSearchTerm);
     if (difficulty !== 'all') params.set('difficulty', difficulty);
     if (track !== 'all') params.set('track', track);
     if (category !== 'all') params.set('category', category);
     if (sort !== 'newest') params.set('sort', sort);
     return `/api/quests?${params.toString()}`;
-  }, [searchTerm, difficulty, track, category, sort]);
+  }, [debouncedSearchTerm, difficulty, track, category, sort]);
 
   const { data, loading, error, refetch } = useApiFetch<{ success: boolean; quests: Quest[]; error?: string }>(apiUrl, {
     skip: !shouldFetch,

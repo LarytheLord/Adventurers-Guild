@@ -1,5 +1,5 @@
 // app/api/company/quests/route.ts
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/api-auth';
 import { prisma } from '@/lib/db';
 import { Prisma, QuestStatus, QuestType, UserRank, QuestTrack, QuestSource } from '@prisma/client';
@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   try {
     const authUser = await requireAuth(request, 'company', 'admin');
     if (!authUser) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     // Parse query parameters
@@ -26,19 +26,19 @@ export async function GET(request: NextRequest) {
 
     if (status) {
       if (!Object.values(QuestStatus).includes(status as QuestStatus)) {
-        return Response.json({ error: 'Invalid status value', success: false }, { status: 400 });
+        return NextResponse.json({ error: 'Invalid status value', success: false }, { status: 400 });
       }
       where.status = status as QuestStatus;
     }
     if (questType) {
       if (!Object.values(QuestType).includes(questType as QuestType)) {
-        return Response.json({ error: 'Invalid questType value', success: false }, { status: 400 });
+        return NextResponse.json({ error: 'Invalid questType value', success: false }, { status: 400 });
       }
       where.questType = questType as QuestType;
     }
     if (difficulty) {
       if (!Object.values(UserRank).includes(difficulty as UserRank)) {
-        return Response.json({ error: 'Invalid difficulty value', success: false }, { status: 400 });
+        return NextResponse.json({ error: 'Invalid difficulty value', success: false }, { status: 400 });
       }
       where.difficulty = difficulty as UserRank;
     }
@@ -69,10 +69,10 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     });
 
-    return Response.json({ quests: data, success: true });
+    return NextResponse.json({ quests: data, success: true });
   } catch (error) {
     console.error('Error fetching company quests:', error);
-    return Response.json({ error: 'Failed to fetch company quests', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch company quests', success: false }, { status: 500 });
   }
 }
 
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
   try {
     const authUser = await requireAuth(request, 'company', 'admin');
     if (!authUser) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     const body = await request.json();
@@ -90,16 +90,16 @@ export async function POST(request: NextRequest) {
     const requiredFields = ['title', 'description', 'questType', 'difficulty', 'xpReward', 'questCategory'];
     for (const field of requiredFields) {
       if (body[field] == null || String(body[field]).trim() === '') {
-        return Response.json({ error: `${field} is required`, success: false }, { status: 400 });
+        return NextResponse.json({ error: `${field} is required`, success: false }, { status: 400 });
       }
     }
 
     // Validate optional enums
     if (body.track && !Object.values(QuestTrack).includes(body.track as QuestTrack)) {
-      return Response.json({ error: 'Invalid track value', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid track value', success: false }, { status: 400 });
     }
     if (body.source && !Object.values(QuestSource).includes(body.source as QuestSource)) {
-      return Response.json({ error: 'Invalid source value', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid source value', success: false }, { status: 400 });
     }
 
     // Create the quest
@@ -133,10 +133,10 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    return Response.json({ quest: data, success: true }, { status: 201 });
+    return NextResponse.json({ quest: data, success: true }, { status: 201 });
   } catch (error) {
     console.error('Error creating quest:', error);
-    return Response.json({ error: 'Failed to create quest', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to create quest', success: false }, { status: 500 });
   }
 }
 
@@ -144,7 +144,7 @@ export async function PUT(request: NextRequest) {
   try {
     const authUser = await requireAuth(request, 'company', 'admin');
     if (!authUser) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     const body = await request.json();
@@ -155,7 +155,7 @@ export async function PUT(request: NextRequest) {
 
     // Validate required fields
     if (!questId || !companyId) {
-      return Response.json({ error: 'Quest ID and Company ID are required', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Quest ID and Company ID are required', success: false }, { status: 400 });
     }
 
     // Verify the company owns this quest
@@ -165,7 +165,7 @@ export async function PUT(request: NextRequest) {
     });
 
     if (!quest || quest.companyId !== companyId) {
-      return Response.json({ error: 'Unauthorized: You do not own this quest', success: false }, { status: 403 });
+      return NextResponse.json({ error: 'Unauthorized: You do not own this quest', success: false }, { status: 403 });
     }
 
     // Convert snake_case keys to camelCase for Prisma
@@ -193,10 +193,10 @@ export async function PUT(request: NextRequest) {
       data: prismaUpdateFields,
     });
 
-    return Response.json({ quest: data, success: true });
+    return NextResponse.json({ quest: data, success: true });
   } catch (error) {
     console.error('Error updating quest:', error);
-    return Response.json({ error: 'Failed to update quest', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to update quest', success: false }, { status: 500 });
   }
 }
 
@@ -204,7 +204,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const authUser = await requireAuth(request, 'company', 'admin');
     if (!authUser) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     const body = await request.json();
@@ -213,7 +213,7 @@ export async function DELETE(request: NextRequest) {
 
     // Validate required fields
     if (!questId || !companyId) {
-      return Response.json({ error: 'Quest ID and Company ID are required', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Quest ID and Company ID are required', success: false }, { status: 400 });
     }
 
     // Verify the company owns this quest
@@ -223,7 +223,7 @@ export async function DELETE(request: NextRequest) {
     });
 
     if (!quest || quest.companyId !== companyId) {
-      return Response.json({ error: 'Unauthorized: You do not own this quest', success: false }, { status: 403 });
+      return NextResponse.json({ error: 'Unauthorized: You do not own this quest', success: false }, { status: 403 });
     }
 
     // Update the quest status to cancelled instead of hard deleting
@@ -232,9 +232,9 @@ export async function DELETE(request: NextRequest) {
       data: { status: 'cancelled' },
     });
 
-    return Response.json({ message: 'Quest cancelled successfully', success: true });
+    return NextResponse.json({ message: 'Quest cancelled successfully', success: true });
   } catch (error) {
     console.error('Error cancelling quest:', error);
-    return Response.json({ error: 'Failed to cancel quest', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to cancel quest', success: false }, { status: 500 });
   }
 }

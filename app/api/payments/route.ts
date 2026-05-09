@@ -1,5 +1,5 @@
 // app/api/payments/route.ts
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { validatePaymentInfo } from '@/lib/payment-utils';
 import { getAuthUser } from '@/lib/api-auth';
 import { prisma } from '@/lib/db';
@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   try {
     const authUser = await getAuthUser();
     if (!authUser) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     // Parse query parameters
@@ -21,14 +21,14 @@ export async function GET(request: NextRequest) {
     const offsetParam = searchParams.get('offset');
 
     if (!userId) {
-      return Response.json({ error: 'User ID is required', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'User ID is required', success: false }, { status: 400 });
     }
 
     let limit: number | null = null;
     if (limitParam !== null) {
       limit = Number.parseInt(limitParam, 10);
       if (!Number.isFinite(limit) || limit <= 0) {
-        return Response.json({ error: 'limit must be a positive integer', success: false }, { status: 400 });
+        return NextResponse.json({ error: 'limit must be a positive integer', success: false }, { status: 400 });
       }
     }
 
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     if (offsetParam !== null) {
       offset = Number.parseInt(offsetParam, 10);
       if (!Number.isFinite(offset) || offset < 0) {
-        return Response.json({ error: 'offset must be a non-negative integer', success: false }, { status: 400 });
+        return NextResponse.json({ error: 'offset must be a non-negative integer', success: false }, { status: 400 });
       }
     }
 
@@ -84,10 +84,10 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     });
 
-    return Response.json({ transactions: data, success: true });
+    return NextResponse.json({ transactions: data, success: true });
   } catch (error) {
     console.error('Error fetching transactions:', error);
-    return Response.json({ error: 'Failed to fetch transactions', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch transactions', success: false }, { status: 500 });
   }
 }
 
@@ -95,7 +95,7 @@ export async function POST(request: NextRequest) {
   try {
     const authUser = await getAuthUser();
     if (!authUser) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     const body = await request.json();
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
     const requiredFields = ['fromUserId', 'toUserId', 'questId', 'amount', 'currency'];
     for (const field of requiredFields) {
       if (body[field] === undefined) {
-        return Response.json({ error: `${field} is required`, success: false }, { status: 400 });
+        return NextResponse.json({ error: `${field} is required`, success: false }, { status: 400 });
       }
     }
 
@@ -116,20 +116,20 @@ export async function POST(request: NextRequest) {
       !body.toUserId.trim() ||
       !body.questId.trim()
     ) {
-      return Response.json(
+      return NextResponse.json(
         { error: 'fromUserId, toUserId, and questId must be non-empty strings', success: false },
         { status: 400 }
       );
     }
 
     if (authUser.role !== 'admin' && body.fromUserId !== authUser.id) {
-      return Response.json(
+      return NextResponse.json(
         { error: 'You can only initiate payments from your own account', success: false },
         { status: 403 }
       );
     }
     if (body.fromUserId === body.toUserId) {
-      return Response.json(
+      return NextResponse.json(
         { error: 'Sender and receiver cannot be the same user', success: false },
         { status: 400 }
       );
@@ -144,7 +144,7 @@ export async function POST(request: NextRequest) {
       );
 
       if (!validation.isValid) {
-        return Response.json({ error: validation.error, success: false }, { status: 400 });
+        return NextResponse.json({ error: validation.error, success: false }, { status: 400 });
       }
     }
 
@@ -155,26 +155,26 @@ export async function POST(request: NextRequest) {
     });
 
     if (!quest) {
-      return Response.json({ error: 'Quest not found', success: false }, { status: 404 });
+      return NextResponse.json({ error: 'Quest not found', success: false }, { status: 404 });
     }
 
     if (quest.status !== 'completed') {
-      return Response.json({ error: 'Quest must be completed before payment', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Quest must be completed before payment', success: false }, { status: 400 });
     }
 
     if (!quest.companyId) {
-      return Response.json({ error: 'Quest is not linked to a company', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Quest is not linked to a company', success: false }, { status: 400 });
     }
 
     if (authUser.role !== 'admin' && quest.companyId !== authUser.id) {
-      return Response.json(
+      return NextResponse.json(
         { error: 'You can only pay for your own quests', success: false },
         { status: 403 }
       );
     }
 
     if (authUser.role !== 'admin' && body.fromUserId !== quest.companyId) {
-      return Response.json(
+      return NextResponse.json(
         { error: 'fromUserId must match the quest owner', success: false },
         { status: 403 }
       );
@@ -186,7 +186,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!recipient || !recipient.isActive || recipient.role !== 'adventurer') {
-      return Response.json({ error: 'Invalid adventurer account', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid adventurer account', success: false }, { status: 400 });
     }
 
     const completionRecord = await prisma.questCompletion.findUnique({
@@ -200,7 +200,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!completionRecord) {
-      return Response.json(
+      return NextResponse.json(
         { error: 'Selected adventurer has not completed this quest', success: false },
         { status: 400 }
       );
@@ -216,7 +216,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingPayment) {
-      return Response.json({ error: 'Payment already exists for this quest', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Payment already exists for this quest', success: false }, { status: 400 });
     }
 
     // In a real implementation, you would integrate with a payment processor like Stripe
@@ -269,13 +269,13 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return Response.json({
+    return NextResponse.json({
       transaction: completedTransaction,
       success: true,
       message: 'Payment processed successfully'
     });
   } catch (error) {
     console.error('Error processing payment:', error);
-    return Response.json({ error: 'Failed to process payment', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to process payment', success: false }, { status: 500 });
   }
 }

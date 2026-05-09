@@ -54,5 +54,7 @@ export const RANK_COLORS: Record<string, string> = {
 
 /** Returns the quest list path for a given user role. */
 export function getQuestListPath(role: string): string {
-  return role === 'admin' ? '/admin/quests' : '/dashboard/company/quests';
+  if (role === 'admin') return '/admin/quests';
+  if (role === 'company') return '/dashboard/company/quests';
+  return '/dashboard/quests';
 }
