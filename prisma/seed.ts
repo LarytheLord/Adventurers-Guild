@@ -37,6 +37,7 @@ async function main() {
       data: {
         id: '11111111-1111-1111-1111-111111111111',
         name: 'Knight Medicare',
+        username: 'knight-medicare',
         email: 'contact@knightmedicare.com',
         passwordHash,
         role: 'company',
@@ -52,6 +53,7 @@ async function main() {
       data: {
         id: '22222222-2222-2222-2222-222222222222',
         name: 'Open Paws Animal Shelter',
+        username: 'open-paws-animal-shelter',
         email: 'hello@openpaws.org',
         passwordHash,
         role: 'company',
@@ -67,6 +69,7 @@ async function main() {
       data: {
         id: '33333333-3333-3333-3333-333333333333',
         name: 'TechVenture Startup',
+        username: 'techventure-startup',
         email: 'founders@techventure.io',
         passwordHash,
         role: 'company',
@@ -82,6 +85,7 @@ async function main() {
       data: {
         id: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
         name: 'Priya Sharma',
+        username: 'priya-sharma',
         email: 'priya.sharma@example.com',
         passwordHash,
         role: 'adventurer',
@@ -100,6 +104,7 @@ async function main() {
       data: {
         id: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
         name: 'Raj Patel',
+        username: 'raj-patel',
         email: 'raj.patel@example.com',
         passwordHash,
         role: 'adventurer',
@@ -118,6 +123,7 @@ async function main() {
       data: {
         id: 'cccccccc-cccc-cccc-cccc-cccccccccccc',
         name: 'Ananya Desai',
+        username: 'ananya-desai',
         email: 'ananya.desai@example.com',
         passwordHash,
         role: 'adventurer',
@@ -136,6 +142,7 @@ async function main() {
       data: {
         id: 'dddddddd-dddd-dddd-dddd-dddddddddddd',
         name: 'Arjun Kumar',
+        username: 'arjun-kumar',
         email: 'arjun.kumar@example.com',
         passwordHash,
         role: 'adventurer',
@@ -154,6 +161,7 @@ async function main() {
       data: {
         id: 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',
         name: 'Neha Singh',
+        username: 'neha-singh',
         email: 'neha.singh@example.com',
         passwordHash,
         role: 'adventurer',
@@ -172,6 +180,7 @@ async function main() {
       data: {
         id: 'ffffffff-ffff-ffff-ffff-ffffffffffff',
         name: 'Karan Mehta',
+        username: 'karan-mehta',
         email: 'karan.mehta@example.com',
         passwordHash,
         role: 'adventurer',
@@ -189,6 +198,7 @@ async function main() {
       data: {
         id: '99999999-9999-9999-9999-999999999999',
         name: 'Sanya Joshi',
+        username: 'sanya-joshi',
         email: 'sanya.joshi@example.com',
         passwordHash,
         role: 'adventurer',
@@ -207,6 +217,7 @@ async function main() {
       data: {
         id: 'de00de00-de00-de00-de00-de00de00de00',
         name: 'Demo Adventurer',
+        username: 'demo-adventurer',
         email: 'demo@adventurersguild.com',
         passwordHash,
         role: 'adventurer',
@@ -226,6 +237,7 @@ async function main() {
       data: {
         id: 'adadadad-adad-adad-adad-adadadadadad',
         name: 'Admin',
+        username: 'admin',
         email: 'admin@adventurersguild.com',
         passwordHash,
         role: 'admin',
