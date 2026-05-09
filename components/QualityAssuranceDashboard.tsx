@@ -24,6 +24,7 @@ import {
   Target,
   TrendingUp
 } from 'lucide-react';
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
 import { toast } from 'sonner';
 
 // Types
@@ -132,14 +133,30 @@ export default function QualityAssuranceDashboard({ userId, userRole }: QualityA
   // Fetch quality metrics
   useEffect(() => {
     const fetchMetrics = async () => {
-      // In a real implementation, this would call an API to get metrics
-      // For now, we'll simulate the data
-      setMetrics({
-        totalSubmissions: 128,
-        reviewedSubmissions: 95,
-        averageQualityScore: 7.8,
-        approvalRate: 78
-      });
+      try {
+        const response = await fetchWithAuth('/api/quests/submissions?status=all');
+        const data = await response.json();
+
+        if (data.success && data.submissions) {
+          const subs = data.submissions;
+          const reviewed = subs.filter((s: Submission) => s.qualityScore != null).length;
+          const qualityScores = subs.filter((s: Submission) => s.qualityScore != null).map((s: Submission) => s.qualityScore as number);
+          const avgScore = qualityScores.length > 0
+            ? Number((qualityScores.reduce((a: number, b: number) => a + b, 0) / qualityScores.length).toFixed(1))
+            : 0;
+          const approved = subs.filter((s: Submission) => s.status === 'approved' || s.status === 'completed').length;
+          const approvalRate = reviewed > 0 ? Math.round((approved / reviewed) * 100) : 0;
+
+          setMetrics({
+            totalSubmissions: subs.length,
+            reviewedSubmissions: reviewed,
+            averageQualityScore: avgScore,
+            approvalRate: approvalRate,
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching metrics:', error);
+      }
     };
 
     fetchMetrics();

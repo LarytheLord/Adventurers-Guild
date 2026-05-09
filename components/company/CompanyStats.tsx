@@ -33,7 +33,7 @@ export function CompanyStats({ companyQuests }: CompanyStatsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{totalQuests}</div>
-          <p className="text-xs text-muted-foreground">+{totalQuests} this month</p>
+          <p className="text-xs text-muted-foreground">Total quests posted</p>
         </CardContent>
       </Card>
       <Card>
