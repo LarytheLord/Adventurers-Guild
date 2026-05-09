@@ -173,6 +173,9 @@ export default async function DashboardPage() {
                 </GuildChip>
               )}
             </div>
+            {user?.username && (
+              <ShareGuildCard username={user.username} />
+            )}
           </div>
 
           <div className="flex w-full max-w-md flex-col gap-3 rounded-2xl border border-slate-200 bg-white/90 p-4">
