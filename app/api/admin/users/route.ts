@@ -1,5 +1,5 @@
 // app/api/admin/users/route.ts
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireAuth } from '@/lib/api-auth';
 import { Prisma, UserRole } from '@prisma/client';
@@ -8,7 +8,7 @@ export async function GET(request: NextRequest) {
   try {
     const user = await requireAuth(request, 'admin');
     if (!user) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     // Parse query parameters
@@ -79,10 +79,10 @@ export async function GET(request: NextRequest) {
       orderBy: { createdAt: 'desc' },
     });
 
-    return Response.json({ users: data, success: true });
+    return NextResponse.json({ users: data, success: true });
   } catch (error) {
     console.error('Error fetching users:', error);
-    return Response.json({ error: 'Failed to fetch users', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch users', success: false }, { status: 500 });
   }
 }
 
@@ -90,7 +90,7 @@ export async function PUT(request: NextRequest) {
   try {
     const authUser = await requireAuth(request, 'admin');
     if (!authUser) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     const body = await request.json();
@@ -98,19 +98,19 @@ export async function PUT(request: NextRequest) {
 
     // Validate required fields
     if (!userId) {
-      return Response.json({ error: 'User ID is required', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'User ID is required', success: false }, { status: 400 });
     }
 
     // Validate role if provided
     if (role !== undefined) {
       if (!Object.values(UserRole).includes(role as UserRole)) {
-        return Response.json({ error: 'Invalid role value', success: false }, { status: 400 });
+        return NextResponse.json({ error: 'Invalid role value', success: false }, { status: 400 });
       }
       // Prevent demoting admin users
       if (role !== 'admin') {
         const target = await prisma.user.findUnique({ where: { id: userId }, select: { role: true } });
         if (target?.role === 'admin') {
-          return Response.json({ error: 'Cannot change role of an admin user', success: false }, { status: 400 });
+          return NextResponse.json({ error: 'Cannot change role of an admin user', success: false }, { status: 400 });
         }
       }
     }
@@ -126,10 +126,10 @@ export async function PUT(request: NextRequest) {
       data: updateData,
     });
 
-    return Response.json({ user: data, success: true });
+    return NextResponse.json({ user: data, success: true });
   } catch (error) {
     console.error('Error updating user:', error);
-    return Response.json({ error: 'Failed to update user', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to update user', success: false }, { status: 500 });
   }
 }
 
@@ -137,7 +137,7 @@ export async function DELETE(request: NextRequest) {
   try {
     const authUser = await requireAuth(request, 'admin');
     if (!authUser) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     const body = await request.json();
@@ -145,12 +145,12 @@ export async function DELETE(request: NextRequest) {
 
     // Validate required field
     if (!userId) {
-      return Response.json({ error: 'User ID is required', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'User ID is required', success: false }, { status: 400 });
     }
 
     // Prevent self-deactivation
     if (userId === authUser.id) {
-      return Response.json({ error: 'Cannot deactivate your own account', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Cannot deactivate your own account', success: false }, { status: 400 });
     }
 
     // Delete the user (in reality, you'd want to de-activate rather than hard delete)
@@ -159,9 +159,9 @@ export async function DELETE(request: NextRequest) {
       data: { isActive: false },
     });
 
-    return Response.json({ message: 'User deactivated successfully', success: true });
+    return NextResponse.json({ message: 'User deactivated successfully', success: true });
   } catch (error) {
     console.error('Error deactivating user:', error);
-    return Response.json({ error: 'Failed to deactivate user', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to deactivate user', success: false }, { status: 500 });
   }
 }

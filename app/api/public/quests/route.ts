@@ -1,3 +1,4 @@
+import { NextResponse } from 'next/server';
 import { prisma, withDbRetry } from '@/lib/db';
 import { QuestStatus } from '@prisma/client';
 
@@ -34,8 +35,8 @@ export async function GET() {
       applicants: q._count.assignments,
     }));
 
-    return Response.json({ quests: shaped });
+    return NextResponse.json({ quests: shaped });
   } catch {
-    return Response.json({ error: 'Failed to fetch quests' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch quests' }, { status: 500 });
   }
 }

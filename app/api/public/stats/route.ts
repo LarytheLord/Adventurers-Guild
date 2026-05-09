@@ -1,3 +1,4 @@
+import { NextResponse } from 'next/server';
 import { prisma, withDbRetry } from '@/lib/db';
 import { AssignmentStatus, UserRole, QuestStatus } from '@prisma/client';
 
@@ -12,13 +13,13 @@ export async function GET() {
       ])
     );
 
-    return Response.json({
+    return NextResponse.json({
       adventurers: adventurerCount,
       companies: companyCount,
       completedQuests: completedCount,
       openQuests: openCount,
     });
   } catch {
-    return Response.json({ error: 'Failed to fetch stats' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch stats' }, { status: 500 });
   }
 }

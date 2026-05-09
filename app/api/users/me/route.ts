@@ -1,5 +1,5 @@
 // app/api/users/me/route.ts
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/api-auth';
 import { prisma } from '@/lib/db';
 
@@ -7,7 +7,7 @@ export async function PATCH(request: NextRequest) {
   try {
     const authUser = await getAuthUser(request);
     if (!authUser) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     const body = await request.json();
@@ -18,11 +18,11 @@ export async function PATCH(request: NextRequest) {
     if (typeof body.username === 'string') {
       const username = body.username.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
       if (username.length < 3 || username.length > 30) {
-        return Response.json({ error: 'Username must be 3-30 characters (letters, numbers, - _)', success: false }, { status: 400 });
+        return NextResponse.json({ error: 'Username must be 3-30 characters (letters, numbers, - _)', success: false }, { status: 400 });
       }
       const taken = await prisma.user.findUnique({ where: { username }, select: { id: true } });
       if (taken && taken.id !== authUser.id) {
-        return Response.json({ error: 'Username already taken', success: false }, { status: 409 });
+        return NextResponse.json({ error: 'Username already taken', success: false }, { status: 409 });
       }
       userUpdate.username = username;
     }
@@ -34,7 +34,7 @@ export async function PATCH(request: NextRequest) {
     if (typeof body.discord === 'string') userUpdate.discord = body.discord.trim() || null;
 
     if (Object.keys(userUpdate).length === 0) {
-      return Response.json({ error: 'No valid fields to update', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'No valid fields to update', success: false }, { status: 400 });
     }
 
     const updated = await prisma.user.update({
@@ -58,9 +58,9 @@ export async function PATCH(request: NextRequest) {
       }
     }
 
-    return Response.json({ user: updated, success: true });
+    return NextResponse.json({ user: updated, success: true });
   } catch (error) {
     console.error('Error updating user profile:', error);
-    return Response.json({ error: 'Failed to update profile', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to update profile', success: false }, { status: 500 });
   }
 }

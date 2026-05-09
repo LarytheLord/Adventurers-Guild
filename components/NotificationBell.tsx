@@ -24,6 +24,7 @@ import {
 } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
 
 // Types
 interface Notification {
@@ -54,7 +55,7 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
       
       try {
         setLoading(true);
-        const response = await fetch(`/api/notifications?userId=${userId}&limit=10`);
+        const response = await fetchWithAuth(`/api/notifications?userId=${userId}&limit=10`);
         const data = await response.json();
         
         if (data.success) {
@@ -88,7 +89,7 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
 
   const markAsRead = async (notificationId: string) => {
     try {
-      const response = await fetch('/api/notifications', {
+      const response = await fetchWithAuth('/api/notifications', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -121,7 +122,7 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
 
   const markAllAsRead = async () => {
     try {
-      const response = await fetch('/api/notifications', {
+      const response = await fetchWithAuth('/api/notifications', {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -151,7 +152,7 @@ export default function NotificationBell({ userId }: NotificationBellProps) {
 
   const deleteNotification = async (notificationId: string) => {
     try {
-      const response = await fetch('/api/notifications', {
+      const response = await fetchWithAuth('/api/notifications', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

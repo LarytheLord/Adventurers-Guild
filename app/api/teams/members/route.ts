@@ -1,5 +1,5 @@
 import { TeamRole } from '@prisma/client';
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/api-auth';
 import { prisma } from '@/lib/db';
 
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
   try {
     const authUser = await getAuthUser();
     if (!authUser) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -49,26 +49,26 @@ export async function GET(request: NextRequest) {
     const offset = toSafeInt(searchParams.get('offset'), 0, 0, 10000);
 
     if (!teamId && !userId) {
-      return Response.json(
+      return NextResponse.json(
         { error: 'Either Team ID or User ID is required', success: false },
         { status: 400 }
       );
     }
 
     if (userId && authUser.role !== 'admin' && userId !== authUser.id) {
-      return Response.json({ error: 'Forbidden', success: false }, { status: 403 });
+      return NextResponse.json({ error: 'Forbidden', success: false }, { status: 403 });
     }
 
     if (teamId && authUser.role !== 'admin') {
       const requesterRole = await getRequesterTeamRole(teamId, authUser.id);
       if (!requesterRole) {
-        return Response.json({ error: 'Forbidden', success: false }, { status: 403 });
+        return NextResponse.json({ error: 'Forbidden', success: false }, { status: 403 });
       }
     }
 
     const parsedRole = role ? parseTeamRole(role) : null;
     if (role && !parsedRole) {
-      return Response.json({ error: 'Invalid role filter', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid role filter', success: false }, { status: 400 });
     }
 
     const where: Record<string, unknown> = {
@@ -110,10 +110,10 @@ export async function GET(request: NextRequest) {
       orderBy: { joinedAt: 'desc' },
     });
 
-    return Response.json({ members: data, success: true });
+    return NextResponse.json({ members: data, success: true });
   } catch (error) {
     console.error('Error fetching team members:', error);
-    return Response.json({ error: 'Failed to fetch team members', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch team members', success: false }, { status: 500 });
   }
 }
 
@@ -121,7 +121,7 @@ export async function POST(request: NextRequest) {
   try {
     const authUser = await getAuthUser();
     if (!authUser) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     const body = (await request.json()) as Record<string, unknown>;
@@ -131,16 +131,16 @@ export async function POST(request: NextRequest) {
     const requestedRole = parseTeamRole(body.role) ?? 'member';
 
     if (!teamId) {
-      return Response.json({ error: 'teamId is required', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'teamId is required', success: false }, { status: 400 });
     }
     if (!requestedUserId && !inviteEmail) {
-      return Response.json(
+      return NextResponse.json(
         { error: 'Either userId or email is required', success: false },
         { status: 400 }
       );
     }
     if (requestedRole === 'owner') {
-      return Response.json(
+      return NextResponse.json(
         { error: 'Assigning owner role is not supported via this endpoint', success: false },
         { status: 400 }
       );
@@ -152,13 +152,13 @@ export async function POST(request: NextRequest) {
     });
 
     if (!team || !team.isActive) {
-      return Response.json({ error: 'Team not found', success: false }, { status: 404 });
+      return NextResponse.json({ error: 'Team not found', success: false }, { status: 404 });
     }
 
     if (authUser.role !== 'admin') {
       const requesterRole = await getRequesterTeamRole(teamId, authUser.id, team.ownerUserId);
       if (!requesterRole || (requesterRole !== 'owner' && requesterRole !== 'admin')) {
-        return Response.json(
+        return NextResponse.json(
           { error: 'Only team owners and admins can invite members', success: false },
           { status: 403 }
         );
@@ -172,7 +172,7 @@ export async function POST(request: NextRequest) {
         select: { id: true },
       });
       if (!invitedUser) {
-        return Response.json({ error: 'No user found with this email', success: false }, { status: 404 });
+        return NextResponse.json({ error: 'No user found with this email', success: false }, { status: 404 });
       }
       targetUserId = invitedUser.id;
     }
@@ -185,7 +185,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (team.maxMembers && activeMemberCount >= team.maxMembers) {
-      return Response.json(
+      return NextResponse.json(
         { error: 'Team has reached maximum members', success: false },
         { status: 400 }
       );
@@ -200,7 +200,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingMembership?.isActive) {
-      return Response.json(
+      return NextResponse.json(
         { error: 'User is already a member of this team', success: false },
         { status: 400 }
       );
@@ -219,10 +219,10 @@ export async function POST(request: NextRequest) {
           },
         });
 
-    return Response.json({ member: data, success: true }, { status: 201 });
+    return NextResponse.json({ member: data, success: true }, { status: 201 });
   } catch (error) {
     console.error('Error adding team member:', error);
-    return Response.json({ error: 'Failed to add team member', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to add team member', success: false }, { status: 500 });
   }
 }
 
@@ -230,7 +230,7 @@ export async function PUT(request: NextRequest) {
   try {
     const authUser = await getAuthUser();
     if (!authUser) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     const body = (await request.json()) as Record<string, unknown>;
@@ -238,13 +238,13 @@ export async function PUT(request: NextRequest) {
     const role = parseTeamRole(body.role);
 
     if (!memberId || !role) {
-      return Response.json(
+      return NextResponse.json(
         { error: 'Member ID and valid role are required', success: false },
         { status: 400 }
       );
     }
     if (role === 'owner') {
-      return Response.json(
+      return NextResponse.json(
         { error: 'Use ownership transfer flow to assign owner role', success: false },
         { status: 400 }
       );
@@ -256,7 +256,7 @@ export async function PUT(request: NextRequest) {
     });
 
     if (!currentMember || !currentMember.isActive) {
-      return Response.json({ error: 'Team member not found', success: false }, { status: 404 });
+      return NextResponse.json({ error: 'Team member not found', success: false }, { status: 404 });
     }
 
     const team = await prisma.team.findUnique({
@@ -264,13 +264,13 @@ export async function PUT(request: NextRequest) {
       select: { ownerUserId: true },
     });
     if (!team) {
-      return Response.json({ error: 'Team not found', success: false }, { status: 404 });
+      return NextResponse.json({ error: 'Team not found', success: false }, { status: 404 });
     }
 
     if (authUser.role !== 'admin') {
       const requesterRole = await getRequesterTeamRole(currentMember.teamId, authUser.id, team.ownerUserId);
       if (!requesterRole || (requesterRole !== 'owner' && requesterRole !== 'admin')) {
-        return Response.json(
+        return NextResponse.json(
           { error: 'Only team owners and admins can update member roles', success: false },
           { status: 403 }
         );
@@ -278,7 +278,7 @@ export async function PUT(request: NextRequest) {
     }
 
     if (currentMember.role === 'owner') {
-      return Response.json(
+      return NextResponse.json(
         { error: 'Cannot change role of team owner', success: false },
         { status: 400 }
       );
@@ -289,10 +289,10 @@ export async function PUT(request: NextRequest) {
       data: { role },
     });
 
-    return Response.json({ member: data, success: true });
+    return NextResponse.json({ member: data, success: true });
   } catch (error) {
     console.error('Error updating team member:', error);
-    return Response.json({ error: 'Failed to update team member', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to update team member', success: false }, { status: 500 });
   }
 }
 
@@ -300,14 +300,14 @@ export async function DELETE(request: NextRequest) {
   try {
     const authUser = await getAuthUser();
     if (!authUser) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     const body = (await request.json()) as Record<string, unknown>;
     const memberId = typeof body.member_id === 'string' ? body.member_id : '';
 
     if (!memberId) {
-      return Response.json({ error: 'Member ID is required', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Member ID is required', success: false }, { status: 400 });
     }
 
     const currentMember = await prisma.teamMember.findUnique({
@@ -316,7 +316,7 @@ export async function DELETE(request: NextRequest) {
     });
 
     if (!currentMember || !currentMember.isActive) {
-      return Response.json({ error: 'Team member not found', success: false }, { status: 404 });
+      return NextResponse.json({ error: 'Team member not found', success: false }, { status: 404 });
     }
 
     const team = await prisma.team.findUnique({
@@ -324,7 +324,7 @@ export async function DELETE(request: NextRequest) {
       select: { ownerUserId: true },
     });
     if (!team) {
-      return Response.json({ error: 'Team not found', success: false }, { status: 404 });
+      return NextResponse.json({ error: 'Team not found', success: false }, { status: 404 });
     }
 
     const isSelfRemoval = authUser.id === currentMember.userId;
@@ -334,12 +334,12 @@ export async function DELETE(request: NextRequest) {
         : await getRequesterTeamRole(currentMember.teamId, authUser.id, team.ownerUserId);
 
     if (!requesterRole) {
-      return Response.json({ error: 'Requester not found in team', success: false }, { status: 404 });
+      return NextResponse.json({ error: 'Requester not found in team', success: false }, { status: 404 });
     }
 
     if (isSelfRemoval) {
       if (currentMember.role === 'owner') {
-        return Response.json(
+        return NextResponse.json(
           {
             error: 'Team owner cannot leave the team. Transfer ownership or delete the team.',
             success: false,
@@ -348,7 +348,7 @@ export async function DELETE(request: NextRequest) {
         );
       }
     } else if (requesterRole !== 'owner' && requesterRole !== 'admin') {
-      return Response.json(
+      return NextResponse.json(
         { error: 'Only team owners and admins can remove other members', success: false },
         { status: 403 }
       );
@@ -359,9 +359,9 @@ export async function DELETE(request: NextRequest) {
       data: { isActive: false },
     });
 
-    return Response.json({ message: 'Team member removed successfully', success: true });
+    return NextResponse.json({ message: 'Team member removed successfully', success: true });
   } catch (error) {
     console.error('Error removing team member:', error);
-    return Response.json({ error: 'Failed to remove team member', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to remove team member', success: false }, { status: 500 });
   }
 }

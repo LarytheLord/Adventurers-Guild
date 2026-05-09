@@ -1,5 +1,5 @@
 // app/api/admin/activity/route.ts
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireAuth } from '@/lib/api-auth';
 
@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   try {
     const user = await requireAuth(request, 'admin');
     if (!user) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     // Parse query parameters
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    return Response.json({
+    return NextResponse.json({
       recentActivity,
       dailyActiveUsers: dailyActiveUsers.length,
       activityBreakdown: activityBreakdown.map(item => ({
@@ -71,6 +71,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error('Error fetching activity data:', error);
-    return Response.json({ error: 'Failed to fetch activity data', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch activity data', success: false }, { status: 500 });
   }
 }
