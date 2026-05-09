@@ -10,6 +10,7 @@ import StatsSection from '@/components/landing/StatsSection';
 import CTASection from '@/components/landing/CTASection';
 import QuestShowcase from '@/components/landing/QuestShowcase';
 import LogoMarquee from '@/components/landing/LogoMarquee';
+
 const RANKS = ['F', 'E', 'D', 'C', 'B', 'A', 'S'] as const;
 
 export default function HomePage() {
@@ -27,7 +28,6 @@ export default function HomePage() {
 
   return (
     <>
-      {/* Hero with game HUD overlays */}
       <div className="relative">
         <Hero
           trustBadge={{
@@ -44,7 +44,6 @@ export default function HomePage() {
           }}
         />
 
-        {/* Rank ladder — bottom center */}
         <div className="hidden lg:flex absolute bottom-10 left-1/2 -translate-x-1/2 flex-col items-center gap-2">
           <div className="flex items-center gap-3">
             {RANKS.map((rank, i) => (
@@ -64,23 +63,21 @@ export default function HomePage() {
         </div>
       </div>
 
-      <section id="features">
-        <StatsSection />
-      </section>
       <section id="quests">
         <QuestShowcase />
       </section>
-      <section id="experience">
+      <section id="features">
         <BentoGrid />
       </section>
       <section id="how-it-works">
         <HowItWorks />
       </section>
+      <section id="stats">
+        <StatsSection />
+      </section>
       <section id="join">
         <CTASection />
       </section>
-      
-      {/* Trusted Partners section - moved below main CTA */}
       <LogoMarquee />
     </>
   );

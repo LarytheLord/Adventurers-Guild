@@ -1,35 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
-import { RankBadge } from '@/components/ui/rank-badge';
-import type { Rank } from '@/components/ui/rank-badge';
-
-const ranks = [
-  { rank: 'S' as const, w: 'w-full' },
-  { rank: 'A' as const, w: 'w-[85%]' },
-  { rank: 'B' as const, w: 'w-[70%]' },
-  { rank: 'C' as const, w: 'w-[55%]' },
-  { rank: 'D' as const, w: 'w-[40%]' },
-  { rank: 'E' as const, w: 'w-[25%]' },
-  { rank: 'F' as const, w: 'w-[12%]' },
-];
-
-const rankBarColors: Record<string, string> = {
-  S: 'bg-red-500',
-  A: 'bg-orange-500',
-  B: 'bg-amber-400',
-  C: 'bg-violet-500',
-  D: 'bg-blue-500',
-  E: 'bg-emerald-500',
-  F: 'bg-slate-500',
-};
-
-type PublicQuest = {
-  id: string;
-  title: string;
-  difficulty: Rank;
-};
+import { Button } from '@/components/ui/button';
+import Link from 'next/link';
+import { CheckCircle2 } from 'lucide-react';
 
 type PublicStats = {
   adventurers: number;
@@ -38,15 +12,53 @@ type PublicStats = {
   openQuests: number;
 };
 
+const features = [
+  {
+    title: 'Real production work',
+    description:
+      'No tutorials or toy projects. Every quest ships to real companies with real users.',
+    items: [
+      'Live bug fixes and feature development',
+      'Direct collaboration with company engineers',
+      'Production code reviewed by senior devs',
+    ],
+  },
+  {
+    title: 'Built-in code review',
+    description:
+      'Every submission gets reviewed. Get actionable feedback that grows your skills faster than any course.',
+    items: [
+      'Line-by-line review from experienced engineers',
+      'Learn best practices and production patterns',
+      'Track improvement over multiple quests',
+    ],
+  },
+  {
+    title: 'Progression that compounds',
+    description:
+      'Complete quests, earn XP, and unlock higher ranks. Your rank is a verifiable signal of real skill.',
+    items: [
+      '7 ranks from F to S',
+      'Higher ranks unlock better quests',
+      'Your rank is public on your profile',
+    ],
+  },
+  {
+    title: 'Get paid for quality',
+    description:
+      'Companies pay when delivery meets their bar. No free work, no spec changes after the fact.',
+    items: [
+      'Clear scope before you start',
+      'Payment on approval, not submission',
+      'Fair dispute resolution through QA',
+    ],
+  },
+];
+
 export default function BentoGrid() {
-  const [quests, setQuests] = useState<PublicQuest[]>([]);
   const [stats, setStats] = useState<PublicStats | null>(null);
 
   useEffect(() => {
-    fetch('/api/public/quests')
-      .then((r) => r.json())
-      .then((d) => setQuests(d.quests ?? []))
-      .catch(() => {});
     fetch('/api/public/stats')
       .then((r) => r.json())
       .then((d) => setStats(d))
@@ -54,149 +66,53 @@ export default function BentoGrid() {
   }, []);
 
   return (
-    <section className="py-20 md:py-28 bg-slate-950">
-      <div className="container px-6 mx-auto max-w-6xl">
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.4 }}
-          className="text-center mb-16"
-        >
-          <p className="text-[11px] font-semibold tracking-[0.15em] text-orange-400/60 uppercase mb-3">
+    <section className="bg-slate-50 py-20 md:py-28">
+      <div className="container mx-auto max-w-6xl px-6">
+        <div className="mb-12 text-center">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-slate-400">
             Why the Guild
           </p>
-          <h2 className="text-3xl md:text-4xl font-bold tracking-[-0.02em] text-white">
-            Not your average coding platform
+          <h2 className="text-3xl font-bold tracking-tight text-slate-900 md:text-4xl">
+            Built for real developers
           </h2>
-        </motion.div>
+          {stats && (
+            <p className="mx-auto mt-3 max-w-2xl text-sm text-slate-500">
+              {stats.completedQuests.toLocaleString()} quests completed &middot;{' '}
+              {stats.adventurers.toLocaleString()} adventurers &middot;{' '}
+              {stats.companies.toLocaleString()} partner companies
+            </p>
+          )}
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {/* Real-world projects — live quests from DB */}
-          <FeatureCard index={0} span="md:col-span-2" title="Real-world projects" description="No tutorials. Work on actual production tasks from partner companies — bug fixes, features, and integrations.">
-            <div className="mt-6 space-y-2">
-              {quests.length > 0 ? (
-                quests.slice(0, 3).map((q) => (
-                  <div
-                    key={q.id}
-                    className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-slate-800/60 border border-slate-700/50"
-                  >
-                    <RankBadge rank={q.difficulty} size="sm" />
-                    <span className="text-sm text-slate-300">{q.title}</span>
-                  </div>
-                ))
-              ) : (
-                <div className="px-3 py-4 rounded-lg bg-slate-800/60 border border-slate-700/50 text-center">
-                  <p className="text-sm text-slate-500">New quests dropping soon — join to be first in line.</p>
-                </div>
-              )}
-            </div>
-          </FeatureCard>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+          {features.map((feature) => (
+            <FeatureCard key={feature.title} feature={feature} />
+          ))}
+        </div>
 
-          {/* Rank up — static illustration of the rank system */}
-          <FeatureCard index={1} span="md:col-span-1" title="Rank up from F to S" description="Progress through 7 ranks. Higher ranks unlock exclusive quests with bigger rewards.">
-            <div className="mt-6 space-y-2">
-              {ranks.map((r) => (
-                <div key={r.rank} className="flex items-center gap-2.5">
-                  <RankBadge rank={r.rank} size="sm" />
-                  <div className="flex-1 h-1.5 bg-slate-700/60 rounded-full overflow-hidden">
-                    <div className={`h-full rounded-full ${rankBarColors[r.rank]} ${r.w}`} />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </FeatureCard>
-
-          {/* Get paid — real platform stats */}
-          <FeatureCard index={2} span="md:col-span-1" title="Get paid for your code" description="Every completed quest pays real money. Build your portfolio and your bank account simultaneously.">
-            <div className="mt-6 space-y-2">
-              {stats ? (
-                <>
-                  <StatRow label="Open quests" value={String(stats.openQuests)} highlight />
-                  <StatRow label="Quests completed" value={String(stats.completedQuests)} />
-                  <StatRow label="Active adventurers" value={String(stats.adventurers)} />
-                  <StatRow label="Partner companies" value={String(stats.companies)} />
-                </>
-              ) : (
-                [0, 1, 2, 3].map((i) => (
-                  <div key={i} className="h-10 rounded-lg bg-slate-800/60 border border-slate-700/50 animate-pulse" />
-                ))
-              )}
-            </div>
-          </FeatureCard>
-
-          {/* Code review — illustrative example of the review UX */}
-          <FeatureCard index={3} span="md:col-span-2" title="Code review from senior engineers" description="Every submission gets reviewed. Get real feedback, learn best practices, and grow faster than any bootcamp.">
-            <div className="mt-6 rounded-lg bg-slate-800/80 border border-slate-700/50 p-4 font-mono text-xs">
-              <div className="space-y-1">
-                <div className="text-slate-500">
-                  <span className="text-slate-600 mr-3">12</span>
-                  {'  const data = await'}
-                </div>
-                <div className="bg-red-500/10 text-red-400 rounded px-1.5 py-0.5 -mx-1.5">
-                  <span className="text-red-600 mr-3">{'−'}</span>
-                  {'    fetch(url);'}
-                </div>
-                <div className="bg-emerald-500/10 text-emerald-400 rounded px-1.5 py-0.5 -mx-1.5">
-                  <span className="text-emerald-600 mr-3">{'+'}</span>
-                  {'    fetchWithRetry(url, 3);'}
-                </div>
-                <div className="text-slate-500">
-                  <span className="text-slate-600 mr-3">14</span>
-                  {'  return data.json();'}
-                </div>
-              </div>
-              <div className="mt-3 p-2.5 bg-slate-700/40 border border-slate-600/40 rounded-lg font-sans">
-                <p className="text-xs text-slate-300">
-                  <span className="font-semibold text-orange-400">Reviewer</span>{' '}
-                  <span className="text-slate-400">
-                    Nice catch — consider adding exponential backoff for production.
-                  </span>
-                </p>
-              </div>
-            </div>
-          </FeatureCard>
+        <div className="mt-12 flex justify-center">
+          <Button asChild className="h-11 rounded-xl px-7 text-sm">
+            <Link href="/register">Start building your rank</Link>
+          </Button>
         </div>
       </div>
     </section>
   );
 }
 
-function FeatureCard({
-  index,
-  span,
-  title,
-  description,
-  children,
-}: {
-  index: number;
-  span: string;
-  title: string;
-  description: string;
-  children: React.ReactNode;
-}) {
+function FeatureCard({ feature }: { feature: (typeof features)[0] }) {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 12 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.4, delay: index * 0.08 }}
-      className={`${span} bg-slate-900 rounded-xl border border-slate-800 p-6 hover:border-slate-700 transition-colors duration-200`}
-    >
-      <h3 className="text-base font-semibold text-white">{title}</h3>
-      <p className="text-sm text-slate-400 mt-1.5 leading-relaxed">{description}</p>
-      {children}
-    </motion.div>
-  );
-}
-
-function StatRow({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
-  return (
-    <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-800/60 border border-slate-700/50">
-      <p className="text-xs text-slate-300 font-medium">{label}</p>
-      <span className={`text-sm font-semibold ${highlight ? 'text-orange-400' : 'text-emerald-400'}`}>
-        {value}
-      </span>
+    <div className="flex flex-col rounded-xl border border-slate-200 bg-white p-6">
+      <h3 className="text-base font-semibold text-slate-900">{feature.title}</h3>
+      <p className="mt-1.5 text-sm leading-relaxed text-slate-500">{feature.description}</p>
+      <ul className="mt-5 flex flex-col gap-2.5">
+        {feature.items.map((item) => (
+          <li key={item} className="flex items-start gap-2.5 text-sm text-slate-600">
+            <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-emerald-500" />
+            {item}
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
