@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useParams, useRouter } from 'next/navigation';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -176,6 +176,21 @@ export default function QuestDetailPage() {
   const canAssign = quest?.status === 'available' && !isAssigned;
   const canSubmit = !!assignment && ['assigned', 'started', 'in_progress', 'needs_rework'].includes(assignment.status);
   const showPartyPanel = (quest?.maxParticipants ?? 1) > 1;
+
+  useEffect(() => {
+    if (!quest) return;
+    const imageUrl = `${window.location.origin}/api/og/quests/${quest.id}`;
+    let ogImage = document.querySelector('meta[property="og:image"]');
+    if (!ogImage) {
+      ogImage = document.createElement('meta');
+      ogImage.setAttribute('property', 'og:image');
+      document.head.appendChild(ogImage);
+    }
+    ogImage.setAttribute('content', imageUrl);
+    return () => {
+      ogImage?.remove();
+    };
+  }, [quest?.id, quest?.title]);
 
   const rewardCards = useMemo(
     () =>
