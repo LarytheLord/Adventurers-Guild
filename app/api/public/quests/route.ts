@@ -6,19 +6,16 @@ export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
     const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '3', 10) || 3, 1), 60);
+    const category = url.searchParams.get('category');
 
     const quests = await withDbRetry(() =>
       prisma.quest.findMany({
-        where: { status: QuestStatus.available, track: 'OPEN' },
+        where: { status: QuestStatus.available, track: 'OPEN', questCategory: category ?? undefined } as any,
         orderBy: { createdAt: 'desc' },
         take: limit,
         include: {
-          company: {
-            include: { companyProfile: true },
-          },
-          _count: {
-            select: { assignments: true },
-          },
+          company: { include: { companyProfile: true } },
+          _count: { select: { assignments: true } },
         },
       })
     );
@@ -29,6 +26,7 @@ export async function GET(req: NextRequest) {
       description: q.description,
       company: q.company?.companyProfile?.companyName ?? q.company?.name ?? 'Unknown Company',
       difficulty: q.difficulty,
+      questCategory: q.questCategory,
       track: q.track,
       source: q.source,
       xpReward: q.xpReward,
