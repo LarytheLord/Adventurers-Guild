@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next"
 import { GeistSans } from "geist/font/sans"
 import "./globals.css"
 import "../styles/accessibility.css"
-import Chatbot from "@/components/Chatbot";
+import Chatbot from "@/components/HelpWidget";
 import { ThemeProvider } from "../components/theme-provider"
 import { SessionProvider } from "../components/session-provider"
 import Script from "next/script"
