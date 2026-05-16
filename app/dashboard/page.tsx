@@ -29,6 +29,7 @@ import {
   GuildPage,
   GuildPanel,
 } from '@/components/guild/primitives';
+import { StreakBadge } from '@/components/ui/streak-badge';
 
 const RANK_ORDER: Rank[] = ['F', 'E', 'D', 'C', 'B', 'A', 'S'];
 
@@ -165,11 +166,7 @@ export default async function DashboardPage() {
             <div className="flex flex-wrap items-center gap-2">
               <GuildChip>{specialization}</GuildChip>
               <GuildChip>Level {level}</GuildChip>
-              {(user?.adventurerProfile?.currentStreak ?? 0) > 0 && (
-                <GuildChip>
-                🔥 {user?.adventurerProfile?.currentStreak}-day streak! {Number(user?.adventurerProfile?.streakMultiplier ?? 1.0)}x XP
-                </GuildChip>
-              )}
+              <StreakBadge streak={user?.adventurerProfile?.currentStreak ?? 0} />
             </div>
           </div>
 
