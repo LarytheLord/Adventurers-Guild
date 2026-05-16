@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -16,8 +16,11 @@ import {
   Coins,
   Crown,
   FileText,
+  Link,
+  Share2,
   Sparkles,
   Target,
+  Twitter,
   Users,
   XCircle,
   Zap,
@@ -46,6 +49,7 @@ interface Quest {
   companyId: string;
   createdAt: string;
   deadline?: string;
+  shareCount?: number;
   company?: {
     name: string;
     email?: string;
@@ -198,7 +202,63 @@ export default function QuestDetailPage() {
     return () => {
       ogImage?.remove();
     };
-  }, [quest?.id, quest?.title]);
+  }, [quest?.id]);
+
+  const searchParams = useSearchParams();
+  const utmSource = searchParams.get('utm_source');
+  const [shareCount, setShareCount] = useState(0);
+
+  const trackShare = useCallback(async (source: string) => {
+    try {
+      const response = await fetch('/api/share', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ questId, source }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        setShareCount(data.shareCount);
+      }
+    } catch {
+      console.error('Failed to track share');
+    }
+  }, [questId]);
+
+  const getShareUrl = useCallback((source: string) => {
+    const baseUrl = window.location.origin + window.location.pathname;
+    const url = `${baseUrl}?utm_source=${source}`;
+    const text = quest ? `${quest.title} — Adventurers Guild` : 'Check out this quest on Adventurers Guild';
+    return { url, text };
+  }, [quest]);
+
+  const shareOnX = useCallback(() => {
+    const { url, text } = getShareUrl('twitter');
+    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, '_blank');
+    trackShare('twitter');
+  }, [getShareUrl, trackShare]);
+
+  const shareOnLinkedIn = useCallback(() => {
+    const { url } = getShareUrl('linkedin');
+    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}`, '_blank');
+    trackShare('linkedin');
+  }, [getShareUrl, trackShare]);
+
+  const copyLink = useCallback(async () => {
+    const { url } = getShareUrl('copy');
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success('Link copied to clipboard!');
+      trackShare('copy');
+    } catch {
+      toast.error('Failed to copy link');
+    }
+  }, [getShareUrl, trackShare]);
+
+  useEffect(() => {
+    if (quest?.shareCount !== undefined) {
+      setShareCount(quest.shareCount);
+    }
+  }, [quest?.shareCount]);
 
   const rewardCards = useMemo(
     () =>
@@ -294,12 +354,37 @@ export default function QuestDetailPage() {
               {quest.deadline && (
                 <GuildChip>Due {new Date(quest.deadline).toLocaleDateString()}</GuildChip>
               )}
+              {utmSource && (
+                <GuildChip>Shared via {utmSource}</GuildChip>
+              )}
             </div>
           </div>
-          <Button variant="outline" className="w-full sm:w-auto" onClick={() => router.push('/dashboard/quests')}>
-            <ArrowLeft className="h-4 w-4" />
-            Back to Quest Board
-          </Button>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" className="gap-2" onClick={shareOnX} title="Share on X">
+                <Twitter className="h-4 w-4" />
+                <span className="hidden sm:inline">X</span>
+              </Button>
+              <Button variant="outline" size="sm" className="gap-2" onClick={shareOnLinkedIn} title="Share on LinkedIn">
+                <Share2 className="h-4 w-4" />
+                <span className="hidden sm:inline">LinkedIn</span>
+              </Button>
+              <Button variant="outline" size="sm" className="gap-2" onClick={copyLink} title="Copy link">
+                <Link className="h-4 w-4" />
+                <span className="hidden sm:inline">Copy</span>
+              </Button>
+            </div>
+            {shareCount > 0 && (
+              <span className="text-xs text-slate-500 flex items-center gap-1">
+                <Share2 className="h-3 w-3" />
+                Shared {shareCount} times
+              </span>
+            )}
+            <Button variant="outline" className="w-full sm:w-auto" onClick={() => router.push('/dashboard/quests')}>
+              <ArrowLeft className="h-4 w-4" />
+              Back to Quest Board
+            </Button>
+          </div>
         </div>
       </GuildHero>
 

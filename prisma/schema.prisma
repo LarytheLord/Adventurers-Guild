@@ -300,6 +300,7 @@ model Quest {
   createdAt           DateTime      @default(now()) @map("created_at") @db.Timestamptz
   updatedAt           DateTime      @updatedAt @map("updated_at") @db.Timestamptz
   deadline            DateTime?     @db.Timestamptz
+  shareCount          Int           @default(0) @map("share_count")
 
   company          User?             @relation("CompanyQuests", fields: [companyId], references: [id])
   parentQuest      Quest?            @relation("SubQuests", fields: [parentQuestId], references: [id])
