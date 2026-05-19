@@ -9,7 +9,6 @@ import HowItWorks from '@/components/landing/HowItWorks';
 import StatsSection from '@/components/landing/StatsSection';
 import CTASection from '@/components/landing/CTASection';
 import QuestShowcase from '@/components/landing/QuestShowcase';
-import LogoMarquee from '@/components/landing/LogoMarquee';
 const RANKS = ['F', 'E', 'D', 'C', 'B', 'A', 'S'] as const;
 
 export default function HomePage() {
@@ -79,9 +78,6 @@ export default function HomePage() {
       <section id="join">
         <CTASection />
       </section>
-      
-      {/* Trusted Partners section - moved below main CTA */}
-      <LogoMarquee />
     </>
   );
 }
