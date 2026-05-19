@@ -229,6 +229,16 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
+        <div className="mt-4">
+          <Button variant="outline" asChild className="w-full border-indigo-800/50 text-indigo-400 hover:bg-indigo-950/30">
+            <Link href="/admin/analytics">
+              <TrendingUp className="mr-2 h-4 w-4" />
+              View Full Analytics Dashboard
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </div>
+
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
