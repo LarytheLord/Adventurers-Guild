@@ -7,8 +7,10 @@ import Hero from '@/components/ui/animated-shader-hero';
 import BentoGrid from '@/components/landing/BentoGrid';
 import HowItWorks from '@/components/landing/HowItWorks';
 import StatsSection from '@/components/landing/StatsSection';
-import CTASection from '@/components/landing/CTASection';
 import QuestShowcase from '@/components/landing/QuestShowcase';
+import SocialProof from '@/components/landing/SocialProof';
+import FinalCTA from '@/components/landing/FinalCTA';
+import Footer from '@/components/landing/Footer';
 const RANKS = ['F', 'E', 'D', 'C', 'B', 'A', 'S'] as const;
 
 export default function HomePage() {
@@ -39,7 +41,7 @@ export default function HomePage() {
           subtitle="Connect with real companies. Complete coding quests. Earn XP, climb from F-Rank to S-Rank, and get paid for code that ships to production."
           buttons={{
             primary: { text: 'Enter the Guild', href: '/register' },
-            secondary: { text: 'Browse Quests', href: '/register' },
+            secondary: { text: 'Browse Quests', href: '/quests' },
           }}
         />
 
@@ -63,6 +65,7 @@ export default function HomePage() {
         </div>
       </div>
 
+      {/* Stats + Quest Showcase + Features */}
       <section id="features">
         <StatsSection />
       </section>
@@ -75,9 +78,17 @@ export default function HomePage() {
       <section id="how-it-works">
         <HowItWorks />
       </section>
+
+      {/* Trusted by */}
+      <SocialProof />
+
+      {/* Final CTA with animated counters */}
       <section id="join">
-        <CTASection />
+        <FinalCTA />
       </section>
+
+      {/* Footer */}
+      <Footer />
     </>
   );
 }
