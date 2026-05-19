@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { ArrowRight, Check } from 'lucide-react';
+import { ArrowRight, Check, Zap } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { GlowButton } from '@/components/ui/glow-button';
 
 function Counter({ target, label }: { target: number; label: string }) {
   const [count, setCount] = useState(0);
@@ -144,18 +145,15 @@ export default function FinalCTA() {
             transition={{ duration: 0.4, delay: 0.3 }}
             className="mt-8 flex flex-wrap items-center justify-center gap-3"
           >
-            <Link
-              href="/register"
-              className="inline-flex h-12 items-center gap-2 rounded-xl bg-indigo-600 px-6 text-sm font-semibold text-white transition-all hover:bg-indigo-500 hover:shadow-[0_0_24px_-4px_rgba(99,102,241,0.3)]"
-            >
-              Create Free Account
-              <ArrowRight className="h-4 w-4" />
+            <Link href="/register">
+              <GlowButton size="lg">
+                Create Free Account <Zap className="h-4 w-4" />
+              </GlowButton>
             </Link>
-            <Link
-              href="/quests"
-              className="inline-flex h-12 items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-6 text-sm font-medium text-slate-300 transition-all hover:border-slate-600 hover:bg-slate-800"
-            >
-              Browse Quests
+            <Link href="/quests">
+              <GlowButton variant="secondary" size="lg">
+                Browse Quests <ArrowRight className="h-4 w-4" />
+              </GlowButton>
             </Link>
           </motion.div>
 

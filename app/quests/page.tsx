@@ -4,18 +4,17 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   Briefcase,
-  Clock,
   Coins,
-  Flame,
   Grid3X3,
   List,
-  Loader2,
   Search,
-  SlidersHorizontal,
   Sparkles,
   Zap,
 } from 'lucide-react';
 import Link from 'next/link';
+import { GlassCard } from '@/components/ui/glass-card';
+import { GlowButton } from '@/components/ui/glow-button';
+import { CardGridSkeleton, Skeleton } from '@/components/ui/skeleton';
 
 interface Quest {
   id: string;
@@ -72,8 +71,7 @@ function QuestCardGrid({ quest, index }: { quest: Quest; index: number }) {
       transition={{ duration: 0.35, delay: index * 0.04, ease: [0.25, 0.1, 0.25, 1] }}
     >
       <Link href={`/quests/${quest.id}`} className="group block h-full">
-        <div className="relative flex h-full flex-col rounded-2xl border border-slate-800/60 bg-gradient-to-b from-slate-900/80 to-slate-900/40 p-5 transition-all duration-300 hover:border-indigo-800/40 hover:bg-slate-900 hover:shadow-[0_0_40px_-12px_rgba(99,102,241,0.12)]">
-          {/* Top: company + difficulty */}
+        <GlassCard className="flex h-full flex-col p-5">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
               <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500/20 to-purple-600/20 ring-1 ring-indigo-800/30">
@@ -86,17 +84,14 @@ function QuestCardGrid({ quest, index }: { quest: Quest; index: number }) {
             <DifficultyBadge difficulty={quest.difficulty} />
           </div>
 
-          {/* Title */}
           <h3 className="mt-3 text-sm font-semibold leading-snug text-slate-200 transition-colors group-hover:text-indigo-300">
             {quest.title}
           </h3>
 
-          {/* Description */}
           <p className="mt-1.5 text-xs leading-relaxed text-slate-500 line-clamp-2 flex-1">
             {quest.description}
           </p>
 
-          {/* Skills */}
           {quest.requiredSkills && quest.requiredSkills.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-1.5">
               {quest.requiredSkills.slice(0, 3).map((skill) => (
@@ -115,7 +110,6 @@ function QuestCardGrid({ quest, index }: { quest: Quest; index: number }) {
             </div>
           )}
 
-          {/* Bottom: rewards */}
           <div className="mt-4 flex items-center gap-3 border-t border-slate-800/40 pt-3">
             <div className="flex items-center gap-1.5 rounded-md bg-indigo-500/8 px-2 py-1">
               <Zap className="h-3 w-3 text-indigo-400" />
@@ -134,7 +128,7 @@ function QuestCardGrid({ quest, index }: { quest: Quest; index: number }) {
               {quest.applicants}
             </div>
           </div>
-        </div>
+        </GlassCard>
       </Link>
     </motion.div>
   );
@@ -169,29 +163,6 @@ function QuestCardList({ quest }: { quest: Quest }) {
         </div>
       </div>
     </Link>
-  );
-}
-
-function QuestCardSkeleton() {
-  return (
-    <div className="animate-pulse rounded-2xl border border-slate-800/40 bg-slate-900/30 p-5">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <div className="h-7 w-7 rounded-lg bg-slate-800" />
-          <div className="h-3 w-20 rounded bg-slate-800" />
-        </div>
-        <div className="h-4 w-16 rounded-full bg-slate-800" />
-      </div>
-      <div className="mt-3 h-4 w-3/4 rounded bg-slate-800" />
-      <div className="mt-2 space-y-1">
-        <div className="h-3 w-full rounded bg-slate-800/50" />
-        <div className="h-3 w-2/3 rounded bg-slate-800/50" />
-      </div>
-      <div className="mt-4 flex gap-2">
-        <div className="h-5 w-14 rounded bg-slate-800/50" />
-        <div className="h-5 w-14 rounded bg-slate-800/50" />
-      </div>
-    </div>
   );
 }
 
@@ -407,11 +378,7 @@ export default function QuestsPage() {
       <section className="py-10 md:py-14">
         <div className="container mx-auto max-w-6xl px-6">
           {loading ? (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <QuestCardSkeleton key={i} />
-              ))}
-            </div>
+            <CardGridSkeleton count={6} />
           ) : filtered.length === 0 ? (
             <motion.div
               initial={{ opacity: 0, y: 16 }}
@@ -464,24 +431,29 @@ export default function QuestsPage() {
       </section>
 
       {/* ── Bottom CTA ── */}
-      <section className="border-t border-slate-800/40 bg-slate-900/30 py-12">
+      <section className="border-t border-slate-800/40 bg-slate-900/30 py-16">
         <div className="container mx-auto max-w-6xl px-6">
           <div className="mx-auto max-w-lg text-center">
-            <p className="text-xs font-medium text-slate-500">
+            <div className="inline-flex items-center gap-2 rounded-full border border-indigo-800/25 bg-indigo-950/30 px-3 py-1 text-[11px] font-medium text-indigo-300">
+              <Sparkles className="h-3 w-3" />
+              Start your adventure today
+            </div>
+            <h3 className="mt-5 text-2xl font-bold tracking-tight text-white">
               Ready to start your journey?
+            </h3>
+            <p className="mt-2 text-sm text-slate-500">
+              Join hundreds of developers earning real income through quest-based work.
             </p>
-            <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-              <Link
-                href="/register"
-                className="inline-flex h-10 items-center gap-2 rounded-xl bg-indigo-600 px-5 text-sm font-semibold text-white transition-all hover:bg-indigo-500"
-              >
-                Create Free Account
+            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+              <Link href="/register">
+                <GlowButton size="lg">
+                  Create Free Account <Zap className="h-4 w-4" />
+                </GlowButton>
               </Link>
-              <Link
-                href="/register-company"
-                className="inline-flex h-10 items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 px-5 text-sm font-medium text-slate-300 transition-all hover:border-slate-600"
-              >
-                I&apos;m a Company
+              <Link href="/register-company">
+                <GlowButton variant="secondary" size="lg">
+                  I&apos;m a Company
+                </GlowButton>
               </Link>
             </div>
           </div>
