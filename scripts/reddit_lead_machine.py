@@ -5,6 +5,7 @@ and sends a daily digest email with potential leads for Adventurers Guild.
 """
 
 import argparse
+import base64
 import csv
 import html
 import json
@@ -102,7 +103,7 @@ def get_reddit_token(env: dict[str, str]) -> str | None:
             data=data,
             headers={
                 "User-Agent": env.get("REDDIT_USER_AGENT", "LeadMachine/1.0"),
-                "Authorization": f"Basic {urllib.parse.quote(env['REDDIT_CLIENT_ID'])}:{urllib.parse.quote(env['REDDIT_CLIENT_SECRET'])}",
+                "Authorization": f"Basic {base64.b64encode(f'{env['REDDIT_CLIENT_ID']}:{env['REDDIT_CLIENT_SECRET']}'.encode()).decode()}",
             },
         )
         with urllib.request.urlopen(req, timeout=15) as resp:
