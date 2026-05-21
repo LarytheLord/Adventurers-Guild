@@ -1,5 +1,6 @@
 import { Flame, Zap } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { calculateMultiplier } from '@/lib/streak-utils';
 
 function getStreakLabel(streak: number): string {
   if (streak >= 30) return 'Legendary';
@@ -7,14 +8,6 @@ function getStreakLabel(streak: number): string {
   if (streak >= 7) return 'Blazing';
   if (streak >= 3) return 'Burning';
   return 'Warm Up';
-}
-
-function getStreakMultiplier(streak: number): number {
-  if (streak >= 30) return 2.0;
-  if (streak >= 14) return 1.5;
-  if (streak >= 7) return 1.25;
-  if (streak >= 3) return 1.1;
-  return 1.0;
 }
 
 const streakStyles: Record<string, { bg: string; text: string; border: string; flame: string }> = {
@@ -39,7 +32,7 @@ export function StreakBadge({
   if (streak <= 0) return null;
 
   const label = getStreakLabel(streak);
-  const multiplier = getStreakMultiplier(streak);
+  const multiplier = calculateMultiplier(streak);
   const style = streakStyles[label];
 
   const sizeClasses = size === 'sm' ? 'px-2.5 py-1 text-[11px] gap-1' : 'px-3 py-1.5 text-xs gap-1.5';
@@ -67,7 +60,7 @@ export function StreakBadge({
 export function StreakMultiplierNotice({ streak, xpReward }: { streak: number; xpReward: number }) {
   if (streak <= 0) return null;
 
-  const multiplier = getStreakMultiplier(streak);
+  const multiplier = calculateMultiplier(streak);
   if (multiplier <= 1) return null;
 
   const bonusXp = Math.round(xpReward * (multiplier - 1));
