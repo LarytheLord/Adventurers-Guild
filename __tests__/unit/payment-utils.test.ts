@@ -1,27 +1,26 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
 import { processQuestPayment } from '@/lib/razorpay-payout';
 
-// Mock Prisma
+const findFirstMock: jest.Mock = jest.fn();
+const findUniqueMock: jest.Mock = jest.fn();
+const createMock: jest.Mock = jest.fn();
+
 jest.mock('@/lib/db', () => ({
   prisma: {
     transaction: {
-      findFirst: jest.fn(),
-      create: jest.fn(),
+      findFirst: findFirstMock,
+      create: createMock,
     },
     adventurerProfile: {
-      findUnique: jest.fn(),
+      findUnique: findUniqueMock,
     },
   },
 }));
 
-// Mock razorpay module
 jest.mock('@/lib/razorpay', () => ({
   isRazorpayConfigured: jest.fn(() => false),
   createRazorpayPayout: jest.fn(),
 }));
-
-// Import after mocks
-import { prisma } from '@/lib/db';
 
 describe('Payment Utilities', () => {
   beforeEach(() => {
@@ -30,7 +29,7 @@ describe('Payment Utilities', () => {
 
   describe('processQuestPayment', () => {
     it('should return already processed if transaction exists', async () => {
-      (prisma.transaction.findFirst as jest.Mock).mockResolvedValue({
+      findFirstMock.mockResolvedValue({
         id: 'txn_123',
         status: 'completed',
       });
@@ -42,8 +41,8 @@ describe('Payment Utilities', () => {
     });
 
     it('should return error if no bank account linked', async () => {
-      (prisma.transaction.findFirst as jest.Mock).mockResolvedValue(null);
-      (prisma.adventurerProfile.findUnique as jest.Mock).mockResolvedValue({
+      findFirstMock.mockResolvedValue(null);
+      findUniqueMock.mockResolvedValue({
         razorpayFundAccountId: null,
       });
 
@@ -54,8 +53,8 @@ describe('Payment Utilities', () => {
     });
 
     it('should process simulated payment when Razorpay not configured', async () => {
-      (prisma.transaction.findFirst as jest.Mock).mockResolvedValue(null);
-      (prisma.adventurerProfile.findUnique as jest.Mock).mockResolvedValue({
+      findFirstMock.mockResolvedValue(null);
+      findUniqueMock.mockResolvedValue({
         razorpayFundAccountId: 'fa_123',
       });
 
