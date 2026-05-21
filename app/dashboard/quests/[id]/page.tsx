@@ -26,6 +26,7 @@ import { toast } from 'sonner';
 import { GuildCard, GuildChip, GuildHero, GuildKpi, GuildPage, GuildPanel } from '@/components/guild/primitives';
 import { PartyPanel, type Party } from '@/components/quest/PartyPanel';
 import { fetchWithAuth } from '@/lib/fetch-with-auth';
+import { StreakMultiplierNotice } from '@/components/ui/streak-badge';
 
 interface Quest {
   id: string;
@@ -113,6 +114,7 @@ export default function QuestDetailPage() {
   const [submissionContent, setSubmissionContent] = useState('');
   const [submissionNotes, setSubmissionNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentStreak, setCurrentStreak] = useState(0);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -157,6 +159,12 @@ export default function QuestDetailPage() {
             setAssignment(assignments[0]);
           } else {
             setAssignment(null);
+          }
+
+          const profileResponse = await fetchWithAuth('/api/adventurer/profile');
+          const profileData = await profileResponse.json();
+          if (profileData.success && profileData.profile) {
+            setCurrentStreak(profileData.profile.currentStreak ?? 0);
           }
         }
       } catch (fetchError) {
@@ -484,6 +492,10 @@ export default function QuestDetailPage() {
                   Share your repo, deployment, or implementation notes for review.
                 </p>
               </div>
+
+              {quest && (
+                <StreakMultiplierNotice streak={currentStreak} xpReward={quest.xpReward} />
+              )}
 
               <div className="space-y-2">
                 <Label htmlFor="submissionContent">Submission Content</Label>
