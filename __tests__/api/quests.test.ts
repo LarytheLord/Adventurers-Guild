@@ -1,30 +1,30 @@
-import { describe, it, expect, vi, beforeEach } from '@jest/globals';
+import { describe, it, expect, beforeEach, jest } from '@jest/globals';
 import { NextRequest } from 'next/server';
 
 // Mock NextAuth
-vi.mock('next-auth/jwt', () => ({
-  getToken: vi.fn(),
+jest.mock('next-auth/jwt', () => ({
+  getToken: jest.fn(),
 }));
 
 // Mock Prisma
-vi.mock('@/lib/db', () => ({
+jest.mock('@/lib/db', () => ({
   prisma: {
     quest: {
-      findMany: vi.fn(),
-      findUnique: vi.fn(),
-      create: vi.fn(),
-      update: vi.fn(),
-      delete: vi.fn(),
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      create: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
     },
     user: {
-      findUnique: vi.fn(),
+      findUnique: jest.fn(),
     },
   },
 }));
 
 describe('Quest API Routes', () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
   });
 
   describe('GET /api/quests', () => {
