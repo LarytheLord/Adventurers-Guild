@@ -77,8 +77,9 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: `NEXTAUTH_URL=${baseURL} npm run build && NEXTAUTH_URL=${baseURL} npm run start -- -p ${e2ePort}`,
+    command: `set NEXTAUTH_URL=${baseURL} && npm run build && npm run start -- -p ${e2ePort}`,
     url: baseURL,
-    reuseExistingServer: false,
+    reuseExistingServer: !process.env.CI,
+    timeout: 180000,
   },
 });

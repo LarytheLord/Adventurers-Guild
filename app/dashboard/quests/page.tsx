@@ -25,6 +25,7 @@ import {
   Clock,
   Filter,
   Search,
+  Share2,
   Sparkles,
   Target,
   Trophy,
@@ -77,6 +78,7 @@ interface Quest {
   companyId: string;
   createdAt: string;
   deadline?: string;
+  shareCount?: number;
   party?: QuestParty | null;
   company?: {
     name: string;
@@ -598,6 +600,13 @@ export default function QuestsPage() {
                   <div className="mt-4 flex items-center gap-1 text-xs text-slate-500">
                     <Clock className="h-3.5 w-3.5" />
                     Due {new Date(quest.deadline).toLocaleDateString()}
+                  </div>
+                )}
+
+                {quest.shareCount !== undefined && quest.shareCount > 0 && (
+                  <div className="mt-2 flex items-center gap-1 text-xs text-slate-500">
+                    <Share2 className="h-3.5 w-3.5" />
+                    Shared {quest.shareCount} times
                   </div>
                 )}
 
