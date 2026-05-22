@@ -36,6 +36,10 @@ export default function RegisterPage() {
       return;
     }
 
+    if (role === 'adventurer' && !adventurerUsername) {
+      return;
+    }
+
     setIsLoading(true);
 
     try {

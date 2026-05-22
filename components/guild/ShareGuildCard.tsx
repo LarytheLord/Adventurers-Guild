@@ -9,7 +9,7 @@ export function ShareGuildCard({ username }: { username: string }) {
   const [copied, setCopied] = useState(false);
 
   const handleCopy = async () => {
-    const url = `${window.location.origin}/guild/${username}`;
+    const url = `${window.location.origin}/adventurer/${username}`;
     await navigator.clipboard.writeText(url);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
@@ -18,7 +18,7 @@ export function ShareGuildCard({ username }: { username: string }) {
   return (
     <div className="flex gap-2">
       <Button variant="outline" size="sm" asChild>
-        <Link href={`/guild/${username}`}>
+        <Link href={`/adventurer/${username}`}>
           <Share2 className="h-4 w-4 mr-1" />
           My Guild Card
         </Link>
