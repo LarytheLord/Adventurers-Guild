@@ -1,18 +1,13 @@
 import { describe, it, expect, jest, beforeEach } from '@jest/globals';
-import { processQuestPayment } from '@/lib/razorpay-payout';
-
-const findFirstMock: jest.Mock = jest.fn();
-const findUniqueMock: jest.Mock = jest.fn();
-const createMock: jest.Mock = jest.fn();
 
 jest.mock('@/lib/db', () => ({
   prisma: {
     transaction: {
-      findFirst: findFirstMock,
-      create: createMock,
+      findFirst: jest.fn(),
+      create: jest.fn(),
     },
     adventurerProfile: {
-      findUnique: findUniqueMock,
+      findUnique: jest.fn(),
     },
   },
 }));
@@ -21,6 +16,13 @@ jest.mock('@/lib/razorpay', () => ({
   isRazorpayConfigured: jest.fn(() => false),
   createRazorpayPayout: jest.fn(),
 }));
+
+import { prisma } from '@/lib/db';
+const findFirstMock = prisma.transaction.findFirst as jest.Mock;
+const createMock = prisma.transaction.create as jest.Mock;
+const findUniqueMock = prisma.adventurerProfile.findUnique as jest.Mock;
+
+import { processQuestPayment } from '@/lib/razorpay-payout';
 
 describe('Payment Utilities', () => {
   beforeEach(() => {
