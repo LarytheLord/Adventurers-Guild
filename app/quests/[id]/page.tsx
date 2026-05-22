@@ -1,7 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useEffect, useState, useCallback } from 'react';
+import { useParams, useSearchParams } from 'next/navigation';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import {
@@ -11,8 +11,10 @@ import {
   ChevronRight,
   Clock,
   Coins,
+  Copy,
   Home,
   Search,
+  Share2,
   Sparkles,
   Sword,
   Target,
@@ -39,6 +41,7 @@ interface QuestDetail {
   deadline: string | null;
   requiredSkills: string[];
   applicants: number;
+  shareCount: number;
   status: string;
   createdAt: string;
 }
@@ -65,7 +68,9 @@ function PostedDate({ iso }: { iso: string }) {
 
 export default function QuestDetailPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const id = params?.id as string;
+  const utmSource = searchParams?.get('utm_source');
   const [quest, setQuest] = useState<QuestDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -182,6 +187,17 @@ export default function QuestDetailPage() {
             <p className="mt-4 max-w-3xl text-sm leading-relaxed text-slate-400">
               {quest.description}
             </p>
+
+            {/* Share + UTM badge */}
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              {utmSource && (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-indigo-800/25 bg-indigo-950/30 px-3 py-1 text-[11px] font-medium text-indigo-300">
+                  <Share2 className="h-3 w-3" />
+                  Shared via {utmSource}
+                </span>
+              )}
+              <ShareButtons questTitle={quest.title} questId={quest.id} />
+            </div>
           </motion.div>
         </div>
       </section>
@@ -398,6 +414,93 @@ function ExpiredState({ quest }: { quest: QuestDetail }) {
           </GlowButton>
         </Link>
       </div>
+    </div>
+  );
+}
+
+/* ─── Share Buttons (Issue #239) ─── */
+function ShareButtons({ questTitle, questId }: { questTitle: string; questId: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+  const url = `${baseUrl}/quests/${questId}`;
+
+  const shareUrl = (platform: string) => {
+    const utmUrl = `${url}?utm_source=${platform}`;
+    return platform === 'twitter'
+      ? `https://twitter.com/intent/tweet?text=${encodeURIComponent(questTitle)}&url=${encodeURIComponent(utmUrl)}`
+      : `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(utmUrl)}`;
+  };
+
+  const handleShare = useCallback(async (platform: string) => {
+    window.open(shareUrl(platform), '_blank', 'noopener,noreferrer,width=600,height=400');
+    try {
+      await fetch('/api/share', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ questId, platform }),
+      });
+    } catch {
+      // silent
+    }
+  }, [questId, url, questTitle]);
+
+  const handleCopyLink = useCallback(async () => {
+    const link = `${url}?utm_source=copy`;
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+      await fetch('/api/share', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ questId, platform: 'copy' }),
+      });
+    } catch {
+      // silent
+    }
+  }, [questId, url]);
+
+  return (
+    <div className="flex items-center gap-1.5">
+      <span className="text-[11px] text-slate-600 mr-1">Share</span>
+
+      {/* X */}
+      <button
+        onClick={() => handleShare('twitter')}
+        className="flex h-7 w-7 items-center justify-center rounded-md border border-slate-700/50 bg-slate-800/50 text-slate-500 transition-all hover:border-slate-600 hover:text-white"
+        aria-label="Share on X"
+      >
+        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+        </svg>
+      </button>
+
+      {/* LinkedIn */}
+      <button
+        onClick={() => handleShare('linkedin')}
+        className="flex h-7 w-7 items-center justify-center rounded-md border border-slate-700/50 bg-slate-800/50 text-slate-500 transition-all hover:border-slate-600 hover:text-white"
+        aria-label="Share on LinkedIn"
+      >
+        <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+        </svg>
+      </button>
+
+      {/* Copy link */}
+      <button
+        onClick={handleCopyLink}
+        className="flex h-7 w-7 items-center justify-center rounded-md border border-slate-700/50 bg-slate-800/50 text-slate-500 transition-all hover:border-slate-600 hover:text-white"
+        aria-label={copied ? 'Copied' : 'Copy link'}
+      >
+        {copied ? (
+          <svg className="h-3.5 w-3.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M20 6L9 17l-5-5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        ) : (
+          <Copy className="h-3.5 w-3.5" />
+        )}
+      </button>
     </div>
   );
 }

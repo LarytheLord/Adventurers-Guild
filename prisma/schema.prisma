@@ -294,6 +294,7 @@ model Quest {
   adminNotes          Json?         @map("admin_notes")
   parentQuestId       String?       @map("parent_quest_id") @db.Uuid
   maxRevisions        Int           @default(2) @map("max_revisions")
+  shareCount          Int           @default(0) @map("share_count")
   revisionCount       Int           @default(0) @map("revision_count")
   hackathonEventId    String?       @map("hackathon_event_id")
   partnerOrgName      String?       @map("partner_org_name")

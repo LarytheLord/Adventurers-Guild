@@ -40,6 +40,7 @@ export async function GET(
       deadline: quest.deadline ? quest.deadline.toISOString() : null,
       requiredSkills: quest.requiredSkills,
       applicants: quest._count.assignments,
+      shareCount: quest.shareCount,
       status: quest.status,
       createdAt: quest.createdAt.toISOString(),
     });
