@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, useInView } from 'framer-motion';
+import { toast } from 'sonner';
 import {
   Briefcase,
   Coins,
@@ -10,6 +11,10 @@ import {
   Search,
   Sparkles,
   Zap,
+  Sword,
+  Users,
+  Trophy,
+  RotateCcw,
 } from 'lucide-react';
 import Link from 'next/link';
 import { GlassCard } from '@/components/ui/glass-card';
@@ -193,10 +198,11 @@ export default function QuestsPage() {
     async function fetchQuests() {
       try {
         const res = await fetch('/api/public/quests');
+        if (!res.ok) throw new Error('Failed to fetch quests');
         const data = await res.json();
         setQuests(data.quests || []);
       } catch {
-        // silent
+        toast.error('Failed to load quests. Check your connection.', { duration: 5000 });
       } finally {
         setLoading(false);
       }
@@ -280,6 +286,9 @@ export default function QuestsPage() {
               Browse real coding tasks from companies looking for talent.
               No signup needed to explore — apply when you&apos;re ready.
             </motion.p>
+
+            {/* Live stats */}
+            <PublicStats />
 
             {/* Search */}
             <motion.div
@@ -410,6 +419,15 @@ export default function QuestsPage() {
                   Showing {filtered.length} of {quests.length} quest
                   {quests.length !== 1 ? 's' : ''}
                 </p>
+                {(search || category !== 'all' || difficulty !== 'all') && (
+                  <button
+                    onClick={() => { setSearch(''); setDifficulty('all'); setCategory('all'); }}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-slate-700/50 bg-slate-900 px-3 py-1.5 text-[11px] font-medium text-slate-400 transition-all hover:border-slate-600 hover:text-white"
+                  >
+                    <RotateCcw className="h-3 w-3" />
+                    Clear filters
+                  </button>
+                )}
               </div>
 
               {view === 'grid' ? (
@@ -459,6 +477,98 @@ export default function QuestsPage() {
           </div>
         </div>
       </section>
+    </div>
+  );
+}
+
+/* ─── Public Stats (Issue #237) ─── */
+function PublicStats() {
+  const [stats, setStats] = useState<{
+    adventurers: number;
+    companies: number;
+    completedQuests: number;
+    openQuests: number;
+  } | null>(null);
+
+  useEffect(() => {
+    fetch('/api/public/stats')
+      .then((r) => r.json())
+      .then((d) => setStats(d))
+      .catch(() => {});
+  }, []);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: 0.25 }}
+      className="mx-auto mt-8 flex max-w-2xl items-center justify-center gap-6 rounded-xl border border-slate-800/40 bg-slate-900/40 px-6 py-3"
+    >
+      <StatItem
+        icon={Sword}
+        label="Open quests"
+        value={stats?.openQuests ?? null}
+      />
+      <div className="h-6 w-px bg-slate-800/60" />
+      <StatItem
+        icon={Users}
+        label="Adventurers"
+        value={stats?.adventurers ?? null}
+      />
+      <div className="h-6 w-px bg-slate-800/60" />
+      <StatItem
+        icon={Trophy}
+        label="Completed"
+        value={stats?.completedQuests ?? null}
+      />
+    </motion.div>
+  );
+}
+
+function StatItem({
+  icon: Icon,
+  label,
+  value,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: number | null;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true });
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    if (!inView || value === null || value === 0) return;
+    const duration = 1200;
+    const steps = 30;
+    const increment = value / steps;
+    let current = 0;
+    const timer = setInterval(() => {
+      current += increment;
+      if (current >= value) {
+        setCount(value);
+        clearInterval(timer);
+      } else {
+        setCount(Math.floor(current));
+      }
+    }, duration / steps);
+    return () => clearInterval(timer);
+  }, [inView, value]);
+
+  return (
+    <div ref={ref} className="flex items-center gap-2">
+      <Icon className="h-3.5 w-3.5 text-indigo-400" />
+      <div className="flex items-baseline gap-1">
+        <span className="text-sm font-bold tabular-nums text-white">
+          {value === null ? (
+            <span className="inline-block h-4 w-8 animate-pulse rounded bg-slate-800 align-middle" />
+          ) : (
+            count.toLocaleString()
+          )}
+        </span>
+        <span className="text-[11px] text-slate-500">{label}</span>
+      </div>
     </div>
   );
 }
