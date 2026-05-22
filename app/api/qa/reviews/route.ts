@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/api-auth';
 import { prisma } from '@/lib/db';
 import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
   try {
     const authUser = await requireAuth(request, 'company', 'admin');
     if (!authUser) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     const offset = Number.parseInt(searchParams.get('offset') ?? '0', 10) || 0;
 
     if (reviewerId && authUser.role !== 'admin' && reviewerId !== authUser.id) {
-      return Response.json({ error: 'Forbidden', success: false }, { status: 403 });
+      return NextResponse.json({ error: 'Forbidden', success: false }, { status: 403 });
     }
 
     const whereClause: Record<string, unknown> = {};
@@ -83,10 +83,10 @@ export async function GET(request: NextRequest) {
       take: Math.min(limit, 50),
     });
 
-    return Response.json({ submissions: data, success: true });
+    return NextResponse.json({ submissions: data, success: true });
   } catch (error) {
     console.error('Error fetching submissions for review:', error);
-    return Response.json({ error: 'Failed to fetch submissions', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch submissions', success: false }, { status: 500 });
   }
 }
 
@@ -94,14 +94,14 @@ export async function POST(request: NextRequest) {
   try {
     const authUser = await requireAuth(request, 'company', 'admin');
     if (!authUser) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     const body = (await request.json()) as Record<string, unknown>;
     const requiredFields = ['submissionId', 'quality_score', 'status'];
     for (const field of requiredFields) {
       if (body[field] === undefined) {
-        return Response.json({ error: `${field} is required`, success: false }, { status: 400 });
+        return NextResponse.json({ error: `${field} is required`, success: false }, { status: 400 });
       }
     }
 
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest) {
         : null;
 
     if (!submissionId || !status || qualityScore === null) {
-      return Response.json(
+      return NextResponse.json(
         { error: 'submissionId, status and quality_score are required', success: false },
         { status: 400 }
       );
@@ -143,11 +143,11 @@ export async function POST(request: NextRequest) {
     });
 
     if (!existingSubmission) {
-      return Response.json({ error: 'Submission not found', success: false }, { status: 404 });
+      return NextResponse.json({ error: 'Submission not found', success: false }, { status: 404 });
     }
 
     if (authUser.role !== 'admin' && existingSubmission.assignment.quest?.companyId !== authUser.id) {
-      return Response.json({ error: 'Forbidden', success: false }, { status: 403 });
+      return NextResponse.json({ error: 'Forbidden', success: false }, { status: 403 });
     }
 
     const data = await prisma.questSubmission.update({
@@ -241,10 +241,10 @@ export async function POST(request: NextRequest) {
 
     await syncQuestLifecycleStatus(prisma, existingSubmission.assignment.questId);
 
-    return Response.json({ submission: data, success: true });
+    return NextResponse.json({ submission: data, success: true });
   } catch (error) {
     console.error('Error reviewing submission:', error);
-    return Response.json({ error: 'Failed to review submission', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to review submission', success: false }, { status: 500 });
   }
 }
 
@@ -253,14 +253,14 @@ export async function PUT(request: NextRequest) {
   try {
     const authUser = await requireAuth(request, 'company', 'admin');
     if (!authUser) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     await request.json();
 
-    return Response.json({ success: true });
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Error in QA PUT:', error);
-    return Response.json({ error: 'Failed to process request', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to process request', success: false }, { status: 500 });
   }
 }

@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { notifyDiscord } from '@/lib/discord-notify';
 import crypto from 'crypto';
@@ -56,13 +56,13 @@ export async function POST(request: NextRequest) {
 
   if (!signature) {
     console.error('Missing Razorpay signature header');
-    return Response.json({ error: 'Missing signature' }, { status: 403 });
+    return NextResponse.json({ error: 'Missing signature' }, { status: 403 });
   }
 
   const secret = process.env.RAZORPAY_KEY_SECRET;
   if (!secret) {
     console.error('RAZORPAY_KEY_SECRET not configured');
-    return Response.json({ error: 'Server configuration error' }, { status: 500 });
+    return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
   }
 
   const hash = crypto
@@ -72,14 +72,14 @@ export async function POST(request: NextRequest) {
 
   if (hash !== signature) {
     console.error('Invalid webhook signature');
-    return Response.json({ error: 'Invalid signature' }, { status: 403 });
+    return NextResponse.json({ error: 'Invalid signature' }, { status: 403 });
   }
 
   let payload: RazorpayWebhookPayload;
   try {
     payload = JSON.parse(rawBody);
   } catch {
-    return Response.json({ error: 'Invalid JSON' }, { status: 400 });
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
   try {
@@ -187,9 +187,9 @@ export async function POST(request: NextRequest) {
         break;
     }
 
-    return Response.json({ received: true });
+    return NextResponse.json({ received: true });
   } catch (error) {
     console.error('Razorpay webhook processing error:', error);
-    return Response.json({ error: 'Webhook processing failed' }, { status: 500 });
+    return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 });
   }
 }

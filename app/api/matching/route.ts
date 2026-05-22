@@ -1,5 +1,5 @@
 // app/api/matching/route.ts
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/api-auth';
 import { prisma } from '@/lib/db';
 
@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   try {
     const authUser = await getAuthUser(request);
     if (!authUser) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     // Parse query parameters
@@ -17,10 +17,10 @@ export async function GET(request: NextRequest) {
 
     // Validate user ID is provided
     if (!userId) {
-      return Response.json({ error: 'User ID is required', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'User ID is required', success: false }, { status: 400 });
     }
     if (authUser.role !== 'admin' && userId !== authUser.id) {
-      return Response.json({ error: 'Forbidden', success: false }, { status: 403 });
+      return NextResponse.json({ error: 'Forbidden', success: false }, { status: 403 });
     }
 
     // Get user's profile information including skills and rank
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!user) {
-      return Response.json({ error: 'User not found', success: false }, { status: 404 });
+      return NextResponse.json({ error: 'User not found', success: false }, { status: 404 });
     }
 
     // Get available quests
@@ -86,7 +86,7 @@ export async function GET(request: NextRequest) {
 
     // If user is not an adventurer, return empty list
     if (user.role !== 'adventurer') {
-      return Response.json({ matches: [], success: true });
+      return NextResponse.json({ matches: [], success: true });
     }
 
     // Perform matching algorithm
@@ -176,10 +176,10 @@ export async function GET(request: NextRequest) {
     // Take top matches
     .slice(0, parseInt(limit));
 
-    return Response.json({ matches: matchedQuests, success: true });
+    return NextResponse.json({ matches: matchedQuests, success: true });
   } catch (error) {
     console.error('Error in quest matching:', error);
-    return Response.json({ error: 'Failed to match quests', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to match quests', success: false }, { status: 500 });
   }
 }
 
@@ -188,7 +188,7 @@ export async function POST(request: NextRequest) {
   try {
     const authUser = await getAuthUser(request);
     if (!authUser) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     const body = await request.json();
@@ -196,10 +196,10 @@ export async function POST(request: NextRequest) {
 
     // Validate required fields
     if (!userId) {
-      return Response.json({ error: 'User ID is required', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'User ID is required', success: false }, { status: 400 });
     }
     if (authUser.role !== 'admin' && userId !== authUser.id) {
-      return Response.json({ error: 'Forbidden', success: false }, { status: 403 });
+      return NextResponse.json({ error: 'Forbidden', success: false }, { status: 403 });
     }
 
     // Get user's profile
@@ -224,7 +224,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!user) {
-      return Response.json({ error: 'User not found', success: false }, { status: 404 });
+      return NextResponse.json({ error: 'User not found', success: false }, { status: 404 });
     }
 
     // Get user's completed quests to understand their preferences
@@ -341,9 +341,9 @@ export async function POST(request: NextRequest) {
     .sort((a, b) => b.recommendationScore - a.recommendationScore)
     .slice(0, num_recommendations);
 
-    return Response.json({ recommendations: recommendedQuests, success: true });
+    return NextResponse.json({ recommendations: recommendedQuests, success: true });
   } catch (error) {
     console.error('Error in quest recommendation:', error);
-    return Response.json({ error: 'Failed to generate recommendations', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to generate recommendations', success: false }, { status: 500 });
   }
 }
