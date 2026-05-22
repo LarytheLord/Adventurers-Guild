@@ -24,6 +24,7 @@ jobs:
         with:
           python-version: '3.11'
           cache: 'pip'
+          cache-dependency-path: 'scripts/reddit_lead_machine.py'
 
       - name: Install dependencies
         run: |
