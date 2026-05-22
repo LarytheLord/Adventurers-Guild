@@ -1,13 +1,23 @@
 import { prisma, withDbRetry } from '@/lib/db';
 import { QuestStatus } from '@prisma/client';
+import { NextRequest } from 'next/server';
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   try {
+    const { searchParams } = new URL(req.url);
+    const category = searchParams.get('category');
+    const limit = Number(searchParams.get('limit')) || 50;
+
+    const where: any = { status: QuestStatus.available, track: 'OPEN' };
+    if (category) {
+      where.questCategory = category;
+    }
+
     const quests = await withDbRetry(() =>
       prisma.quest.findMany({
-        where: { status: QuestStatus.available, track: 'OPEN' },
+        where,
         orderBy: { createdAt: 'desc' },
-        take: 3,
+        take: limit,
         include: {
           company: {
             include: { companyProfile: true },
