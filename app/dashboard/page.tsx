@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { prisma, withDbRetry } from '@/lib/db';
+import { ShareGuildCard } from '@/components/guild/ShareGuildCard';
 import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -59,6 +60,7 @@ export default async function DashboardPage() {
         level: true,
         skillPoints: true,
         name: true,
+        username: true,
         adventurerProfile: {
           select: {
             specialization: true,
@@ -168,6 +170,9 @@ export default async function DashboardPage() {
               <GuildChip>Level {level}</GuildChip>
               <StreakBadge streak={user?.adventurerProfile?.currentStreak ?? 0} />
             </div>
+            {user?.username && (
+              <ShareGuildCard username={user.username} />
+            )}
           </div>
 
           <div className="flex w-full max-w-md flex-col gap-3 rounded-2xl border border-slate-200 bg-white/90 p-4">
