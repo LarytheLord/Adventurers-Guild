@@ -2,33 +2,6 @@
   "version": 2,
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
-    "env": {
-    "NEXTAUTH_URL": "https://adventurersguild.vercel.app",
-    "NEXT_PUBLIC_APP_URL": "@app-url"
-  },
-  "build": {
-    "env": {
-      "NEXTAUTH_SECRET": "@nextauth-secret",
-      "DATABASE_URL": "@database-url",
-      "DATABASE_URL_UNPOOLED": "@database-url-unpooled",
-      "SMTP_HOST": "@smtp-host",
-      "SMTP_PORT": "@smtp-port",
-      "SMTP_USER": "@smtp-user",
-      "SMTP_PASS": "@smtp-pass",
-      "ADMIN_EMAIL": "@admin-email",
-      "RAZORPAY_KEY_ID": "@razorpay-key-id",
-      "RAZORPAY_KEY_SECRET": "@razorpay-key-secret",
-      "RAZORPAY_ACCOUNT_NUMBER": "@razorpay-account-number",
-      "RAZORPAY_WEBHOOK_SECRET": "@razorpay-webhook-secret",
-      "SENTRY_DSN": "@sentry-dsn",
-      "NEXT_PUBLIC_SENTRY_DSN": "@sentry-dsn-public",
-      "SENTRY_ORG": "@sentry-org",
-      "SENTRY_PROJECT": "@sentry-project",
-      "UPSTASH_REDIS_REST_URL": "@upstash-redis-url",
-      "UPSTASH_REDIS_REST_TOKEN": "@upstash-redis-token",
-      "BOOTCAMP_WEBHOOK_SECRET": "@bootcamp-webhook-secret"
-    }
-  },
   "crons": [
     {
       "path": "/api/cron/sync-quests",
