@@ -113,6 +113,7 @@ export async function POST(request: NextRequest) {
             name: body.name.trim(),
             email: normalizedEmail,
             passwordHash,
+            username: body.name.trim().toLowerCase().replace(/\s+/g, '-'),
             role: 'adventurer',
             rank: 'F',
           },
