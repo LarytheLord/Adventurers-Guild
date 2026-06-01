@@ -1,0 +1,18 @@
+# CODEOWNERS — automatically request review from maintainers on PRs
+# Both maintainers can review/approve any part of the codebase.
+
+# Default: both maintainers
+*                              @LarytheLord @Adil2009700
+
+# Frontend / landing / dashboard UX (Adil's area of focus)
+/app/home/                     @Adil2009700 @LarytheLord
+/app/dashboard/                @Adil2009700 @LarytheLord
+/components/landing/           @Adil2009700 @LarytheLord
+/components/ui/                @Adil2009700 @LarytheLord
+
+# Architecture / infra / data / payments / auth (Abi's area of focus)
+/lib/                          @LarytheLord @Adil2009700
+/prisma/                       @LarytheLord
+/middleware.ts                 @LarytheLord
+/app/api/                      @LarytheLord @Adil2009700
+/.github/workflows/            @LarytheLord

@@ -1,0 +1,167 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]:
+        - link "AG Adventurers Guild" [ref=e6] [cursor=pointer]:
+          - /url: /home
+          - generic [ref=e8]: AG
+          - generic [ref=e9]: Adventurers Guild
+        - generic [ref=e10]:
+          - generic [ref=e11]:
+            - paragraph [ref=e12]: Two paths await
+            - heading "Choose your role in the Guild" [level=2] [ref=e13]
+            - paragraph [ref=e14]: Join as an adventurer and complete quests to level up. Or post quests as a company and hire verified developers.
+          - generic [ref=e15]:
+            - generic [ref=e16]:
+              - img [ref=e18]
+              - generic [ref=e23]:
+                - paragraph [ref=e24]: Adventurer Path
+                - paragraph [ref=e25]: Take on coding quests, earn XP and real money, and climb from F-Rank to S-Rank.
+              - generic [ref=e26]: F
+            - generic [ref=e27]:
+              - img [ref=e29]
+              - generic [ref=e33]:
+                - paragraph [ref=e34]: Company Path
+                - paragraph [ref=e35]: Post development tasks, get ranked submissions, and pay only for work that meets your standards.
+      - generic [ref=e37]:
+        - generic [ref=e38]:
+          - heading "Choose Your Path" [level=1] [ref=e39]
+          - paragraph [ref=e40]: Create your account and start your journey.
+        - generic [ref=e41]:
+          - tablist [ref=e42]:
+            - tab "Adventurer" [selected] [ref=e43] [cursor=pointer]:
+              - img [ref=e44]
+              - text: Adventurer
+            - tab "Company" [ref=e49] [cursor=pointer]:
+              - img [ref=e50]
+              - text: Company
+          - tabpanel "Adventurer" [ref=e53]:
+            - paragraph [ref=e55]: Adventurer - Complete quests to earn XP and real money. Start at F-Rank.
+            - generic [ref=e56]:
+              - generic [ref=e57]:
+                - text: Full Name
+                - textbox "Full Name" [ref=e58]:
+                  - /placeholder: John Doe
+                  - text: E2E Adventurer
+              - generic [ref=e59]:
+                - text: Email
+                - textbox "Email" [ref=e60]:
+                  - /placeholder: name@example.com
+                  - text: e2e.adventurer.1777892305357@example.com
+              - generic [ref=e61]:
+                - text: Password
+                - textbox "Password" [ref=e62]:
+                  - /placeholder: Min. 8 characters
+                  - text: E2EPass123!
+              - button "Join as Adventurer" [ref=e63] [cursor=pointer]:
+                - img
+                - text: Join as Adventurer
+        - paragraph [ref=e64]:
+          - text: By signing up you agree to our
+          - link "Terms" [ref=e65] [cursor=pointer]:
+            - /url: /terms
+          - text: and
+          - link "Privacy Policy" [ref=e66] [cursor=pointer]:
+            - /url: /privacy
+          - text: .
+        - paragraph [ref=e67]:
+          - text: Already have an account?
+          - link "Sign in" [ref=e68] [cursor=pointer]:
+            - /url: /login
+    - contentinfo [ref=e69]:
+      - generic [ref=e70]:
+        - generic [ref=e71]:
+          - generic [ref=e72]:
+            - link "AG Adventurers Guild" [ref=e73] [cursor=pointer]:
+              - /url: /home
+              - generic [ref=e75]: AG
+              - generic [ref=e76]: Adventurers Guild
+            - paragraph [ref=e77]: The credentialing engine for developers. Complete real quests, earn verified rank, build a portfolio that proves you can ship.
+            - generic [ref=e78]:
+              - generic [ref=e79]: Open Source (MIT)
+              - generic [ref=e81]: Backed by Open Paws
+            - generic [ref=e82]:
+              - link "GitHub" [ref=e83] [cursor=pointer]:
+                - /url: https://github.com/LarytheLord/Adventurers-Guild
+                - img [ref=e84]
+              - link "X" [ref=e87] [cursor=pointer]:
+                - /url: https://x.com/AdventurersGuild
+                - img [ref=e88]
+              - link "LinkedIn" [ref=e90] [cursor=pointer]:
+                - /url: https://linkedin.com/company/adventurers-guild
+                - img [ref=e91]
+              - link "Discord" [ref=e95] [cursor=pointer]:
+                - /url: https://discord.gg/adventurersguild
+                - img [ref=e96]
+          - generic [ref=e98]:
+            - heading "Platform" [level=4] [ref=e99]
+            - list [ref=e100]:
+              - listitem [ref=e101]:
+                - link "Quest Board" [ref=e102] [cursor=pointer]:
+                  - /url: /dashboard/quests
+              - listitem [ref=e103]:
+                - link "Guild Card" [ref=e104] [cursor=pointer]:
+                  - /url: /register
+              - listitem [ref=e105]:
+                - link "Leaderboard" [ref=e106] [cursor=pointer]:
+                  - /url: /dashboard/leaderboard
+              - listitem [ref=e107]:
+                - link "Register" [ref=e108] [cursor=pointer]:
+                  - /url: /register
+              - listitem [ref=e109]:
+                - link "Sign In" [ref=e110] [cursor=pointer]:
+                  - /url: /login
+          - generic [ref=e111]:
+            - heading "Community" [level=4] [ref=e112]
+            - list [ref=e113]:
+              - listitem [ref=e114]:
+                - link "GitHub" [ref=e115] [cursor=pointer]:
+                  - /url: https://github.com/LarytheLord/Adventurers-Guild
+                  - text: GitHub
+                  - img [ref=e116]
+              - listitem [ref=e120]:
+                - link "Discussions" [ref=e121] [cursor=pointer]:
+                  - /url: https://github.com/LarytheLord/Adventurers-Guild/discussions
+                  - text: Discussions
+                  - img [ref=e122]
+              - listitem [ref=e126]:
+                - link "Contributing" [ref=e127] [cursor=pointer]:
+                  - /url: https://github.com/LarytheLord/Adventurers-Guild/blob/main/CONTRIBUTING.md
+                  - text: Contributing
+                  - img [ref=e128]
+              - listitem [ref=e132]:
+                - link "Open Issues" [ref=e133] [cursor=pointer]:
+                  - /url: https://github.com/LarytheLord/Adventurers-Guild/issues
+                  - text: Open Issues
+                  - img [ref=e134]
+          - generic [ref=e138]:
+            - heading "Companies" [level=4] [ref=e139]
+            - list [ref=e140]:
+              - listitem [ref=e141]:
+                - link "Post Quests" [ref=e142] [cursor=pointer]:
+                  - /url: /register-company
+              - listitem [ref=e143]:
+                - link "How It Works" [ref=e144] [cursor=pointer]:
+                  - /url: /home#how-it-works
+              - listitem [ref=e145]:
+                - link "FAQ" [ref=e146] [cursor=pointer]:
+                  - /url: /faq
+            - heading "Legal" [level=4] [ref=e147]
+            - list [ref=e148]:
+              - listitem [ref=e149]:
+                - link "Terms of Service" [ref=e150] [cursor=pointer]:
+                  - /url: /terms
+              - listitem [ref=e151]:
+                - link "Privacy Policy" [ref=e152] [cursor=pointer]:
+                  - /url: /privacy
+        - generic [ref=e153]:
+          - paragraph [ref=e154]: © 2026 Adventurers Guild. All rights reserved.
+          - paragraph [ref=e155]: Built for developers who ship.
+  - region "Notifications alt+T"
+  - alert [ref=e156]
+```

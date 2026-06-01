@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { verifyStripeWebhook } from '@/lib/stripe';
 import { notifyDiscord } from '@/lib/discord-notify';
@@ -8,7 +8,7 @@ export async function POST(request: NextRequest) {
   const signature = request.headers.get('stripe-signature');
 
   if (!signature) {
-    return Response.json({ error: 'Missing stripe-signature header' }, { status: 400 });
+    return NextResponse.json({ error: 'Missing stripe-signature header' }, { status: 400 });
   }
 
   let event;
@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
     event = verifyStripeWebhook(body, signature);
   } catch (err) {
     console.error('Stripe webhook signature verification failed:', err);
-    return Response.json({ error: 'Invalid signature' }, { status: 401 });
+    return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
   }
 
   try {
@@ -24,6 +24,8 @@ export async function POST(request: NextRequest) {
       case 'payment_intent.succeeded': {
         const pi = event.data.object;
         const questId = pi.metadata?.questId;
+        const formattedAmount = typeof pi.amount === 'number' ? (pi.amount / 100).toFixed(2) : '0.00';
+        const formattedCurrency = pi.currency?.toUpperCase() ?? 'UNKNOWN';
 
         if (questId) {
           await prisma.transaction.updateMany({
@@ -34,7 +36,7 @@ export async function POST(request: NextRequest) {
             },
           });
 
-          await notifyDiscord('alerts', `Payment completed via Stripe for quest ${questId}: ${pi.currency?.toUpperCase()} ${(pi.amount / 100).toFixed(2)}`);
+          await notifyDiscord('alerts', `Payment completed via Stripe for quest ${questId}: ${formattedCurrency} ${formattedAmount}`);
         }
         break;
       }
@@ -74,9 +76,9 @@ export async function POST(request: NextRequest) {
         break;
     }
 
-    return Response.json({ received: true });
+    return NextResponse.json({ received: true });
   } catch (error) {
     console.error('Stripe webhook processing error:', error);
-    return Response.json({ error: 'Webhook processing failed' }, { status: 500 });
+    return NextResponse.json({ error: 'Webhook processing failed' }, { status: 500 });
   }
 }

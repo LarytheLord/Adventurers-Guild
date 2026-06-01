@@ -4,11 +4,13 @@ import { useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Hero from '@/components/ui/animated-shader-hero';
-import BentoGrid from '@/components/landing/BentoGrid';
+import TrustBar from '@/components/landing/TrustBar';
+import ProductPreview from '@/components/landing/ProductPreview';
 import HowItWorks from '@/components/landing/HowItWorks';
-import StatsSection from '@/components/landing/StatsSection';
-import CTASection from '@/components/landing/CTASection';
 import QuestShowcase from '@/components/landing/QuestShowcase';
+import WhyAG from '@/components/landing/WhyAG';
+import RankJourney from '@/components/landing/RankJourney';
+import CTASection from '@/components/landing/CTASection';
 import LogoMarquee from '@/components/landing/LogoMarquee';
 const RANKS = ['F', 'E', 'D', 'C', 'B', 'A', 'S'] as const;
 
@@ -64,22 +66,20 @@ export default function HomePage() {
         </div>
       </div>
 
-      <section id="features">
-        <StatsSection />
+      <TrustBar />
+      <ProductPreview />
+      <section id="how-it-works">
+        <HowItWorks />
       </section>
       <section id="quests">
         <QuestShowcase />
       </section>
-      <section id="experience">
-        <BentoGrid />
-      </section>
-      <section id="how-it-works">
-        <HowItWorks />
-      </section>
+      <WhyAG />
+      <RankJourney />
       <section id="join">
         <CTASection />
       </section>
-      
+
       {/* Trusted Partners section - moved below main CTA */}
       <LogoMarquee />
     </>

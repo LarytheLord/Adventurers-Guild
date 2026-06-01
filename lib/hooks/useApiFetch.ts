@@ -3,6 +3,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
 
 interface ApiState<T> {
   data: T | null;
@@ -85,12 +86,23 @@ export function useApiFetch<T = unknown>(
         fetchOptions.body = JSON.stringify(body);
       }
 
-      const response = await fetch(endpoint, fetchOptions);
-      const data = await response.json();
+      // Use fetchWithAuth to handle 401s and include credentials
+      const response = await fetchWithAuth(endpoint, fetchOptions);
+      let data: Record<string, unknown>;
 
+      // Try to parse JSON, handle non-JSON responses gracefully
+      try {
+        data = await response.json();
+      } catch {
+        setState(prev => ({ ...prev, error: 'Invalid response from server', loading: false }));
+        return null;
+      }
+
+      // Handle HTTP errors
       if (!response.ok) {
-        const errorMsg = errorMessage || data.error || `Failed to ${method.toLowerCase()} data`;
-        if (showToast) {
+        // Don't show toast for 401 - fetchWithAuth already redirects
+        const errorMsg = errorMessage || (data.error as string) || `Failed to ${method.toLowerCase()} data`;
+        if (showToast && response.status !== 401) {
           toast.error(errorMsg);
         }
         setState(prev => ({ ...prev, error: errorMsg, loading: false }));
@@ -101,13 +113,43 @@ export function useApiFetch<T = unknown>(
         toast.success(successMessage);
       }
 
+      // Normalize response: handle various API response shapes
+      // The API returns { success: boolean; quests/data/error: ... }
+      // We need to extract the actual data regardless of shape
+      let extractedData: unknown;
+
+      if (data && typeof data === 'object') {
+        // Direct data field
+        if ('data' in data && data.data !== undefined) {
+          extractedData = data.data;
+        }
+        // Wrapped in success object (e.g., { success: true, quests: [...] })
+        else if ('success' in data && data.success) {
+          // Try common payload keys
+          extractedData = (data.quests as unknown)
+            ?? (data.users as unknown)
+            ?? (data.quest as unknown)
+            ?? (data.user as unknown)
+            ?? (data.assignments as unknown)
+            ?? (data.submissions as unknown)
+            ?? (data.stats as unknown)
+            ?? data;
+        }
+        // Already unwrapped data
+        else {
+          extractedData = data;
+        }
+      } else {
+        extractedData = data;
+      }
+
       setState({
-        data: data.data || data,
+        data: extractedData as T,
         loading: false,
         error: null,
       });
 
-      return data.data || data;
+      return extractedData as T;
     } catch (error) {
       const errorMsg = errorMessage || (error instanceof Error ? error.message : 'Network error occurred');
       if (showToast) {

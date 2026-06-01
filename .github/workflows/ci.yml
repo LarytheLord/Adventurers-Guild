@@ -8,7 +8,7 @@ on:
 
 jobs:
   ci:
-    name: Lint, Type Check & Build
+    name: Lint, Type Check, Test & Build
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://ci_user:ci_password@localhost:5432/ci_db?sslmode=disable' }}
@@ -36,6 +36,9 @@ jobs:
 
       - name: Run TypeScript type check
         run: npm run type-check
+
+      - name: Run Unit Tests
+        run: npm run test
 
       - name: Build application
         run: npm run build

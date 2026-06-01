@@ -15,6 +15,7 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const [adventurerName, setAdventurerName] = useState('');
+  const [adventurerUsername, setAdventurerUsername] = useState('');
   const [adventurerEmail, setAdventurerEmail] = useState('');
   const [adventurerPassword, setAdventurerPassword] = useState('');
   const [companyName, setCompanyName] = useState('');
@@ -35,6 +36,10 @@ export default function RegisterPage() {
       return;
     }
 
+    if (role === 'adventurer' && !adventurerUsername) {
+      return;
+    }
+
     setIsLoading(true);
 
     try {
@@ -47,6 +52,7 @@ export default function RegisterPage() {
           name,
           role,
           companyName: normalizedCompanyName,
+          username: role === 'adventurer' ? adventurerUsername : undefined,
         }),
       });
 
@@ -129,7 +135,6 @@ export default function RegisterPage() {
             </div>
           </div>
         </div>
-
       </div>
 
       <div className="flex flex-1 items-center justify-center p-6 sm:p-8">
@@ -180,6 +185,10 @@ export default function RegisterPage() {
                 <div className="space-y-2">
                   <Label htmlFor="name" className="text-sm font-medium text-slate-300">Full Name</Label>
                   <Input id="name" name="name" placeholder="John Doe" type="text" autoCorrect="off" value={adventurerName} onChange={(event) => setAdventurerName(event.target.value)} disabled={!isHydrated || isLoading} required className={inputClass} />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="username" className="text-sm font-medium text-slate-300">Username</Label>
+                  <Input id="username" name="username" placeholder="yourname" type="text" autoCorrect="off" value={adventurerUsername} onChange={(event) => setAdventurerUsername(event.target.value)} disabled={!isHydrated || isLoading} required className={inputClass} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-sm font-medium text-slate-300">Email</Label>
@@ -233,17 +242,11 @@ export default function RegisterPage() {
 
           <p className="text-center text-xs text-slate-600">
             By signing up you agree to our{' '}
-            <Link
-              href="/terms"
-              className="text-slate-500 underline underline-offset-4 transition-colors hover:text-orange-400"
-            >
+            <Link href="/terms" className="text-slate-500 underline underline-offset-4 transition-colors hover:text-orange-400">
               Terms
             </Link>{' '}
             and{' '}
-            <Link
-              href="/privacy"
-              className="text-slate-500 underline underline-offset-4 transition-colors hover:text-orange-400"
-            >
+            <Link href="/privacy" className="text-slate-500 underline underline-offset-4 transition-colors hover:text-orange-400">
               Privacy Policy
             </Link>
             .

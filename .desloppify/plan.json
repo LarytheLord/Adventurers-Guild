@@ -1,0 +1,2077 @@
+{
+  "version": 8,
+  "created": "2026-05-02T17:19:39+00:00",
+  "updated": "2026-05-02T17:19:39+00:00",
+  "queue_order": [
+    "subjective::abstraction_fitness",
+    "subjective::advocacy_data_sovereignty",
+    "subjective::advocacy_language_quality",
+    "subjective::advocacy_security_posture",
+    "subjective::advocacy_terminology_consistency",
+    "subjective::advocacy_tool_integration",
+    "subjective::advocacy_ux_inclusivity",
+    "subjective::ai_generated_debt",
+    "subjective::api_surface_coherence",
+    "subjective::authorization_consistency",
+    "subjective::contract_coherence",
+    "subjective::convention_outlier",
+    "subjective::cross_module_architecture",
+    "subjective::dependency_health",
+    "subjective::design_coherence",
+    "subjective::error_consistency",
+    "subjective::high_level_elegance",
+    "subjective::incomplete_migration",
+    "subjective::initialization_coupling",
+    "subjective::logic_clarity",
+    "subjective::low_level_elegance",
+    "subjective::mid_level_elegance",
+    "subjective::naming_quality",
+    "subjective::package_organization",
+    "subjective::test_strategy",
+    "subjective::type_safety",
+    "logs::app/api/payments/razorpay/contact/route.ts::Razorpay",
+    "logs::lib/auth.ts::Auth",
+    "logs::lib/error-logger.ts::${severity.toUpperCase()}",
+    "logs::middleware.ts::Middleware",
+    "unused::components/AnalyticsDashboard.tsx::Badge:6",
+    "unused::components/quest-completion.tsx::Progress:7",
+    "unused::components/TeamManagement.tsx::teamId:181",
+    "unused::components/ui/animated-shader-hero.tsx::scale:48",
+    "unused::lib/analytics-utils.ts::timeRange:68",
+    "unused::lib/analytics-utils.ts::limit:69",
+    "unused::lib/team-utils.ts::invitedBy:128"
+  ],
+  "deferred": [],
+  "skipped": {},
+  "active_cluster": null,
+  "overrides": {
+    "logs::app/api/payments/razorpay/contact/route.ts::Razorpay": {
+      "issue_id": "logs::app/api/payments/razorpay/contact/route.ts::Razorpay",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/logs",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "logs::lib/auth.ts::Auth": {
+      "issue_id": "logs::lib/auth.ts::Auth",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/logs",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "logs::lib/error-logger.ts::${severity.toUpperCase()}": {
+      "issue_id": "logs::lib/error-logger.ts::${severity.toUpperCase()}",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/logs",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "logs::middleware.ts::Middleware": {
+      "issue_id": "logs::middleware.ts::Middleware",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/logs",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "unused::components/AnalyticsDashboard.tsx::Badge:6": {
+      "issue_id": "unused::components/AnalyticsDashboard.tsx::Badge:6",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/unused",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "unused::components/quest-completion.tsx::Progress:7": {
+      "issue_id": "unused::components/quest-completion.tsx::Progress:7",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/unused",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "unused::components/TeamManagement.tsx::teamId:181": {
+      "issue_id": "unused::components/TeamManagement.tsx::teamId:181",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/unused",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "unused::components/ui/animated-shader-hero.tsx::scale:48": {
+      "issue_id": "unused::components/ui/animated-shader-hero.tsx::scale:48",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/unused",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "unused::lib/analytics-utils.ts::timeRange:68": {
+      "issue_id": "unused::lib/analytics-utils.ts::timeRange:68",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/unused",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "unused::lib/analytics-utils.ts::limit:69": {
+      "issue_id": "unused::lib/analytics-utils.ts::limit:69",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/unused",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "unused::lib/team-utils.ts::invitedBy:128": {
+      "issue_id": "unused::lib/team-utils.ts::invitedBy:128",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/unused",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/company/CompanyQuestList.tsx::untested_module": {
+      "issue_id": "test_coverage::components/company/CompanyQuestList.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/admin/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/admin/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/matching/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/matching/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/status-utils.ts::untested_module": {
+      "issue_id": "test_coverage::lib/status-utils.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/admin/qa-queue/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/admin/qa-queue/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/company/QuestTable.tsx::untested_module": {
+      "issue_id": "test_coverage::components/company/QuestTable.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/admin/activity/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/admin/activity/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/adventurer/achievements/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/adventurer/achievements/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/users/me/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/users/me/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/payments/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/payments/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/payments/webhooks/stripe/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/payments/webhooks/stripe/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/AnalyticsDashboard.tsx::untested_module": {
+      "issue_id": "test_coverage::components/AnalyticsDashboard.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/fetch-with-auth.ts::untested_module": {
+      "issue_id": "test_coverage::lib/fetch-with-auth.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ResponsiveImage.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ResponsiveImage.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/tabs.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/tabs.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/dashboard/company/create-quest/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/dashboard/company/create-quest/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::middleware.ts::untested_module": {
+      "issue_id": "test_coverage::middleware.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/parties/[id]/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/parties/[id]/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/dashboard/settings/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/dashboard/settings/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/guild-card/GuildCardProfile.tsx::untested_module": {
+      "issue_id": "test_coverage::components/guild-card/GuildCardProfile.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/theme-provider.tsx::untested_module": {
+      "issue_id": "test_coverage::components/theme-provider.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/quest-completion.tsx::untested_module": {
+      "issue_id": "test_coverage::components/quest-completion.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/resizable.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/resizable.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::hooks/use-mobile.tsx::untested_module": {
+      "issue_id": "test_coverage::hooks/use-mobile.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/company/CompanyPortal.tsx::untested_module": {
+      "issue_id": "test_coverage::components/company/CompanyPortal.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/discord-notify.ts::untested_module": {
+      "issue_id": "test_coverage::lib/discord-notify.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/services/quest-service.ts::untested_module": {
+      "issue_id": "test_coverage::lib/services/quest-service.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/page.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/notification-utils.ts::untested_module": {
+      "issue_id": "test_coverage::lib/notification-utils.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ScrollbarHandler.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ScrollbarHandler.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/xp-utils.ts::untested_module": {
+      "issue_id": "test_coverage::lib/xp-utils.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/stripe.ts::untested_module": {
+      "issue_id": "test_coverage::lib/stripe.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/guild/primitives.tsx::untested_module": {
+      "issue_id": "test_coverage::components/guild/primitives.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/sheet.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/sheet.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/switch.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/switch.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/dashboard/completed-quests/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/dashboard/completed-quests/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/quest-card.tsx::untested_module": {
+      "issue_id": "test_coverage::components/quest-card.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/hover-card.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/hover-card.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::playwright.config.ts::untested_module": {
+      "issue_id": "test_coverage::playwright.config.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/auth/[...nextauth]/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/auth/[...nextauth]/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/dashboard/teams/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/dashboard/teams/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/mentorship/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/mentorship/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/quests/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/quests/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/teams/members/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/teams/members/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/mail.ts::untested_module": {
+      "issue_id": "test_coverage::lib/mail.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/quest-submission-dialog.tsx::untested_module": {
+      "issue_id": "test_coverage::components/quest-submission-dialog.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/dummy-provider.tsx::untested_module": {
+      "issue_id": "test_coverage::components/dummy-provider.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/dropdown-menu.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/dropdown-menu.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/terms/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/terms/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/errors.ts::untested_module": {
+      "issue_id": "test_coverage::lib/errors.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/dashboard/company/payments/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/dashboard/company/payments/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/users/me/stats/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/users/me/stats/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/ranks.ts::untested_module": {
+      "issue_id": "test_coverage::lib/ranks.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/RankingsBoard.tsx::untested_module": {
+      "issue_id": "test_coverage::components/RankingsBoard.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/PaymentForm.tsx::untested_module": {
+      "issue_id": "test_coverage::components/PaymentForm.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/quests/[id]/revisions/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/quests/[id]/revisions/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/teams/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/teams/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/card.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/card.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/sonner.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/sonner.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/alert-dialog.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/alert-dialog.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/quest-utils.ts::untested_module": {
+      "issue_id": "test_coverage::lib/quest-utils.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/rank-badge.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/rank-badge.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/skill-tree.tsx::untested_module": {
+      "issue_id": "test_coverage::components/skill-tree.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/public/stats/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/public/stats/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/activity-logger.ts::untested_module": {
+      "issue_id": "test_coverage::lib/activity-logger.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/admin/api-budgets/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/admin/api-budgets/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/errors/log/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/errors/log/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/company/useCompanyPortalState.ts::untested_module": {
+      "issue_id": "test_coverage::components/company/useCompanyPortalState.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/dashboard/company/quests/[id]/edit/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/dashboard/company/quests/[id]/edit/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/register/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/register/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/auth.ts::untested_module": {
+      "issue_id": "test_coverage::lib/auth.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/error-logger.ts::untested_module": {
+      "issue_id": "test_coverage::lib/error-logger.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/SessionWrapper.tsx::untested_module": {
+      "issue_id": "test_coverage::components/SessionWrapper.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/razorpay.ts::untested_module": {
+      "issue_id": "test_coverage::lib/razorpay.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/landing/HowItWorks.tsx::untested_module": {
+      "issue_id": "test_coverage::components/landing/HowItWorks.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/QualityAssuranceDashboard.tsx::untested_module": {
+      "issue_id": "test_coverage::components/QualityAssuranceDashboard.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/use-mobile.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/use-mobile.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/parties/[id]/members/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/parties/[id]/members/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/separator.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/separator.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/form.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/form.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/animated-shader-hero.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/animated-shader-hero.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/avatar.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/avatar.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/input-otp.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/input-otp.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/landing/StatsSection.tsx::untested_module": {
+      "issue_id": "test_coverage::components/landing/StatsSection.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/accordion.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/accordion.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/onboard/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/onboard/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/dashboard/layout.tsx::untested_module": {
+      "issue_id": "test_coverage::app/dashboard/layout.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/register-company/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/register-company/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/achievements.ts::untested_module": {
+      "issue_id": "test_coverage::lib/achievements.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/admin/qa-queue/[assignmentId]/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/admin/qa-queue/[assignmentId]/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/users/me/quests/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/users/me/quests/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/dashboard/company/quests/[id]/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/dashboard/company/quests/[id]/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/adventurer/completions/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/adventurer/completions/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ResponsiveContainer.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ResponsiveContainer.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/popover.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/popover.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/company/QuestForm.tsx::untested_module": {
+      "issue_id": "test_coverage::components/company/QuestForm.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/auth/forgot-password/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/auth/forgot-password/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/payment-provider.ts::untested_module": {
+      "issue_id": "test_coverage::lib/payment-provider.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/dashboard/company/integrations/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/dashboard/company/integrations/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/admin/quests/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/admin/quests/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/admin/users/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/admin/users/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/parties/[id]/members/[userId]/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/parties/[id]/members/[userId]/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/parties/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/parties/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/scroll-area.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/scroll-area.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/skeleton.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/skeleton.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/TeamManagement.tsx::untested_module": {
+      "issue_id": "test_coverage::components/TeamManagement.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/quest-constants.ts::untested_module": {
+      "issue_id": "test_coverage::lib/quest-constants.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/public/quests/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/public/quests/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/dashboard/company/analytics/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/dashboard/company/analytics/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/theme-toggle.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/theme-toggle.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/calendar.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/calendar.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/hooks/useApiFetch.ts::untested_module": {
+      "issue_id": "test_coverage::lib/hooks/useApiFetch.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/site-footer.tsx::untested_module": {
+      "issue_id": "test_coverage::components/site-footer.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/payments/razorpay/transfer/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/payments/razorpay/transfer/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/notifications/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/notifications/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/label.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/label.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/send-email/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/send-email/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/dashboard/leaderboard/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/dashboard/leaderboard/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/NotificationBell.tsx::untested_module": {
+      "issue_id": "test_coverage::components/NotificationBell.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/quests/submissions/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/quests/submissions/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/company/quests/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/company/quests/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/quests/assignments/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/quests/assignments/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/quests/import-hackathon/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/quests/import-hackathon/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/dashboard/profile/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/dashboard/profile/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/dialog.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/dialog.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/radio-group.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/radio-group.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/A11ySkipLink.tsx::untested_module": {
+      "issue_id": "test_coverage::components/A11ySkipLink.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/command.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/command.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/select.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/select.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/checkbox.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/checkbox.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/input.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/input.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/auth/register/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/auth/register/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/quest-lifecycle.ts::untested_module": {
+      "issue_id": "test_coverage::lib/quest-lifecycle.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/menubar.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/menubar.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/MentorshipManager.tsx::untested_module": {
+      "issue_id": "test_coverage::components/MentorshipManager.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ErrorBoundary.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ErrorBoundary.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/dashboard/my-quests/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/dashboard/my-quests/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/carousel.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/carousel.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/rank-utils.ts::untested_module": {
+      "issue_id": "test_coverage::lib/rank-utils.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/dashboard/quests/[id]/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/dashboard/quests/[id]/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/login/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/login/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/collapsible.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/collapsible.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/chart.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/chart.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/AdventureFilter.tsx::untested_module": {
+      "issue_id": "test_coverage::components/AdventureFilter.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/pagination.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/pagination.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/dashboard/company/profile/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/dashboard/company/profile/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/drawer.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/drawer.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/slider.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/slider.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/table.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/table.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/auth/reset-password/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/auth/reset-password/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/quest-apply-button.tsx::untested_module": {
+      "issue_id": "test_coverage::components/quest-apply-button.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/company/CompanyDashboardStats.tsx::untested_module": {
+      "issue_id": "test_coverage::components/company/CompanyDashboardStats.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/forgot-password/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/forgot-password/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/Navigation.tsx::untested_module": {
+      "issue_id": "test_coverage::components/Navigation.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/landing/CTASection.tsx::untested_module": {
+      "issue_id": "test_coverage::components/landing/CTASection.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/button.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/button.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::middleware/withAuth.ts::untested_module": {
+      "issue_id": "test_coverage::middleware/withAuth.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/mentorship-utils.ts::untested_module": {
+      "issue_id": "test_coverage::lib/mentorship-utils.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/og/adventurer/[username]/route.tsx::untested_module": {
+      "issue_id": "test_coverage::app/api/og/adventurer/[username]/route.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/tooltip.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/tooltip.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/razorpay-payout.ts::untested_module": {
+      "issue_id": "test_coverage::lib/razorpay-payout.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/dashboard/company/payments/[questId]/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/dashboard/company/payments/[questId]/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/textarea.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/textarea.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/navigation-menu.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/navigation-menu.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/team-utils.ts::untested_module": {
+      "issue_id": "test_coverage::lib/team-utils.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/page.tsx::untested_module": {
+      "issue_id": "test_coverage::components/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/home/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/home/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/alert.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/alert.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/qa/reviews/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/qa/reviews/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/matching-utils.ts::untested_module": {
+      "issue_id": "test_coverage::lib/matching-utils.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/payments/webhooks/razorpay/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/payments/webhooks/razorpay/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/payments/razorpay/contact/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/payments/razorpay/contact/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::prisma/seed.ts::untested_module": {
+      "issue_id": "test_coverage::prisma/seed.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/quests/[id]/assignments/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/quests/[id]/assignments/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/admin/qa-queue/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/admin/qa-queue/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/admin/api-budgets/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/admin/api-budgets/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/dashboard/company/quests/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/dashboard/company/quests/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/layout.tsx::untested_module": {
+      "issue_id": "test_coverage::app/layout.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/landing/LogoMarquee.tsx::untested_module": {
+      "issue_id": "test_coverage::components/landing/LogoMarquee.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/api-auth.ts::untested_module": {
+      "issue_id": "test_coverage::lib/api-auth.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/badge.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/badge.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/payments/razorpay/contact/status/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/payments/razorpay/contact/status/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/rankings/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/rankings/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/adventurer/[username]/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/adventurer/[username]/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/AdventureSearch.tsx::untested_module": {
+      "issue_id": "test_coverage::components/AdventureSearch.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/quests/[id]/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/quests/[id]/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/landing/QuestShowcase.tsx::untested_module": {
+      "issue_id": "test_coverage::components/landing/QuestShowcase.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/progress.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/progress.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/xp-bar.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/xp-bar.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/landing/BentoGrid.tsx::untested_module": {
+      "issue_id": "test_coverage::components/landing/BentoGrid.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/achievement-checker.ts::untested_module": {
+      "issue_id": "test_coverage::lib/achievement-checker.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/admin/quests/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/admin/quests/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/go-to-top.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/go-to-top.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/privacy/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/privacy/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/dashboard/earnings/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/dashboard/earnings/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/analytics/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/analytics/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/QuestMatcher.tsx::untested_module": {
+      "issue_id": "test_coverage::components/QuestMatcher.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/dashboard/quests/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/dashboard/quests/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/analytics-utils.ts::untested_module": {
+      "issue_id": "test_coverage::lib/analytics-utils.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/company/CompanyStats.tsx::untested_module": {
+      "issue_id": "test_coverage::components/company/CompanyStats.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/sidebar.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/sidebar.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/streak-utils.ts::untested_module": {
+      "issue_id": "test_coverage::lib/streak-utils.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/session-provider.tsx::untested_module": {
+      "issue_id": "test_coverage::components/session-provider.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/QuestList.tsx::untested_module": {
+      "issue_id": "test_coverage::components/QuestList.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/services/assignment-service.ts::untested_module": {
+      "issue_id": "test_coverage::lib/services/assignment-service.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/adventurer/[username]/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/adventurer/[username]/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/qa-utils.ts::untested_module": {
+      "issue_id": "test_coverage::lib/qa-utils.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/toggle.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/toggle.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/payment-utils.ts::untested_module": {
+      "issue_id": "test_coverage::lib/payment-utils.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/PaymentProcessor.tsx::untested_module": {
+      "issue_id": "test_coverage::components/PaymentProcessor.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/env.ts::untested_module": {
+      "issue_id": "test_coverage::lib/env.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/dashboard/skill-tree/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/dashboard/skill-tree/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/dashboard/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/dashboard/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::lib/activity-points.ts::untested_module": {
+      "issue_id": "test_coverage::lib/activity-points.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/company/CompanyRecentActivity.tsx::untested_module": {
+      "issue_id": "test_coverage::components/company/CompanyRecentActivity.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/toggle-group.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/toggle-group.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/dashboard/my-payments/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/dashboard/my-payments/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/admin/AdminDashboard.tsx::untested_module": {
+      "issue_id": "test_coverage::components/admin/AdminDashboard.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/breadcrumb.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/breadcrumb.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/ui/context-menu.tsx::untested_module": {
+      "issue_id": "test_coverage::components/ui/context-menu.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/faq/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/faq/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/api/rankings/user/route.ts::untested_module": {
+      "issue_id": "test_coverage::app/api/rankings/user/route.ts::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/not-found.tsx::untested_module": {
+      "issue_id": "test_coverage::app/not-found.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::app/dashboard/company/page.tsx::untested_module": {
+      "issue_id": "test_coverage::app/dashboard/company/page.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "test_coverage::components/quest/PartyPanel.tsx::untested_module": {
+      "issue_id": "test_coverage::components/quest/PartyPanel.tsx::untested_module",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/test_coverage-untested_module",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "security::app/api/auth/forgot-password/route.ts::security::log_sensitive::app/api/auth/forgot-password/route.ts::49": {
+      "issue_id": "security::app/api/auth/forgot-password/route.ts::security::log_sensitive::app/api/auth/forgot-password/route.ts::49",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/security-log_sensitive",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "security::app/api/auth/forgot-password/route.ts::security::log_sensitive::app/api/auth/forgot-password/route.ts::54": {
+      "issue_id": "security::app/api/auth/forgot-password/route.ts::security::log_sensitive::app/api/auth/forgot-password/route.ts::54",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/security-log_sensitive",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "security::app/api/auth/reset-password/route.ts::security::log_sensitive::app/api/auth/reset-password/route.ts::54": {
+      "issue_id": "security::app/api/auth/reset-password/route.ts::security::log_sensitive::app/api/auth/reset-password/route.ts::54",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/security-log_sensitive",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "security::app/api/payments/webhooks/razorpay/route.ts::security::log_sensitive::app/api/payments/webhooks/razorpay/route.ts::64": {
+      "issue_id": "security::app/api/payments/webhooks/razorpay/route.ts::security::log_sensitive::app/api/payments/webhooks/razorpay/route.ts::64",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/security-log_sensitive",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "security::app/api/send-email/route.ts::security::log_sensitive::app/api/send-email/route.ts::63": {
+      "issue_id": "security::app/api/send-email/route.ts::security::log_sensitive::app/api/send-email/route.ts::63",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/security-log_sensitive",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "security::lib/auth.ts::security::log_sensitive::lib/auth.ts::37": {
+      "issue_id": "security::lib/auth.ts::security::log_sensitive::lib/auth.ts::37",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/security-log_sensitive",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "security::middleware.ts::security::log_sensitive::middleware.ts::67": {
+      "issue_id": "security::middleware.ts::security::log_sensitive::middleware.ts::67",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/security-log_sensitive",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "security::prisma/seed.ts::security::log_sensitive::prisma/seed.ts::394": {
+      "issue_id": "security::prisma/seed.ts::security::log_sensitive::prisma/seed.ts::394",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/security-log_sensitive",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "subjective::abstraction_fitness": {
+      "issue_id": "subjective::abstraction_fitness",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/initial-review",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "subjective::advocacy_data_sovereignty": {
+      "issue_id": "subjective::advocacy_data_sovereignty",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/initial-review",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "subjective::advocacy_language_quality": {
+      "issue_id": "subjective::advocacy_language_quality",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/initial-review",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "subjective::advocacy_security_posture": {
+      "issue_id": "subjective::advocacy_security_posture",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/initial-review",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "subjective::advocacy_terminology_consistency": {
+      "issue_id": "subjective::advocacy_terminology_consistency",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/initial-review",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "subjective::advocacy_tool_integration": {
+      "issue_id": "subjective::advocacy_tool_integration",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/initial-review",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "subjective::advocacy_ux_inclusivity": {
+      "issue_id": "subjective::advocacy_ux_inclusivity",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/initial-review",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "subjective::ai_generated_debt": {
+      "issue_id": "subjective::ai_generated_debt",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/initial-review",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "subjective::api_surface_coherence": {
+      "issue_id": "subjective::api_surface_coherence",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/initial-review",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "subjective::authorization_consistency": {
+      "issue_id": "subjective::authorization_consistency",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/initial-review",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "subjective::contract_coherence": {
+      "issue_id": "subjective::contract_coherence",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/initial-review",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "subjective::convention_outlier": {
+      "issue_id": "subjective::convention_outlier",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/initial-review",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "subjective::cross_module_architecture": {
+      "issue_id": "subjective::cross_module_architecture",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/initial-review",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "subjective::dependency_health": {
+      "issue_id": "subjective::dependency_health",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/initial-review",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "subjective::design_coherence": {
+      "issue_id": "subjective::design_coherence",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/initial-review",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "subjective::error_consistency": {
+      "issue_id": "subjective::error_consistency",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/initial-review",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "subjective::high_level_elegance": {
+      "issue_id": "subjective::high_level_elegance",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/initial-review",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "subjective::incomplete_migration": {
+      "issue_id": "subjective::incomplete_migration",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/initial-review",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "subjective::initialization_coupling": {
+      "issue_id": "subjective::initialization_coupling",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/initial-review",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "subjective::logic_clarity": {
+      "issue_id": "subjective::logic_clarity",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/initial-review",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "subjective::low_level_elegance": {
+      "issue_id": "subjective::low_level_elegance",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/initial-review",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "subjective::mid_level_elegance": {
+      "issue_id": "subjective::mid_level_elegance",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/initial-review",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "subjective::naming_quality": {
+      "issue_id": "subjective::naming_quality",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/initial-review",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "subjective::package_organization": {
+      "issue_id": "subjective::package_organization",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/initial-review",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "subjective::test_strategy": {
+      "issue_id": "subjective::test_strategy",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/initial-review",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    },
+    "subjective::type_safety": {
+      "issue_id": "subjective::type_safety",
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "cluster": "auto/initial-review",
+      "updated_at": "2026-05-02T17:19:39+00:00"
+    }
+  },
+  "clusters": {
+    "auto/logs": {
+      "name": "auto/logs",
+      "description": "Remove 4 logs issues",
+      "issue_ids": [
+        "logs::app/api/payments/razorpay/contact/route.ts::Razorpay",
+        "logs::lib/auth.ts::Auth",
+        "logs::lib/error-logger.ts::${severity.toUpperCase()}",
+        "logs::middleware.ts::Middleware"
+      ],
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "updated_at": "2026-05-02T17:19:39+00:00",
+      "auto": true,
+      "cluster_key": "auto::logs",
+      "action": "desloppify autofix debug-logs --dry-run",
+      "execution_status": "active",
+      "user_modified": false,
+      "action_type": "auto_fix",
+      "execution_policy": "ephemeral_autopromote"
+    },
+    "auto/unused": {
+      "name": "auto/unused",
+      "description": "Remove 7 unused issues",
+      "issue_ids": [
+        "unused::components/AnalyticsDashboard.tsx::Badge:6",
+        "unused::components/quest-completion.tsx::Progress:7",
+        "unused::components/TeamManagement.tsx::teamId:181",
+        "unused::components/ui/animated-shader-hero.tsx::scale:48",
+        "unused::lib/analytics-utils.ts::timeRange:68",
+        "unused::lib/analytics-utils.ts::limit:69",
+        "unused::lib/team-utils.ts::invitedBy:128"
+      ],
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "updated_at": "2026-05-02T17:19:39+00:00",
+      "auto": true,
+      "cluster_key": "auto::unused",
+      "action": "desloppify autofix unused-imports --dry-run",
+      "execution_status": "active",
+      "user_modified": false,
+      "action_type": "auto_fix",
+      "execution_policy": "ephemeral_autopromote"
+    },
+    "auto/test_coverage-untested_module": {
+      "name": "auto/test_coverage-untested_module",
+      "description": "Fix 225 test coverage issues",
+      "issue_ids": [
+        "test_coverage::components/company/CompanyQuestList.tsx::untested_module",
+        "test_coverage::app/admin/page.tsx::untested_module",
+        "test_coverage::app/api/matching/route.ts::untested_module",
+        "test_coverage::lib/status-utils.ts::untested_module",
+        "test_coverage::app/admin/qa-queue/page.tsx::untested_module",
+        "test_coverage::components/company/QuestTable.tsx::untested_module",
+        "test_coverage::app/api/admin/activity/route.ts::untested_module",
+        "test_coverage::app/api/adventurer/achievements/route.ts::untested_module",
+        "test_coverage::app/api/users/me/route.ts::untested_module",
+        "test_coverage::app/api/payments/route.ts::untested_module",
+        "test_coverage::app/api/payments/webhooks/stripe/route.ts::untested_module",
+        "test_coverage::components/AnalyticsDashboard.tsx::untested_module",
+        "test_coverage::lib/fetch-with-auth.ts::untested_module",
+        "test_coverage::components/ResponsiveImage.tsx::untested_module",
+        "test_coverage::components/ui/tabs.tsx::untested_module",
+        "test_coverage::app/dashboard/company/create-quest/page.tsx::untested_module",
+        "test_coverage::middleware.ts::untested_module",
+        "test_coverage::app/api/parties/[id]/route.ts::untested_module",
+        "test_coverage::app/dashboard/settings/page.tsx::untested_module",
+        "test_coverage::components/guild-card/GuildCardProfile.tsx::untested_module",
+        "test_coverage::components/theme-provider.tsx::untested_module",
+        "test_coverage::components/quest-completion.tsx::untested_module",
+        "test_coverage::components/ui/resizable.tsx::untested_module",
+        "test_coverage::hooks/use-mobile.tsx::untested_module",
+        "test_coverage::components/company/CompanyPortal.tsx::untested_module",
+        "test_coverage::lib/discord-notify.ts::untested_module",
+        "test_coverage::lib/services/quest-service.ts::untested_module",
+        "test_coverage::components/ui/page.tsx::untested_module",
+        "test_coverage::lib/notification-utils.ts::untested_module",
+        "test_coverage::components/ScrollbarHandler.tsx::untested_module",
+        "test_coverage::lib/xp-utils.ts::untested_module",
+        "test_coverage::lib/stripe.ts::untested_module",
+        "test_coverage::components/guild/primitives.tsx::untested_module",
+        "test_coverage::components/ui/sheet.tsx::untested_module",
+        "test_coverage::components/ui/switch.tsx::untested_module",
+        "test_coverage::app/dashboard/completed-quests/page.tsx::untested_module",
+        "test_coverage::components/quest-card.tsx::untested_module",
+        "test_coverage::components/ui/hover-card.tsx::untested_module",
+        "test_coverage::playwright.config.ts::untested_module",
+        "test_coverage::app/api/auth/[...nextauth]/route.ts::untested_module",
+        "test_coverage::app/dashboard/teams/page.tsx::untested_module",
+        "test_coverage::app/api/mentorship/route.ts::untested_module",
+        "test_coverage::app/api/quests/route.ts::untested_module",
+        "test_coverage::app/api/teams/members/route.ts::untested_module",
+        "test_coverage::lib/mail.ts::untested_module",
+        "test_coverage::components/quest-submission-dialog.tsx::untested_module",
+        "test_coverage::components/dummy-provider.tsx::untested_module",
+        "test_coverage::components/ui/dropdown-menu.tsx::untested_module",
+        "test_coverage::app/terms/page.tsx::untested_module",
+        "test_coverage::lib/errors.ts::untested_module",
+        "test_coverage::app/dashboard/company/payments/page.tsx::untested_module",
+        "test_coverage::app/api/users/me/stats/route.ts::untested_module",
+        "test_coverage::lib/ranks.ts::untested_module",
+        "test_coverage::components/RankingsBoard.tsx::untested_module",
+        "test_coverage::components/PaymentForm.tsx::untested_module",
+        "test_coverage::app/api/quests/[id]/revisions/route.ts::untested_module",
+        "test_coverage::app/api/teams/route.ts::untested_module",
+        "test_coverage::components/ui/card.tsx::untested_module",
+        "test_coverage::components/ui/sonner.tsx::untested_module",
+        "test_coverage::components/ui/alert-dialog.tsx::untested_module",
+        "test_coverage::lib/quest-utils.ts::untested_module",
+        "test_coverage::components/ui/rank-badge.tsx::untested_module",
+        "test_coverage::components/skill-tree.tsx::untested_module",
+        "test_coverage::app/api/public/stats/route.ts::untested_module",
+        "test_coverage::lib/activity-logger.ts::untested_module",
+        "test_coverage::app/admin/api-budgets/page.tsx::untested_module",
+        "test_coverage::app/api/errors/log/route.ts::untested_module",
+        "test_coverage::components/company/useCompanyPortalState.ts::untested_module",
+        "test_coverage::app/dashboard/company/quests/[id]/edit/page.tsx::untested_module",
+        "test_coverage::app/register/page.tsx::untested_module",
+        "test_coverage::lib/auth.ts::untested_module",
+        "test_coverage::lib/error-logger.ts::untested_module",
+        "test_coverage::components/SessionWrapper.tsx::untested_module",
+        "test_coverage::lib/razorpay.ts::untested_module",
+        "test_coverage::components/landing/HowItWorks.tsx::untested_module",
+        "test_coverage::components/QualityAssuranceDashboard.tsx::untested_module",
+        "test_coverage::components/ui/use-mobile.tsx::untested_module",
+        "test_coverage::app/api/parties/[id]/members/route.ts::untested_module",
+        "test_coverage::components/ui/separator.tsx::untested_module",
+        "test_coverage::components/ui/form.tsx::untested_module",
+        "test_coverage::components/ui/animated-shader-hero.tsx::untested_module",
+        "test_coverage::components/ui/avatar.tsx::untested_module",
+        "test_coverage::components/ui/input-otp.tsx::untested_module",
+        "test_coverage::components/landing/StatsSection.tsx::untested_module",
+        "test_coverage::components/ui/accordion.tsx::untested_module",
+        "test_coverage::app/api/onboard/route.ts::untested_module",
+        "test_coverage::app/dashboard/layout.tsx::untested_module",
+        "test_coverage::app/register-company/page.tsx::untested_module",
+        "test_coverage::lib/achievements.ts::untested_module",
+        "test_coverage::app/api/admin/qa-queue/[assignmentId]/route.ts::untested_module",
+        "test_coverage::app/api/users/me/quests/route.ts::untested_module",
+        "test_coverage::app/dashboard/company/quests/[id]/page.tsx::untested_module",
+        "test_coverage::app/api/adventurer/completions/route.ts::untested_module",
+        "test_coverage::components/ResponsiveContainer.tsx::untested_module",
+        "test_coverage::components/ui/popover.tsx::untested_module",
+        "test_coverage::components/company/QuestForm.tsx::untested_module",
+        "test_coverage::app/api/auth/forgot-password/route.ts::untested_module",
+        "test_coverage::lib/payment-provider.ts::untested_module",
+        "test_coverage::app/dashboard/company/integrations/page.tsx::untested_module",
+        "test_coverage::app/admin/quests/page.tsx::untested_module",
+        "test_coverage::app/api/admin/users/route.ts::untested_module",
+        "test_coverage::app/api/parties/[id]/members/[userId]/route.ts::untested_module",
+        "test_coverage::app/api/parties/route.ts::untested_module",
+        "test_coverage::components/ui/scroll-area.tsx::untested_module",
+        "test_coverage::components/ui/skeleton.tsx::untested_module",
+        "test_coverage::components/TeamManagement.tsx::untested_module",
+        "test_coverage::lib/quest-constants.ts::untested_module",
+        "test_coverage::app/api/public/quests/route.ts::untested_module",
+        "test_coverage::app/dashboard/company/analytics/page.tsx::untested_module",
+        "test_coverage::components/ui/theme-toggle.tsx::untested_module",
+        "test_coverage::components/ui/calendar.tsx::untested_module",
+        "test_coverage::lib/hooks/useApiFetch.ts::untested_module",
+        "test_coverage::components/site-footer.tsx::untested_module",
+        "test_coverage::app/api/payments/razorpay/transfer/route.ts::untested_module",
+        "test_coverage::app/api/notifications/route.ts::untested_module",
+        "test_coverage::components/ui/label.tsx::untested_module",
+        "test_coverage::app/api/send-email/route.ts::untested_module",
+        "test_coverage::app/dashboard/leaderboard/page.tsx::untested_module",
+        "test_coverage::components/NotificationBell.tsx::untested_module",
+        "test_coverage::app/api/quests/submissions/route.ts::untested_module",
+        "test_coverage::app/api/company/quests/route.ts::untested_module",
+        "test_coverage::app/api/quests/assignments/route.ts::untested_module",
+        "test_coverage::app/api/quests/import-hackathon/route.ts::untested_module",
+        "test_coverage::app/dashboard/profile/page.tsx::untested_module",
+        "test_coverage::components/ui/dialog.tsx::untested_module",
+        "test_coverage::components/ui/radio-group.tsx::untested_module",
+        "test_coverage::components/A11ySkipLink.tsx::untested_module",
+        "test_coverage::components/ui/command.tsx::untested_module",
+        "test_coverage::components/ui/select.tsx::untested_module",
+        "test_coverage::components/ui/checkbox.tsx::untested_module",
+        "test_coverage::components/ui/input.tsx::untested_module",
+        "test_coverage::app/api/auth/register/route.ts::untested_module",
+        "test_coverage::lib/quest-lifecycle.ts::untested_module",
+        "test_coverage::components/ui/menubar.tsx::untested_module",
+        "test_coverage::components/MentorshipManager.tsx::untested_module",
+        "test_coverage::components/ErrorBoundary.tsx::untested_module",
+        "test_coverage::app/dashboard/my-quests/page.tsx::untested_module",
+        "test_coverage::components/ui/carousel.tsx::untested_module",
+        "test_coverage::lib/rank-utils.ts::untested_module",
+        "test_coverage::app/dashboard/quests/[id]/page.tsx::untested_module",
+        "test_coverage::app/login/page.tsx::untested_module",
+        "test_coverage::components/ui/collapsible.tsx::untested_module",
+        "test_coverage::components/ui/chart.tsx::untested_module",
+        "test_coverage::components/AdventureFilter.tsx::untested_module",
+        "test_coverage::components/ui/pagination.tsx::untested_module",
+        "test_coverage::app/dashboard/company/profile/page.tsx::untested_module",
+        "test_coverage::components/ui/drawer.tsx::untested_module",
+        "test_coverage::components/ui/slider.tsx::untested_module",
+        "test_coverage::components/ui/table.tsx::untested_module",
+        "test_coverage::app/api/auth/reset-password/route.ts::untested_module",
+        "test_coverage::components/quest-apply-button.tsx::untested_module",
+        "test_coverage::components/company/CompanyDashboardStats.tsx::untested_module",
+        "test_coverage::app/forgot-password/page.tsx::untested_module",
+        "test_coverage::components/Navigation.tsx::untested_module",
+        "test_coverage::components/landing/CTASection.tsx::untested_module",
+        "test_coverage::components/ui/button.tsx::untested_module",
+        "test_coverage::middleware/withAuth.ts::untested_module",
+        "test_coverage::lib/mentorship-utils.ts::untested_module",
+        "test_coverage::app/api/og/adventurer/[username]/route.tsx::untested_module",
+        "test_coverage::components/ui/tooltip.tsx::untested_module",
+        "test_coverage::lib/razorpay-payout.ts::untested_module",
+        "test_coverage::app/dashboard/company/payments/[questId]/page.tsx::untested_module",
+        "test_coverage::components/ui/textarea.tsx::untested_module",
+        "test_coverage::components/ui/navigation-menu.tsx::untested_module",
+        "test_coverage::lib/team-utils.ts::untested_module",
+        "test_coverage::components/page.tsx::untested_module",
+        "test_coverage::app/home/page.tsx::untested_module",
+        "test_coverage::components/ui/alert.tsx::untested_module",
+        "test_coverage::app/api/qa/reviews/route.ts::untested_module",
+        "test_coverage::lib/matching-utils.ts::untested_module",
+        "test_coverage::app/api/payments/webhooks/razorpay/route.ts::untested_module",
+        "test_coverage::app/api/payments/razorpay/contact/route.ts::untested_module",
+        "test_coverage::prisma/seed.ts::untested_module",
+        "test_coverage::app/api/quests/[id]/assignments/route.ts::untested_module",
+        "test_coverage::app/api/admin/qa-queue/route.ts::untested_module",
+        "test_coverage::app/api/admin/api-budgets/route.ts::untested_module",
+        "test_coverage::app/dashboard/company/quests/page.tsx::untested_module",
+        "test_coverage::app/layout.tsx::untested_module",
+        "test_coverage::components/landing/LogoMarquee.tsx::untested_module",
+        "test_coverage::lib/api-auth.ts::untested_module",
+        "test_coverage::components/ui/badge.tsx::untested_module",
+        "test_coverage::app/api/payments/razorpay/contact/status/route.ts::untested_module",
+        "test_coverage::app/api/rankings/route.ts::untested_module",
+        "test_coverage::app/api/adventurer/[username]/route.ts::untested_module",
+        "test_coverage::components/AdventureSearch.tsx::untested_module",
+        "test_coverage::app/api/quests/[id]/route.ts::untested_module",
+        "test_coverage::components/landing/QuestShowcase.tsx::untested_module",
+        "test_coverage::components/ui/progress.tsx::untested_module",
+        "test_coverage::components/ui/xp-bar.tsx::untested_module",
+        "test_coverage::components/landing/BentoGrid.tsx::untested_module",
+        "test_coverage::lib/achievement-checker.ts::untested_module",
+        "test_coverage::app/api/admin/quests/route.ts::untested_module",
+        "test_coverage::components/ui/go-to-top.tsx::untested_module",
+        "test_coverage::app/privacy/page.tsx::untested_module",
+        "test_coverage::app/dashboard/earnings/page.tsx::untested_module",
+        "test_coverage::app/api/analytics/route.ts::untested_module",
+        "test_coverage::components/QuestMatcher.tsx::untested_module",
+        "test_coverage::app/dashboard/quests/page.tsx::untested_module",
+        "test_coverage::lib/analytics-utils.ts::untested_module",
+        "test_coverage::components/company/CompanyStats.tsx::untested_module",
+        "test_coverage::components/ui/sidebar.tsx::untested_module",
+        "test_coverage::lib/streak-utils.ts::untested_module",
+        "test_coverage::components/session-provider.tsx::untested_module",
+        "test_coverage::components/QuestList.tsx::untested_module",
+        "test_coverage::lib/services/assignment-service.ts::untested_module",
+        "test_coverage::app/adventurer/[username]/page.tsx::untested_module",
+        "test_coverage::lib/qa-utils.ts::untested_module",
+        "test_coverage::components/ui/toggle.tsx::untested_module",
+        "test_coverage::lib/payment-utils.ts::untested_module",
+        "test_coverage::components/PaymentProcessor.tsx::untested_module",
+        "test_coverage::lib/env.ts::untested_module",
+        "test_coverage::app/dashboard/skill-tree/page.tsx::untested_module",
+        "test_coverage::app/dashboard/page.tsx::untested_module",
+        "test_coverage::lib/activity-points.ts::untested_module",
+        "test_coverage::components/company/CompanyRecentActivity.tsx::untested_module",
+        "test_coverage::components/ui/toggle-group.tsx::untested_module",
+        "test_coverage::app/dashboard/my-payments/page.tsx::untested_module",
+        "test_coverage::components/admin/AdminDashboard.tsx::untested_module",
+        "test_coverage::components/ui/breadcrumb.tsx::untested_module",
+        "test_coverage::components/ui/context-menu.tsx::untested_module",
+        "test_coverage::app/faq/page.tsx::untested_module",
+        "test_coverage::app/api/rankings/user/route.ts::untested_module",
+        "test_coverage::app/not-found.tsx::untested_module",
+        "test_coverage::app/dashboard/company/page.tsx::untested_module",
+        "test_coverage::components/quest/PartyPanel.tsx::untested_module"
+      ],
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "updated_at": "2026-05-02T17:19:39+00:00",
+      "auto": true,
+      "cluster_key": "detector::test_coverage::untested_module",
+      "action": "review test coverage gaps",
+      "execution_status": "review",
+      "user_modified": false,
+      "action_type": "refactor",
+      "execution_policy": "planned_only"
+    },
+    "auto/security-log_sensitive": {
+      "name": "auto/security-log_sensitive",
+      "description": "Fix 8 security issues",
+      "issue_ids": [
+        "security::app/api/auth/forgot-password/route.ts::security::log_sensitive::app/api/auth/forgot-password/route.ts::49",
+        "security::app/api/auth/forgot-password/route.ts::security::log_sensitive::app/api/auth/forgot-password/route.ts::54",
+        "security::app/api/auth/reset-password/route.ts::security::log_sensitive::app/api/auth/reset-password/route.ts::54",
+        "security::app/api/payments/webhooks/razorpay/route.ts::security::log_sensitive::app/api/payments/webhooks/razorpay/route.ts::64",
+        "security::app/api/send-email/route.ts::security::log_sensitive::app/api/send-email/route.ts::63",
+        "security::lib/auth.ts::security::log_sensitive::lib/auth.ts::37",
+        "security::middleware.ts::security::log_sensitive::middleware.ts::67",
+        "security::prisma/seed.ts::security::log_sensitive::prisma/seed.ts::394"
+      ],
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "updated_at": "2026-05-02T17:19:39+00:00",
+      "auto": true,
+      "cluster_key": "detector::security::log_sensitive",
+      "action": "review and fix security issues",
+      "execution_status": "review",
+      "user_modified": false,
+      "action_type": "manual_fix",
+      "execution_policy": "planned_only"
+    },
+    "auto/initial-review": {
+      "name": "auto/initial-review",
+      "description": "Initial review of 26 unscored subjective dimensions",
+      "issue_ids": [
+        "subjective::abstraction_fitness",
+        "subjective::advocacy_data_sovereignty",
+        "subjective::advocacy_language_quality",
+        "subjective::advocacy_security_posture",
+        "subjective::advocacy_terminology_consistency",
+        "subjective::advocacy_tool_integration",
+        "subjective::advocacy_ux_inclusivity",
+        "subjective::ai_generated_debt",
+        "subjective::api_surface_coherence",
+        "subjective::authorization_consistency",
+        "subjective::contract_coherence",
+        "subjective::convention_outlier",
+        "subjective::cross_module_architecture",
+        "subjective::dependency_health",
+        "subjective::design_coherence",
+        "subjective::error_consistency",
+        "subjective::high_level_elegance",
+        "subjective::incomplete_migration",
+        "subjective::initialization_coupling",
+        "subjective::logic_clarity",
+        "subjective::low_level_elegance",
+        "subjective::mid_level_elegance",
+        "subjective::naming_quality",
+        "subjective::package_organization",
+        "subjective::test_strategy",
+        "subjective::type_safety"
+      ],
+      "created_at": "2026-05-02T17:19:39+00:00",
+      "updated_at": "2026-05-02T17:19:39+00:00",
+      "auto": true,
+      "cluster_key": "subjective::unscored",
+      "action": "desloppify review --prepare --dimensions abstraction_fitness,advocacy_data_sovereignty,advocacy_language_quality,advocacy_security_posture,advocacy_terminology_consistency,advocacy_tool_integration,advocacy_ux_inclusivity,ai_generated_debt,api_surface_coherence,authorization_consistency,contract_coherence,convention_outlier,cross_module_architecture,dependency_health,design_coherence,error_consistency,high_level_elegance,incomplete_migration,initialization_coupling,logic_clarity,low_level_elegance,mid_level_elegance,naming_quality,package_organization,test_strategy,type_safety",
+      "execution_status": "review",
+      "user_modified": false,
+      "action_type": "manual_fix",
+      "execution_policy": "planned_only"
+    }
+  },
+  "superseded": {},
+  "promoted_ids": [],
+  "plan_start_scores": {
+    "strict": 20.5,
+    "overall": 20.5,
+    "objective": 81.8,
+    "verified": 81.8
+  },
+  "refresh_state": {
+    "_subjective_migration_pruned": true,
+    "lifecycle_phase": "plan"
+  },
+  "execution_log": [
+    {
+      "timestamp": "2026-05-02T17:19:39+00:00",
+      "action": "sync_subjective",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "changes": true
+      }
+    },
+    {
+      "timestamp": "2026-05-02T17:19:39+00:00",
+      "action": "auto_cluster",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "changes": true
+      }
+    },
+    {
+      "timestamp": "2026-05-02T17:19:39+00:00",
+      "action": "sync_lifecycle_phase",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {
+        "phase": "review_initial"
+      }
+    },
+    {
+      "timestamp": "2026-05-02T17:19:39+00:00",
+      "action": "seed_start_scores",
+      "issue_ids": [],
+      "cluster_name": null,
+      "actor": "system",
+      "note": null,
+      "detail": {}
+    }
+  ],
+  "epic_triage_meta": {},
+  "commit_log": [],
+  "uncommitted_issues": [],
+  "commit_tracking_branch": null,
+  "scan_count_at_plan_start": 1
+}

@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma, withDbRetry } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
@@ -31,12 +31,12 @@ export async function POST(request: NextRequest) {
     const expectedSecret = process.env.BOOTCAMP_WEBHOOK_SECRET;
     const providedSecret = readBearerToken(request) ?? body.webhookSecret ?? null;
     if (!expectedSecret || !providedSecret || providedSecret !== expectedSecret) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     // 2. Validate required fields
     if (!body.bootcampStudentId || !body.name || !body.email || !body.bootcampTrack) {
-      return Response.json(
+      return NextResponse.json(
         { error: 'Missing required fields: bootcampStudentId, name, email, bootcampTrack' },
         { status: 400 }
       );
@@ -46,13 +46,13 @@ export async function POST(request: NextRequest) {
 
     // Validate bootcamp track
     if (!VALID_BOOTCAMP_TRACKS.includes(body.bootcampTrack)) {
-      return Response.json({ error: `Invalid bootcampTrack. Must be one of: ${VALID_BOOTCAMP_TRACKS.join(', ')}` }, { status: 400 });
+      return NextResponse.json({ error: `Invalid bootcampTrack. Must be one of: ${VALID_BOOTCAMP_TRACKS.join(', ')}` }, { status: 400 });
     }
 
     // Validate bootcamp week
     const bootcampWeek = body.bootcampWeek ?? 1;
     if (bootcampWeek < 1 || bootcampWeek > 10) {
-      return Response.json({ error: 'bootcampWeek must be between 1 and 10' }, { status: 400 });
+      return NextResponse.json({ error: 'bootcampWeek must be between 1 and 10' }, { status: 400 });
     }
 
     // 3. Check for existing BootcampLink — idempotent update if same student
@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
     if (existingLink) {
       // Same student re-enrolling: update bootcampWeek (idempotent)
       if (existingLink.user.email !== normalizedEmail) {
-        return Response.json(
+        return NextResponse.json(
           { error: 'Student ID already linked to a different email' },
           { status: 409 }
         );
@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
         })
       );
 
-      return Response.json({
+      return NextResponse.json({
         success: true,
         adventurerId: existingLink.userId,
         rank: 'F',
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
     );
 
     if (existingUser) {
-      return Response.json(
+      return NextResponse.json(
         { error: 'Email already registered. Contact support to link bootcamp enrollment.' },
         { status: 409 }
       );
@@ -113,6 +113,7 @@ export async function POST(request: NextRequest) {
             name: body.name.trim(),
             email: normalizedEmail,
             passwordHash,
+            username: body.name.trim().toLowerCase().replace(/\s+/g, '-'),
             role: 'adventurer',
             rank: 'F',
           },
@@ -139,7 +140,7 @@ export async function POST(request: NextRequest) {
 
     const shouldReturnPassword = process.env.BOOTCAMP_ONBOARD_RETURN_PASSWORD === 'true';
 
-    return Response.json(
+    return NextResponse.json(
       {
         success: true,
         adventurerId: user.id,
@@ -150,6 +151,6 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error('Onboard webhook error:', error);
-    return Response.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

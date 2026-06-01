@@ -55,6 +55,39 @@ export async function PATCH(
     return NextResponse.json({ message: 'Submission approved — forwarded to client review', success: true });
   }
 
+  //check tutorial quest completion
+  const quest = await prisma.quest.findUnique({
+    where: { id: assignment.questId },
+  });
+  if (!quest || quest.source !== 'TUTORIAL') return;
+
+  const bootcampLink = await prisma.bootcampLink.findUnique({
+    where: { userId: assignment.userId },
+  });
+  if (!bootcampLink) return;
+
+  //uses completion order to flip tutorial quest
+  const updateData: Record<string, boolean> = {};
+  if (!bootcampLink.tutorialQuest1Complete) {
+    updateData.tutorialQuest1Complete = true;
+  } else if (!bootcampLink.tutorialQuest2Complete) {
+      updateData.tutorialQuest2Complete = true;
+  }
+
+  //eligibleForRealQuests
+  const willHaveQuest1 = bootcampLink.tutorialQuest1Complete || updateData.tutorialQuest1Complete;
+  const willHaveQuest2 = bootcampLink.tutorialQuest2Complete || updateData.tutorialQuest2Complete;
+  if (willHaveQuest1 && willHaveQuest2) {
+    updateData.eligibleForRealQuests = true;
+  }
+
+  if (Object.keys(updateData).length > 0) {
+    await prisma.bootcampLink.update({
+      where: { userId: assignment.userId },
+      data: updateData,
+    });
+  }
+
   // reject — append admin note to submission reviewNotes (stored as JSON string)
   const latestSubmission = assignment.submissions[0];
   let existingNotes: Record<string, string>[] = [];

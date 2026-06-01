@@ -2,6 +2,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { prisma, withDbRetry } from '@/lib/db';
+import { ShareGuildCard } from '@/components/guild/ShareGuildCard';
 import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +30,7 @@ import {
   GuildPage,
   GuildPanel,
 } from '@/components/guild/primitives';
+import { StreakBadge } from '@/components/ui/streak-badge';
 
 const RANK_ORDER: Rank[] = ['F', 'E', 'D', 'C', 'B', 'A', 'S'];
 
@@ -58,6 +60,7 @@ export default async function DashboardPage() {
         level: true,
         skillPoints: true,
         name: true,
+        username: true,
         adventurerProfile: {
           select: {
             specialization: true,
@@ -165,12 +168,11 @@ export default async function DashboardPage() {
             <div className="flex flex-wrap items-center gap-2">
               <GuildChip>{specialization}</GuildChip>
               <GuildChip>Level {level}</GuildChip>
-              {(user?.adventurerProfile?.currentStreak ?? 0) > 0 && (
-                <GuildChip>
-                🔥 {user?.adventurerProfile?.currentStreak}-day streak! {Number(user?.adventurerProfile?.streakMultiplier ?? 1.0)}x XP
-                </GuildChip>
-              )}
+              <StreakBadge streak={user?.adventurerProfile?.currentStreak ?? 0} />
             </div>
+            {user?.username && (
+              <ShareGuildCard username={user.username} />
+            )}
           </div>
 
           <div className="flex w-full max-w-md flex-col gap-3 rounded-2xl border border-slate-200 bg-white/90 p-4">

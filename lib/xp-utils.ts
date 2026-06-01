@@ -8,8 +8,16 @@ import { updateStreak } from './streak-utils';
 import { checkAchievements } from './achievement-checker';
 
 /**
+ * Calculate level from total XP.
+ * Level = floor(XP / 100) + 1
+ */
+export function calculateLevelFromXP(xp: number): number {
+  return Math.floor(xp / 100) + 1;
+}
+
+/**
  * Update user XP, level, rank, and skill points in a single transaction.
- * Also updates adventurer_profiles stats (quests completed, completion rate).
+ * Also updates adventurer_profiles stats (questsCompleted, completionRate).
  */
 export async function updateUserXpAndSkills(
   userId: string,

@@ -1,4 +1,4 @@
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/api-auth';
 import { prisma } from '@/lib/db';
 
@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
   try {
     const authUser = await getAuthUser();
     if (!authUser) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -44,15 +44,15 @@ export async function GET(request: NextRequest) {
     const offset = toSafeInt(searchParams.get('offset'), 0, 0, 10000);
 
     if (requestedUserId && authUser.role !== 'admin' && requestedUserId !== authUser.id) {
-      return Response.json({ error: 'Forbidden', success: false }, { status: 403 });
+      return NextResponse.json({ error: 'Forbidden', success: false }, { status: 403 });
     }
 
     if (role && role !== 'mentor' && role !== 'mentee') {
-      return Response.json({ error: 'Invalid role filter', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid role filter', success: false }, { status: 400 });
     }
 
     if (status && !VALID_STATUSES.includes(status as MentorshipStatus)) {
-      return Response.json({ error: 'Invalid status filter', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid status filter', success: false }, { status: 400 });
     }
 
     const targetUserId =
@@ -111,10 +111,10 @@ export async function GET(request: NextRequest) {
       take: limit,
     });
 
-    return Response.json({ mentorships: data, success: true });
+    return NextResponse.json({ mentorships: data, success: true });
   } catch (error) {
     console.error('Error fetching mentorships:', error);
-    return Response.json({ error: 'Failed to fetch mentorships', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to fetch mentorships', success: false }, { status: 500 });
   }
 }
 
@@ -122,7 +122,7 @@ export async function POST(request: NextRequest) {
   try {
     const authUser = await getAuthUser();
     if (!authUser) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     const body = (await request.json()) as Record<string, unknown>;
@@ -131,22 +131,22 @@ export async function POST(request: NextRequest) {
     const goals = parseGoals(body.goals);
 
     if (!mentorId || !menteeId) {
-      return Response.json(
+      return NextResponse.json(
         { error: 'mentorId and menteeId are required', success: false },
         { status: 400 }
       );
     }
     if (mentorId === menteeId) {
-      return Response.json(
+      return NextResponse.json(
         { error: 'Mentor and mentee must be different users', success: false },
         { status: 400 }
       );
     }
     if (goals.length === 0) {
-      return Response.json({ error: 'At least one goal is required', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'At least one goal is required', success: false }, { status: 400 });
     }
     if (authUser.role !== 'admin' && authUser.id !== mentorId && authUser.id !== menteeId) {
-      return Response.json({ error: 'Forbidden', success: false }, { status: 403 });
+      return NextResponse.json({ error: 'Forbidden', success: false }, { status: 403 });
     }
 
     const mentor = await prisma.user.findUnique({
@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
       select: { id: true, name: true, role: true },
     });
     if (!mentor || mentor.role !== 'adventurer') {
-      return Response.json({ error: 'Invalid mentor user', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid mentor user', success: false }, { status: 400 });
     }
 
     const mentee = await prisma.user.findUnique({
@@ -162,7 +162,7 @@ export async function POST(request: NextRequest) {
       select: { id: true, role: true },
     });
     if (!mentee || mentee.role !== 'adventurer') {
-      return Response.json({ error: 'Invalid mentee user', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid mentee user', success: false }, { status: 400 });
     }
 
     const existingMentorship = await prisma.mentorship.findMany({
@@ -177,7 +177,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (existingMentorship.length > 0) {
-      return Response.json(
+      return NextResponse.json(
         { error: 'A mentorship already exists between these users', success: false },
         { status: 400 }
       );
@@ -186,7 +186,7 @@ export async function POST(request: NextRequest) {
     const startDate = parseDate(body.startDate) ?? new Date();
     const endDate = body.endDate === null ? null : parseDate(body.endDate);
     if (body.endDate && !endDate) {
-      return Response.json({ error: 'Invalid endDate', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Invalid endDate', success: false }, { status: 400 });
     }
 
     const data = await prisma.mentorship.create({
@@ -219,10 +219,10 @@ export async function POST(request: NextRequest) {
       console.error('Error sending mentorship request notification:', notificationError);
     }
 
-    return Response.json({ mentorship: data, success: true }, { status: 201 });
+    return NextResponse.json({ mentorship: data, success: true }, { status: 201 });
   } catch (error) {
     console.error('Error creating mentorship:', error);
-    return Response.json({ error: 'Failed to create mentorship', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to create mentorship', success: false }, { status: 500 });
   }
 }
 
@@ -230,7 +230,7 @@ export async function PUT(request: NextRequest) {
   try {
     const authUser = await getAuthUser();
     if (!authUser) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     const body = (await request.json()) as Record<string, unknown>;
@@ -241,7 +241,7 @@ export async function PUT(request: NextRequest) {
         : null;
 
     if (!mentorshipId) {
-      return Response.json({ error: 'Mentorship ID is required', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Mentorship ID is required', success: false }, { status: 400 });
     }
 
     const mentorship = await prisma.mentorship.findUnique({
@@ -250,7 +250,7 @@ export async function PUT(request: NextRequest) {
     });
 
     if (!mentorship) {
-      return Response.json({ error: 'Mentorship not found', success: false }, { status: 404 });
+      return NextResponse.json({ error: 'Mentorship not found', success: false }, { status: 404 });
     }
 
     const currentUserId = authUser.id;
@@ -268,7 +268,7 @@ export async function PUT(request: NextRequest) {
     }
 
     if (!canUpdate) {
-      return Response.json(
+      return NextResponse.json(
         { error: 'Unauthorized to perform this action', success: false },
         { status: 403 }
       );
@@ -301,14 +301,14 @@ export async function PUT(request: NextRequest) {
       } else if (body.endDate !== undefined) {
         const parsedEndDate = parseDate(body.endDate);
         if (!parsedEndDate) {
-          return Response.json({ error: 'Invalid endDate', success: false }, { status: 400 });
+          return NextResponse.json({ error: 'Invalid endDate', success: false }, { status: 400 });
         }
         updateData.endDate = parsedEndDate;
       }
     }
 
     if (Object.keys(updateData).length === 0) {
-      return Response.json({ error: 'No valid fields to update', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'No valid fields to update', success: false }, { status: 400 });
     }
 
     const data = await prisma.mentorship.update({
@@ -341,10 +341,10 @@ export async function PUT(request: NextRequest) {
       }
     }
 
-    return Response.json({ mentorship: data, success: true });
+    return NextResponse.json({ mentorship: data, success: true });
   } catch (error) {
     console.error('Error updating mentorship:', error);
-    return Response.json({ error: 'Failed to update mentorship', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to update mentorship', success: false }, { status: 500 });
   }
 }
 
@@ -352,13 +352,13 @@ export async function DELETE(request: NextRequest) {
   try {
     const authUser = await getAuthUser();
     if (!authUser) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
     }
 
     const body = (await request.json()) as Record<string, unknown>;
     const mentorshipId = typeof body.mentorshipId === 'string' ? body.mentorshipId : '';
     if (!mentorshipId) {
-      return Response.json({ error: 'Mentorship ID is required', success: false }, { status: 400 });
+      return NextResponse.json({ error: 'Mentorship ID is required', success: false }, { status: 400 });
     }
 
     const mentorship = await prisma.mentorship.findUnique({
@@ -367,12 +367,12 @@ export async function DELETE(request: NextRequest) {
     });
 
     if (!mentorship) {
-      return Response.json({ error: 'Mentorship not found', success: false }, { status: 404 });
+      return NextResponse.json({ error: 'Mentorship not found', success: false }, { status: 404 });
     }
 
     const isParticipant = authUser.id === mentorship.mentorId || authUser.id === mentorship.menteeId;
     if (authUser.role !== 'admin' && !isParticipant) {
-      return Response.json({ error: 'Unauthorized', success: false }, { status: 403 });
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 403 });
     }
 
     if (
@@ -380,7 +380,7 @@ export async function DELETE(request: NextRequest) {
       mentorship.status !== 'cancelled' &&
       mentorship.status !== 'completed'
     ) {
-      return Response.json(
+      return NextResponse.json(
         { error: 'Can only delete cancelled or completed mentorships', success: false },
         { status: 400 }
       );
@@ -390,9 +390,9 @@ export async function DELETE(request: NextRequest) {
       where: { id: mentorshipId },
     });
 
-    return Response.json({ message: 'Mentorship deleted successfully', success: true });
+    return NextResponse.json({ message: 'Mentorship deleted successfully', success: true });
   } catch (error) {
     console.error('Error deleting mentorship:', error);
-    return Response.json({ error: 'Failed to delete mentorship', success: false }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to delete mentorship', success: false }, { status: 500 });
   }
 }

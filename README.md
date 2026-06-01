@@ -159,12 +159,27 @@ Issues are labeled `F-rank` through `S-rank` by complexity. Good first issues ar
 
 ## Documentation
 
+**Start here** depending on who you are:
+
+| If you are a… | Start with |
+|---|---|
+| Newcomer / mentor | [docs/EXECUTIVE_BRIEF.md](docs/EXECUTIVE_BRIEF.md) — 5-minute onramp |
+| Investor / analyst | [docs/IIMA_VENTURES_THESIS_FIT.md](docs/IIMA_VENTURES_THESIS_FIT.md), then [FINANCIAL_MODEL.md](FINANCIAL_MODEL.md) |
+| Sector / strategy thinker | [docs/PROBLEM_LANDSCAPE.md](docs/PROBLEM_LANDSCAPE.md) — Landscaping analysis |
+| Engineer / contributor | [docs/contributor-onboarding.md](docs/contributor-onboarding.md), then [CLAUDE.md](CLAUDE.md) |
+
+**Full doc index**:
+
 | File | Purpose |
 |------|---------|
+| [docs/EXECUTIVE_BRIEF.md](docs/EXECUTIVE_BRIEF.md) | 5-minute project onramp |
+| [docs/IIMA_VENTURES_THESIS_FIT.md](docs/IIMA_VENTURES_THESIS_FIT.md) | Investment thesis fit (IIMA Ventures Enterprise AI rubric) |
+| [docs/PROBLEM_LANDSCAPE.md](docs/PROBLEM_LANDSCAPE.md) | Landscaping analysis of the India developer-talent value chain |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution workflow and code standards |
 | [docs/contributor-onboarding.md](docs/contributor-onboarding.md) | Local environment setup guide |
 | [docs/ARCHITECTURE_DECISIONS.md](docs/ARCHITECTURE_DECISIONS.md) | Why things are built the way they are |
 | [docs/IMPLEMENTATION_TASKS.md](docs/IMPLEMENTATION_TASKS.md) | Current task queue with specs |
+| [FINANCIAL_MODEL.md](FINANCIAL_MODEL.md) | Revenue model and growth projections |
 | [CLAUDE.md](CLAUDE.md) | Full project context (for AI agents) |
 
 ---

@@ -4,7 +4,7 @@ function getUtcDay(date: Date): Date {
   return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
 }
 
-function calculateMultiplier(streak: number): number {
+export function calculateMultiplier(streak: number): number {
   if (streak >= 30) return 2.0;
   if (streak >= 14) return 1.5;
   if (streak >= 7) return 1.25;

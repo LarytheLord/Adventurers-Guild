@@ -90,7 +90,10 @@ export function GuildCardProfile({ adventurer }: { adventurer: Adventurer }) {
   const threshold = RANK_THRESHOLDS[a.rank] || RANK_THRESHOLDS.F;
   const prevThreshold = Object.values(RANK_THRESHOLDS).find((t) => t.next === a.rank);
   const prevXp = prevThreshold?.xpNeeded || 0;
-  const progress = a.rank === 'S' ? 100 : Math.min(100, Math.round(((a.xp - prevXp) / (threshold.xpNeeded - prevXp)) * 100));
+  const denominator = threshold.xpNeeded - prevXp;
+  const progress = a.rank === 'S' || denominator <= 0
+    ? 100
+    : Math.min(100, Math.max(0, Math.round(((a.xp - prevXp) / denominator) * 100)));
 
   return (
     <GuildPage>

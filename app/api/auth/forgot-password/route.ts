@@ -44,10 +44,7 @@ export async function POST(request: NextRequest) {
       html: `<p>You requested a password reset. Click the link below to reset your password:</p><p><a href="${resetLink}">${resetLink}</a></p><p>This link expires in 1 hour.</p>`,
     });
 
-    // Log non-sensitive debug info in development
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`Password reset requested for ${normalizedEmail}`);
-    }
+
 
     return NextResponse.json({ message: 'If an account exists, a reset link has been sent.' });
   } catch (error) {

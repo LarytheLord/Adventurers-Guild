@@ -6,13 +6,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableHead, 
-  TableHeader, 
-  TableRow 
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
@@ -25,6 +25,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
 
 // Types
 interface User {
@@ -86,7 +87,7 @@ export default function AdminDashboard() {
     const fetchUsers = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/admin/users?search=${userSearch}`);
+        const response = await fetchWithAuth(`/api/admin/users?search=${userSearch}`);
         const data = await response.json();
         
         if (data.success) {
@@ -112,7 +113,7 @@ export default function AdminDashboard() {
     const fetchQuests = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/admin/quests?search=${questSearch}`);
+        const response = await fetchWithAuth(`/api/admin/quests?search=${questSearch}`);
         const data = await response.json();
         
         if (data.success) {
@@ -135,7 +136,7 @@ export default function AdminDashboard() {
 
   const handleUserAction = async (userId: string, action: 'verify' | 'deactivate' | 'setRole', role?: string) => {
     try {
-      const response = await fetch('/api/admin/users', {
+      const response = await fetchWithAuth('/api/admin/users', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -153,7 +154,7 @@ export default function AdminDashboard() {
       if (data.success) {
         toast.success('User updated successfully');
         // Refresh the user list
-        const updatedUsersResponse = await fetch(`/api/admin/users?search=${userSearch}`);
+        const updatedUsersResponse = await fetchWithAuth(`/api/admin/users?search=${userSearch}`);
         const updatedUsersData = await updatedUsersResponse.json();
         
         if (updatedUsersData.success) {
@@ -170,7 +171,7 @@ export default function AdminDashboard() {
 
   const handleQuestAction = async (questId: string, action: 'activate' | 'deactivate' | 'cancel') => {
     try {
-      const response = await fetch('/api/admin/quests', {
+      const response = await fetchWithAuth('/api/admin/quests', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -186,7 +187,7 @@ export default function AdminDashboard() {
       if (data.success) {
         toast.success('Quest updated successfully');
         // Refresh the quest list
-        const updatedQuestsResponse = await fetch(`/api/admin/quests?search=${questSearch}`);
+        const updatedQuestsResponse = await fetchWithAuth(`/api/admin/quests?search=${questSearch}`);
         const updatedQuestsData = await updatedQuestsResponse.json();
         
         if (updatedQuestsData.success) {
@@ -478,6 +479,12 @@ export default function AdminDashboard() {
         </TabsContent>
 
         <TabsContent value="analytics" className="space-y-6">
+          {(() => {
+            const totalQuests = quests.length;
+            const completedCount = quests.filter(q => q.status === 'completed').length;
+            const avgCompletionRate = totalQuests > 0 ? Math.round((completedCount / totalQuests) * 100) : 0;
+            return (
+          <>
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -486,7 +493,7 @@ export default function AdminDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{users.length}</div>
-                <p className="text-xs text-muted-foreground">+12% from last month</p>
+                <p className="text-xs text-muted-foreground">{users.length} registered users</p>
               </CardContent>
             </Card>
             <Card>
@@ -498,7 +505,7 @@ export default function AdminDashboard() {
                 <div className="text-2xl font-bold">
                   {quests.filter(q => q.status === 'available' || q.status === 'in_progress').length}
                 </div>
-                <p className="text-xs text-muted-foreground">+3 from last week</p>
+                <p className="text-xs text-muted-foreground">Currently open or in progress</p>
               </CardContent>
             </Card>
             <Card>
@@ -510,7 +517,7 @@ export default function AdminDashboard() {
                 <div className="text-2xl font-bold">
                   {quests.filter(q => q.status === 'completed').length}
                 </div>
-                <p className="text-xs text-muted-foreground">+8% from last month</p>
+                <p className="text-xs text-muted-foreground">Total completed quests</p>
               </CardContent>
             </Card>
             <Card>
@@ -519,8 +526,10 @@ export default function AdminDashboard() {
                 <AlertTriangle className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">76%</div>
-                <p className="text-xs text-muted-foreground">+5% from last month</p>
+                <div className="text-2xl font-bold">
+                  {totalQuests > 0 ? Math.round((quests.filter(q => q.status === 'completed').length / totalQuests) * 100) : 0}%
+                </div>
+                <p className="text-xs text-muted-foreground">Quest completion rate</p>
               </CardContent>
             </Card>
           </div>
@@ -534,34 +543,28 @@ export default function AdminDashboard() {
               <div className="space-y-4">
                 <div className="flex items-center">
                   <div className="ml-4 space-y-1">
-                    <p className="text-sm font-medium">New user registration</p>
-                    <p className="text-sm text-muted-foreground">John Doe joined as an Adventurer</p>
-                  </div>
-                  <div className="ml-auto text-xs text-muted-foreground">
-                    2 hours ago
+                    <p className="text-sm font-medium">Users</p>
+                    <p className="text-sm text-muted-foreground">{users.length} registered on platform</p>
                   </div>
                 </div>
                 <div className="flex items-center">
                   <div className="ml-4 space-y-1">
-                    <p className="text-sm font-medium">Quest completed</p>
-                    <p className="text-sm text-muted-foreground">&quot;API Integration&quot; completed by Jane Smith</p>
-                  </div>
-                  <div className="ml-auto text-xs text-muted-foreground">
-                    4 hours ago
+                    <p className="text-sm font-medium">Quests</p>
+                    <p className="text-sm text-muted-foreground">{totalQuests} total quests on platform</p>
                   </div>
                 </div>
                 <div className="flex items-center">
                   <div className="ml-4 space-y-1">
-                    <p className="text-sm font-medium">Company verified</p>
-                    <p className="text-sm text-muted-foreground">TechCorp verified their account</p>
-                  </div>
-                  <div className="ml-auto text-xs text-muted-foreground">
-                    1 day ago
+                    <p className="text-sm font-medium">Quest Completion</p>
+                    <p className="text-sm text-muted-foreground">{completedCount} completed out of {totalQuests} total</p>
                   </div>
                 </div>
               </div>
             </CardContent>
           </Card>
+          </>
+            );
+          })()}
         </TabsContent>
       </Tabs>
 

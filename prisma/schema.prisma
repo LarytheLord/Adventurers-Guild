@@ -153,7 +153,7 @@ enum VerificationStatus {
 model User {
   id               String    @id @default(uuid()) @db.Uuid
   name             String?
-  username         String?   @unique
+  username         String    @unique
   email            String    @unique
   passwordHash     String    @map("password_hash")
   role             UserRole  @default(adventurer)
@@ -300,6 +300,7 @@ model Quest {
   createdAt           DateTime      @default(now()) @map("created_at") @db.Timestamptz
   updatedAt           DateTime      @updatedAt @map("updated_at") @db.Timestamptz
   deadline            DateTime?     @db.Timestamptz
+  shareCount          Int           @default(0) @map("share_count")
 
   company          User?             @relation("CompanyQuests", fields: [companyId], references: [id])
   parentQuest      Quest?            @relation("SubQuests", fields: [parentQuestId], references: [id])

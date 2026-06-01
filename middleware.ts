@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getToken } from 'next-auth/jwt';
 import { UserRole } from '@/types';
+import { strictRateLimit, apiRateLimit } from '@/lib/rate-limit';
 
 // Define protected routes and their required roles
 const protectedRoutes: { [key: string]: UserRole[] } = {
@@ -16,14 +17,40 @@ const protectedRoutes: { [key: string]: UserRole[] } = {
   '/dashboard/company/create-quest': ['company', 'admin'],
   '/dashboard/company/analytics': ['company', 'admin'],
   '/dashboard/company/profile': ['company', 'admin'],
+  '/dashboard/company/payments': ['company', 'admin'],
+  '/dashboard/company/quests/[id]': ['company', 'admin'],
+  '/dashboard/company/quests/[id]/edit': ['company', 'admin'],
+  '/dashboard/earnings': ['adventurer'],
+  '/dashboard/completed-quests': ['adventurer'],
+  '/dashboard/my-payments': ['adventurer'],
+  '/dashboard/settings': ['adventurer', 'company', 'admin'],
+  '/dashboard/[id]': ['adventurer', 'company', 'admin'],
   '/admin': ['admin'],
   '/admin/quests': ['admin'],
+  '/admin/qa-queue': ['admin'],
+  '/admin/api-budgets': ['admin'],
 };
 
 export async function middleware(request: NextRequest) {
+  // Apply rate limiting to API routes
+  if (request.nextUrl.pathname.startsWith('/api/')) {
+    const rateLimitResponse = apiRateLimit(request);
+    if (rateLimitResponse) return rateLimitResponse;
+  }
+
+  // Apply strict rate limiting to auth routes
+  if (
+    request.nextUrl.pathname.startsWith('/api/auth') ||
+    request.nextUrl.pathname === '/login' ||
+    request.nextUrl.pathname === '/register'
+  ) {
+    const rateLimitResponse = strictRateLimit(request);
+    if (rateLimitResponse) return rateLimitResponse;
+  }
+
   // Check if the route is protected
   const pathname = request.nextUrl.pathname;
-  
+
   // Find the most specific matching route (Longest Prefix Match)
   // This prevents /dashboard (adventurer) from overriding /dashboard/company (company only)
   const sortedRoutes = Object.keys(protectedRoutes).sort((a, b) => b.length - a.length);
@@ -64,7 +91,7 @@ async function checkAuthAndRole(request: NextRequest, requiredRoles: UserRole[])
     
     if (!token) {
       if (process.env.NODE_ENV === 'development') {
-        console.log('[Middleware] No token found, redirecting to login:', request.url);
+        console.log('[Middleware] No token found, redirecting to login:', request.nextUrl.pathname);
       }
       // Redirect to login if not authenticated
       const url = new URL('/login', request.url);
