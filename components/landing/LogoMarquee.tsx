@@ -5,6 +5,7 @@ const tags = [
   "Next.js 15",
   "TypeScript",
   "Prisma ORM",
+  "BharatCode Infrastructure",
   "Stripe-ready payouts",
   "Quest-based workflows",
   "Human QA reviews",

@@ -38,7 +38,7 @@ export default function CTASection() {
             <div className="rounded-xl border border-orange-300/20 bg-gradient-to-b from-orange-500/10 to-orange-500/0 p-5">
               <h3 className="text-lg font-semibold text-white">For Adventurers</h3>
               <p className="mt-2 text-sm leading-relaxed text-slate-300">
-                Claim quests, submit production code, and build rank-based reputation that compounds over time.
+                Claim quests, submit production code, and build rank-based reputation. All quests are built using BharatCode&apos;s free AI tools — no API keys, no subscriptions.
               </p>
               <Button asChild size="lg" className="mt-5 h-11 rounded-xl px-6 text-sm">
                 <Link href="/register" className="flex items-center gap-2">

@@ -24,9 +24,9 @@ const columns = [
   },
   {
     icon: Cpu,
-    title: 'AI-Augmented',
+    title: 'BharatCode-Powered',
     description:
-      'Use any tools. We measure delivery capability, not typing speed.',
+      'Built on BharatCode\'s free AI coding infrastructure — desktop agent, model endpoint, shared compute. Zero cost for students.',
   },
 ];
 
