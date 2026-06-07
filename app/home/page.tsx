@@ -4,14 +4,15 @@ import { useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Hero from '@/components/ui/animated-shader-hero';
-import TrustBar from '@/components/landing/TrustBar';
-import ProductPreview from '@/components/landing/ProductPreview';
+import EarningsPreview from '@/components/landing/EarningsPreview';
+import RankJourney from '@/components/landing/RankJourney';
+import TrustStrip from '@/components/landing/LogoMarquee';
 import HowItWorks from '@/components/landing/HowItWorks';
 import QuestShowcase from '@/components/landing/QuestShowcase';
+import ProductPreview from '@/components/landing/ProductPreview';
 import WhyAG from '@/components/landing/WhyAG';
-import RankJourney from '@/components/landing/RankJourney';
 import CTASection from '@/components/landing/CTASection';
-import LogoMarquee from '@/components/landing/LogoMarquee';
+
 const RANKS = ['F', 'E', 'D', 'C', 'B', 'A', 'S'] as const;
 
 export default function HomePage() {
@@ -29,59 +30,76 @@ export default function HomePage() {
 
   return (
     <>
-      {/* Hero with game HUD overlays */}
+      {/* Hero — broader service scope, not just code */}
       <div className="relative">
         <Hero
-          trustBadge={{
-            text: 'Season 1 / Real projects / Real pay',
-          }}
+          trustBadge={{ text: 'No unpaid internships · No fake projects · No coffee runs' }}
           headline={{
-            line1: 'Level Up Your Career',
-            line2: 'One Quest at a Time',
+            line1: 'Get paid to do real',
+            line2: 'digital work.',
           }}
-          subtitle="Connect with real companies. Complete coding quests. Earn XP, climb from F-Rank to S-Rank, and get paid for code that ships to production."
+          subtitle="Marketing. Design. Code. Content. Ads. Whatever you're good at, India's small businesses need it done. Pick a task, ship it, get paid. Climb from F to S as your work speaks."
           buttons={{
-            primary: { text: 'Enter the Guild', href: '/register' },
-            secondary: { text: 'Browse Quests', href: '/register' },
+            primary: { text: 'Start at F-Rank', href: '/register' },
+            secondary: { text: 'See how it works', href: '#how-it-works' },
           }}
         />
 
-        {/* Rank ladder — bottom center */}
-        <div className="hidden lg:flex absolute bottom-10 left-1/2 -translate-x-1/2 flex-col items-center gap-2">
-          <div className="flex items-center gap-3">
-            {RANKS.map((rank, i) => (
-              <div
-                key={rank}
-                className={`rounded flex items-center justify-center font-bold text-[9px] transition-all ${
-                  i === 0
-                    ? 'w-5 h-5 bg-orange-500 text-black shadow-md shadow-orange-500/40'
-                    : 'w-4 h-4 bg-white/10 text-white/25'
-                }`}
-              >
-                {rank}
-              </div>
-            ))}
+        {/* Rank ladder — restrained, in a single chip */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-8 flex justify-center">
+          <div className="flex flex-col items-center gap-2">
+            <div className="flex items-center gap-2 rounded-full border border-white/10 bg-black/30 px-3 py-1.5 backdrop-blur-sm">
+              {RANKS.map((rank, i) => (
+                <span
+                  key={rank}
+                  className={`flex h-5 w-5 items-center justify-center rounded text-[9px] font-bold ${
+                    i === 0
+                      ? 'bg-orange-400 text-slate-950'
+                      : 'border border-white/15 text-white/30'
+                  }`}
+                >
+                  {rank}
+                </span>
+              ))}
+            </div>
+            <p className="text-[10px] uppercase tracking-[0.15em] text-white/35">
+              Everyone starts at F-Rank
+            </p>
           </div>
-          <p className="text-[10px] text-white/25 tracking-wide">Everyone starts at F-Rank</p>
         </div>
       </div>
 
-      <TrustBar />
-      <ProductPreview />
+      {/* #1 — What you'll earn (real ₹ numbers) */}
+      <EarningsPreview />
+
+      {/* #2 — The Rank Journey (main attraction) */}
+      <section id="ranks">
+        <RankJourney />
+      </section>
+
+      {/* #3 — Trust signals (MIT, Open Paws, BharatCode, live numbers) */}
+      <TrustStrip />
+
+      {/* #4 — How it works (single column, large numbers) */}
       <section id="how-it-works">
         <HowItWorks />
       </section>
+
+      {/* #5 — Live quest board */}
       <section id="quests">
         <QuestShowcase />
       </section>
+
+      {/* #6 — Product preview */}
+      <ProductPreview />
+
+      {/* #7 — Why Adventurers Guild */}
       <WhyAG />
-      <RankJourney />
+
+      {/* #8 — CTA (premium two-path layout) */}
       <section id="join">
         <CTASection />
       </section>
-
-      {/* Trusted Partners section - moved below main CTA */}
-      <LogoMarquee />
     </>
   );
 }

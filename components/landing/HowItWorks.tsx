@@ -1,192 +1,113 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
-import { motion, useInView } from 'framer-motion';
-import {
-  BookUser,
-  FileSearch,
-  ShieldCheck,
-  Trophy,
-  Coins,
-} from 'lucide-react';
+import { motion } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 
+/**
+ * How it works — single column with large editorial numbers.
+ * Inspired by Linear/Stripe. Breaks the 4-column-grid AI pattern.
+ */
 const steps = [
   {
     number: '01',
-    icon: BookUser,
-    title: 'Create your character',
+    title: 'Make an account',
     description:
-      'Register as an Adventurer or Company, verify your profile, and unlock access to guild features, ranks, and public Guild Cards.',
-    highlight: 'Profile + Verification',
+      'Sign up in under a minute. No resume, no interview, no portfolio review. You start at F-Rank with access to beginner quests the same day.',
+    time: '~1 minute',
   },
   {
     number: '02',
-    icon: FileSearch,
-    title: 'Browse and accept quests',
+    title: 'Pick a quest',
     description:
-      'Explore live Quests by difficulty, stack, XP reward, payout, and required skills. Companies review applicants and select the best fit.',
-    highlight: 'Find the right Quest',
+      'Browse open quests filtered by your rank, tech stack, and payout. Each quest shows the pay upfront and the deadline — no hidden terms.',
+    time: '~5 minutes',
   },
   {
     number: '03',
-    icon: ShieldCheck,
-    title: 'Build and submit work',
+    title: 'Ship the work',
     description:
-      'Complete the Quest, collaborate with the Company, and submit production-ready work for review and approval.',
-    highlight: 'QA + Review Process',
+      'Build it, submit it, and the company reviews. You get feedback either way, and good feedback compounds into a portfolio that actually proves what you can do.',
+    time: 'Days to weeks',
   },
   {
     number: '04',
-    icon: Trophy,
-    title: 'Earn rewards and rank up',
+    title: 'Get paid, rank up',
     description:
-      'Get paid, receive reviews, unlock badges, and gain XP to progress from F-Rank all the way to S-Rank.',
-    highlight: 'XP + Guild Progression',
+      'Approved work pays out and you earn XP. Hit the threshold for the next rank, and bigger quests unlock automatically. Payouts scale with rank.',
+    time: 'Instant payout',
   },
 ];
 
-function AnimatedCount({ value, label }: { value: number; label: string }) {
-  const ref = useRef(null);
-  const isInView = useInView(ref, { once: true });
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    if (!isInView || value === 0) return;
-    const duration = 1200;
-    const steps = 30;
-    const stepTime = duration / steps;
-    const increment = value / steps;
-    let current = 0;
-    const timer = setInterval(() => {
-      current += increment;
-      if (current >= value) {
-        setCount(value);
-        clearInterval(timer);
-      } else {
-        setCount(Math.floor(current));
-      }
-    }, stepTime);
-    return () => clearInterval(timer);
-  }, [isInView, value]);
-
-  return (
-    <div ref={ref} className="rounded-2xl border border-slate-200 bg-white/80 p-5 text-center shadow-[0_14px_30px_-24px_rgba(15,23,42,0.3)]">
-      <p className="text-3xl font-bold text-orange-500 tabular-nums">
-        {isInView ? count.toLocaleString() : '0'}
-      </p>
-      <p className="mt-2 text-sm text-slate-600">{label}</p>
-    </div>
-  );
-}
-
 export default function HowItWorks() {
-  const [stats, setStats] = useState<{ adventurers: number; quests: number; completedQuests: number } | null>(null);
-
-  useEffect(() => {
-    fetch('/api/public/stats')
-      .then((r) => r.json())
-      .then((data) =>
-        setStats({
-          adventurers: data.adventurers ?? 0,
-          quests: data.openQuests ?? 0,
-          completedQuests: data.completedQuests ?? 0,
-        })
-      )
-      .catch(() => {});
-  }, []);
-
   return (
-    <section className="relative overflow-hidden bg-white py-20 md:py-28">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_20%_0%,rgba(249,115,22,0.13),transparent_35%),radial-gradient(circle_at_80%_100%,rgba(14,165,233,0.08),transparent_40%)]" />
-
-      <div className="container relative mx-auto max-w-7xl px-6">
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.4 }}
-          className="mb-16 text-center"
-        >
-          <p className="mb-3 text-[11px] font-semibold uppercase tracking-[0.15em] text-orange-500/80">
+    <section id="how-it-works" className="bg-slate-950 py-24 md:py-32">
+      <div className="mx-auto max-w-5xl px-6">
+        {/* Header */}
+        <div className="mx-auto max-w-2xl text-center">
+          <p className="text-[12px] font-medium uppercase tracking-[0.15em] text-orange-400/80">
             How it works
           </p>
-
-          <h2 className="text-3xl font-bold tracking-[-0.02em] text-slate-900 md:text-5xl">
-            Your journey through the Guild
+          <h2 className="mt-5 text-balance text-[36px] font-bold leading-[1.1] tracking-[-0.025em] text-white sm:text-[48px] md:text-[56px]">
+            Four steps.<br />No gatekeepers.
           </h2>
+        </div>
 
-          <p className="mx-auto mt-4 max-w-3xl text-sm leading-relaxed text-slate-600 sm:text-base">
-            Every Adventurer starts at F-Rank. Complete real-world Quests,
-            build your reputation, earn rewards, and climb toward elite status.
-          </p>
-        </motion.div>
-
-        <div className="relative mx-auto max-w-6xl">
-          <div className="absolute left-0 right-0 top-24 hidden h-px bg-gradient-to-r from-transparent via-orange-300 to-transparent xl:block" />
-
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-4">
-            {steps.map((step, index) => (
-              <motion.div
-                key={step.number}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.45, delay: index * 0.1 }}
-                className="relative"
-              >
-                <div className="relative h-full rounded-3xl border border-slate-200 bg-white/90 p-6 shadow-[0_20px_50px_-30px_rgba(15,23,42,0.35)] backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-orange-200 hover:shadow-[0_24px_60px_-30px_rgba(249,115,22,0.25)]">
-                  <div className="mb-5 flex items-center justify-between">
-                    <span className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-orange-200 bg-orange-50 text-sm font-bold text-orange-600">
-                      {step.number}
-                    </span>
-
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-orange-200 bg-orange-50">
-                      <step.icon className="h-5 w-5 text-orange-600" />
-                    </div>
+        {/* Single column with large numbers — not a 4-col grid */}
+        <div className="mt-20 grid gap-0 lg:grid-cols-12 lg:gap-12">
+          <div className="lg:col-span-7">
+            <ol className="divide-y divide-white/10 border-y border-white/10">
+              {steps.map((step, index) => (
+                <motion.li
+                  key={step.number}
+                  initial={{ opacity: 0, y: 8 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.3, delay: index * 0.04 }}
+                  className="grid grid-cols-[80px_1fr] gap-6 py-8 md:gap-8 md:py-10"
+                >
+                  <span className="text-[44px] font-bold leading-none tracking-[-0.03em] tabular-nums text-orange-400 md:text-[56px]">
+                    {step.number}
+                  </span>
+                  <div>
+                    <h3 className="text-[20px] font-semibold leading-[1.3] tracking-[-0.015em] text-white md:text-[22px]">
+                      {step.title}
+                    </h3>
+                    <p className="mt-3 text-[14px] leading-[1.65] text-white/55 md:text-[15px]">
+                      {step.description}
+                    </p>
+                    <p className="mt-4 text-[11px] font-medium uppercase tracking-[0.1em] text-white/30">
+                      {step.time}
+                    </p>
                   </div>
-
-                  <div className="mb-4 inline-flex rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-[11px] font-medium text-orange-700">
-                    {step.highlight}
-                  </div>
-
-                  <h3 className="mb-3 text-xl font-semibold text-slate-900">
-                    {step.title}
-                  </h3>
-
-                  <p className="text-sm leading-relaxed text-slate-600">
-                    {step.description}
-                  </p>
-                </div>
-
-                {index < steps.length - 1 && (
-                  <div className="absolute -right-3 top-1/2 z-20 hidden -translate-y-1/2 xl:flex">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-full border border-orange-200 bg-white shadow-sm">
-                      <svg className="h-4 w-4 text-orange-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                        <path d="M5 12h14M13 5l7 7-7 7" />
-                      </svg>
-                    </div>
-                  </div>
-                )}
-              </motion.div>
-            ))}
+                </motion.li>
+              ))}
+            </ol>
           </div>
-        </div>
 
-        <div className="mt-16 grid gap-4 md:grid-cols-3">
-          <AnimatedCount value={stats?.quests ?? 0} label="Live Quests Across Multiple Categories" />
-          <AnimatedCount value={stats?.adventurers ?? 0} label="Adventurers in the Guild" />
-          <AnimatedCount value={stats?.completedQuests ?? 0} label="Quests Completed" />
-        </div>
-
-        <div className="mt-12 flex justify-center">
-          <Button asChild className="h-12 rounded-xl bg-orange-500 px-7 text-white hover:bg-orange-600">
-            <Link href="/register">
-              <Coins className="mr-2 h-4 w-4" />
-              Start Your First Quest
-            </Link>
-          </Button>
+          {/* Sidebar — what you get when you finish */}
+          <div className="mt-12 lg:col-span-5 lg:mt-0">
+            <div className="sticky top-12 rounded-xl border border-white/10 bg-white/[0.02] p-8">
+              <p className="text-[12px] font-medium uppercase tracking-[0.1em] text-orange-400/80">
+                What you walk away with
+              </p>
+              <h3 className="mt-5 text-balance text-[24px] font-semibold leading-[1.2] tracking-[-0.02em] text-white">
+                A portfolio that proves what you can ship.
+              </h3>
+              <p className="mt-4 text-[14px] leading-[1.6] text-white/55">
+                Every approved quest adds to your Guild Card — rank, XP, work
+                samples, and company feedback. The card is yours forever,
+                verifiable by anyone, and it travels with you.
+              </p>
+              <Link
+                href="/register"
+                className="mt-7 inline-flex h-10 items-center gap-2 rounded-md bg-orange-500 px-4 text-[13px] font-semibold text-slate-950 transition-colors hover:bg-orange-400"
+              >
+                Start at F-Rank
+                <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} />
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </section>

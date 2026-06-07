@@ -1,117 +1,152 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ArrowRight, Check, Zap, Shield, ScrollText, BadgeCheck } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ArrowRight, Check } from 'lucide-react';
 import Link from 'next/link';
+import { RankBadge } from '@/components/ui/rank-badge';
 
 const features = [
-  { icon: ScrollText, text: 'Browse real coding quests from companies' },
-  { icon: Shield, text: 'Claim work that matches your rank' },
-  { icon: Zap, text: 'Submit code, get reviewed, earn XP' },
-  { icon: BadgeCheck, text: 'Your Guild Card proves what you can ship' },
+  'Browse live quests by rank, stack, and payout',
+  'Claim work that matches your current rank',
+  'Submit code, get reviewed, earn XP',
+  'Your Guild Card shows what you can actually ship',
+];
+
+const mockBoard = [
+  { rank: 'D' as const, title: 'Fix pagination on user dashboard', xp: 320, pay: '₹1,600' },
+  { rank: 'C' as const, title: 'Build API rate-limiter middleware', xp: 550, pay: '₹3,000' },
+  { rank: 'B' as const, title: 'Design system migration — Button', xp: 800, pay: '₹5,500' },
 ];
 
 export default function ProductPreview() {
   return (
-    <section className="bg-slate-950 py-20 md:py-28">
+    <section className="bg-slate-50 py-20 md:py-32 border-b border-slate-200">
       <div className="container mx-auto max-w-6xl px-6">
-        <div className="grid items-center gap-12 md:grid-cols-2">
-          <div className="order-2 md:order-1">
+        <div className="grid items-center gap-12 md:grid-cols-12">
+          {/* Left: text — takes 5 cols, not 6/6 split */}
+          <div className="md:col-span-5">
             <motion.p
               initial={{ opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="text-[11px] font-semibold uppercase tracking-[0.15em] text-orange-400/60"
+              className="text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-500"
             >
-              Product Preview
+              The Quest Board
             </motion.p>
             <motion.h2
               initial={{ opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.05 }}
-              className="mt-3 text-3xl font-bold tracking-tight text-white md:text-4xl"
+              className="mt-3 text-[36px] font-bold leading-[1.05] tracking-[-0.025em] text-slate-900 md:text-[44px]"
             >
-              See what the Guild looks like
+              A board of real work,<br />
+              filtered to your rank.
             </motion.h2>
-            <motion.ul
+            <motion.p
               initial={{ opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
-              className="mt-8 space-y-4"
+              className="mt-5 text-sm leading-relaxed text-slate-600"
             >
-              {features.map((f, i) => (
-                <li key={i} className="flex items-start gap-3">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-orange-500/10">
-                    <Check className="h-3.5 w-3.5 text-orange-400" />
-                  </span>
-                  <span className="text-sm text-slate-400">{f.text}</span>
-                </li>
-              ))}
-            </motion.ul>
-            <motion.div
+              You only see quests you can claim. The board updates live as
+              companies post new work and Adventurers accept assignments.
+            </motion.p>
+
+            <motion.ul
               initial={{ opacity: 0, y: 12 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.15 }}
+              className="mt-8 space-y-3"
+            >
+              {features.map((f) => (
+                <li key={f} className="flex items-start gap-3">
+                  <span className="mt-0.5 flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-slate-900">
+                    <Check className="h-2.5 w-2.5 text-white" strokeWidth={3} />
+                  </span>
+                  <span className="text-sm text-slate-700">{f}</span>
+                </li>
+              ))}
+            </motion.ul>
+
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
               className="mt-8"
             >
-              <Button asChild className="h-11 rounded-xl bg-orange-500 px-6 text-sm text-white hover:bg-orange-600">
-                <Link href="/register">
-                  Browse the Quest Board
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
+              <Link
+                href="/register"
+                className="inline-flex h-10 items-center gap-2 rounded-md bg-slate-900 px-4 text-[13px] font-semibold text-white transition-colors hover:bg-slate-800"
+              >
+                See live quests
+                <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} />
+              </Link>
             </motion.div>
           </div>
 
+          {/* Right: mock board — 7 cols, editorial framed */}
           <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            whileInView={{ opacity: 1, x: 0 }}
+            initial={{ opacity: 0, y: 16 }}
+            whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="order-1 md:order-2"
+            className="md:col-span-7"
           >
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/80 p-4 shadow-xl">
-              <div className="mb-3 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <div className="flex h-6 w-6 items-center justify-center rounded-md bg-orange-500 text-[10px] font-black text-black">
-                    AG
+            <div className="rounded-2xl border border-slate-200 bg-white shadow-[0_8px_24px_-12px_rgba(15,23,42,0.08)]">
+              {/* Browser chrome */}
+              <div className="flex items-center justify-between border-b border-slate-200 px-5 py-3.5">
+                <div className="flex items-center gap-2.5">
+                  <div className="flex gap-1.5">
+                    <span className="h-2.5 w-2.5 rounded-full bg-slate-200" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-slate-200" />
+                    <span className="h-2.5 w-2.5 rounded-full bg-slate-200" />
                   </div>
-                  <span className="text-xs font-semibold text-slate-300">Quest Board</span>
+                  <div className="ml-2 flex items-center gap-2 rounded-md bg-slate-50 px-2.5 py-1 text-[11px] text-slate-500">
+                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                    adventurersguild.com/quests
+                  </div>
                 </div>
-                <div className="flex gap-1.5">
-                  <div className="h-2 w-2 rounded-full bg-emerald-500" />
-                  <div className="h-2 w-2 rounded-full bg-slate-700" />
-                  <div className="h-2 w-2 rounded-full bg-slate-700" />
-                </div>
+                <span className="text-[10px] font-medium uppercase tracking-wider text-slate-400">
+                  Live
+                </span>
               </div>
-              <div className="space-y-3">
-                {[
-                  { rank: 'D', title: 'Fix pagination on user dashboard', xp: 320, pay: '$80' },
-                  { rank: 'C', title: 'Build API rate limiter middleware', xp: 550, pay: '$150' },
-                  { rank: 'B', title: 'Design system migration — Button component', xp: 800, pay: '$250' },
-                ].map((item, i) => (
+
+              {/* Quest rows */}
+              <div className="divide-y divide-slate-100">
+                {mockBoard.map((item, i) => (
                   <div
                     key={i}
-                    className="rounded-xl border border-slate-800 bg-slate-950 p-3.5 transition-colors hover:border-slate-700"
+                    className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-slate-50"
                   >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-2.5">
-                        <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-blue-500 text-[10px] font-bold text-white">
-                          {item.rank}
-                        </div>
-                        <p className="text-sm font-medium text-slate-200">{item.title}</p>
-                      </div>
+                    <RankBadge rank={item.rank} size="sm" />
+                    <div className="flex-1 min-w-0">
+                      <p className="truncate text-sm font-medium text-slate-900">
+                        {item.title}
+                      </p>
+                      <p className="mt-0.5 text-xs text-slate-500">
+                        Posted 2h ago · 3 applicants
+                      </p>
                     </div>
-                    <div className="mt-2 flex items-center gap-3 pl-9">
-                      <span className="text-xs text-orange-400">{item.xp} XP</span>
-                      <span className="text-xs text-emerald-400">{item.pay}</span>
+                    <div className="hidden text-right sm:block">
+                      <p className="text-sm font-semibold text-slate-900 tabular-nums">
+                        {item.pay}
+                      </p>
+                      <p className="text-[11px] text-slate-500 tabular-nums">
+                        {item.xp} XP
+                      </p>
                     </div>
                   </div>
                 ))}
+              </div>
+
+              {/* Footer */}
+              <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-5 py-3 text-[11px] text-slate-500">
+                <span>Showing 3 of 12 open</span>
+                <span className="font-medium text-slate-700">View all →</span>
               </div>
             </div>
           </motion.div>
