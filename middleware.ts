@@ -111,8 +111,8 @@ async function checkAuthAndRole(request: NextRequest, requiredRoles: UserRole[])
 
     // Check if user has required role
     if (!requiredRoles.includes(userRole)) {
-      // User doesn't have required role, redirect to home
-      return NextResponse.redirect(new URL('/home', request.url));
+      // User doesn't have required role, redirect to forbidden
+      return NextResponse.redirect(new URL('/forbidden', request.url));
     }
 
     // User is authenticated and authorized, continue

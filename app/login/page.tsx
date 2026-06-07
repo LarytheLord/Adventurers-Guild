@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Loader2, ArrowRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { signIn } from 'next-auth/react';
+import { signIn, useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { RankBadge } from '@/components/ui/rank-badge';
@@ -21,6 +21,7 @@ const rankShowcase: { rank: Rank; label: string }[] = [
 
 export default function LoginPage() {
   const router = useRouter();
+  const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const [email, setEmail] = useState('');
@@ -29,6 +30,13 @@ export default function LoginPage() {
   useEffect(() => {
     setIsHydrated(true);
   }, []);
+
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user) {
+      router.push('/dashboard');
+    }
+  }, [status, session, router]);
 
   async function handleLogin() {
     if (!email || !password) {

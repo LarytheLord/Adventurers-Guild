@@ -1,39 +1,78 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, CheckCircle2, ArrowLeft, Loader2, Mail } from 'lucide-react';
-import Link from 'next/link';
+import { AlertCircle, CheckCircle2, ArrowRight, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState('');
+export default function ResetPasswordPage() {
+  const searchParams = useSearchParams();
+  const token = searchParams.get('token');
+
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
+
+  useEffect(() => {
+    setIsHydrated(true);
+  }, []);
+
+  if (!isHydrated) {
+    return null;
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
     setError('');
 
+    // Client-side validation
+    if (!password || !confirmPassword) {
+      setError('Please fill in all fields');
+      return;
+    }
+
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    if (!token) {
+      setError('Invalid reset link');
+      return;
+    }
+
+    setLoading(true);
+
     try {
-      const res = await fetch('/api/auth/forgot-password', {
+      const res = await fetch('/api/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ token, password }),
       });
 
       const data = await res.json();
 
       if (!res.ok) {
-        setError(data.error || 'Something went wrong');
+        setError(data.error || 'Failed to reset password');
       } else {
         setSuccess(true);
-        toast.success('Check your email for the reset link');
+        toast.success('Password reset successful! Redirecting to login...');
+        setTimeout(() => {
+          window.location.href = '/login';
+        }, 2000);
       }
     } catch (err) {
       setError('An unexpected error occurred');
@@ -57,26 +96,26 @@ export default function ForgotPasswordPage() {
         <div className="space-y-8">
           <div>
             <p className="text-[11px] font-semibold tracking-[0.15em] text-orange-400/60 uppercase mb-3">
-              Forgot your password?
+              Security matters
             </p>
             <h2 className="text-3xl font-bold text-white mb-3">
-              We&apos;ll help you regain access
+              Reset your password securely
             </h2>
             <p className="text-slate-400 leading-relaxed">
-              Enter your email address and we&apos;ll send you a link to reset your password. It&apos;s quick and secure.
+              Your password is the key to your Guild account. Keep it strong and unique to protect your quests and earnings.
             </p>
           </div>
 
           <div className="rounded-xl border border-slate-700/50 bg-slate-800/60 p-4">
             <p className="text-sm text-slate-300 leading-relaxed">
-              Check your email inbox for a message from Adventurers Guild. If you don&apos;t see it within a few minutes, check your spam folder.
+              Make sure your new password is at least 8 characters long and includes a mix of uppercase, lowercase, numbers, and symbols for maximum security.
             </p>
           </div>
         </div>
 
         <blockquote className="border-l-2 border-orange-500/40 pl-4">
           <p className="text-slate-400 text-sm leading-relaxed mb-3">
-            &ldquo;Account security is our top priority. We only send password reset links to your registered email address.&rdquo;
+            &ldquo;A strong password is your first line of defense against unauthorized access.&rdquo;
           </p>
           <footer className="text-sm text-slate-500">Security Best Practices</footer>
         </blockquote>
@@ -95,8 +134,8 @@ export default function ForgotPasswordPage() {
           {!success ? (
             <>
               <div className="space-y-2">
-                <h1 className="text-2xl font-bold text-white tracking-tight">Forgot Password?</h1>
-                <p className="text-sm text-slate-400">Enter your email to receive a password reset link.</p>
+                <h1 className="text-2xl font-bold text-white tracking-tight">Reset Your Password</h1>
+                <p className="text-sm text-slate-400">Enter your new password below.</p>
               </div>
 
               {error && (
@@ -108,17 +147,36 @@ export default function ForgotPasswordPage() {
 
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-slate-300 text-sm font-medium">
-                    Email Address
+                  <Label htmlFor="password" className="text-slate-300 text-sm font-medium">
+                    New Password
                   </Label>
                   <Input
-                    id="email"
-                    type="email"
-                    placeholder="name@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
+                    id="password"
+                    name="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     disabled={loading}
+                    minLength={8}
+                    className="bg-slate-900 border-slate-700 text-white placeholder:text-slate-500 focus:border-orange-500/50 focus:ring-orange-500/20 h-11"
+                  />
+                  <p className="text-xs text-slate-500">Minimum 8 characters</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword" className="text-slate-300 text-sm font-medium">
+                    Confirm Password
+                  </Label>
+                  <Input
+                    id="confirmPassword"
+                    name="confirmPassword"
+                    type="password"
+                    placeholder="••••••••"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    disabled={loading}
+                    minLength={8}
                     className="bg-slate-900 border-slate-700 text-white placeholder:text-slate-500 focus:border-orange-500/50 focus:ring-orange-500/20 h-11"
                   />
                 </div>
@@ -126,14 +184,14 @@ export default function ForgotPasswordPage() {
                 <Button
                   type="submit"
                   disabled={loading}
-                  className="w-full h-11 bg-orange-500 hover:bg-orange-600 text-black font-semibold rounded-lg shadow-lg shadow-orange-500/20 transition-all"
+                  className="w-full h-11 bg-orange-500 hover:bg-orange-600 text-black font-semibold rounded-lg shadow-lg shadow-orange-500/20 transition-all mt-2"
                 >
                   {loading ? (
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   ) : (
-                    <Mail className="mr-2 h-4 w-4" />
+                    <ArrowRight className="mr-2 h-4 w-4" />
                   )}
-                  Send Reset Link
+                  Reset Password
                 </Button>
               </form>
 
@@ -152,33 +210,14 @@ export default function ForgotPasswordPage() {
                 </div>
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-white mb-2">Check Your Email</h2>
+                <h2 className="text-2xl font-bold text-white mb-2">Password Reset Successful</h2>
                 <p className="text-slate-400">
-                  We&apos;ve sent a password reset link to <strong>{email}</strong>. Please check your inbox.
+                  Your password has been reset. You&apos;ll be redirected to the login page in a moment.
                 </p>
               </div>
-
-              <div className="rounded-lg border border-slate-700/50 bg-slate-800/60 p-4">
-                <p className="text-sm text-slate-400">
-                  <span className="font-semibold text-white">Didn&apos;t receive it?</span> Check your spam folder or request a new link below.
-                </p>
-              </div>
-
-              <Button
-                variant="outline"
-                className="w-full h-11 border-slate-700 text-white hover:bg-slate-900"
-                onClick={() => {
-                  setSuccess(false);
-                  setEmail('');
-                }}
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Send Another Link
-              </Button>
-
               <Link href="/login">
                 <Button className="w-full h-11 bg-orange-500 hover:bg-orange-600 text-black font-semibold">
-                  Back to Sign In
+                  Go to Login
                 </Button>
               </Link>
             </div>
