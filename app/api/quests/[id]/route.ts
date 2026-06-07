@@ -26,6 +26,15 @@ export async function GET(
             email: true,
           },
         },
+        fieldTemplate: {
+          select: {
+            id: true,
+            name: true,
+            briefFields: true,
+            submissionFields: true,
+            defaultCriteria: true,
+          },
+        },
         parentQuest: {
           select: {
             id: true,
@@ -64,6 +73,11 @@ export async function GET(
                 status: true,
                 submissionContent: true,
                 submissionNotes: true,
+                submissionData: true,
+                criteriaResults: true,
+                reviewNotes: true,
+                qualityScore: true,
+                submittedAt: true,
               },
               orderBy: { submittedAt: 'desc' },
               take: 1,

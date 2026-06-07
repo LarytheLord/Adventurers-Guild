@@ -15,9 +15,12 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/ui/dialog';
-import { Shield, Clock, CheckCircle, XCircle, Loader2, ArrowLeft, ExternalLink } from 'lucide-react';
+import { Shield, Clock, CheckCircle, XCircle, Loader2, ArrowLeft } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { fetchWithAuth } from '@/lib/fetch-with-auth';
+import { Checkbox } from '@/components/ui/checkbox';
+import { FieldDisplay } from '@/components/quest/field-display';
+import { asFieldDefs, asFieldValues, type CriteriaResult } from '@/lib/quest-field-templates';
 
 interface QueueItem {
   id: string;
@@ -30,6 +33,10 @@ interface QueueItem {
     difficulty: string;
     xpReward: number;
     monetaryReward: string | null;
+    detailedDescription: string | null;
+    acceptanceCriteria: string[];
+    briefData: unknown;
+    fieldTemplate: { briefFields: unknown; submissionFields: unknown } | null;
   };
   user: {
     id: string;
@@ -42,6 +49,7 @@ interface QueueItem {
     id: string;
     submissionContent: string;
     submissionNotes: string | null;
+    submissionData: unknown;
     submittedAt: string;
     reviewNotes: unknown;
   }>;
@@ -61,6 +69,21 @@ export default function QAQueuePage() {
   const [rejectTarget, setRejectTarget] = useState<QueueItem | null>(null);
   const [rejectNotes, setRejectNotes] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  // Per-assignment acceptance-criteria checklist state (criterion index → met).
+  const [criteriaState, setCriteriaState] = useState<Record<string, boolean[]>>({});
+
+  const toggleCriterion = (id: string, idx: number) =>
+    setCriteriaState((prev) => {
+      const arr = [...(prev[id] ?? [])];
+      arr[idx] = !arr[idx];
+      return { ...prev, [id]: arr };
+    });
+
+  const buildCriteriaResults = (item: QueueItem): CriteriaResult[] =>
+    (item.quest.acceptanceCriteria ?? []).map((criterion, i) => ({
+      criterion,
+      met: (criteriaState[item.id] ?? [])[i] === true,
+    }));
 
   useEffect(() => {
     if (status === 'unauthenticated') router.push('/login');
@@ -77,12 +100,12 @@ export default function QAQueuePage() {
 
   useEffect(() => { fetchQueue(); }, [fetchQueue]);
 
-  const handleApprove = async (assignmentId: string) => {
+  const handleApprove = async (item: QueueItem) => {
     setSubmitting(true);
-    await fetchWithAuth(`/api/admin/qa-queue/${assignmentId}`, {
+    await fetchWithAuth(`/api/admin/qa-queue/${item.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'approve' }),
+      body: JSON.stringify({ action: 'approve', criteriaResults: buildCriteriaResults(item) }),
     });
     setSubmitting(false);
     fetchQueue();
@@ -94,7 +117,7 @@ export default function QAQueuePage() {
     await fetchWithAuth(`/api/admin/qa-queue/${rejectTarget.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'reject', notes: rejectNotes.trim() }),
+      body: JSON.stringify({ action: 'reject', notes: rejectNotes.trim(), criteriaResults: buildCriteriaResults(rejectTarget) }),
     });
     setSubmitting(false);
     setRejectTarget(null);
@@ -178,23 +201,42 @@ export default function QAQueuePage() {
                       </div>
                     </div>
 
-                    {/* Submission content */}
+                    {/* The brief — context carried from the company */}
+                    {(item.quest.detailedDescription ||
+                      asFieldDefs(item.quest.fieldTemplate?.briefFields).length > 0) && (
+                      <details className="rounded-lg bg-slate-950/60 p-3">
+                        <summary className="cursor-pointer text-xs uppercase tracking-wide font-medium text-slate-400">
+                          The brief
+                        </summary>
+                        <div className="mt-2 space-y-2 [&_a]:text-orange-400 [&_dd]:text-slate-200 [&_dl]:divide-slate-800 [&_dt]:text-slate-400">
+                          {item.quest.detailedDescription && (
+                            <p className="text-sm whitespace-pre-wrap text-slate-300">{item.quest.detailedDescription}</p>
+                          )}
+                          <FieldDisplay
+                            fields={asFieldDefs(item.quest.fieldTemplate?.briefFields)}
+                            values={asFieldValues(item.quest.briefData)}
+                            hideEmpty
+                          />
+                        </div>
+                      </details>
+                    )}
+
+                    {/* Submission — structured when available, else raw text */}
                     {submission && (
                       <div>
                         <p className="text-xs text-slate-500 mb-1.5 uppercase tracking-wide font-medium">Submission</p>
-                        <p className="text-sm text-slate-300 bg-slate-950/60 rounded-lg p-3 whitespace-pre-wrap line-clamp-4">
-                          {submission.submissionContent}
-                        </p>
-                        {submission.submissionContent.startsWith('http') && (
-                          <a
-                            href={submission.submissionContent}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-xs text-orange-400 hover:text-orange-300 mt-1"
-                          >
-                            <ExternalLink className="w-3 h-3" />
-                            Open link
-                          </a>
+                        {asFieldDefs(item.quest.fieldTemplate?.submissionFields).length > 0 && submission.submissionData ? (
+                          <div className="rounded-lg bg-slate-950/60 p-3 [&_a]:text-orange-400 [&_dd]:text-slate-200 [&_dl]:divide-slate-800 [&_dt]:text-slate-400">
+                            <FieldDisplay
+                              fields={asFieldDefs(item.quest.fieldTemplate?.submissionFields)}
+                              values={asFieldValues(submission.submissionData)}
+                              hideEmpty
+                            />
+                          </div>
+                        ) : (
+                          <p className="text-sm text-slate-300 bg-slate-950/60 rounded-lg p-3 whitespace-pre-wrap line-clamp-6">
+                            {submission.submissionContent}
+                          </p>
                         )}
                         {submission.submissionNotes && (
                           <p className="text-xs text-slate-500 mt-2 bg-slate-950/40 rounded p-2">
@@ -205,12 +247,33 @@ export default function QAQueuePage() {
                       </div>
                     )}
 
+                    {/* Acceptance-criteria evaluation — the PM/QA gate before client */}
+                    {item.quest.acceptanceCriteria?.length > 0 && (
+                      <div>
+                        <p className="text-xs text-slate-500 mb-1.5 uppercase tracking-wide font-medium">
+                          Evaluate against acceptance criteria
+                        </p>
+                        <div className="space-y-2 bg-slate-950/60 rounded-lg p-3">
+                          {item.quest.acceptanceCriteria.map((c, i) => (
+                            <label key={i} className="flex items-start gap-2 cursor-pointer text-sm text-slate-300">
+                              <Checkbox
+                                checked={(criteriaState[item.id] ?? [])[i] === true}
+                                onCheckedChange={() => toggleCriterion(item.id, i)}
+                                className="mt-0.5 border-slate-600"
+                              />
+                              <span>{c}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     {/* Actions */}
                     <div className="flex gap-2 pt-1">
                       <Button
                         size="sm"
                         className="bg-emerald-600 hover:bg-emerald-500 text-white gap-1.5"
-                        onClick={() => handleApprove(item.id)}
+                        onClick={() => handleApprove(item)}
                         disabled={submitting}
                       >
                         <CheckCircle className="w-3.5 h-3.5" />

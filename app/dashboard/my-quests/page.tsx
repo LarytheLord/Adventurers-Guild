@@ -95,9 +95,10 @@ export default async function MyQuestsPage() {
                   </Button>
                   
                   {assignment.status === 'assigned' && (
-                    <QuestSubmissionDialog 
-                      questTitle={assignment.quest.title} 
+                    <QuestSubmissionDialog
+                      questTitle={assignment.quest.title}
                       assignmentId={assignment.id}
+                      questId={assignment.quest.id}
                     />
                   )}
                   

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,6 +32,27 @@ import { Badge } from '@/components/ui/badge';
 import { GuildCard, GuildChip, GuildHero, GuildPage } from '@/components/guild/primitives';
 import { QUEST_CATEGORIES, QUEST_TYPES, DIFFICULTY_RANKS, getQuestListPath } from '@/lib/quest-constants';
 import { fetchWithAuth } from '@/lib/fetch-with-auth';
+import { FieldRenderer } from '@/components/quest/field-renderer';
+import {
+  asFieldDefs,
+  pickTemplate,
+  validateFieldValues,
+  type FieldValue,
+  type FieldValues,
+} from '@/lib/quest-field-templates';
+import { Plus, X } from 'lucide-react';
+
+interface BriefTemplate {
+  id: string;
+  name: string;
+  description: string | null;
+  questCategory: string | null;
+  questType: string | null;
+  briefFields: unknown;
+  submissionFields: unknown;
+  defaultCriteria: string[];
+  isDefault: boolean;
+}
 
 export default function CreateQuestPage() {
   const { data: session, status } = useSession();
@@ -55,6 +76,41 @@ export default function CreateQuestPage() {
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  // ── Structured brief (Quest Context Loop) ───────────────────────────────
+  const [templates, setTemplates] = useState<BriefTemplate[]>([]);
+  const [briefData, setBriefData] = useState<FieldValues>({});
+  const [criteria, setCriteria] = useState<string[]>([]);
+  const [activeTemplateId, setActiveTemplateId] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchWithAuth('/api/quest-field-templates')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data?.success && Array.isArray(data.templates)) setTemplates(data.templates);
+      })
+      .catch(() => {});
+  }, []);
+
+  // Pick the best template for the chosen category/type.
+  const selectedTemplate = useMemo(
+    () => pickTemplate(templates, form.questCategory, form.questType),
+    [templates, form.questCategory, form.questType],
+  );
+
+  // When the matched template changes, reset the brief fields + seed criteria.
+  useEffect(() => {
+    if (!selectedTemplate) return;
+    if (selectedTemplate.id === activeTemplateId) return;
+    setActiveTemplateId(selectedTemplate.id);
+    setBriefData({});
+    setCriteria(selectedTemplate.defaultCriteria ?? []);
+  }, [selectedTemplate, activeTemplateId]);
+
+  const briefFields = useMemo(() => asFieldDefs(selectedTemplate?.briefFields), [selectedTemplate]);
+
+  const updateBrief = (key: string, value: FieldValue) =>
+    setBriefData((prev) => ({ ...prev, [key]: value }));
 
   if (status === 'loading') {
     return (
@@ -90,6 +146,13 @@ export default function CreateQuestPage() {
       return;
     }
 
+    const briefErrors = validateFieldValues(briefFields, briefData);
+    if (briefErrors.length > 0) {
+      setError(briefErrors[0]);
+      setLoading(false);
+      return;
+    }
+
     try {
       const body = {
         title: form.title.trim(),
@@ -107,6 +170,9 @@ export default function CreateQuestPage() {
         requiredRank: form.requiredRank || null,
         maxParticipants: Number(form.maxParticipants) || 1,
         deadline: form.deadline || null,
+        fieldTemplateId: selectedTemplate?.id ?? null,
+        briefData,
+        acceptanceCriteria: criteria.map((c) => c.trim()).filter(Boolean),
       };
 
       const response = await fetchWithAuth('/api/company/quests', {
@@ -345,6 +411,58 @@ export default function CreateQuestPage() {
                     </span>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Structured brief — adapts to the selected work type. */}
+            <div className="space-y-5 rounded-xl border border-sky-200/70 bg-sky-50/40 p-5">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h3 className="text-sm font-semibold text-slate-900">Structured Brief</h3>
+                  <p className="text-xs text-slate-600">
+                    {selectedTemplate
+                      ? `${selectedTemplate.name} — these fields travel with the quest so the adventurer has every detail.`
+                      : 'Loading fields…'}
+                  </p>
+                </div>
+                {selectedTemplate && <Badge variant="outline">{selectedTemplate.name}</Badge>}
+              </div>
+
+              {briefFields.length > 0 && (
+                <FieldRenderer fields={briefFields} values={briefData} onChange={updateBrief} idPrefix="brief" />
+              )}
+
+              {/* Acceptance criteria — what the work is evaluated against. */}
+              <div className="space-y-2 border-t border-sky-200/70 pt-4">
+                <Label>Acceptance Criteria</Label>
+                <p className="text-xs text-slate-600">
+                  The reviewer (admin / product manager / client) checks the submission against each line.
+                </p>
+                <div className="space-y-2">
+                  {criteria.map((c, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <Input
+                        value={c}
+                        placeholder={`Criterion ${i + 1}`}
+                        onChange={(e) =>
+                          setCriteria((prev) => prev.map((p, idx) => (idx === i ? e.target.value : p)))
+                        }
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setCriteria((prev) => prev.filter((_, idx) => idx !== i))}
+                        aria-label="Remove criterion"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+                <Button type="button" variant="outline" size="sm" onClick={() => setCriteria((prev) => [...prev, ''])}>
+                  <Plus className="h-4 w-4" /> Add criterion
+                </Button>
               </div>
             </div>
 

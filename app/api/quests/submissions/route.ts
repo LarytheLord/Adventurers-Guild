@@ -1,7 +1,7 @@
 // app/api/quests/submissions/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { AssignmentStatus } from '@prisma/client';
+import { AssignmentStatus, Prisma } from '@prisma/client';
 import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
 import { getAuthUser } from '@/lib/api-auth';
 import { logActivity } from '@/lib/activity-logger';
@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { assignmentId, submissionContent, submissionNotes } = body;
+    const { assignmentId, submissionContent, submissionNotes, submissionData } = body;
     const userId = user.id; // Use authenticated user's ID
 
     // Validate required fields
@@ -138,6 +138,7 @@ export async function POST(request: NextRequest) {
             userId,
             submissionContent: submissionContent,
             submissionNotes: submissionNotes || null,
+            submissionData: submissionData ?? Prisma.JsonNull,
           },
         });
 
@@ -172,7 +173,7 @@ export async function PUT(request: NextRequest) {
 
   try {
     const body = await request.json();
-    const { submissionId, status, review_notes, quality_score } = body;
+    const { submissionId, status, review_notes, quality_score, criteria_results } = body;
     const reviewerId = user.id;
 
     if (!submissionId || !status) {
@@ -221,6 +222,7 @@ export async function PUT(request: NextRequest) {
             status,
             reviewNotes: review_notes || undefined,
             qualityScore: quality_score ?? undefined,
+            criteriaResults: criteria_results ? (criteria_results as Prisma.InputJsonValue) : undefined,
             reviewerId,
             reviewedAt: status !== 'pending' ? new Date() : undefined,
           },

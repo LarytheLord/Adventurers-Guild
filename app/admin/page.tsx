@@ -176,6 +176,13 @@ export default function AdminDashboard() {
               </Link>
             </Button>
             <Button variant="outline" asChild>
+              <Link href="/admin/quest-templates">
+                <ClipboardList className="h-4 w-4" />
+                Quest Templates
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+            <Button variant="outline" asChild>
               <Link href="/dashboard/quests">
                 <Target className="h-4 w-4" />
                 Quest Board (Adventurer view)
