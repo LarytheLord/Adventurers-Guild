@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { signIn, useSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
@@ -16,7 +16,11 @@ const steps = [
   { num: '03', title: 'Ship the work', sub: 'Submit → get feedback → get paid' },
 ];
 
-export default function RegisterPage() {
+const inputClass =
+  'h-10 border-white/10 bg-white/5 text-[13px] text-white placeholder:text-white/20 focus:border-orange-500/40 focus:ring-orange-500/10 rounded-md';
+const labelClass = 'text-[12px] font-medium text-white/60 uppercase tracking-[0.08em]';
+
+function RegisterForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const defaultTab = searchParams.get('tab') === 'company' ? 'company' : 'adventurer';
@@ -81,11 +85,152 @@ export default function RegisterPage() {
     }
   }
 
-  const inputClass =
-    'h-10 border-white/10 bg-white/5 text-[13px] text-white placeholder:text-white/20 focus:border-orange-500/40 focus:ring-orange-500/10 rounded-md';
+  return (
+    <div className="w-full max-w-[380px] space-y-8">
+      {/* Mobile logo */}
+      <div className="flex items-center gap-2.5 lg:hidden">
+        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-orange-500">
+          <span className="text-[11px] font-bold text-slate-950">AG</span>
+        </div>
+        <span className="text-[14px] font-semibold text-white">Adventurers Guild</span>
+      </div>
 
-  const labelClass = 'text-[12px] font-medium text-white/60 uppercase tracking-[0.08em]';
+      <div>
+        <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-orange-400/70 mb-4">
+          Choose your path
+        </p>
+        <h1 className="text-[28px] font-bold leading-[1.1] tracking-[-0.025em] text-white">
+          Join the Guild.
+        </h1>
+        <p className="mt-3 text-[14px] leading-[1.6] text-white/50">
+          Create your free account and start your first quest today.
+        </p>
+      </div>
 
+      <Tabs defaultValue={defaultTab} className="w-full">
+        <TabsList className="mb-6 grid w-full grid-cols-2 border border-white/10 bg-white/5 rounded-lg h-9">
+          <TabsTrigger
+            value="adventurer"
+            className="rounded-md text-[12px] font-medium text-white/40 data-[state=active]:bg-orange-500 data-[state=active]:text-slate-950 data-[state=active]:font-semibold"
+          >
+            <Sword className="mr-1.5 h-3 w-3" />
+            Adventurer
+          </TabsTrigger>
+          <TabsTrigger
+            value="company"
+            className="rounded-md text-[12px] font-medium text-white/40 data-[state=active]:bg-white/10 data-[state=active]:text-white"
+          >
+            <Building2 className="mr-1.5 h-3 w-3" />
+            Company
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Adventurer tab */}
+        <TabsContent value="adventurer">
+          <div className="mb-5 rounded-lg border border-orange-500/15 bg-orange-500/5 px-4 py-3">
+            <p className="text-[12px] leading-[1.5] text-orange-400/80">
+              Complete quests, earn XP and real money. Start at F-Rank — no experience required.
+            </p>
+          </div>
+          <form
+            onSubmit={(e) => { e.preventDefault(); void register('adventurer'); }}
+            className="space-y-4"
+            data-auth-ready={isHydrated ? 'true' : 'false'}
+          >
+            <div className="space-y-1.5">
+              <Label htmlFor="a-name" className={labelClass}>Full Name</Label>
+              <Input id="a-name" type="text" placeholder="John Doe" autoCorrect="off" value={aName} onChange={(e) => setAName(e.target.value)} disabled={!isHydrated || isLoading} required className={inputClass} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="a-username" className={labelClass}>Username</Label>
+              <Input id="a-username" type="text" placeholder="yourhandle" autoCorrect="off" value={aUsername} onChange={(e) => setAUsername(e.target.value)} disabled={!isHydrated || isLoading} required className={inputClass} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="a-email" className={labelClass}>Email</Label>
+              <Input id="a-email" type="email" placeholder="you@example.com" autoCapitalize="none" autoCorrect="off" autoComplete="email" value={aEmail} onChange={(e) => setAEmail(e.target.value)} disabled={!isHydrated || isLoading} required className={inputClass} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="a-password" className={labelClass}>Password</Label>
+              <Input id="a-password" type="password" minLength={8} placeholder="Min. 8 characters" autoComplete="new-password" value={aPassword} onChange={(e) => setAPassword(e.target.value)} disabled={!isHydrated || isLoading} required className={inputClass} />
+            </div>
+            <button
+              type="submit"
+              disabled={!isHydrated || isLoading}
+              className="mt-1 inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-orange-500 px-4 text-[13px] font-semibold text-slate-950 transition-colors hover:bg-orange-400 disabled:opacity-50"
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  Create Adventurer account
+                  <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} />
+                </>
+              )}
+            </button>
+          </form>
+        </TabsContent>
+
+        {/* Company tab */}
+        <TabsContent value="company">
+          <div className="mb-5 rounded-lg border border-white/8 bg-white/3 px-4 py-3">
+            <p className="text-[12px] leading-[1.5] text-white/50">
+              Post quests and hire verified developers. Pay only on approved submissions.
+            </p>
+          </div>
+          <form
+            onSubmit={(e) => { e.preventDefault(); void register('company'); }}
+            className="space-y-4"
+            data-auth-ready={isHydrated ? 'true' : 'false'}
+          >
+            <div className="space-y-1.5">
+              <Label htmlFor="c-name" className={labelClass}>Company Name</Label>
+              <Input id="c-name" type="text" placeholder="Acme Inc." value={cName} onChange={(e) => setCName(e.target.value)} disabled={!isHydrated || isLoading} required className={inputClass} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="c-email" className={labelClass}>Work Email</Label>
+              <Input id="c-email" type="email" placeholder="you@company.com" autoComplete="email" value={cEmail} onChange={(e) => setCEmail(e.target.value)} disabled={!isHydrated || isLoading} required className={inputClass} />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="c-password" className={labelClass}>Password</Label>
+              <Input id="c-password" type="password" minLength={8} placeholder="Min. 8 characters" autoComplete="new-password" value={cPassword} onChange={(e) => setCPassword(e.target.value)} disabled={!isHydrated || isLoading} required className={inputClass} />
+            </div>
+            <button
+              type="submit"
+              disabled={!isHydrated || isLoading}
+              className="mt-1 inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-white/15 bg-white/5 px-4 text-[13px] font-semibold text-white transition-colors hover:bg-white/10 hover:border-white/25 disabled:opacity-50"
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  Create Company account
+                  <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} />
+                </>
+              )}
+            </button>
+          </form>
+        </TabsContent>
+      </Tabs>
+
+      <div className="border-t border-white/8 pt-6 space-y-3 text-center">
+        <p className="text-[13px] text-white/35">
+          Already have an account?{' '}
+          <Link href="/login" className="font-medium text-orange-400 hover:text-orange-300 transition-colors">
+            Sign in
+          </Link>
+        </p>
+        <p className="text-[11px] text-white/20">
+          By signing up you agree to our{' '}
+          <Link href="/terms" className="hover:text-white/40 transition-colors underline underline-offset-2">Terms</Link>
+          {' '}and{' '}
+          <Link href="/privacy" className="hover:text-white/40 transition-colors underline underline-offset-2">Privacy Policy</Link>.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+export default function RegisterPage() {
   return (
     <div className="flex min-h-screen bg-slate-950">
       {/* Left panel — editorial */}
@@ -136,147 +281,9 @@ export default function RegisterPage() {
 
       {/* Right panel — form */}
       <div className="flex flex-1 items-center justify-center px-6 py-12 sm:px-8">
-        <div className="w-full max-w-[380px] space-y-8">
-          {/* Mobile logo */}
-          <div className="flex items-center gap-2.5 lg:hidden">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-orange-500">
-              <span className="text-[11px] font-bold text-slate-950">AG</span>
-            </div>
-            <span className="text-[14px] font-semibold text-white">Adventurers Guild</span>
-          </div>
-
-          <div>
-            <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-orange-400/70 mb-4">
-              Choose your path
-            </p>
-            <h1 className="text-[28px] font-bold leading-[1.1] tracking-[-0.025em] text-white">
-              Join the Guild.
-            </h1>
-            <p className="mt-3 text-[14px] leading-[1.6] text-white/50">
-              Create your free account and start your first quest today.
-            </p>
-          </div>
-
-          <Tabs defaultValue={defaultTab} className="w-full">
-            <TabsList className="mb-6 grid w-full grid-cols-2 border border-white/10 bg-white/5 rounded-lg h-9">
-              <TabsTrigger
-                value="adventurer"
-                className="rounded-md text-[12px] font-medium text-white/40 data-[state=active]:bg-orange-500 data-[state=active]:text-slate-950 data-[state=active]:font-semibold"
-              >
-                <Sword className="mr-1.5 h-3 w-3" />
-                Adventurer
-              </TabsTrigger>
-              <TabsTrigger
-                value="company"
-                className="rounded-md text-[12px] font-medium text-white/40 data-[state=active]:bg-white/10 data-[state=active]:text-white"
-              >
-                <Building2 className="mr-1.5 h-3 w-3" />
-                Company
-              </TabsTrigger>
-            </TabsList>
-
-            {/* Adventurer tab */}
-            <TabsContent value="adventurer">
-              <div className="mb-5 rounded-lg border border-orange-500/15 bg-orange-500/5 px-4 py-3">
-                <p className="text-[12px] leading-[1.5] text-orange-400/80">
-                  Complete quests, earn XP and real money. Start at F-Rank — no experience required.
-                </p>
-              </div>
-              <form
-                onSubmit={(e) => { e.preventDefault(); void register('adventurer'); }}
-                className="space-y-4"
-                data-auth-ready={isHydrated ? 'true' : 'false'}
-              >
-                <div className="space-y-1.5">
-                  <Label htmlFor="a-name" className={labelClass}>Full Name</Label>
-                  <Input id="a-name" type="text" placeholder="John Doe" autoCorrect="off" value={aName} onChange={(e) => setAName(e.target.value)} disabled={!isHydrated || isLoading} required className={inputClass} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="a-username" className={labelClass}>Username</Label>
-                  <Input id="a-username" type="text" placeholder="yourhandle" autoCorrect="off" value={aUsername} onChange={(e) => setAUsername(e.target.value)} disabled={!isHydrated || isLoading} required className={inputClass} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="a-email" className={labelClass}>Email</Label>
-                  <Input id="a-email" type="email" placeholder="you@example.com" autoCapitalize="none" autoCorrect="off" autoComplete="email" value={aEmail} onChange={(e) => setAEmail(e.target.value)} disabled={!isHydrated || isLoading} required className={inputClass} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="a-password" className={labelClass}>Password</Label>
-                  <Input id="a-password" type="password" minLength={8} placeholder="Min. 8 characters" autoComplete="new-password" value={aPassword} onChange={(e) => setAPassword(e.target.value)} disabled={!isHydrated || isLoading} required className={inputClass} />
-                </div>
-                <button
-                  type="submit"
-                  disabled={!isHydrated || isLoading}
-                  className="mt-1 inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-orange-500 px-4 text-[13px] font-semibold text-slate-950 transition-colors hover:bg-orange-400 disabled:opacity-50"
-                >
-                  {isLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <>
-                      Create Adventurer account
-                      <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} />
-                    </>
-                  )}
-                </button>
-              </form>
-            </TabsContent>
-
-            {/* Company tab */}
-            <TabsContent value="company">
-              <div className="mb-5 rounded-lg border border-white/8 bg-white/3 px-4 py-3">
-                <p className="text-[12px] leading-[1.5] text-white/50">
-                  Post quests and hire verified developers. Pay only on approved submissions.
-                </p>
-              </div>
-              <form
-                onSubmit={(e) => { e.preventDefault(); void register('company'); }}
-                className="space-y-4"
-                data-auth-ready={isHydrated ? 'true' : 'false'}
-              >
-                <div className="space-y-1.5">
-                  <Label htmlFor="c-name" className={labelClass}>Company Name</Label>
-                  <Input id="c-name" type="text" placeholder="Acme Inc." value={cName} onChange={(e) => setCName(e.target.value)} disabled={!isHydrated || isLoading} required className={inputClass} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="c-email" className={labelClass}>Work Email</Label>
-                  <Input id="c-email" type="email" placeholder="you@company.com" autoComplete="email" value={cEmail} onChange={(e) => setCEmail(e.target.value)} disabled={!isHydrated || isLoading} required className={inputClass} />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="c-password" className={labelClass}>Password</Label>
-                  <Input id="c-password" type="password" minLength={8} placeholder="Min. 8 characters" autoComplete="new-password" value={cPassword} onChange={(e) => setCPassword(e.target.value)} disabled={!isHydrated || isLoading} required className={inputClass} />
-                </div>
-                <button
-                  type="submit"
-                  disabled={!isHydrated || isLoading}
-                  className="mt-1 inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-white/15 bg-white/5 px-4 text-[13px] font-semibold text-white transition-colors hover:bg-white/10 hover:border-white/25 disabled:opacity-50"
-                >
-                  {isLoading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <>
-                      Create Company account
-                      <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} />
-                    </>
-                  )}
-                </button>
-              </form>
-            </TabsContent>
-          </Tabs>
-
-          <div className="border-t border-white/8 pt-6 space-y-3 text-center">
-            <p className="text-[13px] text-white/35">
-              Already have an account?{' '}
-              <Link href="/login" className="font-medium text-orange-400 hover:text-orange-300 transition-colors">
-                Sign in
-              </Link>
-            </p>
-            <p className="text-[11px] text-white/20">
-              By signing up you agree to our{' '}
-              <Link href="/terms" className="hover:text-white/40 transition-colors underline underline-offset-2">Terms</Link>
-              {' '}and{' '}
-              <Link href="/privacy" className="hover:text-white/40 transition-colors underline underline-offset-2">Privacy Policy</Link>.
-            </p>
-          </div>
-        </div>
+        <Suspense fallback={null}>
+          <RegisterForm />
+        </Suspense>
       </div>
     </div>
   );
