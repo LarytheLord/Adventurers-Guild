@@ -68,7 +68,7 @@ export default function CTASection() {
               Post a quest. Get matched. Pay only when delivery meets your bar.
             </p>
             <Link
-              href="/register-company"
+              href="/register?tab=company"
               className="mt-8 inline-flex h-10 items-center gap-2 rounded-md border border-white/15 bg-white/5 px-4 text-[13px] font-semibold text-white transition-colors hover:bg-white/10 hover:border-white/25"
             >
               Create Company account

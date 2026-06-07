@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { signIn, useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { ArrowRight, Building2, Loader2, Sword } from 'lucide-react';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,8 @@ const steps = [
 
 export default function RegisterPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const defaultTab = searchParams.get('tab') === 'company' ? 'company' : 'adventurer';
   const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
@@ -155,7 +157,7 @@ export default function RegisterPage() {
             </p>
           </div>
 
-          <Tabs defaultValue="adventurer" className="w-full">
+          <Tabs defaultValue={defaultTab} className="w-full">
             <TabsList className="mb-6 grid w-full grid-cols-2 border border-white/10 bg-white/5 rounded-lg h-9">
               <TabsTrigger
                 value="adventurer"
