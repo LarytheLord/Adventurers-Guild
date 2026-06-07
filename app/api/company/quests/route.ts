@@ -122,6 +122,9 @@ export async function POST(request: NextRequest) {
         parentQuestId: body.parentQuestId || null,
         companyId,
         deadline: body.deadline ? new Date(body.deadline) : null,
+        fieldTemplateId: body.fieldTemplateId || null,
+        briefData: body.briefData ?? Prisma.JsonNull,
+        acceptanceCriteria: Array.isArray(body.acceptanceCriteria) ? body.acceptanceCriteria : [],
       },
     });
 

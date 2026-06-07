@@ -11,7 +11,18 @@ export async function GET(request: NextRequest) {
     where: { status: 'pending_admin_review' },
     include: {
       quest: {
-        select: { id: true, title: true, track: true, difficulty: true, xpReward: true, monetaryReward: true },
+        select: {
+          id: true,
+          title: true,
+          track: true,
+          difficulty: true,
+          xpReward: true,
+          monetaryReward: true,
+          detailedDescription: true,
+          acceptanceCriteria: true,
+          briefData: true,
+          fieldTemplate: { select: { briefFields: true, submissionFields: true } },
+        },
       },
       user: {
         select: {
@@ -29,6 +40,7 @@ export async function GET(request: NextRequest) {
           id: true,
           submissionContent: true,
           submissionNotes: true,
+          submissionData: true,
           submittedAt: true,
           reviewNotes: true,
         },

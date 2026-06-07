@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireAuth } from '@/lib/api-auth';
+import { Prisma } from '@prisma/client';
 import crypto from 'crypto';
 
 // PATCH /api/admin/qa-queue/[assignmentId] — approve or reject submission
@@ -14,14 +15,14 @@ export async function PATCH(
 
   const { assignmentId } = await params;
 
-  let body: { action?: string; notes?: string };
+  let body: { action?: string; notes?: string; criteriaResults?: unknown };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: 'Invalid JSON', success: false }, { status: 400 });
   }
 
-  const { action, notes } = body;
+  const { action, notes, criteriaResults } = body;
   if (!action || !['approve', 'reject'].includes(action)) {
     return NextResponse.json({ error: 'action must be "approve" or "reject"', success: false }, { status: 400 });
   }
@@ -47,49 +48,28 @@ export async function PATCH(
     );
   }
 
+  const latestSubmission = assignment.submissions[0];
+  // The per-criterion evaluation the PM/QA recorded against the brief's acceptance criteria.
+  const criteriaJson =
+    criteriaResults != null ? (criteriaResults as Prisma.InputJsonValue) : undefined;
+
   if (action === 'approve') {
-    await prisma.questAssignment.update({
-      where: { id: assignmentId },
-      data: { status: 'review' },
-    });
+    await prisma.$transaction([
+      prisma.questAssignment.update({
+        where: { id: assignmentId },
+        data: { status: 'review' },
+      }),
+      ...(latestSubmission && criteriaJson !== undefined
+        ? [prisma.questSubmission.update({
+            where: { id: latestSubmission.id },
+            data: { criteriaResults: criteriaJson, reviewerId: adminId, reviewedAt: new Date() },
+          })]
+        : []),
+    ]);
     return NextResponse.json({ message: 'Submission approved — forwarded to client review', success: true });
   }
 
-  //check tutorial quest completion
-  const quest = await prisma.quest.findUnique({
-    where: { id: assignment.questId },
-  });
-  if (!quest || quest.source !== 'TUTORIAL') return;
-
-  const bootcampLink = await prisma.bootcampLink.findUnique({
-    where: { userId: assignment.userId },
-  });
-  if (!bootcampLink) return;
-
-  //uses completion order to flip tutorial quest
-  const updateData: Record<string, boolean> = {};
-  if (!bootcampLink.tutorialQuest1Complete) {
-    updateData.tutorialQuest1Complete = true;
-  } else if (!bootcampLink.tutorialQuest2Complete) {
-      updateData.tutorialQuest2Complete = true;
-  }
-
-  //eligibleForRealQuests
-  const willHaveQuest1 = bootcampLink.tutorialQuest1Complete || updateData.tutorialQuest1Complete;
-  const willHaveQuest2 = bootcampLink.tutorialQuest2Complete || updateData.tutorialQuest2Complete;
-  if (willHaveQuest1 && willHaveQuest2) {
-    updateData.eligibleForRealQuests = true;
-  }
-
-  if (Object.keys(updateData).length > 0) {
-    await prisma.bootcampLink.update({
-      where: { userId: assignment.userId },
-      data: updateData,
-    });
-  }
-
-  // reject — append admin note to submission reviewNotes (stored as JSON string)
-  const latestSubmission = assignment.submissions[0];
+  // reject — append QA note to submission reviewNotes (stored as JSON string) + record criteria
   let existingNotes: Record<string, string>[] = [];
   if (latestSubmission?.reviewNotes) {
     try { existingNotes = JSON.parse(latestSubmission.reviewNotes); } catch { existingNotes = []; }
@@ -114,7 +94,12 @@ export async function PATCH(
     ...(latestSubmission
       ? [prisma.questSubmission.update({
           where: { id: latestSubmission.id },
-          data: { reviewNotes: updatedNotes },
+          data: {
+            reviewNotes: updatedNotes,
+            reviewerId: adminId,
+            reviewedAt: new Date(),
+            ...(criteriaJson !== undefined ? { criteriaResults: criteriaJson } : {}),
+          },
         })]
       : []),
   ]);
