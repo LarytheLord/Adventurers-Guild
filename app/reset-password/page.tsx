@@ -1,16 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, CheckCircle2, ArrowRight, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { ArrowRight, CheckCircle2, Loader2 } from 'lucide-react';
 
-export default function ResetPasswordPage() {
+function ResetPasswordForm() {
   const searchParams = useSearchParams();
   const token = searchParams.get('token');
 
@@ -21,208 +18,218 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
 
-  useEffect(() => {
-    setIsHydrated(true);
-  }, []);
+  useEffect(() => { setIsHydrated(true); }, []);
 
-  if (!isHydrated) {
-    return null;
-  }
+  if (!isHydrated) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    // Client-side validation
     if (!password || !confirmPassword) {
       setError('Please fill in all fields');
       return;
     }
-
     if (password.length < 8) {
       setError('Password must be at least 8 characters');
       return;
     }
-
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
     }
-
     if (!token) {
-      setError('Invalid reset link');
+      setError('Invalid reset link — please request a new one');
       return;
     }
 
     setLoading(true);
-
     try {
       const res = await fetch('/api/auth/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ token, password }),
       });
-
       const data = await res.json();
-
       if (!res.ok) {
         setError(data.error || 'Failed to reset password');
       } else {
         setSuccess(true);
-        toast.success('Password reset successful! Redirecting to login...');
-        setTimeout(() => {
-          window.location.href = '/login';
-        }, 2000);
+        setTimeout(() => { window.location.href = '/login'; }, 2000);
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred');
-      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
+  const inputClass =
+    'h-10 border-white/10 bg-white/5 text-[13px] text-white placeholder:text-white/20 focus:border-orange-500/40 focus:ring-orange-500/10 rounded-md';
+
   return (
-    <div className="min-h-screen bg-slate-950 flex">
-      {/* Left panel - branding */}
-      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 bg-slate-900 border-r border-slate-800">
-        <Link href="/home" className="flex items-center gap-2.5 group w-fit">
-          <div className="w-9 h-9 bg-orange-500 rounded-lg flex items-center justify-center shadow-lg shadow-orange-500/20 group-hover:bg-orange-600 transition-colors">
-            <span className="text-black font-bold text-sm">AG</span>
+    <div className="w-full max-w-[360px] space-y-8">
+      {/* Mobile logo */}
+      <div className="flex items-center gap-2.5 lg:hidden">
+        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-orange-500">
+          <span className="text-[11px] font-bold text-slate-950">AG</span>
+        </div>
+        <span className="text-[14px] font-semibold text-white">Adventurers Guild</span>
+      </div>
+
+      {!success ? (
+        <>
+          <div>
+            <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-orange-400/70 mb-4">
+              New password
+            </p>
+            <h1 className="text-[28px] font-bold leading-[1.1] tracking-[-0.025em] text-white">
+              Reset your password.
+            </h1>
+            <p className="mt-3 text-[14px] leading-[1.6] text-white/50">
+              Choose a strong password — at least 8 characters.
+            </p>
           </div>
-          <span className="text-white font-bold text-lg">Adventurers Guild</span>
+
+          {error && (
+            <div className="rounded-lg border border-red-500/20 bg-red-500/5 px-4 py-3">
+              <p className="text-[12px] text-red-400">{error}</p>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <Label htmlFor="password" className="text-[12px] font-medium text-white/60 uppercase tracking-[0.08em]">
+                New password
+              </Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="Min. 8 characters"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+                minLength={8}
+                required
+                autoComplete="new-password"
+                className={inputClass}
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="confirmPassword" className="text-[12px] font-medium text-white/60 uppercase tracking-[0.08em]">
+                Confirm password
+              </Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="Repeat password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                disabled={loading}
+                minLength={8}
+                required
+                autoComplete="new-password"
+                className={inputClass}
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="mt-1 inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-orange-500 px-4 text-[13px] font-semibold text-slate-950 transition-colors hover:bg-orange-400 disabled:opacity-50"
+            >
+              {loading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  Set new password
+                  <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} />
+                </>
+              )}
+            </button>
+          </form>
+
+          <div className="border-t border-white/8 pt-6 text-center">
+            <p className="text-[13px] text-white/35">
+              Remember it?{' '}
+              <Link href="/login" className="font-medium text-orange-400 hover:text-orange-300 transition-colors">
+                Sign in
+              </Link>
+            </p>
+          </div>
+        </>
+      ) : (
+        <div className="space-y-8">
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/10 bg-white/5">
+            <CheckCircle2 className="h-5 w-5 text-orange-400" />
+          </div>
+          <div>
+            <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-orange-400/70 mb-4">
+              Done
+            </p>
+            <h2 className="text-[28px] font-bold leading-[1.1] tracking-[-0.025em] text-white">
+              Password updated.
+            </h2>
+            <p className="mt-3 text-[14px] leading-[1.6] text-white/50">
+              Redirecting you to sign in...
+            </p>
+          </div>
+          <Link
+            href="/login"
+            className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-orange-500 px-4 text-[13px] font-semibold text-slate-950 transition-colors hover:bg-orange-400"
+          >
+            Go to sign in
+            <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} />
+          </Link>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <div className="flex min-h-screen bg-slate-950">
+      {/* Left panel */}
+      <div className="hidden lg:flex lg:w-[52%] flex-col justify-between border-r border-white/10 bg-slate-950 p-14 xl:p-20">
+        <Link href="/home" className="flex items-center gap-2.5 group w-fit">
+          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-orange-500 group-hover:bg-orange-400 transition-colors">
+            <span className="text-[11px] font-bold text-slate-950">AG</span>
+          </div>
+          <span className="text-[14px] font-semibold text-white">Adventurers Guild</span>
         </Link>
 
         <div className="space-y-8">
           <div>
-            <p className="text-[11px] font-semibold tracking-[0.15em] text-orange-400/60 uppercase mb-3">
-              Security matters
+            <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-orange-400/70">
+              Account security
             </p>
-            <h2 className="text-3xl font-bold text-white mb-3">
-              Reset your password securely
+            <h2 className="mt-5 text-[36px] font-bold leading-[1.1] tracking-[-0.025em] text-white md:text-[42px]">
+              Almost there.<br />Set a new<br />password.
             </h2>
-            <p className="text-slate-400 leading-relaxed">
-              Your password is the key to your Guild account. Keep it strong and unique to protect your quests and earnings.
+            <p className="mt-5 text-[14px] leading-[1.65] text-white/50">
+              Use at least 8 characters. A mix of letters, numbers, and symbols is best.
             </p>
           </div>
 
-          <div className="rounded-xl border border-slate-700/50 bg-slate-800/60 p-4">
-            <p className="text-sm text-slate-300 leading-relaxed">
-              Make sure your new password is at least 8 characters long and includes a mix of uppercase, lowercase, numbers, and symbols for maximum security.
+          <div className="rounded-lg border border-white/8 bg-white/3 px-5 py-4">
+            <p className="text-[12px] leading-[1.6] text-white/40">
+              This link expires in 1 hour. If it&apos;s expired, request a new one from the forgot password page.
             </p>
           </div>
         </div>
 
-        <blockquote className="border-l-2 border-orange-500/40 pl-4">
-          <p className="text-slate-400 text-sm leading-relaxed mb-3">
-            &ldquo;A strong password is your first line of defense against unauthorized access.&rdquo;
-          </p>
-          <footer className="text-sm text-slate-500">Security Best Practices</footer>
-        </blockquote>
+        <p className="text-[11px] text-white/20">
+          Secure · One-time use · Expires in 1 hour
+        </p>
       </div>
 
-      {/* Right panel - form */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-8">
-        <div className="w-full max-w-sm space-y-8">
-          <div className="lg:hidden flex items-center gap-2.5 justify-center mb-2">
-            <div className="w-9 h-9 bg-orange-500 rounded-lg flex items-center justify-center">
-              <span className="text-black font-bold text-sm">AG</span>
-            </div>
-            <span className="text-white font-bold text-lg">Adventurers Guild</span>
-          </div>
-
-          {!success ? (
-            <>
-              <div className="space-y-2">
-                <h1 className="text-2xl font-bold text-white tracking-tight">Reset Your Password</h1>
-                <p className="text-sm text-slate-400">Enter your new password below.</p>
-              </div>
-
-              {error && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
-
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-slate-300 text-sm font-medium">
-                    New Password
-                  </Label>
-                  <Input
-                    id="password"
-                    name="password"
-                    type="password"
-                    placeholder="••••••••"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={loading}
-                    minLength={8}
-                    className="bg-slate-900 border-slate-700 text-white placeholder:text-slate-500 focus:border-orange-500/50 focus:ring-orange-500/20 h-11"
-                  />
-                  <p className="text-xs text-slate-500">Minimum 8 characters</p>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword" className="text-slate-300 text-sm font-medium">
-                    Confirm Password
-                  </Label>
-                  <Input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type="password"
-                    placeholder="••••••••"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    disabled={loading}
-                    minLength={8}
-                    className="bg-slate-900 border-slate-700 text-white placeholder:text-slate-500 focus:border-orange-500/50 focus:ring-orange-500/20 h-11"
-                  />
-                </div>
-
-                <Button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full h-11 bg-orange-500 hover:bg-orange-600 text-black font-semibold rounded-lg shadow-lg shadow-orange-500/20 transition-all mt-2"
-                >
-                  {loading ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <ArrowRight className="mr-2 h-4 w-4" />
-                  )}
-                  Reset Password
-                </Button>
-              </form>
-
-              <p className="text-center text-sm text-slate-500">
-                Remember your password?{' '}
-                <Link href="/login" className="text-orange-400 hover:text-orange-300 font-medium transition-colors">
-                  Sign in
-                </Link>
-              </p>
-            </>
-          ) : (
-            <div className="text-center space-y-6">
-              <div className="flex justify-center">
-                <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center text-green-500">
-                  <CheckCircle2 className="w-8 h-8" />
-                </div>
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-white mb-2">Password Reset Successful</h2>
-                <p className="text-slate-400">
-                  Your password has been reset. You&apos;ll be redirected to the login page in a moment.
-                </p>
-              </div>
-              <Link href="/login">
-                <Button className="w-full h-11 bg-orange-500 hover:bg-orange-600 text-black font-semibold">
-                  Go to Login
-                </Button>
-              </Link>
-            </div>
-          )}
-        </div>
+      {/* Right panel */}
+      <div className="flex flex-1 items-center justify-center px-6 py-12 sm:px-8">
+        <Suspense fallback={null}>
+          <ResetPasswordForm />
+        </Suspense>
       </div>
     </div>
   );

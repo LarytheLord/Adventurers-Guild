@@ -1,13 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle, CheckCircle2, ArrowLeft, Loader2, Mail } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { toast } from 'sonner';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -19,168 +16,170 @@ export default function ForgotPasswordPage() {
     e.preventDefault();
     setLoading(true);
     setError('');
-
     try {
       const res = await fetch('/api/auth/forgot-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email }),
       });
-
       const data = await res.json();
-
       if (!res.ok) {
         setError(data.error || 'Something went wrong');
       } else {
         setSuccess(true);
-        toast.success('Check your email for the reset link');
       }
-    } catch (err) {
+    } catch {
       setError('An unexpected error occurred');
-      console.error(err);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 flex">
-      {/* Left panel - branding */}
-      <div className="hidden lg:flex lg:w-1/2 flex-col justify-between p-12 bg-slate-900 border-r border-slate-800">
+    <div className="flex min-h-screen bg-slate-950">
+      {/* Left panel */}
+      <div className="hidden lg:flex lg:w-[52%] flex-col justify-between border-r border-white/10 bg-slate-950 p-14 xl:p-20">
         <Link href="/home" className="flex items-center gap-2.5 group w-fit">
-          <div className="w-9 h-9 bg-orange-500 rounded-lg flex items-center justify-center shadow-lg shadow-orange-500/20 group-hover:bg-orange-600 transition-colors">
-            <span className="text-black font-bold text-sm">AG</span>
+          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-orange-500 group-hover:bg-orange-400 transition-colors">
+            <span className="text-[11px] font-bold text-slate-950">AG</span>
           </div>
-          <span className="text-white font-bold text-lg">Adventurers Guild</span>
+          <span className="text-[14px] font-semibold text-white">Adventurers Guild</span>
         </Link>
 
         <div className="space-y-8">
           <div>
-            <p className="text-[11px] font-semibold tracking-[0.15em] text-orange-400/60 uppercase mb-3">
-              Forgot your password?
+            <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-orange-400/70">
+              Account recovery
             </p>
-            <h2 className="text-3xl font-bold text-white mb-3">
-              We&apos;ll help you regain access
+            <h2 className="mt-5 text-[36px] font-bold leading-[1.1] tracking-[-0.025em] text-white md:text-[42px]">
+              Lost access?<br />We&apos;ll get you<br />back in.
             </h2>
-            <p className="text-slate-400 leading-relaxed">
-              Enter your email address and we&apos;ll send you a link to reset your password. It&apos;s quick and secure.
+            <p className="mt-5 text-[14px] leading-[1.65] text-white/50">
+              Enter your email and we&apos;ll send a secure reset link. Takes about 30 seconds.
             </p>
           </div>
 
-          <div className="rounded-xl border border-slate-700/50 bg-slate-800/60 p-4">
-            <p className="text-sm text-slate-300 leading-relaxed">
-              Check your email inbox for a message from Adventurers Guild. If you don&apos;t see it within a few minutes, check your spam folder.
+          <div className="rounded-lg border border-white/8 bg-white/3 px-5 py-4">
+            <p className="text-[12px] leading-[1.6] text-white/40">
+              Check your inbox — and spam folder — for a message from Adventurers Guild. Links expire after 1 hour.
             </p>
           </div>
         </div>
 
-        <blockquote className="border-l-2 border-orange-500/40 pl-4">
-          <p className="text-slate-400 text-sm leading-relaxed mb-3">
-            &ldquo;Account security is our top priority. We only send password reset links to your registered email address.&rdquo;
-          </p>
-          <footer className="text-sm text-slate-500">Security Best Practices</footer>
-        </blockquote>
+        <p className="text-[11px] text-white/20">
+          Secure · Encrypted · Links expire in 1 hour
+        </p>
       </div>
 
-      {/* Right panel - form */}
-      <div className="flex-1 flex items-center justify-center p-6 sm:p-8">
-        <div className="w-full max-w-sm space-y-8">
-          <div className="lg:hidden flex items-center gap-2.5 justify-center mb-2">
-            <div className="w-9 h-9 bg-orange-500 rounded-lg flex items-center justify-center">
-              <span className="text-black font-bold text-sm">AG</span>
+      {/* Right panel */}
+      <div className="flex flex-1 items-center justify-center px-6 py-12 sm:px-8">
+        <div className="w-full max-w-[360px] space-y-8">
+          {/* Mobile logo */}
+          <div className="flex items-center gap-2.5 lg:hidden">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-orange-500">
+              <span className="text-[11px] font-bold text-slate-950">AG</span>
             </div>
-            <span className="text-white font-bold text-lg">Adventurers Guild</span>
+            <span className="text-[14px] font-semibold text-white">Adventurers Guild</span>
           </div>
 
           {!success ? (
             <>
-              <div className="space-y-2">
-                <h1 className="text-2xl font-bold text-white tracking-tight">Forgot Password?</h1>
-                <p className="text-sm text-slate-400">Enter your email to receive a password reset link.</p>
+              <div>
+                <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-orange-400/70 mb-4">
+                  Reset password
+                </p>
+                <h1 className="text-[28px] font-bold leading-[1.1] tracking-[-0.025em] text-white">
+                  Forgot your password?
+                </h1>
+                <p className="mt-3 text-[14px] leading-[1.6] text-white/50">
+                  Enter your email and we&apos;ll send you a reset link.
+                </p>
               </div>
 
               {error && (
-                <Alert variant="destructive">
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
+                <div className="rounded-lg border border-red-500/20 bg-red-500/5 px-4 py-3">
+                  <p className="text-[12px] text-red-400">{error}</p>
+                </div>
               )}
 
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-slate-300 text-sm font-medium">
-                    Email Address
+                <div className="space-y-1.5">
+                  <Label htmlFor="email" className="text-[12px] font-medium text-white/60 uppercase tracking-[0.08em]">
+                    Email address
                   </Label>
                   <Input
                     id="email"
                     type="email"
-                    placeholder="name@example.com"
+                    placeholder="you@example.com"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     disabled={loading}
-                    className="bg-slate-900 border-slate-700 text-white placeholder:text-slate-500 focus:border-orange-500/50 focus:ring-orange-500/20 h-11"
+                    className="h-10 border-white/10 bg-white/5 text-[13px] text-white placeholder:text-white/20 focus:border-orange-500/40 focus:ring-orange-500/10 rounded-md"
                   />
                 </div>
 
-                <Button
+                <button
                   type="submit"
                   disabled={loading}
-                  className="w-full h-11 bg-orange-500 hover:bg-orange-600 text-black font-semibold rounded-lg shadow-lg shadow-orange-500/20 transition-all"
+                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-orange-500 px-4 text-[13px] font-semibold text-slate-950 transition-colors hover:bg-orange-400 disabled:opacity-50"
                 >
                   {loading ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
-                    <Mail className="mr-2 h-4 w-4" />
+                    <>
+                      Send reset link
+                      <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} />
+                    </>
                   )}
-                  Send Reset Link
-                </Button>
+                </button>
               </form>
 
-              <p className="text-center text-sm text-slate-500">
-                Remember your password?{' '}
-                <Link href="/login" className="text-orange-400 hover:text-orange-300 font-medium transition-colors">
-                  Sign in
-                </Link>
-              </p>
+              <div className="border-t border-white/8 pt-6 text-center">
+                <p className="text-[13px] text-white/35">
+                  Remember it?{' '}
+                  <Link href="/login" className="font-medium text-orange-400 hover:text-orange-300 transition-colors">
+                    Sign in
+                  </Link>
+                </p>
+              </div>
             </>
           ) : (
-            <div className="text-center space-y-6">
-              <div className="flex justify-center">
-                <div className="w-16 h-16 bg-green-500/10 rounded-full flex items-center justify-center text-green-500">
-                  <CheckCircle2 className="w-8 h-8" />
-                </div>
+            <div className="space-y-8">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/10 bg-white/5">
+                <CheckCircle2 className="h-5 w-5 text-orange-400" />
               </div>
+
               <div>
-                <h2 className="text-2xl font-bold text-white mb-2">Check Your Email</h2>
-                <p className="text-slate-400">
-                  We&apos;ve sent a password reset link to <strong>{email}</strong>. Please check your inbox.
+                <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-orange-400/70 mb-4">
+                  Check your inbox
+                </p>
+                <h2 className="text-[28px] font-bold leading-[1.1] tracking-[-0.025em] text-white">
+                  Link sent.
+                </h2>
+                <p className="mt-3 text-[14px] leading-[1.6] text-white/50">
+                  We&apos;ve sent a reset link to{' '}
+                  <span className="font-medium text-white/70">{email}</span>.
+                  Check your inbox — and spam folder.
                 </p>
               </div>
 
-              <div className="rounded-lg border border-slate-700/50 bg-slate-800/60 p-4">
-                <p className="text-sm text-slate-400">
-                  <span className="font-semibold text-white">Didn&apos;t receive it?</span> Check your spam folder or request a new link below.
-                </p>
+              <div className="space-y-3">
+                <button
+                  onClick={() => { setSuccess(false); setEmail(''); }}
+                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md border border-white/10 bg-white/5 px-4 text-[13px] font-semibold text-white transition-colors hover:bg-white/10"
+                >
+                  <ArrowLeft className="h-3.5 w-3.5" strokeWidth={2.5} />
+                  Send another link
+                </button>
+                <Link
+                  href="/login"
+                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-md bg-orange-500 px-4 text-[13px] font-semibold text-slate-950 transition-colors hover:bg-orange-400"
+                >
+                  Back to sign in
+                  <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} />
+                </Link>
               </div>
-
-              <Button
-                variant="outline"
-                className="w-full h-11 border-slate-700 text-white hover:bg-slate-900"
-                onClick={() => {
-                  setSuccess(false);
-                  setEmail('');
-                }}
-              >
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Send Another Link
-              </Button>
-
-              <Link href="/login">
-                <Button className="w-full h-11 bg-orange-500 hover:bg-orange-600 text-black font-semibold">
-                  Back to Sign In
-                </Button>
-              </Link>
             </div>
           )}
         </div>

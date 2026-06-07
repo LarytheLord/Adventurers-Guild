@@ -16,7 +16,7 @@ export default function ForbiddenPage() {
           <h1 className="text-4xl font-bold text-white mb-2">403</h1>
           <h2 className="text-2xl font-bold text-white mb-3">Access Denied</h2>
           <p className="text-slate-400 text-lg">
-            You don't have permission to access this resource. Your account role doesn't grant access to this area.
+            You don&apos;t have permission to access this resource. Your account role doesn&apos;t grant access to this area.
           </p>
         </div>
 
@@ -25,7 +25,7 @@ export default function ForbiddenPage() {
             <span className="font-semibold text-white">Why am I seeing this?</span>
           </p>
           <ul className="text-sm text-slate-400 space-y-1 list-disc list-inside">
-            <li>Your account role doesn't allow access to this page</li>
+            <li>Your account role doesn&apos;t allow access to this page</li>
             <li>You may need to switch accounts or request different permissions</li>
             <li>Contact support if you believe this is a mistake</li>
           </ul>
