@@ -22,7 +22,10 @@ export default function SocialProof() {
           const quests = data.quests || [];
           // Extract unique companies from quests
           const companyMap = new Map<string, { id: string; name: string }>();
-          quests.forEach((quest: any) => {
+          interface QuestWithCompany {
+            company?: { id?: string; name?: string };
+          }
+          quests.forEach((quest: QuestWithCompany) => {
             if (quest.company?.name) {
               const key = quest.company.name.toLowerCase();
               if (!companyMap.has(key)) {

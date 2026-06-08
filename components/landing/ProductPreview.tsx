@@ -153,7 +153,7 @@ export default function ProductPreview() {
                       key={quest.id}
                       className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-slate-50"
                     >
-                      <RankBadge rank={quest.difficulty as any} size="sm" />
+                      <RankBadge rank={(quest.difficulty as 'F' | 'E' | 'D' | 'C' | 'B' | 'A' | 'S') || 'F'} size="sm" />
                       <div className="flex-1 min-w-0">
                         <p className="truncate text-sm font-medium text-slate-900">
                           {quest.title}
