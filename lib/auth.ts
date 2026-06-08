@@ -82,10 +82,10 @@ export const authOptions: AuthOptions = {
           });
         }
         // Attach DB user info to the user object for JWT callback
-        (user as Record<string, unknown>).id = dbUser.id;
-        (user as Record<string, unknown>).role = dbUser.role;
-        (user as Record<string, unknown>).rank = dbUser.rank;
-        (user as Record<string, unknown>).xp = dbUser.xp;
+        (user as any).id = dbUser.id;
+        (user as any).role = dbUser.role;
+        (user as any).rank = dbUser.rank;
+        (user as any).xp = dbUser.xp;
         // Update last login
         await prisma.user.update({ where: { id: dbUser.id }, data: { lastLoginAt: new Date() } });
       }
