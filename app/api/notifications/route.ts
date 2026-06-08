@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { getAuthUser } from '@/lib/api-auth';
+import { markAllNotificationsAsRead, deleteNotification } from '@/lib/notification-utils';
 
 export async function GET(req: NextRequest) {
   const authUser = await getAuthUser(req);
@@ -40,12 +41,41 @@ export async function PUT(req: NextRequest) {
     if (userId !== authUser.id) return NextResponse.json({ success: false, error: 'Forbidden' }, { status: 403 });
 
     await prisma.notification.update({
-      where: { id: notification_id },
+      where: { id: notification_id, userId: authUser.id },
       data: { readAt: is_read ? new Date() : null },
     });
 
     return NextResponse.json({ success: true });
   } catch {
     return NextResponse.json({ success: false, error: 'Failed to update notification' }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: NextRequest) {
+  const authUser = await getAuthUser(req);
+  if (!authUser) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+
+  try {
+    await markAllNotificationsAsRead(authUser.id);
+    return NextResponse.json({ success: true });
+  } catch {
+    return NextResponse.json({ success: false, error: 'Failed to mark notifications as read' }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  const authUser = await getAuthUser(req);
+  if (!authUser) return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 });
+
+  try {
+    const { searchParams } = new URL(req.url);
+    const notificationId = searchParams.get('id');
+    if (!notificationId) {
+      return NextResponse.json({ success: false, error: 'Notification ID required' }, { status: 400 });
+    }
+    await deleteNotification(notificationId, authUser.id);
+    return NextResponse.json({ success: true });
+  } catch {
+    return NextResponse.json({ success: false, error: 'Failed to delete notification' }, { status: 500 });
   }
 }
