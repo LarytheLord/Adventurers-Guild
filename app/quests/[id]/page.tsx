@@ -61,7 +61,6 @@ export default function QuestDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isBookmarked, setIsBookmarked] = useState(false);
-  const [currentImage, setCurrentImage] = useState(0);
 
   useEffect(() => {
     if (!questId) return;

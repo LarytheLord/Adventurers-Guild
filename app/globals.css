@@ -4,36 +4,47 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 215 20% 10%;
+    /* ===== StyleSeed-aligned tokens =====
+     * 5-level grayscale + single accent.
+     * Card separation comes from background #FAFAFA vs card #FFFFFF.
+     * No pure black. No blue tint on neutrals.
+     */
 
-    --card: 0 0% 100%;
-    --card-foreground: 215 20% 10%;
-
+    /* Surfaces */
+    --background: 0 0% 98%;        /* #FAFAFA — page bg, NOT pure white */
+    --foreground: 0 0% 16%;        /* #2A2A2A — strongest text */
+    --card: 0 0% 100%;             /* #FFFFFF — card surface */
+    --card-foreground: 0 0% 16%;
     --popover: 0 0% 100%;
-    --popover-foreground: 215 20% 10%;
+    --popover-foreground: 0 0% 16%;
 
+    /* 5-level grayscale (StyleSeed rule 3) */
+    --gray-strong:  0 0% 16%;      /* #2A2A2A — strongest */
+    --gray-primary: 0 0% 24%;      /* #3C3C3C — primary text */
+    --gray-secondary: 0 0% 42%;   /* #6A6A6A — labels, captions */
+    --gray-tertiary: 0 0% 48%;    /* #7A7A7A — subtitles, dates */
+    --gray-disabled: 0 0% 61%;    /* #9B9B9B — inactive */
+
+    /* Single accent — orange-500. Used only for active/selected states. */
     --primary: 25 95% 53%;
-    --primary-foreground: 0 0% 0%;
+    --primary-foreground: 0 0% 9%;
 
-    /* Neutral gray — no blue tint on secondary/accent */
-    --secondary: 215 8% 95%;
-    --secondary-foreground: 215 15% 12%;
+    /* Neutrals — no blue tint */
+    --secondary: 0 0% 96%;        /* #F4F4F4 — list rows, subtle bg */
+    --secondary-foreground: 0 0% 16%;
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 42%;
+    --accent: 0 0% 92%;           /* #EAEAEA — selected bg */
+    --accent-foreground: 0 0% 16%;
 
-    --muted: 215 8% 95%;
-    --muted-foreground: 215 12% 45%;
-
-    --accent: 215 8% 93%;
-    --accent-foreground: 215 15% 12%;
-
-    --destructive: 0 84% 60%;
+    --destructive: 0 70% 50%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 215 10% 88%;
-    --input: 215 10% 88%;
+    --border: 0 0% 91%;           /* #E8E8E8 — subtle dividers */
+    --input: 0 0% 88%;
     --ring: 25 95% 53%;
 
-    /* Rank colors — used ONLY inside RankBadge component */
+    /* Rank colors — used ONLY inside RankBadge component (project rule) */
     --rank-s: 0 84% 60%;
     --rank-a: 25 95% 53%;
     --rank-b: 45 93% 47%;
@@ -43,35 +54,42 @@
     --rank-f: 215 16% 57%;
 
     --radius: 0.625rem;
+
+    /* StyleSeed-aligned shadow tokens (rule 12) */
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.04);
+    --shadow-card-hover: 0 2px 4px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --shadow-elevated: 0 4px 12px rgba(0, 0, 0, 0.06);
   }
 
   .dark {
-    --background: 222 47% 11%;
-    --foreground: 210 40% 98%;
+    --background: 220 14% 8%;
+    --foreground: 0 0% 96%;
+    --card: 220 14% 11%;
+    --card-foreground: 0 0% 96%;
+    --popover: 220 14% 11%;
+    --popover-foreground: 0 0% 96%;
 
-    --card: 222 47% 11%;
-    --card-foreground: 210 40% 98%;
-
-    --popover: 222 47% 11%;
-    --popover-foreground: 210 40% 98%;
+    --gray-strong:  0 0% 96%;
+    --gray-primary: 0 0% 92%;
+    --gray-secondary: 0 0% 70%;
+    --gray-tertiary: 0 0% 58%;
+    --gray-disabled: 0 0% 40%;
 
     --primary: 25 95% 53%;
-    --primary-foreground: 0 0% 0%;
+    --primary-foreground: 0 0% 9%;
 
-    --secondary: 217 19% 27%;
-    --secondary-foreground: 210 40% 98%;
-
-    --muted: 217 19% 27%;
-    --muted-foreground: 215 20% 65%;
-
-    --accent: 217 19% 27%;
-    --accent-foreground: 210 40% 98%;
+    --secondary: 220 14% 16%;
+    --secondary-foreground: 0 0% 96%;
+    --muted: 220 14% 16%;
+    --muted-foreground: 0 0% 70%;
+    --accent: 220 14% 18%;
+    --accent-foreground: 0 0% 96%;
 
     --destructive: 0 62% 30%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive-foreground: 0 0% 96%;
 
-    --border: 217 19% 27%;
-    --input: 217 19% 27%;
+    --border: 220 14% 18%;
+    --input: 220 14% 18%;
     --ring: 25 95% 53%;
   }
 }
@@ -82,7 +100,10 @@
   }
   body {
     @apply bg-background text-foreground antialiased;
-    font-feature-settings: "rlig" 1, "calt" 1;
+    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
   a:not([class]) {
     color: inherit;
@@ -90,72 +111,59 @@
   }
 }
 
+/* ===== StyleSeed-aligned component primitives ===== */
 @layer components {
-  .section-alt {
-    @apply bg-slate-50/60;
+  /* Card with proper shadow token (4% opacity, not 20%+) */
+  .ds-card {
+    @apply rounded-2xl bg-card shadow-[0_1px_2px_rgba(0,0,0,0.04),0_1px_3px_rgba(0,0,0,0.04)] border border-border/60;
+  }
+  .ds-card-hover {
+    @apply transition-shadow duration-200 hover:shadow-[0_2px_4px_rgba(0,0,0,0.06),0_1px_2px_rgba(0,0,0,0.04)];
   }
 
-  .guild-page {
-    @apply mx-auto w-full max-w-7xl space-y-6;
+  /* Section label — uppercase, tracked (StyleSeed rule 3) */
+  .ds-label {
+    @apply text-[11px] font-semibold uppercase tracking-[0.1em] text-muted-foreground;
+  }
+  .ds-label-dark {
+    @apply text-[11px] font-semibold uppercase tracking-[0.1em] text-white/50;
   }
 
-  .guild-hero {
-    @apply relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-[0_20px_40px_-30px_rgba(15,23,42,0.45)] sm:p-8;
+  /* Editorial display type — large, tight, no line gap (rule 67) */
+  .ds-display {
+    @apply font-bold tracking-[-0.025em] leading-[1.05];
   }
 
-  .guild-panel {
-    @apply rounded-2xl border border-slate-200/80 bg-white/95 shadow-[0_20px_40px_-34px_rgba(15,23,42,0.55)];
+  /* Number + unit pair (StyleSeed rule 2, 19, 23) */
+  .ds-number {
+    @apply font-bold tabular-nums whitespace-nowrap leading-none;
   }
 
-  .guild-kpi {
-    @apply rounded-xl border border-slate-200/80 bg-white p-4 shadow-[0_12px_30px_-24px_rgba(15,23,42,0.7)];
+  /* Section spacing (rule 5, 13) */
+  .ds-section {
+    @apply py-20 md:py-28;
+  }
+  .ds-section-sm {
+    @apply py-14 md:py-20;
   }
 
-  .guild-chip {
-    @apply inline-flex items-center gap-1 rounded-full border border-slate-300 bg-slate-100 px-2.5 py-1 text-xs font-semibold uppercase tracking-wide text-slate-600;
-  }
-
-  .guild-list-item {
-    @apply rounded-xl border border-slate-200/80 bg-white/90 p-3 transition-colors hover:bg-slate-50;
+  /* Page container */
+  .ds-container {
+    @apply mx-auto max-w-6xl px-6;
   }
 }
 
-.guild-shell {
-  position: relative;
-  background:
-    radial-gradient(circle at 12% 8%, rgba(251, 146, 60, 0.18), transparent 34%),
-    radial-gradient(circle at 90% 0%, rgba(14, 165, 233, 0.14), transparent 28%),
-    linear-gradient(180deg, #f8fafc 0%, #f8fafc 42%, #eef2ff 100%);
-  min-height: 100vh;
-}
-
-.guild-hero::before {
-  content: "";
-  position: absolute;
-  right: -90px;
-  top: -110px;
-  width: 260px;
-  height: 260px;
-  border-radius: 9999px;
-  background: radial-gradient(circle, rgba(249, 115, 22, 0.2) 0%, rgba(249, 115, 22, 0) 72%);
-  pointer-events: none;
-}
-
-.guild-hero::after {
-  content: "";
-  position: absolute;
-  left: -80px;
-  bottom: -120px;
-  width: 240px;
-  height: 240px;
-  border-radius: 9999px;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.14) 0%, rgba(59, 130, 246, 0) 72%);
-  pointer-events: none;
+/* Subtle texture for the page background — kills the "AI generated flat" look */
+.ds-page-grain {
+  background-image:
+    radial-gradient(circle at 50% 0%, rgba(249, 115, 22, 0.04), transparent 40%),
+    linear-gradient(180deg, #FAFAFA 0%, #FAFAFA 100%);
 }
 
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: transparent;
@@ -170,4 +178,5 @@
 
 ::selection {
   background: rgba(249, 115, 22, 0.2);
+  color: #1a1a1a;
 }

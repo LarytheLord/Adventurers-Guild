@@ -429,59 +429,46 @@ const Hero: React.FC<HeroProps> = ({
         />
       )}
       
-      {/* Hero Content Overlay */}
-      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center text-white">
-        {/* Trust Badge */}
+      {/* Hero Content Overlay — editorial typography, no gradient text, no pill badges */}
+      <div className="absolute inset-0 z-10 flex flex-col items-center justify-center px-6 text-white">
+        {/* Trust badge — small, restrained, no pill */}
         {trustBadge && (
-          <div className="mb-8 animate-fade-in-down">
-            <div className="flex items-center gap-2 px-6 py-3 bg-orange-500/10 backdrop-blur-md border border-orange-300/30 rounded-full text-sm">
-              {trustBadge.icons && (
-                <div className="flex">
-                  {trustBadge.icons.map((icon, index) => (
-                    <span key={index} className={`text-${index === 0 ? 'yellow' : index === 1 ? 'orange' : 'amber'}-300`}>
-                      {icon}
-                    </span>
-                  ))}
-                </div>
-              )}
-              <span className="text-orange-100">{trustBadge.text}</span>
+          <div className="mb-10 animate-fade-in-down">
+            <div className="flex items-center gap-3 text-[11px] font-medium uppercase tracking-[0.15em] text-white/60">
+              <span className="h-1.5 w-1.5 rounded-full bg-orange-400" />
+              {trustBadge.text}
             </div>
           </div>
         )}
 
-        <div className="text-center space-y-6 max-w-5xl mx-auto px-4">
-          {/* Main Heading with Animation */}
-          <div className="space-y-2">
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold bg-gradient-to-r from-orange-300 via-yellow-400 to-amber-300 bg-clip-text text-transparent animate-fade-in-up animation-delay-200">
-              {headline.line1}
-            </h1>
-            <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold bg-gradient-to-r from-yellow-300 via-orange-400 to-red-400 bg-clip-text text-transparent animate-fade-in-up animation-delay-400">
-              {headline.line2}
-            </h1>
-          </div>
-          
-          {/* Subtitle with Animation */}
-          <div className="max-w-3xl mx-auto animate-fade-in-up animation-delay-600">
-            <p className="text-lg md:text-xl lg:text-2xl text-orange-100/90 font-light leading-relaxed">
-              {subtitle}
-            </p>
-          </div>
-          
-          {/* CTA Buttons with Animation */}
+        <div className="w-full max-w-4xl text-center">
+          {/* Headline — single block, tight tracking, no gradient */}
+          <h1 className="animate-fade-in-up animation-delay-200 text-balance text-[44px] font-bold leading-[1.02] tracking-[-0.035em] text-white sm:text-[64px] md:text-[80px] lg:text-[96px]">
+            {headline.line1}
+            <br />
+            <span className="text-orange-400">{headline.line2}</span>
+          </h1>
+
+          {/* Subtitle — narrower, comfortable read */}
+          <p className="mx-auto mt-8 max-w-xl animate-fade-in-up animation-delay-400 text-balance text-[15px] leading-[1.6] text-white/65 sm:text-[17px]">
+            {subtitle}
+          </p>
+
+          {/* CTAs — no gradient, no rounded-full, no scale-on-hover */}
           {buttons && (
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mt-10 animate-fade-in-up animation-delay-800">
+            <div className="mt-10 flex flex-col items-center justify-center gap-3 animate-fade-in-up animation-delay-600 sm:flex-row sm:gap-4">
               {buttons.primary && (
                 buttons.primary.href ? (
                   <Link
                     href={buttons.primary.href}
-                    className="px-8 py-4 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-black rounded-full font-semibold text-lg transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-orange-500/25"
+                    className="inline-flex h-12 min-w-[180px] items-center justify-center gap-2 rounded-md bg-white px-6 text-[14px] font-semibold text-slate-950 transition-colors hover:bg-orange-400 hover:text-slate-950"
                   >
                     {buttons.primary.text}
                   </Link>
                 ) : (
-                  <button 
+                  <button
                     onClick={buttons.primary.onClick}
-                    className="px-8 py-4 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-black rounded-full font-semibold text-lg transition-all duration-300 hover:scale-105 hover:shadow-xl hover:shadow-orange-500/25"
+                    className="inline-flex h-12 min-w-[180px] items-center justify-center gap-2 rounded-md bg-white px-6 text-[14px] font-semibold text-slate-950 transition-colors hover:bg-orange-400"
                   >
                     {buttons.primary.text}
                   </button>
@@ -491,14 +478,14 @@ const Hero: React.FC<HeroProps> = ({
                 buttons.secondary.href ? (
                   <Link
                     href={buttons.secondary.href}
-                    className="px-8 py-4 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-300/30 hover:border-orange-300/50 text-orange-100 rounded-full font-semibold text-lg transition-all duration-300 hover:scale-105 backdrop-blur-sm"
+                    className="inline-flex h-12 items-center justify-center gap-2 rounded-md border border-white/15 bg-white/5 px-6 text-[14px] font-medium text-white/85 backdrop-blur-sm transition-colors hover:border-white/30 hover:bg-white/10"
                   >
                     {buttons.secondary.text}
                   </Link>
                 ) : (
-                  <button 
+                  <button
                     onClick={buttons.secondary.onClick}
-                    className="px-8 py-4 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-300/30 hover:border-orange-300/50 text-orange-100 rounded-full font-semibold text-lg transition-all duration-300 hover:scale-105 backdrop-blur-sm"
+                    className="inline-flex h-12 items-center justify-center gap-2 rounded-md border border-white/15 bg-white/5 px-6 text-[14px] font-medium text-white/85 backdrop-blur-sm transition-colors hover:border-white/30 hover:bg-white/10"
                   >
                     {buttons.secondary.text}
                   </button>

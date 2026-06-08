@@ -24,13 +24,13 @@ export default function Navigation() {
   const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [activeSection, setActiveSection] = useState<'home' | 'features' | 'how-it-works'>('home');
+  const [activeSection, setActiveSection] = useState<'home' | 'ranks' | 'how-it-works' | 'quests' | 'join'>('home');
   const pathname = usePathname();
   const normalizedPath = pathname ? pathname.replace(/\/+$/, '') || '/' : null;
 
   const isHome = normalizedPath === '/home' || normalizedPath === '/';
   const isDashboard = !!normalizedPath && (normalizedPath.startsWith('/dashboard') || normalizedPath.startsWith('/admin'));
-  const authRoutePrefixes = ['/login', '/register', '/register-company', '/forgot-password', '/reset-password'];
+  const authRoutePrefixes = ['/login', '/register', '/forgot-password', '/reset-password'];
   const isAuthPage = !!normalizedPath && authRoutePrefixes.some((prefix) => normalizedPath === prefix || normalizedPath.startsWith(`${prefix}/`));
 
   useEffect(() => {
@@ -60,8 +60,8 @@ export default function Navigation() {
         return;
       }
 
-      const orderedSections: Array<'features' | 'how-it-works'> = ['features', 'how-it-works'];
-      let nextSection: 'home' | 'features' | 'how-it-works' = 'home';
+      const orderedSections: Array<'ranks' | 'how-it-works' | 'quests' | 'join'> = ['ranks', 'how-it-works', 'quests', 'join'];
+      let nextSection: 'home' | 'ranks' | 'how-it-works' | 'quests' | 'join' = 'home';
 
       for (const sectionId of orderedSections) {
         const section = document.getElementById(sectionId);
@@ -99,9 +99,9 @@ export default function Navigation() {
 
   const marketingLinks = [
     { href: '/home', label: 'Home' },
-    { href: '/home#features', label: 'Features' },
+    { href: '/home#ranks', label: 'Ranks' },
     { href: '/home#how-it-works', label: 'How It Works' },
-    { href: '/register-company', label: 'For Companies' },
+    { href: '/register?tab=company', label: 'For Companies' },
   ];
 
   const memberLinks =
@@ -110,7 +110,11 @@ export default function Navigation() {
           { href: '/dashboard/company', label: 'Dashboard' },
           { href: '/dashboard/company/create-quest', label: 'Post Quest' },
         ]
-      : [{ href: '/dashboard', label: 'Dashboard' }, { href: '/dashboard/quests', label: 'Quests' }];
+      : [
+          { href: '/dashboard', label: 'Dashboard' },
+          { href: '/dashboard/quests', label: 'Quests' },
+          { href: '/dashboard/leaderboard', label: 'Leaderboard' },
+        ];
 
   const activeHref = (href: string) => {
     if (!pathname) return false;

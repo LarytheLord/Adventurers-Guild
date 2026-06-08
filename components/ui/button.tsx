@@ -4,27 +4,52 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * Button — inspired by Linear, Vercel, Stripe.
+ * No gradients. No scale-on-hover. No shadow on the button itself.
+ * Subtle press effect. Clear focus ring. 6px radius (not 12-16px).
+ */
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-semibold ring-offset-background transition-[background-color,box-shadow,color,transform] duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 active:translate-y-px disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0",
+  [
+    "inline-flex items-center justify-center gap-2 whitespace-nowrap select-none",
+    "rounded-md text-[13px] font-medium",
+    "transition-colors duration-150",
+    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
+    "active:translate-y-px",
+    "disabled:pointer-events-none disabled:opacity-50",
+    "[&_svg]:pointer-events-none [&_svg]:size-3.5 [&_svg]:shrink-0",
+  ].join(" "),
   {
     variants: {
       variant: {
+        // Primary — Linear style. Solid accent, dark text on it, no shadow.
         default:
-          "bg-gradient-to-r from-orange-500 via-amber-500 to-orange-500 text-black shadow-[0_10px_24px_-12px_rgba(249,115,22,0.75)] hover:brightness-105",
-        destructive:
-          "bg-destructive text-destructive-foreground shadow-[0_8px_20px_-12px_rgba(220,38,38,0.8)] hover:bg-destructive/90",
-        outline:
-          "border border-slate-300 bg-white text-slate-700 shadow-sm hover:bg-slate-50 hover:text-slate-900",
+          "bg-[#F97316] text-[#0A0A0A] hover:bg-[#FB923C]",
+        // Dark — Vercel style. Black bg, white text, no shadow.
+        dark:
+          "bg-[#0A0A0A] text-white hover:bg-[#1F1F1F]",
+        // Secondary — Stripe style. White with border + subtle shadow.
         secondary:
-          "bg-slate-900 text-white shadow-[0_8px_20px_-14px_rgba(15,23,42,0.8)] hover:bg-slate-800",
-        ghost: "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
-        link: "text-primary underline-offset-4 hover:underline",
+          "bg-white text-slate-900 border border-slate-200 shadow-[0_1px_2px_rgba(0,0,0,0.04)] hover:bg-slate-50 hover:border-slate-300",
+        // Outline — minimal, no shadow.
+        outline:
+          "border border-slate-300 bg-transparent text-slate-700 hover:bg-slate-50 hover:text-slate-900",
+        // Ghost — text only, hover reveals bg.
+        ghost:
+          "text-slate-600 hover:bg-slate-100 hover:text-slate-900",
+        // Link — underline on hover.
+        link:
+          "text-slate-900 underline-offset-4 hover:underline",
+        // Destructive
+        destructive:
+          "bg-[#DC2626] text-white hover:bg-[#EF4444]",
       },
       size: {
-        default: "h-10 px-4 py-2",
-        sm: "h-9 px-3",
-        lg: "h-11 px-8",
-        icon: "h-10 w-10",
+        sm: "h-7 px-2.5 text-[12px]",
+        default: "h-9 px-3.5",
+        lg: "h-10 px-4 text-[14px]",
+        xl: "h-11 px-5 text-[14px]",
+        icon: "h-9 w-9",
       },
     },
     defaultVariants: {
