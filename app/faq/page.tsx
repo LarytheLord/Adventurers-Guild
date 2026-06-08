@@ -1,11 +1,11 @@
 import Link from 'next/link';
 
-export const metadata = { title: 'FAQ — Adventurers Guild' };
+export const metadata = { title: 'FAQ — Guild' };
 
 const faqs = [
   {
-    q: 'What is Adventurers Guild?',
-    a: 'Adventurers Guild is a quest-based marketplace for developers. Companies post coding tasks (Quests) and developers (Adventurers) complete them to earn XP, rank up from F to S, and get paid.',
+    q: 'What is Guild?',
+    a: 'Guild is a quest-based marketplace for developers. Companies post coding tasks (Quests) and developers (Adventurers) complete them to earn XP, rank up from F to S, and get paid.',
   },
   {
     q: 'How do I start earning XP?',
@@ -21,7 +21,7 @@ const faqs = [
   },
   {
     q: 'How does payment work?',
-    a: 'Monetary rewards are set by the company when creating a quest. Payment is handled directly between the company and the adventurer — Adventurers Guild tracks the reward amount but does not process payments in the current version.',
+    a: 'Monetary rewards are set by the company when creating a quest. Payment is handled directly between the company and the adventurer — Guild tracks the reward amount but does not process payments in the current version.',
   },
   {
     q: 'Can multiple adventurers work on the same quest?',
@@ -33,7 +33,7 @@ const faqs = [
   },
   {
     q: 'Is my code owned by me or the company?',
-    a: 'This is governed by the agreement between you and the company. Adventurers Guild does not claim ownership of any work submitted through the platform.',
+    a: 'This is governed by the agreement between you and the company. Guild does not claim ownership of any work submitted through the platform.',
   },
   {
     q: 'How do I contact support?',

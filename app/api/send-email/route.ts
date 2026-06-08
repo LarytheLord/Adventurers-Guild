@@ -108,7 +108,7 @@ export async function POST(request: NextRequest) {
 
         // Welcome email to the user
         const welcomeEmail = {
-            from: `"The Adventurers Guild" <${process.env.SMTP_USER}>`,
+            from: `"The Guild" <${process.env.SMTP_USER}>`,
             to: normalizedEmail,
             replyTo: process.env.SMTP_USER,
             subject: '🛡️ You\'ve Joined the Waitlist – Your Quest Board Access is Near!',
@@ -117,18 +117,18 @@ export async function POST(request: NextRequest) {
     <html>
     <head>
       <meta charset="utf-8">
-      <title>Welcome Client - The Adventurers Guild</title>
+      <title>Welcome Client - The Guild</title>
     </head>
     <body style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
 
       <div style="background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 40px; border-radius: 12px; text-align: center;">
-        <h1 style="margin: 0 0 10px 0; font-size: 30px;">🛡️ The Adventurers Guild 🛡️</h1>
+        <h1 style="margin: 0 0 10px 0; font-size: 30px;">🛡️ The Guild 🛡️</h1>
         <p style="margin: 0; font-size: 18px;">Welcome to the Quest Board for Digital Pioneers</p>
       </div>
 
       <div style="background: #f0f4f8; padding: 20px; border-radius: 8px; margin: 20px 0;">
         <h2 style="color: #333;">Hello Guild Client,</h2>
-        <p>Thank you for expressing interest in partnering with <strong>The Adventurers Guild</strong> – a revolutionary, gamified platform connecting industry partners with a driven community of computer science students and developers.</p>
+        <p>Thank you for expressing interest in partnering with <strong>The Guild</strong> – a revolutionary, gamified platform connecting industry partners with a driven community of computer science students and developers.</p>
         <p>You're now on the <strong>Client Waitlist</strong>! 🚀</p>
       </div>
 
@@ -163,7 +163,7 @@ export async function POST(request: NextRequest) {
       </div>
 
       <div style="text-align: center; font-size: 12px; color: #666; margin-top: 40px;">
-        <p>The Adventurers Guild — Forging Digital Pioneers Since 2025</p>
+        <p>The Guild — Forging Digital Pioneers Since 2025</p>
         <p>This is an automated message. Please do not reply directly.</p>
       </div>
 
@@ -187,7 +187,7 @@ export async function POST(request: NextRequest) {
         <p><strong>Joined:</strong> ${new Date().toLocaleString()}</p>
       </div>
       <div style="background: #e3f2fd; padding: 15px; border-radius: 5px; margin: 15px 0;">
-        <h4 style="margin-top: 0; color: #1976d2;">About The Adventurers Guild:</h4>
+        <h4 style="margin-top: 0; color: #1976d2;">About The Guild:</h4>
         <p style="margin: 0; font-size: 14px; line-height: 1.5;">
           Revolutionary gamified CS education platform where students become Guild Adventurers, 
           earning XP and progressing from F-Rank to S-Rank by completing real commissioned 

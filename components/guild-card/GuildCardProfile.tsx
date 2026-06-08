@@ -267,7 +267,7 @@ export function GuildCardProfile({ adventurer }: { adventurer: Adventurer }) {
       {/* Footer: verification + share */}
       <div className="mt-8 flex flex-col items-center justify-between gap-4 rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-500 sm:flex-row">
         <span>
-          Verified Guild Card — Adventurers Guild
+          Verified Guild Card — Guild
         </span>
         <a
           href={`https://adventurersguild.space/adventurer/${a.username || a.id}`}

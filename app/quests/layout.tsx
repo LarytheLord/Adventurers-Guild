@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 
 export const metadata: Metadata = {
-  title: "Quests — Adventurers Guild",
+  title: "Quests — Guild",
   description:
     "Browse real coding quests from real companies. Earn XP, rank up, and get paid for code that ships to production.",
 };

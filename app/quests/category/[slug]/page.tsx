@@ -68,7 +68,7 @@ export async function generateMetadata({
   const meta = categoryMeta[slug];
   if (!meta) return {};
   return {
-    title: `${meta.title} — Adventurers Guild`,
+    title: `${meta.title} — Guild`,
     description: meta.description,
   };
 }

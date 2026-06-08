@@ -2,6 +2,7 @@ import NextAuth, { AuthOptions } from 'next-auth';
 import type { Session, User } from 'next-auth';
 import type { JWT } from 'next-auth/jwt';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import GoogleProvider from 'next-auth/providers/google';
 import bcrypt from 'bcryptjs';
 import { prisma } from './db';
 import { env } from '@/lib/env';
@@ -9,6 +10,10 @@ import { UserRole, UserRank } from '@prisma/client';
 
 export const authOptions: AuthOptions = {
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID ?? '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
+    }),
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
@@ -56,6 +61,35 @@ export const authOptions: AuthOptions = {
     })
   ],
   callbacks: {
+    async signIn({ user, account }) {
+      if (account?.provider === 'google' && user.email) {
+        const normalizedEmail = user.email.trim().toLowerCase();
+        let dbUser = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+        if (!dbUser) {
+          // Auto-create adventurer account for Google sign-in
+          const username = normalizedEmail.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '') + Math.floor(Math.random() * 1000);
+          dbUser = await prisma.user.create({
+            data: {
+              email: normalizedEmail,
+              name: user.name ?? '',
+              username,
+              passwordHash: '',
+              role: 'adventurer' as UserRole,
+              rank: 'F' as UserRank,
+              xp: 0,
+            },
+          });
+        }
+        // Attach DB user info to the user object for JWT callback
+        (user as Record<string, unknown>).id = dbUser.id;
+        (user as Record<string, unknown>).role = dbUser.role;
+        (user as Record<string, unknown>).rank = dbUser.rank;
+        (user as Record<string, unknown>).xp = dbUser.xp;
+        // Update last login
+        await prisma.user.update({ where: { id: dbUser.id }, data: { lastLoginAt: new Date() } });
+      }
+      return true;
+    },
     async jwt({ token, user }: { token: JWT; user?: User }) {
       if (user) {
         token.id = user.id;

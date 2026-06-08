@@ -227,7 +227,7 @@ export default function QuestDetailPage() {
   const getShareUrl = useCallback((source: string) => {
     const baseUrl = window.location.origin + window.location.pathname;
     const url = `${baseUrl}?utm_source=${source}`;
-    const text = quest ? `${quest.title} — Adventurers Guild` : 'Check out this quest on Adventurers Guild';
+    const text = quest ? `${quest.title} — Guild` : 'Check out this quest on Guild';
     return { url, text };
   }, [quest]);
 

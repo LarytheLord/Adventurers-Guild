@@ -4,14 +4,12 @@ import { useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Hero from '@/components/ui/animated-shader-hero';
-import EarningsPreview from '@/components/landing/EarningsPreview';
 import RankJourney from '@/components/landing/RankJourney';
 import TrustStrip from '@/components/landing/LogoMarquee';
 import HowItWorks from '@/components/landing/HowItWorks';
 import QuestShowcase from '@/components/landing/QuestShowcase';
-import ProductPreview from '@/components/landing/ProductPreview';
 import WhyAG from '@/components/landing/WhyAG';
-import CTASection from '@/components/landing/CTASection';
+import { Component as GuildFooter } from '@/components/ui/footer-taped-design';
 
 const RANKS = ['F', 'E', 'D', 'C', 'B', 'A', 'S'] as const;
 
@@ -69,10 +67,7 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* #1 — What you'll earn (real ₹ numbers) */}
-      <EarningsPreview />
-
-      {/* #2 — The Rank Journey (main attraction) */}
+      {/* #1 — The Rank Journey (main attraction) */}
       <section id="ranks">
         <RankJourney />
       </section>
@@ -85,20 +80,9 @@ export default function HomePage() {
         <HowItWorks />
       </section>
 
-      {/* #5 — Live quest board */}
+      {/* #5 — Live quest board + top adventurers */}
       <section id="quests">
         <QuestShowcase />
-      </section>
-
-      {/* #6 — Product preview */}
-      <ProductPreview />
-
-      {/* #7 — Why Adventurers Guild */}
-      <WhyAG />
-
-      {/* #8 — CTA (premium two-path layout) */}
-      <section id="join">
-        <CTASection />
       </section>
     </>
   );

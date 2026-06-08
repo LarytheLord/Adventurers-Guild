@@ -59,6 +59,8 @@
     --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.04);
     --shadow-card-hover: 0 2px 4px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
     --shadow-elevated: 0 4px 12px rgba(0, 0, 0, 0.06);
+    --font-display: 'Outfit', sans-serif;
+    --font-sans: 'Inter Tight', sans-serif;
   }
 
   .dark {
@@ -91,6 +93,30 @@
     --border: 220 14% 18%;
     --input: 220 14% 18%;
     --ring: 25 95% 53%;
+  }
+  .theme {
+    --color-hightlight-light: #DADBF8;
+    --color-accent-light: #D9EAE3;
+    --color-primary-light: #FFCFE1;
+    --color-secondary-light: #FFFCE5;
+    --color-primary: #FF0F67;
+    --color-primary-content: #fff;
+    --color-secondary: #FFF07C;
+    --color-secondary-content: #0A0A0A;
+    --color-accent: #439775;
+    --color-accent-content: #0A0A0A;
+    --color-neutral: #222222;
+    --color-neutral-content: #FFFFFF;
+    --color-base-100: #f0f0f0;
+    --color-base-200: #ffffff;
+    --color-base-300: #F2F2F2;
+    --color-base-content: #0A0A0A;
+    --color-info: #3ABFF8;
+    --color-success: #36D399;
+    --color-warning: #FBBD23;
+    --color-error: #F87272;
+    --color-highlight: #454ADE;
+    --color-muted: #777777;
   }
 }
 

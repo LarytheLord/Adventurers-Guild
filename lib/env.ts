@@ -21,6 +21,10 @@ const envSchema = z.object({
   SMTP_PASS: z.string().optional().default(''),
   ADMIN_EMAIL: z.string().email().optional(),
 
+  // Google OAuth (optional — only needed if Google sign-in is enabled)
+  GOOGLE_CLIENT_ID: z.string().optional().default(''),
+  GOOGLE_CLIENT_SECRET: z.string().optional().default(''),
+
   // Application
   NEXT_PUBLIC_APP_URL: z.string().url().optional(),
 

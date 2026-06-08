@@ -16,14 +16,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   });
 
   if (!user) {
-    return { title: 'Adventurer Not Found | Adventurers Guild' };
+    return { title: 'Adventurer Not Found | Guild' };
   }
 
   const skills = user.adventurerProfile?.primarySkills?.slice(0, 3).join(', ') || 'Adventurer';
   const quests = user.adventurerProfile?.totalQuestsCompleted || 0;
 
   return {
-    title: `${user.name || user.username} — ${user.rank}-Rank Adventurer | Adventurers Guild`,
+    title: `${user.name || user.username} — ${user.rank}-Rank Adventurer | Guild`,
     description: `${quests} quests completed · ${skills} · ${user.xp} XP`,
     openGraph: {
       title: `${user.name || user.username} — ${user.rank}-Rank Adventurer`,

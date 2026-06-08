@@ -38,11 +38,11 @@ export async function POST(request: NextRequest) {
     // sendEmail now throws on failure — let the outer catch handle it
     await sendEmail({
       to: normalizedEmail,
-      subject: 'Reset your password — Adventurers Guild',
+      subject: 'Reset your password — Guild',
       html: `
         <div style="font-family:sans-serif;max-width:480px;margin:0 auto">
           <h2 style="font-size:20px;font-weight:700;color:#0f172a">Reset your password</h2>
-          <p style="color:#475569;font-size:14px">You requested a password reset for your Adventurers Guild account.</p>
+          <p style="color:#475569;font-size:14px">You requested a password reset for your Guild account.</p>
           <a href="${resetLink}" style="display:inline-block;margin:20px 0;padding:12px 24px;background:#f97316;color:#fff;font-weight:700;font-size:14px;border-radius:8px;text-decoration:none">
             Reset password
           </a>

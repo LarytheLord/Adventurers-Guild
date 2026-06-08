@@ -184,7 +184,7 @@ export default function QuestDetailPage() {
                       if (typeof navigator !== 'undefined' && navigator.share) {
                         navigator.share({
                           title: quest.title,
-                          text: `Check out this quest on Adventurers Guild!`,
+                          text: `Check out this quest on Guild!`,
                           url: `${typeof window !== 'undefined' ? window.location.origin : ''}/quests/${quest.id}`,
                         });
                       } else {
@@ -438,7 +438,7 @@ export default function QuestDetailPage() {
               <CardContent className="space-y-3 text-sm">
                 <div className="flex items-start gap-2">
                   <span className="text-orange-400 mt-0.5">1</span>
-                  <span className="text-slate-400">Register on Adventurers Guild</span>
+                  <span className="text-slate-400">Register on Guild</span>
                 </div>
                 <div className="flex items-start gap-2">
                   <span className="text-orange-400 mt-0.5">2</span>
@@ -483,7 +483,7 @@ export default function QuestDetailPage() {
                       if (typeof navigator !== 'undefined' && navigator.share) {
                         navigator.share({
                           title: quest.title,
-                          text: `Check out this coding quest on Adventurers Guild!`,
+                          text: `Check out this coding quest on Guild!`,
                           url: window.location.href,
                         });
                       }

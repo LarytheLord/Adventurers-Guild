@@ -1,8 +1,8 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Privacy Policy | Adventurers Guild',
-  description: 'Privacy policy for Adventurers Guild platform',
+  title: 'Privacy Policy | Guild',
+  description: 'Privacy policy for Guild platform',
 };
 
 export default function PrivacyPage() {
@@ -157,7 +157,7 @@ export default function PrivacyPage() {
               <br />
               <strong>Email:</strong> admin@adventurersguild.com
               <br />
-              <strong>Address:</strong> Adventurers Guild, Gandhinagar, Gujarat, India
+              <strong>Address:</strong> Guild, Gandhinagar, Gujarat, India
             </p>
           </section>
         </div>
