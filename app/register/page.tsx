@@ -50,8 +50,14 @@ function RegisterForm() {
     const password = role === 'company' ? cPassword : aPassword;
     const name = role === 'company' ? cName : aName;
 
-    if (!email || !password || !name) return;
-    if (role === 'adventurer' && !aUsername) return;
+    if (!email || !password || !name) {
+      toast.error(role === 'company' ? 'Please fill in all fields' : 'Please fill in all fields');
+      return;
+    }
+    if (role === 'adventurer' && !aUsername) {
+      toast.error('Username is required');
+      return;
+    }
 
     setIsLoading(true);
     try {
@@ -78,7 +84,13 @@ function RegisterForm() {
       }
 
       toast.success('Account created! Logging you in...');
-      await signIn('credentials', { email, password, callbackUrl: '/dashboard' });
+      const signInResult = await signIn('credentials', { email, password, callbackUrl: '/dashboard' });
+
+      if (!signInResult?.ok) {
+        toast.error(signInResult?.error || 'Login failed after registration');
+        setIsLoading(false);
+      }
+      // If signIn succeeds, the redirect will happen and component unmounts
     } catch (error) {
       toast.error(error instanceof Error ? error.message : 'Registration failed');
       setIsLoading(false);

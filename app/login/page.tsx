@@ -35,7 +35,10 @@ export default function LoginPage() {
   }, [status, session, router]);
 
   async function handleLogin() {
-    if (!email || !password) return;
+    if (!email || !password) {
+      toast.error('Please enter email and password');
+      return;
+    }
     setIsLoading(true);
     try {
       const result = await signIn('credentials', {
