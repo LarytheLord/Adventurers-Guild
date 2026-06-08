@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma, withDbRetry } from '@/lib/db';
-import { QuestStatus, QuestTrack } from '@prisma/client';
+import { QuestTrack } from '@prisma/client';
 
 interface QuestParams {
   id: string;
@@ -22,7 +22,6 @@ export async function GET(
             select: {
               id: true,
               name: true,
-              email: true,
               avatar: true,
               companyProfile: {
                 select: { companyName: true },
@@ -114,7 +113,6 @@ export async function GET(
       detailedDescription: q.detailedDescription,
       company: q.company?.companyProfile?.companyName || q.company?.name || 'Unknown Company',
       companyAvatar: q.company?.avatar || null,
-      companyEmail: q.company?.email || null,
       difficulty: q.difficulty,
       xpReward: q.xpReward,
       skillPointsReward: q.skillPointsReward,

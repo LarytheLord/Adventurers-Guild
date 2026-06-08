@@ -151,14 +151,11 @@ export async function PUT(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { questId, ...rawUpdateFields } = body;
-    const updateFields: Record<string, unknown> = { ...rawUpdateFields };
-    delete updateFields.company_id;
+    const { questId } = body;
     const companyId = authUser.id;
 
-    // Validate required fields
-    if (!questId || !companyId) {
-      return NextResponse.json({ error: 'Quest ID and Company ID are required', success: false }, { status: 400 });
+    if (!questId) {
+      return NextResponse.json({ error: 'Quest ID is required', success: false }, { status: 400 });
     }
 
     // Verify the company owns this quest
@@ -171,23 +168,19 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized: You do not own this quest', success: false }, { status: 403 });
     }
 
-    // Convert snake_case keys to camelCase for Prisma
-    const prismaUpdateFields: Record<string, unknown> = {};
-    const fieldMapping: Record<string, string> = {
-      detailedDescription: 'detailedDescription',
-      questType: 'questType',
-      xpReward: 'xpReward',
-      skillPointsReward: 'skillPointsReward',
-      monetaryReward: 'monetaryReward',
-      requiredSkills: 'requiredSkills',
-      requiredRank: 'requiredRank',
-      maxParticipants: 'maxParticipants',
-      questCategory: 'questCategory',
-    };
+    // Explicit allowlist — never spread raw body into Prisma to prevent field injection
+    const ALLOWED_FIELDS = [
+      'title', 'description', 'detailedDescription', 'questType', 'difficulty',
+      'xpReward', 'skillPointsReward', 'monetaryReward', 'requiredSkills',
+      'requiredRank', 'maxParticipants', 'questCategory', 'track', 'deadline',
+      'submissionInstructions', 'expectedDeliverables',
+    ] as const;
 
-    for (const [key, value] of Object.entries(updateFields)) {
-      const camelKey = fieldMapping[key] || key;
-      prismaUpdateFields[camelKey] = value;
+    const prismaUpdateFields: Record<string, unknown> = {};
+    for (const field of ALLOWED_FIELDS) {
+      if (field in body && body[field] !== undefined) {
+        prismaUpdateFields[field] = body[field];
+      }
     }
 
     // Update the quest
