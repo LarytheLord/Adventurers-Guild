@@ -36,10 +36,17 @@ function isValidEmail(email: string) {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
 }
 
+function escHtml(s: string): string {
+    return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
 export async function POST(request: NextRequest) {
     try {
         const { name, email } = await request.json()
         const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : ''
+
+        const safeName = typeof name === 'string' ? escHtml(name.slice(0, 200)) : 'Not provided';
+        const safeEmail = escHtml(normalizedEmail);
 
         if (!normalizedEmail || !isValidEmail(normalizedEmail)) {
             return NextResponse.json({
@@ -182,8 +189,8 @@ export async function POST(request: NextRequest) {
     <div style="font-family: Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 20px; border: 2px solid #667eea; border-radius: 8px;">
       <h2 style="color: #667eea;">⚔️ New Adventurer Joined The Guild!</h2>
       <div style="background: #f8f9fa; padding: 15px; border-radius: 5px; margin: 15px 0;">
-        <p><strong>Name:</strong> ${name || 'Not provided'}</p>
-        <p><strong>Email:</strong> ${email}</p>
+        <p><strong>Name:</strong> ${safeName}</p>
+        <p><strong>Email:</strong> ${safeEmail}</p>
         <p><strong>Joined:</strong> ${new Date().toLocaleString()}</p>
       </div>
       <div style="background: #e3f2fd; padding: 15px; border-radius: 5px; margin: 15px 0;">
