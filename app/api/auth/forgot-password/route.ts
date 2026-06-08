@@ -29,26 +29,32 @@ export async function POST(request: NextRequest) {
 
     // Create new token
     await prisma.passwordResetToken.create({
-      data: {
-        userId: user.id,
-        token: tokenHash,
-        expiresAt,
-      },
+      data: { userId: user.id, token: tokenHash, expiresAt },
     });
 
-    const resetLink = `${process.env.NEXTAUTH_URL}/reset-password?token=${token}`;
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    const resetLink = `${appUrl}/reset-password?token=${token}`;
 
+    // sendEmail now throws on failure — let the outer catch handle it
     await sendEmail({
       to: normalizedEmail,
-      subject: 'Reset Your Password - The Adventurers Guild',
-      html: `<p>You requested a password reset. Click the link below to reset your password:</p><p><a href="${resetLink}">${resetLink}</a></p><p>This link expires in 1 hour.</p>`,
+      subject: 'Reset your password — Adventurers Guild',
+      html: `
+        <div style="font-family:sans-serif;max-width:480px;margin:0 auto">
+          <h2 style="font-size:20px;font-weight:700;color:#0f172a">Reset your password</h2>
+          <p style="color:#475569;font-size:14px">You requested a password reset for your Adventurers Guild account.</p>
+          <a href="${resetLink}" style="display:inline-block;margin:20px 0;padding:12px 24px;background:#f97316;color:#fff;font-weight:700;font-size:14px;border-radius:8px;text-decoration:none">
+            Reset password
+          </a>
+          <p style="color:#94a3b8;font-size:12px">This link expires in 1 hour. If you didn't request a reset, ignore this email.</p>
+          <p style="color:#94a3b8;font-size:11px;word-break:break-all">Or copy this link: ${resetLink}</p>
+        </div>
+      `,
     });
-
-
 
     return NextResponse.json({ message: 'If an account exists, a reset link has been sent.' });
   } catch (error) {
     console.error('Forgot password error:', error);
-    return NextResponse.json({ error: 'Something went wrong' }, { status: 500 });
+    return NextResponse.json({ error: 'Something went wrong. Please try again.' }, { status: 500 });
   }
 }

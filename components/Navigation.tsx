@@ -30,7 +30,7 @@ export default function Navigation() {
 
   const isHome = normalizedPath === '/home' || normalizedPath === '/';
   const isDashboard = !!normalizedPath && (normalizedPath.startsWith('/dashboard') || normalizedPath.startsWith('/admin'));
-  const authRoutePrefixes = ['/login', '/register', '/register-company', '/forgot-password', '/reset-password'];
+  const authRoutePrefixes = ['/login', '/register', '/forgot-password', '/reset-password'];
   const isAuthPage = !!normalizedPath && authRoutePrefixes.some((prefix) => normalizedPath === prefix || normalizedPath.startsWith(`${prefix}/`));
 
   useEffect(() => {
@@ -101,7 +101,7 @@ export default function Navigation() {
     { href: '/home', label: 'Home' },
     { href: '/home#ranks', label: 'Ranks' },
     { href: '/home#how-it-works', label: 'How It Works' },
-    { href: '/register-company', label: 'For Companies' },
+    { href: '/register?tab=company', label: 'For Companies' },
   ];
 
   const memberLinks =
