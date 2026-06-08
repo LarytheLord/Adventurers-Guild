@@ -1,367 +1,447 @@
-# Implementation Tasks — Adventurers Guild
+# IMPLEMENTATION_TASKS.md — Technical Implementation Guide
 
-Task queue for the Open Paws Bootcamp integration and platform scale-up. Tasks are ordered by dependency. Do not skip ahead.
+## Reading Order
 
-**Current date**: 2026-03-21
-**Sprint target**: Platform operational for intern + bootcamp launch by May 2026
-
----
-
-## Status Overview
-
-| Phase | Status | Notes |
-|-------|--------|-------|
-| Phase 0: Schema & Prerequisites | ✅ Complete | All schema changes merged |
-| Phase 1: Bootcamp Integration | ✅ Complete | All 5 tasks done (PR #103) |
-| Phase 2: Squad System + Payments | ✅ Core done | 2.A + 2.B done, 2.C + 2.D delegated |
-| Phase 2.5: Credential System | 🔨 In Progress | Guild Card, Analytics, Streaks — NEW |
-| Phase 3: Platform Polish + Scale | ⏳ Planned | 6 tasks, target ~May 11 |
+1. Read `CLAUDE.md` first for full project context
+2. Read `prisma/schema.prisma` to understand current data model
+3. Read this file for what to build and how
+4. Read `QUEST_BRIEF_SCHEMA.md` for the quest data format
 
 ---
 
-## ✅ Phase 0: Schema & Infrastructure (Complete)
+## Phase 0: Database & Infrastructure (Do These First)
 
-### ~~Task 0.1: Add `track` field to Quest model~~ ✅
-- `QuestTrack` enum added: `OPEN`, `INTERN`, `BOOTCAMP`
-- Default: `OPEN`
-- APIs updated: `company/quests`, `admin/quests`, `public/quests`
+### Task 0.1: Add Track and Sub-Quest Fields to Quest Model
 
-### ~~Task 0.2: Add `parentQuestId` for sub-quest relationships~~ ✅
-- Self-referential relation added to Quest
-- `GET /api/quests/[id]` returns `subQuests[]` and `parentQuest`
-- Quest detail pages show parent/child links
+**File**: `prisma/schema.prisma`
 
-### ~~Task 0.3: Add `BootcampLink` model~~ ✅
-- Model added: `bootcampStudentId`, `cohort`, `bootcampTrack`, `bootcampWeek`
-- Tutorial completion flags: `tutorialQuest1Complete`, `tutorialQuest2Complete`
-- `eligibleForRealQuests` computed guard
-- Cascade-deletes with user
+Add to the existing Quest model:
 
-### ~~Task 0.4: Add `revisionCount` and `maxRevisions` to Quest~~ ✅
-- Both fields added with defaults (0 and 2)
-- Revision cap enforced in review flow
-
----
-
-## ✅ Phase 1: Core Integration Features (Complete)
-
-### ~~Task 1.1: Onboard webhook~~ ✅
-- `POST /api/onboard` — called by Open Paws Bootcamp on enrollment
-- Creates User + AdventurerProfile + BootcampLink in one transaction
-- 401 on bad secret, 409 on duplicate email, 201 on success
-
-### ~~Task 1.2: Quest board track filtering~~ ✅
-- `GET /api/quests` accepts `?track=BOOTCAMP|INTERN|OPEN`
-- Bootcamp-linked users forced to BOOTCAMP track at API level
-- Ineligible bootcamp users only see Tutorial quests
-
-### ~~Task 1.3: Structured revision request form~~ ✅
-- Company review uses acceptance criteria checklist (not freeform)
-- Unmet criteria stored as JSON in `reviewNotes`
-- At `revisionCount >= maxRevisions`, shows escalation path
-
-### ~~Task 1.4: Tutorial quest gating~~ ✅
-- Bootcamp users with `eligibleForRealQuests = false` get 403 on non-Tutorial quests
-- Completing "Tutorial: First Blood" → `tutorialQuest1Complete = true`
-- Completing "Tutorial: Party Up" → `tutorialQuest2Complete = true`
-- Both done → `eligibleForRealQuests = true`
-
-### ~~Task 1.5: Company transparency notice~~ ✅
-- Info banner on BOOTCAMP-track quests: mentorship context, different turnaround
-- Banner shown during quest creation when BOOTCAMP track is selected
-
----
-
-## ✅ Phase 2: Squad System + Payment Infrastructure
-
-**Target: ~April 13, 2026 (2 weeks)**
-**GitHub issues**: See linked issues for full spec.
-**Updated**: 2026-03-21
-
----
-
-### ~~Task 2.A: Squad/Party System — Schema and API~~ ✅
-
-**GitHub issue**: [#104](https://github.com/LarytheLord/Adventurers-Guild/issues/104) (closed)
-**Full spec**: [`docs/SQUAD_PARTY_SYSTEM.md`](./SQUAD_PARTY_SYSTEM.md)
-**Rank**: S
-
-**What**: The core delivery mechanism for both tracks. Mixed-rank squads complete quests together. Senior Adventurers lead as Party Leaders. Required for intern launch.
-
-**Schema additions**:
 ```prisma
-model Party {
-  id        String   @id @default(uuid()) @db.Uuid
-  questId   String   @unique @map("quest_id") @db.Uuid
-  leaderId  String   @map("leader_id") @db.Uuid
-  track     QuestTrack
-  maxSize   Int      @default(5) @map("max_size")
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
-
-  quest   Quest          @relation(fields: [questId], references: [id])
-  leader  User           @relation("PartyLeader", fields: [leaderId], references: [id])
-  members PartyMember[]
-
-  @@map("parties")
+enum QuestTrack {
+  INTERN
+  BOOTCAMP
 }
 
-model PartyMember {
-  id       String   @id @default(uuid()) @db.Uuid
-  partyId  String   @map("party_id") @db.Uuid
-  userId   String   @map("user_id") @db.Uuid
-  isLeader Boolean  @default(false) @map("is_leader")
-  joinedAt DateTime @default(now()) @map("joined_at") @db.Timestamptz
+// Add these fields to the Quest model:
+// track          QuestTrack   @default(BOOTCAMP)
+// parentQuestId  String?      @db.Text
+// parentQuest    Quest?       @relation("SubQuests", fields: [parentQuestId], references: [id])
+// subQuests      Quest[]      @relation("SubQuests")
+// maxRevisions   Int          @default(2)
+// revisionCount  Int          @default(0)
+```
 
-  party Party @relation(fields: [partyId], references: [id], onDelete: Cascade)
-  user  User  @relation(fields: [userId], references: [id])
+**After editing schema.prisma:**
+```bash
+npx prisma migrate dev --name add-quest-track-and-subquests
+npx prisma generate
+```
 
-  @@unique([partyId, userId])
-  @@map("party_members")
+**Acceptance criteria:**
+- [ ] Quest model has `track` field (enum: INTERN, BOOTCAMP)
+- [ ] Quest model has self-referential `parentQuestId` for sub-quests
+- [ ] Quest model has `maxRevisions` (default 2) and `revisionCount` (default 0)
+- [ ] Migration runs without errors
+- [ ] Existing quests default to BOOTCAMP track
+
+---
+
+### Task 0.2: Add BootcampLink Model
+
+**File**: `prisma/schema.prisma`
+
+New model linking bootcamp students to Adventurer profiles:
+
+```prisma
+model BootcampLink {
+  id              String   @id @default(cuid())
+  
+  // Foreign key to existing User model
+  userId          String   @unique
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Bootcamp data
+  bootcampStudentId  String   @unique  // ID from the bootcamp platform
+  bootcampTrack      String              // "animal_advocacy" | "climate_action" | "ai_safety" | "hybrid"
+  bootcampWeek       Int      @default(1) // Current week (1–10)
+  enrolledAt         DateTime @default(now())
+  graduatedAt        DateTime?
+  
+  // Tutorial quest completion tracking
+  tutorialQuest1Complete  Boolean  @default(false)
+  tutorialQuest2Complete  Boolean  @default(false)
+  
+  // Eligible for real quests only after both tutorials done
+  eligibleForRealQuests   Boolean  @default(false)
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 ```
 
-**API endpoints**:
-- `POST /api/parties` — create party for a quest (party leader calls this)
-- `POST /api/parties/[id]/members` — add member to party
-- `DELETE /api/parties/[id]/members/[userId]` — remove member
-- `GET /api/parties/[id]` — party details + member list
-- `GET /api/quests/[id]` — update to include `party` relation if exists
-
-**Constraints**:
-- BOOTCAMP track: max 2 members (pairs only)
-- INTERN track: max 5 members
-- Party leader must have rank >= quest difficulty (D for D-rank quest, etc.)
-- Each quest can have at most 1 party
-
-**Acceptance criteria**:
-- [ ] `Party` and `PartyMember` models in schema with migration
-- [ ] `POST /api/parties` creates party and auto-adds leader as member (isLeader: true)
-- [ ] `POST /api/parties/[id]/members` adds member, respects maxSize
-- [ ] BOOTCAMP parties capped at 2 members, INTERN at 5
-- [ ] Leader rank constraint enforced
-- [ ] `GET /api/quests/[id]` includes `party` with members
-- [ ] `npm run build` passes
-
----
-
-### ~~Task 2.B: Admin QA Mediation Layer~~ ✅
-
-**GitHub issue**: [#105](https://github.com/LarytheLord/Adventurers-Guild/issues/105) (closed)
-**Full spec**: [`docs/ADMIN_QA_MEDIATION.md`](./ADMIN_QA_MEDIATION.md)
-**Rank**: A
-
-**What**: Open Paws (admin) mediates all client relations. Submissions must pass admin QA review before the client sees them. Adds a `pending_admin_review` state to the assignment flow.
-
-**Schema addition**:
+**Also add to the User model:**
 ```prisma
-// Add to AssignmentStatus enum:
-pending_admin_review  // between submitted and review
+// Add to existing User model:
+// bootcampLink   BootcampLink?
 ```
 
-**Logic change**:
-- When adventurer submits: `submitted → pending_admin_review` (not `review`)
-- Admin reviews in `/admin/qa-queue`:
-  - Approve → `review` (client now sees it)
-  - Reject → `needs_rework` with admin notes (student revises)
-- Client review flow unchanged after this point
-
-**New admin page**: `/admin/qa-queue`
-- Table of all `pending_admin_review` assignments
-- Shows: quest name, student name, rank, submission date, submission link
-- Actions: Approve (forward to client), Reject (send back to student with notes)
-
-**Acceptance criteria**:
-- [ ] `pending_admin_review` added to `AssignmentStatus` enum with migration
-- [ ] Submission POST transitions to `pending_admin_review` not `review`
-- [ ] `/admin/qa-queue` page lists all pending items
-- [ ] Admin approve → assignment moves to `review`, company sees it
-- [ ] Admin reject → assignment moves to `needs_rework`, `revisionCount` increments
-- [ ] Adventurer dashboard shows correct status at each stage
-- [ ] `npm run build` passes
+**Acceptance criteria:**
+- [ ] BootcampLink model created with all fields
+- [ ] User model has optional relation to BootcampLink
+- [ ] `eligibleForRealQuests` is false by default (flips true after both tutorials)
+- [ ] Migration runs clean
 
 ---
 
-### Task 2.C: Stripe Connect — Adventurer Payout Onboarding
+### Task 0.3: Add Revision Quest Model
 
-**GitHub issue**: [#TBD Stripe Connect](https://github.com/LarytheLord/Adventurers-Guild/issues)
-**Rank**: A
+**File**: `prisma/schema.prisma`
 
-**What**: Enable adventurers to receive real payouts via Stripe Connect. Companies pay into escrow on quest acceptance; adventurers receive payout on approval.
-
-**Schema additions**:
 ```prisma
-// Add to AdventurerProfile:
-stripeAccountId      String? @map("stripe_account_id")
-stripeOnboardingDone Boolean @default(false) @map("stripe_onboarding_done")
+model RevisionRequest {
+  id              String   @id @default(cuid())
+  
+  questId         String
+  quest           Quest    @relation(fields: [questId], references: [id])
+  
+  // Structured feedback from client (NOT freeform)
+  unmetCriteria   String[] // Which acceptance criteria were not met
+  description     String   // Specific changes needed
+  isNewScope      Boolean  @default(false) // True = scope creep, becomes new quest
+  
+  // Status tracking
+  status          RevisionStatus @default(PENDING)
+  deadline        DateTime?
+  
+  createdAt       DateTime @default(now())
+  resolvedAt      DateTime?
+}
 
-// Add to CompanyProfile:
-stripeCustomerId String? @map("stripe_customer_id")
-
-// Add to Transaction:
-stripePaymentIntentId String? @map("stripe_payment_intent_id")
-platformFee           Int     @default(0) @map("platform_fee")    // in paise/cents
-platformFeeRate       Float   @default(0.15) @map("platform_fee_rate")
-```
-
-**API endpoints**:
-- `POST /api/payments/stripe/connect` — create Stripe Connect account + return onboarding URL
-- `GET /api/payments/stripe/connect/callback` — handle OAuth return, save `stripeAccountId`
-- `POST /api/payments/stripe/intent` — create PaymentIntent for quest reward (company pays)
-- Stripe webhook already exists at `POST /api/payments/webhooks/stripe`
-
-**Onboarding flow**:
-1. Adventurer clicks "Set up payouts" in dashboard
-2. FE calls `POST /api/payments/stripe/connect`
-3. API creates Stripe Express account, returns onboarding URL
-4. Redirect to Stripe, return to `/dashboard/settings?stripe=success`
-5. Callback saves `stripeAccountId` to `AdventurerProfile`
-
-**Acceptance criteria**:
-- [ ] `stripeAccountId` + `stripeOnboardingDone` added to schema
-- [ ] `POST /api/payments/stripe/connect` returns valid onboarding URL
-- [ ] Callback route saves account ID and marks `stripeOnboardingDone = true`
-- [ ] Dashboard settings shows payout setup status
-- [ ] Existing simulated payment flow still works when Stripe not configured
-- [ ] `npm run build` passes
-
----
-
-### Task 2.D: API Key Budget Tracking
-
-**GitHub issue**: [#TBD API Key Budget](https://github.com/LarytheLord/Adventurers-Guild/issues)
-**Rank**: D
-
-**What**: Log API key spend per user per week. Admin view shows current week burn vs cap. Allows monitoring the $10/week intern cap and $5/week bootcamp cap.
-
-**Schema additions**:
-```prisma
-model ApiKeyBudget {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @map("user_id") @db.Uuid
-  weekStart DateTime @map("week_start") @db.Timestamptz  // Monday of the week
-  spent     Float    @default(0)   // USD
-  cap       Float    @default(5)   // USD — 5 for bootcamp, 10 for intern
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, weekStart])
-  @@map("api_key_budgets")
+enum RevisionStatus {
+  PENDING
+  IN_PROGRESS
+  RESOLVED
+  ESCALATED
 }
 ```
 
-**API endpoints**:
-- `POST /api/admin/api-budgets` — log spend entry (admin or system calls this)
-- `GET /api/admin/api-budgets` — list all users with this week's spend vs cap
-- `GET /api/admin/api-budgets/[userId]` — per-user spend history
-
-**Admin page**: Add "API Budgets" tab to `/admin` page showing current-week table
-
-**Acceptance criteria**:
-- [ ] `ApiKeyBudget` model in schema with migration
-- [ ] `POST /api/admin/api-budgets` creates or updates spend for user/week
-- [ ] `GET /api/admin/api-budgets` returns current week spend vs cap per user
-- [ ] Admin budget tab shows table: user, track, cap, spent, % used, over-cap flag
-- [ ] `npm run build` passes
-
----
-
-## ⏳ Phase 3: Platform Polish + Scale
-
-**Target: ~May 11, 2026 (4 weeks)**
-
----
-
-### Task 3.A: Squad-Aware Quest Board UI
-
-Update the quest board to show party slots and allow adventurers to join existing parties.
-
-- Quest cards show "Party: 2/5 members" or "Solo quest"
-- Detail page shows current party members + join button
-- Party leader can invite specific adventurers
-- Filter: solo quests vs squad quests
-
----
-
-### Task 3.B: Hackathon → Quest Continuation Pipeline
-
-When a hackathon team builds for a partner org, that org becomes the client for a direct continuation quest.
-
-- Admin creates quest from hackathon submission (pre-filled form)
-- System offers it to the hackathon team first (7-day exclusive window)
-- If declined or expired → goes to public board
-- Track: `INTERN` by default (continuation work is production-grade)
-
----
-
-### Task 3.C: Admin Revenue Dashboard
-
-`/admin/revenue` — real-time platform financial overview.
-
-- GMV (gross merchandise value) — total quest rewards processed
-- MRR (monthly recurring revenue from subscriptions, Phase 3.E)
-- Take rate — platform fee as % of GMV
-- Fill rate — % of posted quests that get completed
-- Charts: 30-day rolling, month-on-month comparison
-- Data from new `/api/admin/revenue` endpoint
-
----
-
-### Task 3.D: Quest Event Audit Trail
-
-Every quest state transition gets logged in a new `EventLog` model.
-
+**Also add to Quest model:**
 ```prisma
-model EventLog {
-  id        String   @id @default(uuid()) @db.Uuid
-  questId   String?  @map("quest_id") @db.Uuid
-  userId    String   @map("user_id") @db.Uuid
-  action    String   // "quest_status_changed", "assignment_approved", etc.
-  fromState String?  @map("from_state")
-  toState   String?  @map("to_state")
-  meta      Json?
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+// Add to Quest model:
+// revisionRequests  RevisionRequest[]
+```
 
-  @@map("event_logs")
+---
+
+### Task 0.4: GitHub Actions CI
+
+**File**: `.github/workflows/ci.yml`
+
+```yaml
+name: CI
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Lint
+        run: npx eslint . --ext .ts,.tsx --max-warnings 0
+      - name: Type Check
+        run: npx tsc --noEmit
+      - name: Build
+        run: npm run build
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET }}
+```
+
+**Acceptance criteria:**
+- [ ] CI runs on every PR to main
+- [ ] Lint, type check, and build must all pass
+- [ ] Failing CI blocks merge
+
+---
+
+### Task 0.5: PR Template
+
+**File**: `.github/PULL_REQUEST_TEMPLATE.md`
+
+```markdown
+## Quest Reference
+- Quest ID/Link:
+- Track: INTERN / BOOTCAMP
+- Rank: F / E / D / C / B+
+
+## Changes
+<!-- What did you change and why? -->
+
+## Acceptance Criteria Checklist
+<!-- Copy from the Quest Brief and check off each one -->
+- [ ] Criteria 1
+- [ ] Criteria 2
+
+## Screenshots (if UI changes)
+
+## Peer Review Checklist (for reviewer)
+- [ ] Code does what the quest brief asks
+- [ ] All acceptance criteria are met
+- [ ] Follows existing code patterns in the repo
+- [ ] No obvious bugs or unhandled edge cases
+- [ ] I would be comfortable if this went to a client
+```
+
+---
+
+## Phase 1: Core Features
+
+### Task 1.1: Onboard Webhook Endpoint
+
+**File**: `app/api/onboard/route.ts`
+
+POST endpoint that receives a webhook from the Open Paws Bootcamp platform when a student reaches Week 4+ and opts into the Guild.
+
+```typescript
+// Expected payload from bootcamp platform:
+interface OnboardPayload {
+  bootcampStudentId: string;
+  name: string;
+  email: string;
+  bootcampTrack: "animal_advocacy" | "climate_action" | "ai_safety" | "hybrid";
+  bootcampWeek: number;
+  webhookSecret: string; // Must match env var BOOTCAMP_WEBHOOK_SECRET
+}
+
+// Endpoint behavior:
+// 1. Validate webhookSecret against env var
+// 2. Check if BootcampLink already exists for this bootcampStudentId (idempotent)
+// 3. If new: create User (role: ADVENTURER, rank: F) + BootcampLink
+// 4. If existing: update bootcampWeek
+// 5. Return { success: true, adventurerId: user.id, rank: "F" }
+```
+
+**Security:**
+- Validate `webhookSecret` matches `process.env.BOOTCAMP_WEBHOOK_SECRET`
+- Rate limit: 10 req/min
+- Idempotent: calling with same `bootcampStudentId` twice doesn't create duplicates
+
+**Acceptance criteria:**
+- [ ] POST `/api/onboard` creates new Adventurer + BootcampLink
+- [ ] Validates webhook secret
+- [ ] Idempotent on duplicate bootcampStudentId
+- [ ] Returns 401 on bad secret, 200 on success, 409 on duplicate with different email
+- [ ] Created user has role ADVENTURER and rank F
+
+---
+
+### Task 1.2: Quest Board Track Filtering
+
+**Files**: Quest listing pages + API routes
+
+The quest board must respect tracks:
+
+```typescript
+// When fetching quests for a user:
+// 1. Check if user has a BootcampLink
+// 2. If bootcamp student: ONLY show quests where track === "BOOTCAMP"
+// 3. If bootcamp student && !eligibleForRealQuests: ONLY show tutorial quests
+// 4. If intern or other user: show quests matching their role/rank as before
+// 5. Admins see everything
+
+// Add to quest listing API:
+// where: {
+//   track: isBootcampStudent ? "BOOTCAMP" : undefined,
+//   rank: { lte: userRank }, // existing rank-based filtering
+// }
+```
+
+**Also add track filter dropdown to the quest board UI:**
+- Admins and companies see: All / Intern / Bootcamp
+- Adventurers only see their eligible track
+
+**Acceptance criteria:**
+- [ ] Bootcamp students only see BOOTCAMP track quests
+- [ ] Bootcamp students who haven't completed tutorials only see tutorial quests
+- [ ] Interns see all quests at or below their rank
+- [ ] Track filter appears for admins/companies
+- [ ] No cross-track visibility leak
+
+---
+
+### Task 1.3: Structured Modification Request Form
+
+**Files**: Company portal quest detail page
+
+When a client clicks "Request Changes" on a delivered quest, show a structured form — NOT a freeform text box.
+
+```typescript
+interface ModificationRequest {
+  questId: string;
+  
+  // Client must select which acceptance criteria are NOT met
+  unmetCriteria: string[]; // Array of criteria IDs from the quest brief
+  
+  // Specific description of what needs to change
+  description: string; // Max 1000 chars
+  
+  // System detects if this is new scope
+  hasNewRequirements: boolean; // Client checkbox: "I'm requesting features not in the original brief"
 }
 ```
 
-Admin quest detail page shows full event timeline.
+**UI requirements:**
+- Show the quest's acceptance criteria as a checklist. Client checks the ones that are NOT met.
+- Text field for description (max 1000 chars, required)
+- Checkbox: "I need features that were not in the original quest brief" (triggers new quest flow instead of revision)
+- Submit creates a RevisionRequest record
+
+**If `hasNewRequirements` is true:**
+- Don't create a revision. Show a message: "These are new requirements. They'll be submitted as a separate quest."
+- Pre-fill a new quest form with the context from the modification request.
+
+**If `hasNewRequirements` is false AND quest.revisionCount < quest.maxRevisions:**
+- Create a RevisionRequest with status PENDING
+- Increment quest.revisionCount
+- Notify the assigned squad/student via the notification system
+
+**If revisionCount >= maxRevisions:**
+- Show message: "This quest has reached the maximum revision limit. It will be escalated to the review team."
+- Create RevisionRequest with status ESCALATED
+
+**Acceptance criteria:**
+- [ ] Form shows quest acceptance criteria as checkable items
+- [ ] Description field is required, max 1000 chars
+- [ ] New scope checkbox routes to new quest form
+- [ ] Within-scope creates RevisionRequest and increments counter
+- [ ] Blocks at maxRevisions and sets status to ESCALATED
+- [ ] Client sees clear feedback on what happens next
 
 ---
 
-### Task 3.E: Company Subscription Plans
+### Task 1.4: Revision Quest Flow
 
-Stripe Billing for tiered plans:
-- **Starter** (free) — 3 quests/month, no INTERN track
-- **Guild Partner** ($149/month) — unlimited quests, all tracks
-- **Enterprise** ($499/month) — white-label, dedicated QA slot
+**Files**: API routes + quest detail pages
 
-Enforce quest limits in `POST /api/company/quests`. Build billing settings page.
+When a RevisionRequest is created (status: PENDING), the system needs to:
+
+```typescript
+// POST /api/quests/[id]/revision
+// 1. Validate the request (quest exists, user is the client, revision limit not hit)
+// 2. Create RevisionRequest record
+// 3. Update quest status to REVISION_REQUESTED (add this to quest status enum)
+// 4. Set revision deadline = now + 7 days
+// 5. The assigned adventurer/squad sees the revision on their dashboard
+//    with: unmet criteria highlighted, client description, deadline
+// 6. When student resubmits: RevisionRequest status → RESOLVED, quest goes back to client review
+```
+
+**Add to Quest status enum:**
+```prisma
+// Add REVISION_REQUESTED to existing QuestStatus enum
+```
+
+**Acceptance criteria:**
+- [ ] Revision request creates RevisionRequest record
+- [ ] Quest status updates to REVISION_REQUESTED
+- [ ] Assigned adventurer sees revision details on their dashboard
+- [ ] Resubmission resolves the revision and returns quest to client review
+- [ ] Deadline is set and visible
 
 ---
 
-### Task 3.F: Seasonal Ladders
+### Task 1.5: Company Portal Transparency Notice
 
-Time-boxed ranking periods (quarterly). Leaderboard resets each season. Top adventurers per season get visible badges. Historical seasons stored and browsable.
+**Files**: Company portal quest submission page, Company portal landing page
 
----
-
-## Task Dependency Graph
+Add a clear, non-dismissable notice:
 
 ```
-Phase 0 (complete) ──────────────────────────────────────────────┐
-                                                                   │
-Phase 1 (complete) ──────────────────────────────────────────────┤
-                                                                   ▼
-2.A Squad/Party ──────────────────────── 3.A Squad Quest Board UI
-2.B Admin QA Mediation ───────────────── 3.C Revenue Dashboard
-2.C Stripe Connect ───────────────────── 3.E Subscription Plans
-2.D API Budget Tracking                  3.B Hackathon Pipeline
-                                         3.D Audit Trail
-                                         3.F Seasonal Ladders
+Projects are completed by trained developers in our supervised guild program. 
+All work passes through automated quality checks and senior review before delivery.
 ```
 
-**Critical path to May launch**: 2.A (squad) → 3.A (squad UI) → intern onboarding.
+**Where it appears:**
+- Company portal landing/dashboard page (banner)
+- Quest submission form (above the submit button)
+- Quest submission must include a checkbox: "I understand my project will be completed by guild members under senior review."
+
+**Acceptance criteria:**
+- [ ] Notice visible on company dashboard
+- [ ] Notice visible on quest submission form
+- [ ] Checkbox required before quest submission
+- [ ] Cannot bypass or dismiss
+
+---
+
+### Task 1.6: Sub-Quest Display
+
+**Files**: Quest detail pages, quest listing
+
+When a quest has `parentQuestId`, display the relationship:
+
+- On the parent quest page: show a "Sub-quests" section listing all child quests with their status
+- On the sub-quest page: show a "Part of" link back to the parent quest
+- On the quest board: sub-quests show a small badge indicating they're part of a larger quest
+
+```typescript
+// Fetching sub-quests:
+// const subQuests = await prisma.quest.findMany({
+//   where: { parentQuestId: questId },
+//   select: { id: true, title: true, rank: true, status: true, track: true }
+// });
+```
+
+**Acceptance criteria:**
+- [ ] Parent quest shows list of sub-quests
+- [ ] Sub-quest shows "Part of [Parent Quest Title]" link
+- [ ] Quest board shows sub-quest badge
+- [ ] Sub-quests inherit the parent's client/org but can have different track and rank
+
+---
+
+## Implementation Order
+
+**Do these in exact order — each depends on the previous:**
+
+```
+Phase 0 (do first, no user-facing changes):
+  0.1 Quest track + sub-quest fields  ← database foundation
+  0.2 BootcampLink model              ← student tracking
+  0.3 RevisionRequest model           ← modification handling
+  0.4 GitHub Actions CI               ← quality gate
+  0.5 PR template                     ← review process
+
+Phase 1 (user-facing features):
+  1.1 Onboard webhook                 ← depends on 0.2 (BootcampLink exists)
+  1.2 Quest board track filtering     ← depends on 0.1 (track field exists)
+  1.3 Modification request form       ← depends on 0.3 (RevisionRequest exists)
+  1.4 Revision quest flow             ← depends on 1.3 (form submits data)
+  1.5 Transparency notice             ← independent, do anytime in Phase 1
+  1.6 Sub-quest display               ← depends on 0.1 (parentQuestId exists)
+```
+
+---
+
+## Testing Notes
+
+- All database changes should be tested against the Neon dev branch (not production)
+- Webhook endpoint needs integration test with mock payload
+- Track filtering needs tests for each user type (bootcamp student, intern, admin, company)
+- Modification form needs edge case tests: max revisions hit, new scope flag, empty unmet criteria
+- CI should be green before any Phase 1 work begins
+
+## Environment Variables Needed
+
+```
+# Add to .env.local:
+BOOTCAMP_WEBHOOK_SECRET=generate-a-secure-random-string
+```
