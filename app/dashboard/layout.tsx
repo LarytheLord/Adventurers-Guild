@@ -136,7 +136,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 AG
               </span>
               <span className="text-sm font-semibold tracking-wide text-slate-200">
-                Adventurers Guild
+                Guild
               </span>
             </Link>
             <Button

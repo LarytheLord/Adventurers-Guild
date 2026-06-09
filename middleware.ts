@@ -32,25 +32,23 @@ const protectedRoutes: { [key: string]: UserRole[] } = {
 };
 
 export async function middleware(request: NextRequest) {
-  // Apply rate limiting to API routes
-  if (request.nextUrl.pathname.startsWith('/api/')) {
+  const { pathname } = request.nextUrl;
+  const isAuthRoute =
+    pathname.startsWith('/api/auth') ||
+    pathname === '/login' ||
+    pathname === '/register';
+
+  // Apply strict rate limiting to auth routes only
+  if (isAuthRoute) {
+    const rateLimitResponse = strictRateLimit(request);
+    if (rateLimitResponse) return rateLimitResponse;
+  } else if (pathname.startsWith('/api/')) {
+    // Apply general rate limiting to non-auth API routes
     const rateLimitResponse = apiRateLimit(request);
     if (rateLimitResponse) return rateLimitResponse;
   }
 
-  // Apply strict rate limiting to auth routes
-  if (
-    request.nextUrl.pathname.startsWith('/api/auth') ||
-    request.nextUrl.pathname === '/login' ||
-    request.nextUrl.pathname === '/register'
-  ) {
-    const rateLimitResponse = strictRateLimit(request);
-    if (rateLimitResponse) return rateLimitResponse;
-  }
-
   // Check if the route is protected
-  const pathname = request.nextUrl.pathname;
-
   // Find the most specific matching route (Longest Prefix Match)
   // This prevents /dashboard (adventurer) from overriding /dashboard/company (company only)
   const sortedRoutes = Object.keys(protectedRoutes).sort((a, b) => b.length - a.length);
@@ -130,12 +128,9 @@ async function checkAuthAndRole(request: NextRequest, requiredRoles: UserRole[])
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
+     * Match all request paths except static assets.
+     * /api/* is intentionally included so rate limiting applies to all API routes.
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

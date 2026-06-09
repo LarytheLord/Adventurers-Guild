@@ -25,7 +25,7 @@ export default function UnauthorizedPage() {
             <span className="font-semibold text-white">Next steps:</span>
           </p>
           <ul className="text-sm text-slate-400 space-y-1 list-disc list-inside">
-            <li>Sign in to your Adventurers Guild account</li>
+            <li>Sign in to your Guild account</li>
             <li>If you don&apos;t have an account, create one to get started</li>
             <li>Your session may have expired &mdash; try signing in again</li>
           </ul>

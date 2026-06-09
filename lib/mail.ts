@@ -34,7 +34,7 @@ export async function sendEmail({ to, subject, html }: SendEmailParams): Promise
   });
 
   await transporter.sendMail({
-    from: process.env.ADMIN_EMAIL || '"Adventurers Guild" <noreply@adventurersguild.com>',
+    from: process.env.ADMIN_EMAIL || '"Guild" <noreply@adventurersguild.com>',
     to,
     subject,
     html,

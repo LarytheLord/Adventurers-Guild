@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-export const metadata = { title: 'Privacy Policy — Adventurers Guild' };
+export const metadata = { title: 'Privacy Policy — Guild' };
 
 export default function PrivacyPage() {
   return (
@@ -97,7 +97,7 @@ export default function PrivacyPage() {
             <p>
               We may also disclose information if required by law, court order,
               legal process, or to protect the rights, safety, and security of
-              Adventurers Guild and its users.
+              Guild and its users.
             </p>
           </section>
 
@@ -177,7 +177,7 @@ export default function PrivacyPage() {
               9. Children&apos;s Privacy
             </h2>
             <p>
-              Adventurers Guild is not intended for children under the age of 13.
+              Guild is not intended for children under the age of 13.
               We do not knowingly collect personal information from children.
             </p>
           </section>
@@ -245,7 +245,7 @@ export default function PrivacyPage() {
                 Do you sell my personal data?
               </h3>
               <p className="text-slate-400 leading-relaxed">
-                No. Adventurers Guild does not sell personal data to advertisers,
+                No. Guild does not sell personal data to advertisers,
                 recruiters, or third parties.
               </p>
             </div>

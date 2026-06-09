@@ -51,7 +51,7 @@ async function sendEmail(options: EmailOptions): Promise<boolean> {
 
   try {
     const result = await transporter.sendMail({
-      from: options.from || `"Adventurers Guild" <${process.env.SMTP_USER}>`,
+      from: options.from || `"Guild" <${process.env.SMTP_USER}>`,
       to: options.to,
       subject: options.subject,
       html: options.html,
@@ -141,7 +141,7 @@ export async function sendWelcomeEmail(email: string, name: string, role: 'adven
 
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2 style="color: #f97316;">Welcome to Adventurers Guild, ${name}!</h2>
+      <h2 style="color: #f97316;">Welcome to Guild, ${name}!</h2>
       <p>You've joined as a <strong>${roleText}</strong>. Here's what you can do next:</p>
       <ul style="line-height: 1.8;">
         ${role === 'adventurer'
@@ -156,7 +156,7 @@ export async function sendWelcomeEmail(email: string, name: string, role: 'adven
 
   return sendEmail({
     to: email,
-    subject: `Welcome to Adventurers Guild!`,
+    subject: `Welcome to Guild!`,
     html,
   });
 }

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 
-export const metadata = { title: 'Terms of Service — Adventurers Guild' };
+export const metadata = { title: 'Terms of Service — Guild' };
 
 export default function TermsPage() {
   return (
@@ -26,7 +26,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">1. Acceptance of Terms</h2>
             <p>
-              By accessing or using the Adventurers Guild platform, you agree to be bound by
+              By accessing or using the Guild platform, you agree to be bound by
               these Terms of Service. If you do not agree with these terms, you should not
               use the platform.
             </p>
@@ -35,7 +35,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">2. Platform Description</h2>
             <p>
-              Adventurers Guild is a platform that connects developers, designers,
+              Guild is a platform that connects developers, designers,
               researchers, and other contributors with companies and organizations that
               need project work completed.
             </p>
@@ -82,7 +82,7 @@ export default function TermsPage() {
               recognition, internship consideration, or portfolio experience.
             </p>
             <p>
-              Adventurers Guild may facilitate payment processing but does not guarantee
+              Guild may facilitate payment processing but does not guarantee
               payment for incomplete work, disputed work, or Quests cancelled by a Company.
             </p>
           </section>
@@ -155,10 +155,10 @@ export default function TermsPage() {
           <div className="grid gap-6 md:grid-cols-2">
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6">
               <h3 className="text-lg font-semibold text-white mb-3">
-                What is Adventurers Guild?
+                What is Guild?
               </h3>
               <p className="text-slate-400 leading-relaxed">
-                Adventurers Guild is a platform where developers complete real-world
+                Guild is a platform where developers complete real-world
                 Quests from startups, businesses, and organizations. Contributors earn
                 XP, unlock ranks, and build verified public profiles.
               </p>

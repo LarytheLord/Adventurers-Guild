@@ -95,7 +95,7 @@ export default function MyPaymentsPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold">Payment History</h1>
         <p className="mt-1 text-muted-foreground">
-          Track your earnings and payments on the Adventurers Guild platform
+          Track your earnings and payments on the Guild platform
         </p>
       </div>
 

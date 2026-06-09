@@ -74,7 +74,7 @@ function ResetPasswordForm() {
         <div className="flex h-8 w-8 items-center justify-center rounded-md bg-orange-500">
           <span className="text-[11px] font-bold text-slate-950">AG</span>
         </div>
-        <span className="text-[14px] font-semibold text-white">Adventurers Guild</span>
+        <span className="text-[14px] font-semibold text-white">Guild</span>
       </div>
 
       {!success ? (
@@ -197,7 +197,7 @@ export default function ResetPasswordPage() {
           <div className="flex h-8 w-8 items-center justify-center rounded-md bg-orange-500 group-hover:bg-orange-400 transition-colors">
             <span className="text-[11px] font-bold text-slate-950">AG</span>
           </div>
-          <span className="text-[14px] font-semibold text-white">Adventurers Guild</span>
+          <span className="text-[14px] font-semibold text-white">Guild</span>
         </Link>
 
         <div className="space-y-8">

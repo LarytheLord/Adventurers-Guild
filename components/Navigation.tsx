@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Badge } from '@/components/ui/badge';
-import { Menu, X, User, LogOut, ShieldAlert, Sparkles } from 'lucide-react';
+import { Menu, X, User, LogOut, ShieldAlert} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -85,8 +85,8 @@ export default function Navigation() {
     };
   }, [isHome]);
 
-  // Dashboard and auth screens have dedicated layouts
-  if (isDashboard || isAuthPage || !mounted) return null;
+  // Dashboard screens have dedicated layouts
+  if (isDashboard || !mounted) return null;
 
   const handleLogout = async () => {
     await signOut({ callbackUrl: '/home' });
@@ -246,7 +246,6 @@ export default function Navigation() {
         >
           <Link href="/register" className="inline-flex items-center gap-1.5">
             Join Guild
-            <Sparkles className="h-3.5 w-3.5" />
           </Link>
         </Button>
       </div>
@@ -291,26 +290,21 @@ export default function Navigation() {
     <nav className="fixed inset-x-0 top-3 z-50 px-3 sm:px-6">
       <div
         className={cn(
-          'mx-auto max-w-6xl rounded-2xl border backdrop-blur-xl transition-all duration-300',
+          'mx-auto max-w-6xl rounded-full border backdrop-blur-xl transition-all duration-300',
           isTransparent
             ? 'border-white/15 bg-black/25 shadow-[0_16px_48px_-28px_rgba(15,23,42,0.85)]'
             : 'border-slate-200/80 bg-white/90 shadow-[0_18px_35px_-28px_rgba(15,23,42,0.45)]'
         )}
       >
-        <div className="flex h-16 items-center justify-between px-4 sm:px-6">
-          <Link href="/home" className="flex items-center gap-2.5 group">
-            <div className="w-8 h-8 rounded-lg bg-orange-500 flex items-center justify-center shadow-md shadow-orange-500/20 group-hover:bg-orange-600 transition-colors">
-              <span className="text-black font-bold text-sm">AG</span>
-            </div>
-            <span
-              className={cn(
-                'font-bold text-lg tracking-tight transition-colors hidden sm:block',
-                isTransparent ? 'text-white' : 'text-slate-900'
-              )}
-            >
-              Adventurers Guild
-            </span>
-          </Link>
+        <div className="flex h-14 items-center justify-between px-3 sm:px-5">
+          {/* <Link href="/home" className="flex items-center gap-2 group">
+            <img
+              src="/logo/guild-logo.png"
+              alt="Guild"
+              className="h-12 w-12 object-contain"
+            />
+
+          </Link> */}
 
           {renderNavLinks()}
 

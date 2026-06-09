@@ -11,7 +11,7 @@ export default function NotFound() {
             <div className="w-9 h-9 rounded-lg bg-slate-900 flex items-center justify-center text-white group-hover:bg-slate-800 transition-colors">
               <Code2 className="w-5 h-5" />
             </div>
-            <span className="text-slate-900">Adventurers Guild</span>
+            <span className="text-slate-900">Guild</span>
           </Link>
         </div>
 

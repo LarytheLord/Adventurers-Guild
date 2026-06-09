@@ -10,10 +10,11 @@ import Navigation from "../components/Navigation"
 import ErrorBoundary from "../components/ErrorBoundary"
 import { Toaster } from "@/components/ui/sonner"
 import { GoToTop } from "@/components/ui/go-to-top"
-import { SiteFooter } from "@/components/site-footer"
+
+import { Component as GuildFooter } from '@/components/ui/footer-taped-design';
 
 export const metadata: Metadata = {
-  title: "Adventurers Guild",
+  title: "Guild",
   description: "Take on real coding quests from companies, earn money and XP, and rank up from F to S.",
   manifest: "/manifest.json",
   icons: {
@@ -69,7 +70,7 @@ export default function RootLayout({
               <ErrorBoundary>
                 {children}
               </ErrorBoundary>
-              <SiteFooter />
+              <GuildFooter />
             </div>
             <Toaster />
             <GoToTop />

@@ -2,13 +2,18 @@ import NextAuth, { AuthOptions } from 'next-auth';
 import type { Session, User } from 'next-auth';
 import type { JWT } from 'next-auth/jwt';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import GoogleProvider from 'next-auth/providers/google';
 import bcrypt from 'bcryptjs';
-import { prisma } from './db';
+import { prisma, withDbRetry } from './db';
 import { env } from '@/lib/env';
 import { UserRole, UserRank } from '@prisma/client';
 
 export const authOptions: AuthOptions = {
   providers: [
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID ?? '',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
+    }),
     CredentialsProvider({
       name: 'Credentials',
       credentials: {
@@ -19,43 +24,73 @@ export const authOptions: AuthOptions = {
         if (!credentials?.email || !credentials?.password) {
           return null;
         }
-        const normalizedEmail = credentials.email.trim().toLowerCase();
+        try {
+          const normalizedEmail = credentials.email.trim().toLowerCase();
 
-        // Find user by email
-        const user = await prisma.user.findUnique({
-          where: { email: normalizedEmail },
-        });
+          const user = await withDbRetry(() =>
+            prisma.user.findUnique({ where: { email: normalizedEmail } })
+          );
 
-        if (!user) {
-          if (process.env.NODE_ENV === 'development') console.log('[Auth] User not found:', normalizedEmail);
+          if (!user) {
+            if (process.env.NODE_ENV === 'development') console.log('[Auth] User not found:', normalizedEmail);
+            return null;
+          }
+
+          const isValidPassword = await bcrypt.compare(credentials.password, user.passwordHash);
+          if (!isValidPassword) {
+            if (process.env.NODE_ENV === 'development') console.log('[Auth] Invalid password for:', credentials.email);
+            return null;
+          }
+
+          // Non-blocking — a cold-start failure here must not block a valid login
+          prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } })
+            .catch(e => console.warn('[Auth] lastLoginAt update failed:', e));
+
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name ?? '',
+            role: user.role as UserRole,
+            rank: user.rank as UserRank,
+            xp: user.xp,
+          };
+        } catch (error) {
+          console.error('[Auth] authorize error:', error);
           return null;
         }
-
-        // Verify password
-        const isValidPassword = await bcrypt.compare(credentials.password, user.passwordHash);
-        if (!isValidPassword) {
-          if (process.env.NODE_ENV === 'development') console.log('[Auth] Invalid password for:', credentials.email);
-          return null;
-        }
-
-        // Update last login
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { lastLoginAt: new Date() },
-        });
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name ?? '',
-          role: user.role as UserRole,
-          rank: user.rank as UserRank,
-          xp: user.xp,
-        };
       }
     })
   ],
   callbacks: {
+    async signIn({ user, account }) {
+      if (account?.provider === 'google' && user.email) {
+        const normalizedEmail = user.email.trim().toLowerCase();
+        let dbUser = await prisma.user.findUnique({ where: { email: normalizedEmail } });
+        if (!dbUser) {
+          // Auto-create adventurer account for Google sign-in
+          const username = normalizedEmail.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '') + Math.floor(Math.random() * 1000);
+          dbUser = await prisma.user.create({
+            data: {
+              email: normalizedEmail,
+              name: user.name ?? '',
+              username,
+              passwordHash: '',
+              role: 'adventurer' as UserRole,
+              rank: 'F' as UserRank,
+              xp: 0,
+            },
+          });
+        }
+        // Attach DB user info to the user object for JWT callback
+        (user as unknown as Record<string, unknown>).id = dbUser.id;
+        (user as unknown as Record<string, unknown>).role = dbUser.role;
+        (user as unknown as Record<string, unknown>).rank = dbUser.rank;
+        (user as unknown as Record<string, unknown>).xp = dbUser.xp;
+        // Update last login
+        await prisma.user.update({ where: { id: dbUser.id }, data: { lastLoginAt: new Date() } });
+      }
+      return true;
+    },
     async jwt({ token, user }: { token: JWT; user?: User }) {
       if (user) {
         token.id = user.id;

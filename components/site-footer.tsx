@@ -54,7 +54,7 @@ export function SiteFooter() {
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-500 shadow-lg shadow-orange-500/20 transition-colors group-hover:bg-orange-600">
                 <span className="text-sm font-bold text-black">AG</span>
               </div>
-              <span className="text-lg font-bold text-white">Adventurers Guild</span>
+              <span className="text-lg font-bold text-white">Guild</span>
             </Link>
             <p className="max-w-xs text-sm leading-relaxed text-slate-400">
               The credentialing engine for developers. Complete real quests, earn verified rank, build a portfolio that proves you can ship.
@@ -158,7 +158,7 @@ export function SiteFooter() {
         {/* Bottom bar */}
         <div className="flex flex-col items-center justify-between gap-3 border-t border-slate-800/60 py-6 sm:flex-row">
           <p className="text-xs text-slate-600">
-            &copy; {new Date().getFullYear()} Adventurers Guild. All rights reserved.
+            &copy; {new Date().getFullYear()} Guild. All rights reserved.
           </p>
           <p className="text-xs text-slate-700">
             Built for developers who ship.

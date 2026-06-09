@@ -54,7 +54,7 @@ export async function GET(
     }
 
     const rankColor = DIFFICULTY_COLORS[quest.difficulty] || '#94a3b8';
-    const companyName = quest.company?.companyProfile?.companyName || 'Adventurers Guild';
+    const companyName = quest.company?.companyProfile?.companyName || 'Guild';
     const title = quest.title.length > 60 ? `${quest.title.slice(0, 57)}...` : quest.title;
     const reward = quest.monetaryReward ? `$${Number(quest.monetaryReward).toLocaleString()}` : null;
 
@@ -92,7 +92,7 @@ export async function GET(
                 AG
               </div>
               <div style={{ display: 'flex', fontSize: '27px', color: '#fb923c', fontWeight: 800, letterSpacing: '-0.3px' }}>
-                Adventurers Guild
+                Guild
               </div>
             </div>
             <div
@@ -198,7 +198,7 @@ export async function GET(
     return new ImageResponse(
       (
         <div style={{ display: 'flex', width: '100%', height: '100%', background: '#0f172a', color: '#fff', alignItems: 'center', justifyContent: 'center', fontSize: 32 }}>
-          Adventurers Guild
+          Guild
         </div>
       ),
       { width: 1200, height: 630 }

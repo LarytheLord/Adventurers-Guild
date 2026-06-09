@@ -17,7 +17,7 @@ export default function WhyAG() {
         >
           <div>
             <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-slate-500">
-              Why Adventurers Guild
+              Why Guild
             </p>
             <h2 className="mt-3 text-[40px] font-bold leading-[1.05] tracking-[-0.025em] text-slate-900 md:text-[56px]">
               Built for someone<br />

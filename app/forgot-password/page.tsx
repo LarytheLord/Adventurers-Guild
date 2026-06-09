@@ -43,7 +43,7 @@ export default function ForgotPasswordPage() {
           <div className="flex h-8 w-8 items-center justify-center rounded-md bg-orange-500 group-hover:bg-orange-400 transition-colors">
             <span className="text-[11px] font-bold text-slate-950">AG</span>
           </div>
-          <span className="text-[14px] font-semibold text-white">Adventurers Guild</span>
+          <span className="text-[14px] font-semibold text-white">Guild</span>
         </Link>
 
         <div className="space-y-8">
@@ -61,7 +61,7 @@ export default function ForgotPasswordPage() {
 
           <div className="rounded-lg border border-white/8 bg-white/3 px-5 py-4">
             <p className="text-[12px] leading-[1.6] text-white/40">
-              Check your inbox — and spam folder — for a message from Adventurers Guild. Links expire after 1 hour.
+              Check your inbox — and spam folder — for a message from Guild. Links expire after 1 hour.
             </p>
           </div>
         </div>
@@ -79,7 +79,7 @@ export default function ForgotPasswordPage() {
             <div className="flex h-8 w-8 items-center justify-center rounded-md bg-orange-500">
               <span className="text-[11px] font-bold text-slate-950">AG</span>
             </div>
-            <span className="text-[14px] font-semibold text-white">Adventurers Guild</span>
+            <span className="text-[14px] font-semibold text-white">Guild</span>
           </div>
 
           {!success ? (

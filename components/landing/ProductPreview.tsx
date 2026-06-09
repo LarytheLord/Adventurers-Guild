@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { ArrowRight, Check } from 'lucide-react';
 import Link from 'next/link';
 import { RankBadge } from '@/components/ui/rank-badge';
+import { useEffect, useState } from 'react';
 
 const features = [
   'Browse live quests by rank, stack, and payout',
@@ -12,13 +13,38 @@ const features = [
   'Your Guild Card shows what you can actually ship',
 ];
 
-const mockBoard = [
-  { rank: 'D' as const, title: 'Fix pagination on user dashboard', xp: 320, pay: '₹1,600' },
-  { rank: 'C' as const, title: 'Build API rate-limiter middleware', xp: 550, pay: '₹3,000' },
-  { rank: 'B' as const, title: 'Design system migration — Button', xp: 800, pay: '₹5,500' },
-];
+interface Quest {
+  id: string;
+  title: string;
+  difficulty: string;
+  xpReward: number;
+  paymentAmount: number | null;
+}
 
 export default function ProductPreview() {
+  const [quests, setQuests] = useState<Quest[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchQuests = async () => {
+      try {
+        const res = await fetch('/api/public/quests?limit=3');
+        if (res.ok) {
+          const data = await res.json();
+          setQuests(data.quests || []);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQuests();
+  }, []);
+
+  const formatCurrency = (amount: number | null) => {
+    if (!amount) return '₹500';
+    return `₹${amount.toLocaleString('en-IN')}`;
+  };
   return (
     <section className="bg-slate-50 py-20 md:py-32 border-b border-slate-200">
       <div className="container mx-auto max-w-6xl px-6">
@@ -117,36 +143,42 @@ export default function ProductPreview() {
 
               {/* Quest rows */}
               <div className="divide-y divide-slate-100">
-                {mockBoard.map((item, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-slate-50"
-                  >
-                    <RankBadge rank={item.rank} size="sm" />
-                    <div className="flex-1 min-w-0">
-                      <p className="truncate text-sm font-medium text-slate-900">
-                        {item.title}
-                      </p>
-                      <p className="mt-0.5 text-xs text-slate-500">
-                        Posted 2h ago · 3 applicants
-                      </p>
+                {loading ? (
+                  <div className="px-5 py-8 text-center text-sm text-slate-500">Loading quests...</div>
+                ) : quests.length === 0 ? (
+                  <div className="px-5 py-8 text-center text-sm text-slate-500">No quests available</div>
+                ) : (
+                  quests.map((quest) => (
+                    <div
+                      key={quest.id}
+                      className="flex items-center gap-4 px-5 py-4 transition-colors hover:bg-slate-50"
+                    >
+                      <RankBadge rank={(quest.difficulty as 'F' | 'E' | 'D' | 'C' | 'B' | 'A' | 'S') || 'F'} size="sm" />
+                      <div className="flex-1 min-w-0">
+                        <p className="truncate text-sm font-medium text-slate-900">
+                          {quest.title}
+                        </p>
+                        <p className="mt-0.5 text-xs text-slate-500">
+                          Available · {quest.xpReward} XP
+                        </p>
+                      </div>
+                      <div className="hidden text-right sm:block">
+                        <p className="text-sm font-semibold text-slate-900 tabular-nums">
+                          {formatCurrency(quest.paymentAmount)}
+                        </p>
+                        <p className="text-[11px] text-slate-500 tabular-nums">
+                          {quest.xpReward} XP
+                        </p>
+                      </div>
                     </div>
-                    <div className="hidden text-right sm:block">
-                      <p className="text-sm font-semibold text-slate-900 tabular-nums">
-                        {item.pay}
-                      </p>
-                      <p className="text-[11px] text-slate-500 tabular-nums">
-                        {item.xp} XP
-                      </p>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
 
               {/* Footer */}
               <div className="flex items-center justify-between border-t border-slate-200 bg-slate-50 px-5 py-3 text-[11px] text-slate-500">
-                <span>Showing 3 of 12 open</span>
-                <span className="font-medium text-slate-700">View all →</span>
+                <span>Live quests</span>
+                <Link href="/quests" className="font-medium text-slate-700 hover:text-slate-900">View all →</Link>
               </div>
             </div>
           </motion.div>

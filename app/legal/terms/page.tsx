@@ -1,8 +1,8 @@
 import Link from 'next/link';
 
 export const metadata = {
-  title: 'Terms of Service | Adventurers Guild',
-  description: 'Terms and conditions for using Adventurers Guild platform',
+  title: 'Terms of Service | Guild',
+  description: 'Terms and conditions for using Guild platform',
 };
 
 export default function TermsPage() {
@@ -23,7 +23,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-4">1. Acceptance of Terms</h2>
             <p>
-              By accessing or using Adventurers Guild (the &ldquo;Platform&rdquo;), you agree to be bound by these Terms of Service
+              By accessing or using Guild (the &ldquo;Platform&rdquo;), you agree to be bound by these Terms of Service
               (&ldquo;Terms&rdquo;). If you do not agree to these Terms, do not use the Platform.
             </p>
           </section>
@@ -31,7 +31,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-4">2. Description of Service</h2>
             <p>
-              Adventurers Guild is a gamified developer marketplace connecting Adventurers (developers) with Companies
+              Guild is a gamified developer marketplace connecting Adventurers (developers) with Companies
               (clients) for coding projects called &ldquo;Quests.&rdquo; The Platform facilitates project posting, application,
               completion, and payment processing.
             </p>
@@ -80,7 +80,7 @@ export default function TermsPage() {
             <h2 className="text-2xl font-semibold mb-4">5. Payments</h2>
             <h3 className="text-xl font-medium mb-2">5.1 Platform Fee</h3>
             <p>
-              Adventurers Guild charges a 15% platform fee on all completed Quest payments. The fee is automatically
+              Guild charges a 15% platform fee on all completed Quest payments. The fee is automatically
               deducted before payout to Adventurers.
             </p>
             <h3 className="text-xl font-medium mb-2">5.2 Payment Processing</h3>
@@ -127,7 +127,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-semibold mb-4">9. Limitation of Liability</h2>
             <p>
-              Adventurers Guild is provided &ldquo;as is&rdquo; without warranties. We are not liable for:
+              Guild is provided &ldquo;as is&rdquo; without warranties. We are not liable for:
             </p>
             <ul className="list-disc pl-6 space-y-2">
               <li>Disputes between Companies and Adventurers</li>
@@ -160,7 +160,7 @@ export default function TermsPage() {
               <br />
               <strong>Email:</strong> admin@adventurersguild.com
               <br />
-              <strong>Address:</strong> Adventurers Guild, Gandhinagar, Gujarat, India
+              <strong>Address:</strong> Guild, Gandhinagar, Gujarat, India
             </p>
           </section>
         </div>
