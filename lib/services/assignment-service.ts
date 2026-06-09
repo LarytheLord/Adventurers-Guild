@@ -3,9 +3,10 @@ import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
 import { logActivity } from '@/lib/activity-logger';
 import { SessionUser } from "../api-auth";
 import { prisma } from "@/lib/db";
-import { Prisma, AssignmentStatus, QuestAssignment } from '@prisma/client';
+import { Prisma, AssignmentStatus, QuestAssignment, UserRank } from '@prisma/client';
 import { UpdateAssignmentBody } from './types';
 import { PrismaClient } from "@prisma/client";
+import { canUserAcceptQuest } from "@/lib/quest-access";
 
 export async function applyToQuest(questId: string, user: SessionUser, tx: PrismaClient): Promise<ServiceResult<QuestAssignment>> {
   // Validate required fields
@@ -20,11 +21,24 @@ export async function applyToQuest(questId: string, user: SessionUser, tx: Prism
     // Check if the quest exists and is available
     const quest = await tx.quest.findUnique({
       where: { id: questId },
-      select: { status: true, maxParticipants: true, title: true, track: true },
+      select: { status: true, maxParticipants: true, title: true, track: true, requiredRank: true },
     });
 
     if (!quest || quest.status !== 'available') {
       return { data: null, error: 'Quest not available', status: 400 };
+    }
+
+    // Check rank gating: user must have minimum rank to accept quest
+    // Admins bypass rank checks, but adventurers must meet requirement
+    if (user.role === 'adventurer') {
+      const canAccept = canUserAcceptQuest(user.rank as UserRank, quest.requiredRank);
+      if (!canAccept) {
+        return {
+          data: null,
+          error: `You must reach Rank ${quest.requiredRank} to accept this quest. Current rank: ${user.rank}`,
+          status: 403,
+        };
+      }
     }
 
     // Task 1.4: Bootcamp tutorial gating

@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
         skillPointsReward: body.skillPointsReward || 0,
         monetaryReward: body.monetaryReward || null,
         requiredSkills: body.requiredSkills || [],
-        requiredRank: body.requiredRank || null,
+        requiredRank: body.requiredRank || 'F',
         maxParticipants: body.maxParticipants || null,
         questCategory: body.questCategory,
         track: (body.track as QuestTrack) || undefined,

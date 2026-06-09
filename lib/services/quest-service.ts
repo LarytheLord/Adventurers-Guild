@@ -2,6 +2,7 @@ import { ServiceResult, CreateQuestBody } from "./types";
 import { SessionUser } from "../api-auth";
 import { prisma } from "@/lib/db";
 import { Prisma, QuestStatus, QuestTrack, QuestCategory, Quest, UserRank } from '@prisma/client';
+import { getQuestAccessStatus } from "@/lib/quest-access";
 
 export async function getQuests(searchParams: URLSearchParams, user: SessionUser | null): Promise<ServiceResult<Quest[]>> {
   console.log('[quest-service] getQuests called:', { userRole: user?.role, userId: user?.id });
@@ -116,7 +117,26 @@ export async function getQuests(searchParams: URLSearchParams, user: SessionUser
 
   console.log('[quest-service] Found', quests.length, 'quests with filter');
 
-  return { data: quests, error: null, status: 200 };
+  // Add access control metadata for adventurers
+  const enrichedQuests = quests.map((quest) => {
+    if (user && user.role === 'adventurer') {
+      const accessStatus = getQuestAccessStatus(user.rank as UserRank, quest.requiredRank);
+      return {
+        ...quest,
+        canAccess: accessStatus.canAccess,
+        isVisible: accessStatus.isVisible,
+        lockedUntil: accessStatus.lockedUntil,
+      };
+    }
+    // Admins and companies see all quests with canAccess = true
+    return {
+      ...quest,
+      canAccess: true,
+      isVisible: true,
+    };
+  });
+
+  return { data: enrichedQuests as Quest[], error: null, status: 200 };
 }
 
 export async function createQuest(body: CreateQuestBody, user: SessionUser): Promise<ServiceResult<Quest>> {

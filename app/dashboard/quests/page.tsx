@@ -24,6 +24,7 @@ import {
   ChevronUp,
   Clock,
   Filter,
+  Lock,
   Search,
   Share2,
   Sparkles,
@@ -84,6 +85,9 @@ interface Quest {
     name: string;
     email: string;
   };
+  canAccess?: boolean;
+  isVisible?: boolean;
+  lockedUntil?: string;
 }
 
 type SortOption = 'newest' | 'xp_desc' | 'pay_desc' | 'deadline_asc';
@@ -132,6 +136,7 @@ export default function QuestsPage() {
   const [sort, setSort] = useState<SortOption>('newest');
   const [partyFilter, setPartyFilter] = useState<PartyFilter>('all');
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [showLockedQuests, setShowLockedQuests] = useState(false);
   const [joiningPartyId, setJoiningPartyId] = useState<string | null>(null);
   const [isBootcamp, setIsBootcamp] = useState(false);
 
@@ -187,7 +192,12 @@ export default function QuestsPage() {
     }
   }, [status, session]);
 
-  const filteredQuests = quests.filter((quest) => {
+  const accessibleQuests = quests.filter((q) => q.canAccess !== false);
+  const lockedQuests = quests.filter((q) => q.canAccess === false && q.isVisible !== false);
+
+  const displayedQuests = showLockedQuests ? lockedQuests : accessibleQuests;
+
+  const filteredQuests = displayedQuests.filter((quest) => {
     const isSquadQuest = (quest.maxParticipants ?? 1) > 1;
 
     if (partyFilter === 'solo') {
@@ -325,6 +335,31 @@ export default function QuestsPage() {
           </Button>
         </div>
       </GuildHero>
+
+      {/* Access Control Tabs */}
+      {lockedQuests.length > 0 && (
+        <div className="flex gap-2 border-b border-slate-200">
+          <Button
+            variant={showLockedQuests ? 'outline' : 'ghost'}
+            size="sm"
+            onClick={() => setShowLockedQuests(false)}
+            className="rounded-b-none border-b-2 border-transparent data-[active=true]:border-orange-500 data-[active=true]:bg-transparent"
+            data-active={!showLockedQuests}
+          >
+            Available Now ({accessibleQuests.length})
+          </Button>
+          <Button
+            variant={showLockedQuests ? 'ghost' : 'outline'}
+            size="sm"
+            onClick={() => setShowLockedQuests(true)}
+            className="rounded-b-none border-b-2 border-transparent data-[active=true]:border-orange-500 data-[active=true]:bg-transparent"
+            data-active={showLockedQuests}
+          >
+            <Lock className="h-4 w-4 mr-2" />
+            Coming Soon ({lockedQuests.length})
+          </Button>
+        </div>
+      )}
 
       <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <GuildKpi className="sm:col-span-2 xl:col-span-1">
@@ -515,7 +550,15 @@ export default function QuestsPage() {
                       Posted by {quest.company?.name || 'Unknown Company'}
                     </CardDescription>
                   </div>
-                  <Badge variant="outline">{quest.difficulty}-Rank</Badge>
+                  <div className="flex flex-col items-end gap-2">
+                    <Badge variant="outline">{quest.difficulty}-Rank</Badge>
+                    {quest.canAccess === false && quest.lockedUntil && (
+                      <div className="flex items-center gap-1 rounded-md bg-amber-50 px-2 py-1 text-xs font-medium text-amber-700 border border-amber-200">
+                        <Lock className="h-3 w-3" />
+                        Available at Rank {quest.lockedUntil}
+                      </div>
+                    )}
+                  </div>
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <Badge variant="secondary" className="capitalize">{quest.questCategory}</Badge>
@@ -630,12 +673,23 @@ export default function QuestsPage() {
                   </div>
                 )}
 
-                <Button className="mt-4 w-full" asChild>
-                  <Link href={`/dashboard/quests/${quest.id}`}>
-                    View Quest Details
+                {quest.canAccess === false ? (
+                  <Button
+                    className="mt-4 w-full"
+                    variant="outline"
+                    disabled
+                  >
+                    🔒 Locked — Available at Rank {quest.lockedUntil}
                     <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
+                  </Button>
+                ) : (
+                  <Button className="mt-4 w-full" asChild>
+                    <Link href={`/dashboard/quests/${quest.id}`}>
+                      View Quest Details
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                )}
               </CardContent>
             </GuildCard>
           ))}

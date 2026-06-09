@@ -69,7 +69,7 @@ export default function CreateQuestPage() {
     skillPointsReward: 10,
     monetaryReward: '',
     requiredSkills: '',
-    requiredRank: '',
+    requiredRank: 'F',
     maxParticipants: 1,
     deadline: '',
   });
