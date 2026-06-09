@@ -151,10 +151,10 @@ export default function QuestsPage() {
     return `/api/quests?${params.toString()}`;
   }, [debouncedSearchTerm, difficulty, track, category, sort]);
 
-  const { data, loading, error, refetch } = useApiFetch<{ success: boolean; quests: Quest[]; error?: string }>(apiUrl, {
+  const { data, loading, error, refetch } = useApiFetch<Quest[]>(apiUrl, {
     skip: !shouldFetch,
   });
-  const quests = data?.quests ?? EMPTY_QUESTS;
+  const quests = (Array.isArray(data) ? data : []) ?? EMPTY_QUESTS;
 
   useEffect(() => {
     if (status === 'unauthenticated') {
