@@ -35,7 +35,7 @@ Part of the **Open Paws** ecosystem, integrating with the Open Paws Bootcamp and
 
 ### Authentication & Security
 - **Role-Based Access** — Adventurers, Companies, and Admins with distinct permissions.
-- **Secure Authentication** — NextAuth.js (credentials + JWT session strategy, 30-day sessions).
+- **Secure Authentication** — NextAuth.js (credentials, Google, GitHub + JWT session strategy, 30-day sessions).
 - **Track Enforcement** — API-level access control for quest track visibility.
 
 ---
@@ -47,7 +47,7 @@ Part of the **Open Paws** ecosystem, integrating with the Open Paws Bootcamp and
 | Framework | Next.js 15 (App Router) |
 | Language | TypeScript |
 | Database | Neon (serverless PostgreSQL) via Prisma 6 ORM |
-| Auth | NextAuth.js v4 (Credentials Provider, JWT strategy) |
+| Auth | NextAuth.js v4 (Credentials, Google, GitHub, JWT strategy) |
 | UI | shadcn/ui + Tailwind CSS + Radix UI + Lucide React |
 | Deployment | Vercel |
 | Payments | Internal pipeline (Stripe Connect planned) |
@@ -88,6 +88,12 @@ DATABASE_URL_UNPOOLED="postgresql://user:password@your-neon-host-direct.neon.tec
 # Authentication — generate with: openssl rand -base64 32
 NEXTAUTH_SECRET="your-secret-here"
 NEXTAUTH_URL="http://localhost:3000"
+
+# Optional OAuth providers
+GOOGLE_CLIENT_ID=""
+GOOGLE_CLIENT_SECRET=""
+GITHUB_CLIENT_ID=""
+GITHUB_CLIENT_SECRET=""
 
 # Application
 NEXT_PUBLIC_APP_URL="http://localhost:3000"

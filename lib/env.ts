@@ -25,6 +25,10 @@ const envSchema = z.object({
   GOOGLE_CLIENT_ID: z.string().optional().default(''),
   GOOGLE_CLIENT_SECRET: z.string().optional().default(''),
 
+  // GitHub OAuth (optional — only needed if GitHub sign-in is enabled)
+  GITHUB_CLIENT_ID: z.string().optional().default(''),
+  GITHUB_CLIENT_SECRET: z.string().optional().default(''),
+
   // Application
   NEXT_PUBLIC_APP_URL: z.string().url().optional(),
 
