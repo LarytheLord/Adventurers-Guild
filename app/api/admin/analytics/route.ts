@@ -1,8 +1,15 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server';
-import { prisma, withDbRetry } from '@/lib/db';
+import { AssignmentStatus, UserRole } from '@prisma/client';
+
 import { requireAuth } from '@/lib/api-auth';
-import { QuestStatus, AssignmentStatus, UserRole } from '@prisma/client';
+import { prisma, withDbRetry } from '@/lib/db';
+
+function parseRangeDays(raw: string | null) {
+  if (raw === '30d') return 30;
+  if (raw === '90d') return 90;
+  return 7;
+}
 
 /**
  * GET /api/admin/analytics
@@ -15,10 +22,13 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    const { searchParams } = new URL(request.url);
+    const rangeDays = parseRangeDays(searchParams.get('range'));
     const now = new Date();
     const dayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
     const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const rangeStart = new Date(now.getTime() - rangeDays * 24 * 60 * 60 * 1000);
 
     const [
       dau,
@@ -34,39 +44,35 @@ export async function GET(request: NextRequest) {
       rankDistribution,
       questByCategory,
       questByTrack,
-      activityLast7Days,
-      avgCompletionTime,
+      activityByRange,
+      completionDurations,
       topAdventurers,
     ] = await withDbRetry(() =>
       Promise.all([
-        // DAU - unique users with activity in last 24h
-        prisma.activityLog.count({
+        prisma.activityLog.groupBy({
+          by: ['userId'],
           where: { createdAt: { gte: dayAgo } },
-          select: { userId: true },
         }),
-        // WAU - unique users with activity in last 7 days
-        prisma.activityLog.count({
+        prisma.activityLog.groupBy({
+          by: ['userId'],
           where: { createdAt: { gte: weekAgo } },
-          select: { userId: true },
         }),
-        // MAU - unique users with activity in last 30 days
-        prisma.activityLog.count({
+        prisma.activityLog.groupBy({
+          by: ['userId'],
           where: { createdAt: { gte: monthAgo } },
-          select: { userId: true },
         }),
-        // Total adventurers
         prisma.user.count({ where: { role: UserRole.adventurer } }),
-        // Total companies
         prisma.user.count({ where: { role: UserRole.company } }),
-        // Total quests ever created
         prisma.quest.count(),
-        // Active (available) quests
-        prisma.quest.count({ where: { status: QuestStatus.available } }),
-        // Completed assignments
-        prisma.questAssignment.count({
-          where: { status: AssignmentStatus.completed },
+        prisma.quest.count({
+          where: { status: { in: ['available', 'in_progress', 'review'] } },
         }),
-        // Pending assignments (submitted, under review)
+        prisma.questAssignment.count({
+          where: {
+            status: AssignmentStatus.completed,
+            completedAt: { gte: rangeStart },
+          },
+        }),
         prisma.questAssignment.count({
           where: {
             status: {
@@ -76,66 +82,81 @@ export async function GET(request: NextRequest) {
                 AssignmentStatus.review,
               ],
             },
+            assignedAt: { gte: rangeStart },
           },
         }),
-        // Rejected/needs rework assignments
         prisma.questAssignment.count({
           where: {
             status: {
-              in: [
-                AssignmentStatus.needs_rework,
-                AssignmentStatus.cancelled,
-              ],
+              in: [AssignmentStatus.needs_rework, AssignmentStatus.cancelled],
             },
+            assignedAt: { gte: rangeStart },
           },
         }),
-        // Rank distribution
         prisma.user.groupBy({
           by: ['rank'],
           _count: { id: true },
           where: { role: UserRole.adventurer },
           orderBy: { rank: 'desc' },
         }),
-        // Quests by category
         prisma.quest.groupBy({
           by: ['questCategory'],
           _count: { id: true },
-          where: { status: QuestStatus.available },
+          where: { createdAt: { gte: rangeStart } },
         }),
-        // Quests by track
         prisma.quest.groupBy({
           by: ['track'],
           _count: { id: true },
-          where: { status: QuestStatus.available },
+          where: { createdAt: { gte: rangeStart } },
         }),
-        // Activity logs (last 7 days) - daily breakdown
         prisma.activityLog.groupBy({
           by: ['action'],
           _count: { id: true },
-          where: { createdAt: { gte: weekAgo } },
+          where: { createdAt: { gte: rangeStart } },
           orderBy: { _count: { id: 'desc' } },
           take: 20,
         }),
-        // Average completion time (completed quests only) — calculate from DB
-        prisma.questCompletion.findMany({
-          select: {
-            id: true,
-            completionDate: true,
+        prisma.questAssignment.findMany({
+          where: {
+            status: AssignmentStatus.completed,
+            completedAt: { gte: rangeStart },
+            startedAt: { not: null },
           },
-          orderBy: { completionDate: 'desc' },
-          take: 100,
+          select: {
+            startedAt: true,
+            completedAt: true,
+          },
         }),
-        // Top 10 adventurers by completions
         prisma.questCompletion.groupBy({
           by: ['userId'],
           _count: { questId: true },
+          where: { completionDate: { gte: rangeStart } },
           orderBy: { _count: { questId: 'desc' } },
           take: 10,
         }),
       ])
     );
 
-    // Fetch adventurer names for top adventurers
+    const completionDurationsInDays = completionDurations
+      .map((assignment) => {
+        if (!assignment.startedAt || !assignment.completedAt) return null;
+        return (
+          (assignment.completedAt.getTime() - assignment.startedAt.getTime()) /
+          (1000 * 60 * 60 * 24)
+        );
+      })
+      .filter((duration): duration is number => duration !== null && duration >= 0);
+
+    const avgCompletionTimeDays =
+      completionDurationsInDays.length > 0
+        ? Number(
+            (
+              completionDurationsInDays.reduce((sum, duration) => sum + duration, 0) /
+              completionDurationsInDays.length
+            ).toFixed(1)
+          )
+        : null;
+
     const topAdventurerIds = topAdventurers.map((a) => a.userId);
     const topAdventurerUsers = await withDbRetry(() =>
       prisma.user.findMany({
@@ -145,11 +166,11 @@ export async function GET(request: NextRequest) {
     );
 
     const topAdventurersWithNames = topAdventurers.map((a) => {
-      const user = topAdventurerUsers.find((u) => u.id === a.userId);
+      const topUser = topAdventurerUsers.find((candidate) => candidate.id === a.userId);
       return {
         id: a.userId,
-        name: user?.name || user?.username || 'Unknown',
-        rank: user?.rank || 'F',
+        name: topUser?.name || topUser?.username || 'Unknown',
+        rank: topUser?.rank || 'F',
         completions: a._count.questId,
       };
     });
@@ -158,9 +179,9 @@ export async function GET(request: NextRequest) {
       success: true,
       analytics: {
         overview: {
-          dau: Array.isArray(dau) ? dau.length : dau,
-          wau: Array.isArray(wau) ? wau.length : wau,
-          mau: Array.isArray(mau) ? mau.length : mau,
+          dau: dau.length,
+          wau: wau.length,
+          mau: mau.length,
           totalUsers: totalAdventurers + totalCompanies,
           totalAdventurers,
           totalCompanies,
@@ -188,19 +209,25 @@ export async function GET(request: NextRequest) {
           topAdventurers: topAdventurersWithNames,
         },
         activity: {
-          last7Days: activityLast7Days.map((a: any) => ({
+          windowLabel: `${rangeDays}d`,
+          last7Days: activityByRange.map((a: any) => ({
             action: a.action,
             count: a._count.id,
           })),
         },
         completionMetrics: {
-          avgCompletionTimeDays: null as number | null,
+          avgCompletionTimeDays,
           completionRate:
-            completedAssignments > 0
-              ? ((completedAssignments / (completedAssignments + rejectedAssignments + pendingAssignments)) * 100).toFixed(1)
+            completedAssignments + rejectedAssignments + pendingAssignments > 0
+              ? (
+                  (completedAssignments /
+                    (completedAssignments + rejectedAssignments + pendingAssignments)) *
+                  100
+                ).toFixed(1)
               : '0.0',
         },
         generatedAt: now.toISOString(),
+        selectedRange: `${rangeDays}d`,
       },
     });
   } catch (error) {

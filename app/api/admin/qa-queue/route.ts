@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
           name: true,
           email: true,
           rank: true,
-          bootcampLink: { select: { bootcampTrack: true, bootcampWeek: true } },
+          bootcampLink: { select: { cohort: true, bootcampTrack: true, bootcampWeek: true } },
         },
       },
       submissions: {
