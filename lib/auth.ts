@@ -2,14 +2,77 @@ import NextAuth, { AuthOptions } from 'next-auth';
 import type { Session, User } from 'next-auth';
 import type { JWT } from 'next-auth/jwt';
 import CredentialsProvider from 'next-auth/providers/credentials';
+import GitHubProvider from 'next-auth/providers/github';
 import GoogleProvider from 'next-auth/providers/google';
 import bcrypt from 'bcryptjs';
 import { prisma, withDbRetry } from './db';
 import { env } from '@/lib/env';
 import { UserRole, UserRank } from '@prisma/client';
 
+async function upsertOAuthUser(user: User) {
+  if (!user.email) {
+    return { error: 'missing_email' as const };
+  }
+
+  const normalizedEmail = user.email.trim().toLowerCase();
+  const existingUser = await prisma.user.findUnique({
+    where: { email: normalizedEmail },
+    include: { adventurerProfile: true },
+  });
+
+  if (existingUser?.role === 'company' || existingUser?.role === 'admin') {
+    return { error: 'role_not_allowed' as const };
+  }
+
+  const dbUser = await prisma.$transaction(async (tx) => {
+    if (!existingUser) {
+      const username =
+        normalizedEmail.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '') + Math.floor(Math.random() * 1000);
+
+      const newUser = await tx.user.create({
+        data: {
+          email: normalizedEmail,
+          name: user.name ?? '',
+          username,
+          passwordHash: '',
+          role: 'adventurer' as UserRole,
+          rank: 'F' as UserRank,
+          xp: 0,
+          adventurerProfile: {
+            create: {},
+          },
+        },
+      });
+
+      return newUser;
+    }
+
+    if (!existingUser.adventurerProfile) {
+      await tx.adventurerProfile.create({
+        data: { userId: existingUser.id },
+      });
+    }
+
+    return tx.user.update({
+      where: { id: existingUser.id },
+      data: { lastLoginAt: new Date() },
+    });
+  });
+
+  (user as unknown as Record<string, unknown>).id = dbUser.id;
+  (user as unknown as Record<string, unknown>).role = dbUser.role;
+  (user as unknown as Record<string, unknown>).rank = dbUser.rank;
+  (user as unknown as Record<string, unknown>).xp = dbUser.xp;
+
+  return { dbUser };
+}
+
 export const authOptions: AuthOptions = {
   providers: [
+    GitHubProvider({
+      clientId: process.env.GITHUB_CLIENT_ID ?? '',
+      clientSecret: process.env.GITHUB_CLIENT_SECRET ?? '',
+    }),
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID ?? '',
       clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
@@ -63,31 +126,18 @@ export const authOptions: AuthOptions = {
   ],
   callbacks: {
     async signIn({ user, account }) {
-      if (account?.provider === 'google' && user.email) {
-        const normalizedEmail = user.email.trim().toLowerCase();
-        let dbUser = await prisma.user.findUnique({ where: { email: normalizedEmail } });
-        if (!dbUser) {
-          // Auto-create adventurer account for Google sign-in
-          const username = normalizedEmail.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '') + Math.floor(Math.random() * 1000);
-          dbUser = await prisma.user.create({
-            data: {
-              email: normalizedEmail,
-              name: user.name ?? '',
-              username,
-              passwordHash: '',
-              role: 'adventurer' as UserRole,
-              rank: 'F' as UserRank,
-              xp: 0,
-            },
-          });
+      if (account?.provider === 'google' || account?.provider === 'github') {
+        const result = await upsertOAuthUser(user);
+
+        if ('error' in result) {
+          if (result.error === 'missing_email') {
+            return '/login?error=oauth-email-required';
+          }
+
+          if (result.error === 'role_not_allowed') {
+            return '/login?error=oauth-adventurer-only';
+          }
         }
-        // Attach DB user info to the user object for JWT callback
-        (user as unknown as Record<string, unknown>).id = dbUser.id;
-        (user as unknown as Record<string, unknown>).role = dbUser.role;
-        (user as unknown as Record<string, unknown>).rank = dbUser.rank;
-        (user as unknown as Record<string, unknown>).xp = dbUser.xp;
-        // Update last login
-        await prisma.user.update({ where: { id: dbUser.id }, data: { lastLoginAt: new Date() } });
       }
       return true;
     },

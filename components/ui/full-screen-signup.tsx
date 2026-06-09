@@ -23,19 +23,35 @@ function GoogleIcon({ className }: { className?: string }) {
   );
 }
 
-/* ─── Google sign-in button ──────────────────────────────── */
-function GoogleSignInButton() {
+function GitHubIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 .5a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.42-4.04-1.42-.55-1.38-1.33-1.74-1.33-1.74-1.09-.74.08-.73.08-.73 1.2.08 1.84 1.23 1.84 1.23 1.08 1.84 2.82 1.31 3.51 1 .11-.78.42-1.31.76-1.61-2.67-.3-5.48-1.33-5.48-5.9 0-1.3.46-2.36 1.22-3.19-.12-.3-.53-1.52.12-3.17 0 0 1-.32 3.3 1.22a11.6 11.6 0 0 1 6 0c2.3-1.54 3.29-1.22 3.29-1.22.66 1.65.25 2.87.13 3.17.76.83 1.22 1.89 1.22 3.19 0 4.58-2.82 5.6-5.5 5.9.43.38.82 1.1.82 2.22v3.29c0 .32.22.7.83.58A12 12 0 0 0 12 .5Z" />
+    </svg>
+  );
+}
+
+/* ─── OAuth sign-in buttons ─────────────────────────────── */
+function OAuthSignInButton({
+  provider,
+  label,
+  icon,
+}: {
+  provider: "google" | "github";
+  label: string;
+  icon: React.ReactNode;
+}) {
   const [isLoading, setIsLoading] = useState(false);
 
-  async function handleGoogleSignIn() {
+  async function handleOAuthSignIn() {
     setIsLoading(true);
-    await signIn("google", { callbackUrl: "/dashboard" });
+    await signIn(provider, { callbackUrl: "/dashboard" });
   }
 
   return (
     <button
       type="button"
-      onClick={handleGoogleSignIn}
+      onClick={handleOAuthSignIn}
       disabled={isLoading}
       className="w-full flex items-center justify-center gap-2 py-2 px-4 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors disabled:opacity-50"
     >
@@ -43,8 +59,8 @@ function GoogleSignInButton() {
         <Loader2 className="h-4 w-4 animate-spin" />
       ) : (
         <>
-          <GoogleIcon className="h-4 w-4" />
-          Continue with Google
+          {icon}
+          {label}
         </>
       )}
     </button>
@@ -65,6 +81,7 @@ function OrDivider() {
 /* ─── Login form ─────────────────────────────────────────── */
 function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
@@ -73,6 +90,16 @@ function LoginForm() {
   useEffect(() => {
     if (status === "authenticated" && session?.user) router.push("/dashboard");
   }, [status, session, router]);
+
+  useEffect(() => {
+    const error = searchParams.get("error");
+    if (error === "oauth-adventurer-only") {
+      toast.error("Google and GitHub sign-in are available for adventurer accounts only.");
+    }
+    if (error === "oauth-email-required") {
+      toast.error("Your OAuth provider did not share an email address. Please use email login instead.");
+    }
+  }, [searchParams]);
 
   async function handleLogin(e: React.FormEvent) {
     e.preventDefault();
@@ -101,7 +128,16 @@ function LoginForm() {
 
   return (
     <div className="flex flex-col gap-4">
-      <GoogleSignInButton />
+      <OAuthSignInButton
+        provider="google"
+        label="Continue with Google"
+        icon={<GoogleIcon className="h-4 w-4" />}
+      />
+      <OAuthSignInButton
+        provider="github"
+        label="Continue with GitHub"
+        icon={<GitHubIcon className="h-4 w-4" />}
+      />
       <OrDivider />
     <form className="flex flex-col gap-4" onSubmit={handleLogin} noValidate>
       <div>
@@ -211,8 +247,21 @@ function RegisterFormInner() {
 
   return (
     <div className="flex flex-col gap-4">
-      <GoogleSignInButton />
-      <OrDivider />
+      {tab === "adventurer" ? (
+        <>
+          <OAuthSignInButton
+            provider="google"
+            label="Continue with Google"
+            icon={<GoogleIcon className="h-4 w-4" />}
+          />
+          <OAuthSignInButton
+            provider="github"
+            label="Continue with GitHub"
+            icon={<GitHubIcon className="h-4 w-4" />}
+          />
+          <OrDivider />
+        </>
+      ) : null}
     <form className="flex flex-col gap-4" onSubmit={register} noValidate>
       {/* Tab switcher */}
       <div className="flex rounded-lg border border-gray-200 overflow-hidden mb-1">
