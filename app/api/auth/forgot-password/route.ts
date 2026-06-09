@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     // Generate token
     const token = randomBytes(32).toString('hex');
     const tokenHash = createHash('sha256').update(token).digest('hex');
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
 
     console.log('[forgot-password] Generated reset token for user:', user.id);
 
@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
           <a href="${resetLink}" style="display:inline-block;margin:20px 0;padding:12px 24px;background:#f97316;color:#fff;font-weight:700;font-size:14px;border-radius:8px;text-decoration:none">
             Reset password
           </a>
-          <p style="color:#94a3b8;font-size:12px">This link expires in 1 hour. If you didn't request a reset, ignore this email.</p>
+          <p style="color:#94a3b8;font-size:12px">This link expires in 24 hours. If you didn't request a reset, ignore this email.</p>
           <p style="color:#94a3b8;font-size:11px;word-break:break-all">Or copy this link: ${resetLink}</p>
         </div>
       `,
