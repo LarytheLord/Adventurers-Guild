@@ -45,7 +45,20 @@ function OAuthSignInButton({
 
   async function handleOAuthSignIn() {
     setIsLoading(true);
-    await signIn(provider, { callbackUrl: "/dashboard" });
+    try {
+      const result = await signIn(provider, {
+        callbackUrl: "/dashboard",
+        redirect: true
+      });
+      if (result?.error) {
+        toast.error(`OAuth error: ${result.error}`);
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error('OAuth sign-in error:', error);
+      toast.error('Failed to sign in with ' + provider);
+      setIsLoading(false);
+    }
   }
 
   return (
