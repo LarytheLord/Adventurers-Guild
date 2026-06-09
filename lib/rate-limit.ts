@@ -75,4 +75,4 @@ export const apiRateLimit = (req: NextRequest) =>
   rateLimitMiddleware(req, { windowMs: 60 * 1000, maxRequests: 60 });
 
 export const strictRateLimit = (req: NextRequest) =>
-  rateLimitMiddleware(req, { windowMs: 60 * 1000, maxRequests: 10 });
+  rateLimitMiddleware(req, { windowMs: 15 * 60 * 1000, maxRequests: 20 });
