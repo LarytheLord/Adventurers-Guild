@@ -673,17 +673,23 @@ export default function QuestsPage() {
                   </div>
                 )}
 
-                <Button
-                  className="mt-4 w-full"
-                  asChild
-                  variant={quest.canAccess === false ? "outline" : "default"}
-                  disabled={quest.canAccess === false}
-                >
-                  <Link href={`/dashboard/quests/${quest.id}`}>
-                    {quest.canAccess === false ? 'Locked' : 'View Quest Details'}
+                {quest.canAccess === false ? (
+                  <Button
+                    className="mt-4 w-full"
+                    variant="outline"
+                    disabled
+                  >
+                    🔒 Locked — Available at Rank {quest.lockedUntil}
                     <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
+                  </Button>
+                ) : (
+                  <Button className="mt-4 w-full" asChild>
+                    <Link href={`/dashboard/quests/${quest.id}`}>
+                      View Quest Details
+                      <ArrowRight className="h-4 w-4" />
+                    </Link>
+                  </Button>
+                )}
               </CardContent>
             </GuildCard>
           ))}
