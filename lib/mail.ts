@@ -36,6 +36,24 @@ export async function sendEmail({ to, subject, html }: SendEmailParams): Promise
       html,
     });
     console.log('[mail] Resend API response:', result);
+
+    // Check if there's an error in the response (Resend returns 200 with error object)
+    if (result.error) {
+      console.error('[mail] Resend returned an error:', result.error);
+
+      // Handle testing mode limitation
+      if (result.error.message?.includes('testing emails')) {
+        console.log('[mail] Resend is in testing mode. In dev/testing, we fall back to console logging.');
+        console.log('\n─── [RESET PASSWORD EMAIL - TESTING MODE] ───────────────');
+        console.log(`To: ${to}`);
+        console.log(`Subject: ${subject}`);
+        console.log(`Body:\n${html.replace(/<[^>]+>/g, '').trim()}`);
+        console.log('──────────────────────────────────────────────────────\n');
+        return; // Don't throw error, allow testing to continue
+      }
+
+      throw new Error(`Resend error: ${result.error.message}`);
+    }
   } catch (error) {
     console.error('[mail] Failed to send email via Resend:', error);
     throw new Error(`Failed to send email: ${error instanceof Error ? error.message : 'Unknown error'}`);
