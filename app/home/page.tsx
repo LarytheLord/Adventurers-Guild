@@ -8,8 +8,6 @@ import RankJourney from '@/components/landing/RankJourney';
 import TrustStrip from '@/components/landing/LogoMarquee';
 import HowItWorks from '@/components/landing/HowItWorks';
 import QuestShowcase from '@/components/landing/QuestShowcase';
-import WhyAG from '@/components/landing/WhyAG';
-import { Component as GuildFooter } from '@/components/ui/footer-taped-design';
 
 const RANKS = ['F', 'E', 'D', 'C', 'B', 'A', 'S'] as const;
 

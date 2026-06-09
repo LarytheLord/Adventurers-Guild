@@ -3,16 +3,11 @@
 import { InfiniteSlider } from '@/components/ui/infinite-slider';
 
 const partners = [
-  { name: 'Next.js', src: 'https://svgl.app/library/nextjs_icon_dark.svg' },
-  { name: 'Vercel', src: 'https://svgl.app/library/vercel_wordmark.svg' },
-  { name: 'Neon', src: 'https://svgl.app/library/neon.svg' },
-  { name: 'TypeScript', src: 'https://svgl.app/library/typescript.svg' },
-  { name: 'Prisma', src: 'https://svgl.app/library/prisma.svg' },
-  { name: 'Tailwind CSS', src: 'https://svgl.app/library/tailwindcss.svg' },
-  { name: 'GitHub', src: 'https://svgl.app/library/github-dark.svg' },
-  { name: 'Stripe', src: 'https://svgl.app/library/stripe.svg' },
-  { name: 'Framer Motion', src: 'https://svgl.app/library/framer.svg' },
-  { name: 'Radix UI', src: 'https://svgl.app/library/radix-ui.svg' },
+  { name: 'GssOC', src: '/partners/gssoc.png' },
+  { name: 'Nsoc', src: '/partners/nsoc.png' },
+  { name: 'OpenPaws', src: '/partners/openpaws.png' },
+  { name: 'AiGrants', src: '/partners/aigrants.png' },
+  { name: 'BharatCode', src: 'https://bharatcode.ai/brand/refresh-v5/bharatcode-mark.svg' },
 ];
 
 export default function TrustStrip() {

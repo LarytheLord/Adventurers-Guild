@@ -10,8 +10,7 @@ import Navigation from "../components/Navigation"
 import ErrorBoundary from "../components/ErrorBoundary"
 import { Toaster } from "@/components/ui/sonner"
 import { GoToTop } from "@/components/ui/go-to-top"
-
-import { Component as GuildFooter } from '@/components/ui/footer-taped-design';
+import ConditionalFooter from "@/components/ConditionalFooter";
 
 export const metadata: Metadata = {
   title: "Guild",
@@ -70,7 +69,7 @@ export default function RootLayout({
               <ErrorBoundary>
                 {children}
               </ErrorBoundary>
-              <GuildFooter />
+              <ConditionalFooter />
             </div>
             <Toaster />
             <GoToTop />
