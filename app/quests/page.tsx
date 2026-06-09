@@ -139,22 +139,6 @@ export default function QuestsPage() {
   const [categories, setCategories] = useState<string[]>([]);
   const [filtersOpen, setFiltersOpen] = useState(false);
 
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setDebouncedSearchQuery(searchQuery);
-    }, 300);
-
-    return () => clearTimeout(timeout);
-  }, [searchQuery]);
-
-  useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
-
-  useEffect(() => {
-    fetchQuests();
-  }, [fetchQuests]);
-
   const fetchQuests = useCallback(async () => {
     try {
       setLoading(true);
@@ -205,6 +189,22 @@ export default function QuestsPage() {
       ]);
     }
   }, []);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+
+    return () => clearTimeout(timeout);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
+
+  useEffect(() => {
+    fetchQuests();
+  }, [fetchQuests]);
 
   const resetFilters = () => {
     setSearchQuery('');

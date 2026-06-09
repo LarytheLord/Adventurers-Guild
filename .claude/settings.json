@@ -8,7 +8,8 @@
       "Bash(npx prisma:*)",
       "Bash(mkdir -p /Users/abi/Documents/Adventurers-Guild/app/api/admin/qa-queue/[assignmentId])",
       "Bash(mkdir -p /Users/abi/Documents/Adventurers-Guild/app/admin/qa-queue/[assignmentId])",
-      "Bash(git -C /Users/abi/Documents/Adventurers-Guild add -A)"
+      "Bash(git -C /Users/abi/Documents/Adventurers-Guild add -A)",
+      "Bash(npx playwright *)"
     ],
     "additionalDirectories": [
       "/Users/abi/Documents/Adventurers-Guild/app/api/parties/[id]/members"

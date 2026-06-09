@@ -73,7 +73,14 @@ export async function GET(request: NextRequest) {
     if (mode === 'company') {
       const sort = parseCompanySort(searchParams.get('sort'));
       const companies = await prisma.user.findMany({
-        where: { role: 'company' },
+        where: {
+          role: 'company',
+          OR: [
+            { companyProfile: { is: { totalSpent: { gt: 0 } } } },
+            { companyProfile: { is: { questsPosted: { gt: 0 } } } },
+            { quests: { some: {} } },
+          ],
+        },
         select: {
           id: true,
           createdAt: true,
@@ -137,14 +144,36 @@ export async function GET(request: NextRequest) {
     const sort = parseAdventurerSort(searchParams.get('sort'));
     const comparator = order === 'asc' ? 'lt' : 'gt';
     const scoreValue = user[sort];
+    const activityWhere = {
+      role: 'adventurer' as const,
+      OR: [
+        { xp: { gt: 0 } },
+        { skillPoints: { gt: 0 } },
+        { adventurerProfile: { is: { totalQuestsCompleted: { gt: 0 } } } },
+      ],
+    };
+
+    const isRankedAdventurer = await prisma.user.count({
+      where: {
+        id: userId,
+        ...activityWhere,
+      },
+    });
+
+    if (isRankedAdventurer === 0) {
+      return NextResponse.json({
+        success: true,
+        rank: null,
+      });
+    }
 
     const totalUsers = await prisma.user.count({
-      where: { role: 'adventurer' },
+      where: activityWhere,
     });
 
     const betterUsersCount = await prisma.user.count({
       where: {
-        role: 'adventurer',
+        ...activityWhere,
         [sort]: { [comparator]: scoreValue },
       },
     });

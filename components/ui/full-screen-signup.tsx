@@ -188,6 +188,14 @@ function LoginForm() {
   );
 }
 
+function LoginFormWrapper() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
 /* ─── Register form ──────────────────────────────────────── */
 function RegisterFormInner() {
   const router = useRouter();
@@ -413,7 +421,7 @@ export const FullScreenSignup = ({ mode = "register" }: FullScreenSignupProps) =
             </p>
           </div>
 
-          {isLogin ? <LoginForm /> : <RegisterForm />}
+          {isLogin ? <LoginFormWrapper /> : <RegisterForm />}
         </div>
       </div>
       </div>

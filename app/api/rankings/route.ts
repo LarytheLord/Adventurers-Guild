@@ -57,7 +57,14 @@ export async function GET(request: NextRequest) {
     if (mode === 'company') {
       const sort = parseCompanySort(searchParams.get('sort'));
       const companies = await prisma.user.findMany({
-        where: { role: 'company' },
+        where: {
+          role: 'company',
+          OR: [
+            { companyProfile: { is: { totalSpent: { gt: 0 } } } },
+            { companyProfile: { is: { questsPosted: { gt: 0 } } } },
+            { quests: { some: {} } },
+          ],
+        },
         select: {
           id: true,
           name: true,
@@ -130,6 +137,11 @@ export async function GET(request: NextRequest) {
     const rank = normalizeRank(searchParams.get('rank'));
     const where = {
       role: 'adventurer' as const,
+      OR: [
+        { xp: { gt: 0 } },
+        { skillPoints: { gt: 0 } },
+        { adventurerProfile: { is: { totalQuestsCompleted: { gt: 0 } } } },
+      ],
       ...(rank ? { rank } : {}),
     };
 
