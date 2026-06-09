@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 import { Component as GuildFooter } from '@/components/ui/footer-taped-design';
 
 const FOOTER_ROUTES = new Set([
-  '/home',
+  '/',
   '/login',
   '/quests',
   '/faq',

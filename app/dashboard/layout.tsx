@@ -258,7 +258,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
-                    onClick={() => signOut({ callbackUrl: '/home' })}
+                    onClick={() => signOut({ callbackUrl: '/' })}
                     className="text-destructive"
                   >
                     <LogOut className="mr-2 h-4 w-4" />

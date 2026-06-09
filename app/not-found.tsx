@@ -34,7 +34,7 @@ export default function NotFound() {
                     size="lg"
                     className="h-12 rounded-xl bg-slate-950 px-7 text-white hover:bg-slate-800"
                   >
-                    <Link href="/home">
+                    <Link href="/">
                       <Home className="mr-2 h-4 w-4" />
                       Back to home
                     </Link>
@@ -61,7 +61,7 @@ export default function NotFound() {
                   <h2 className="mt-4 text-xl font-semibold text-slate-900">Suggested next moves</h2>
                   <div className="mt-5 space-y-3">
                     <Link
-                      href="/home"
+                      href="/"
                       className="flex items-center justify-between rounded-2xl border border-slate-100 bg-white px-4 py-4 text-sm font-medium text-slate-700 transition-colors hover:border-orange-100 hover:text-orange-600"
                     >
                       Return to the Guild homepage
