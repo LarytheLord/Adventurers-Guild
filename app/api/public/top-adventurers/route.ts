@@ -14,7 +14,7 @@ export async function GET() {
           rank: true,
           xp: true,
           level: true,
-          adventurer_profiles: {
+          adventurerProfile: {
             select: {
               totalQuestsCompleted: true,
               specialization: true,
@@ -32,8 +32,8 @@ export async function GET() {
         rank: a.rank ?? 'F',
         xp: a.xp ?? 0,
         level: a.level ?? 1,
-        questsCompleted: a.adventurer_profiles?.totalQuestsCompleted ?? 0,
-        specialization: a.adventurer_profiles?.specialization ?? null,
+        questsCompleted: a.adventurerProfile?.totalQuestsCompleted ?? 0,
+        specialization: a.adventurerProfile?.specialization ?? null,
         position: i + 1,
       })),
     });

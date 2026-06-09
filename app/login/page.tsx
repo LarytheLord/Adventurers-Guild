@@ -18,6 +18,9 @@ const ranks: { rank: Rank; label: string; pay: string }[] = [
   { rank: 'S', label: 'Elite', pay: '₹80K+' },
 ];
 
+
+import { FullScreenSignup } from '@/components/ui/full-screen-signup';
+
 export default function LoginPage() {
   const router = useRouter();
   const { data: session, status } = useSession();
