@@ -86,7 +86,7 @@ async function checkAuthAndRole(request: NextRequest, requiredRoles: UserRole[])
         secret,
         cookieName: 'next-auth.session-token',
       }));
-    
+
     if (!token) {
       if (process.env.NODE_ENV === 'development') {
         console.log('[Middleware] No token found, redirecting to login:', request.nextUrl.pathname);
@@ -99,7 +99,7 @@ async function checkAuthAndRole(request: NextRequest, requiredRoles: UserRole[])
 
     // Check if user has required role
     const userRole = token.role as UserRole;
-    
+
     if (!userRole) {
       // User role not found in token
       const url = new URL('/login', request.url);
