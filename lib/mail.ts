@@ -30,7 +30,7 @@ export async function sendEmail({ to, subject, html }: SendEmailParams): Promise
   try {
     console.log('[mail] Calling Resend API...');
     const result = await resend.emails.send({
-      from: 'Guild <onboarding@resend.dev>',
+      from: 'Guild <noreply@guilds.work>',
       to,
       subject,
       html,
