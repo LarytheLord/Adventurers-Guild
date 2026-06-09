@@ -48,7 +48,7 @@ export const Component = () => {
               <h4 className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-400">Company</h4>
               <div className="flex flex-col gap-2 items-start">
                 <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="/faq">FAQ</Link>
-                <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="https://github.com/Adventurers-Guild" target="_blank" rel="noopener noreferrer">Open Source (MIT)</Link>
+                <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="https://github.com/LarytheLord/Adventurers-Guild" target="_blank" rel="noopener noreferrer">Open Source (MIT)</Link>
                 <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="/register?tab=company">Post a Quest</Link>
                 <span className="flex items-center gap-1.5 text-[13px] font-medium text-slate-400 whitespace-nowrap">
                   Blog
@@ -84,7 +84,7 @@ export const Component = () => {
 
         <div className="flex gap-3 items-center">
           <a
-            href="https://github.com/Adventurers-Guild"
+            href="https://github.com/LarytheLord/Adventurers-Guild"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Guild on GitHub"

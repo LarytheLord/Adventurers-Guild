@@ -201,6 +201,14 @@ function LoginForm() {
   );
 }
 
+function LoginFormWrapper() {
+  return (
+    <Suspense fallback={null}>
+      <LoginForm />
+    </Suspense>
+  );
+}
+
 /* ─── Register form ──────────────────────────────────────── */
 function RegisterFormInner() {
   const router = useRouter();

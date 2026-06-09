@@ -20,7 +20,7 @@ const footerLinks = {
   ],
   company: [
     { label: 'Post Quests', href: '/register-company' },
-    { label: 'How It Works', href: '/home#how-it-works' },
+    { label: 'How It Works', href: '/#how-it-works' },
     { label: 'FAQ', href: '/faq' },
     { label: 'Contact', href: 'mailto:abid@guilds.work' },
   ],
@@ -51,7 +51,7 @@ export function SiteFooter() {
         <div className="grid grid-cols-2 gap-x-8 gap-y-12 py-16 sm:grid-cols-3 lg:grid-cols-6">
           {/* Brand — spans 2 cols */}
           <div className="col-span-2">
-            <Link href="/home" className="group mb-5 flex items-center gap-2.5">
+            <Link href="/" className="group mb-5 flex items-center gap-2.5">
               <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-orange-500 shadow-lg shadow-orange-500/20 transition-colors group-hover:bg-orange-600">
                 <span className="text-sm font-bold text-black">AG</span>
               </div>

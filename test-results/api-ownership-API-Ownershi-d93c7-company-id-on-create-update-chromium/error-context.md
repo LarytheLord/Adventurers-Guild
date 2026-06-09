@@ -1,0 +1,118 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - link "Skip to main content" [ref=e2] [cursor=pointer]:
+    - /url: "#main-content"
+  - generic [ref=e3]:
+    - navigation [ref=e4]:
+      - generic [ref=e6]:
+        - generic [ref=e7]:
+          - link "Home" [ref=e8] [cursor=pointer]:
+            - /url: /home
+          - link "Ranks" [ref=e9] [cursor=pointer]:
+            - /url: /home#ranks
+          - link "How It Works" [ref=e10] [cursor=pointer]:
+            - /url: /home#how-it-works
+          - link "For Companies" [ref=e11] [cursor=pointer]:
+            - /url: /register?tab=company
+        - generic [ref=e14]:
+          - link "Sign In" [ref=e15] [cursor=pointer]:
+            - /url: /login
+          - link "Join Guild" [ref=e16] [cursor=pointer]:
+            - /url: /register
+    - generic [ref=e19]:
+      - heading "Every quest brings you closer to S-Rank." [level=1] [ref=e21]
+      - generic [ref=e22]:
+        - generic [ref=e23]:
+          - img [ref=e25]
+          - heading "Welcome back" [level=2] [ref=e31]
+          - paragraph [ref=e32]: Sign in to your quest board
+        - generic [ref=e33]:
+          - button "Continue with Google" [ref=e34] [cursor=pointer]:
+            - img [ref=e35]
+            - text: Continue with Google
+          - button "Continue with GitHub" [ref=e40] [cursor=pointer]:
+            - img [ref=e41]
+            - text: Continue with GitHub
+          - generic [ref=e45]: or
+          - generic [ref=e47]:
+            - generic [ref=e48]:
+              - generic [ref=e49]: Your email
+              - textbox "Your email" [ref=e50]:
+                - /placeholder: you@example.com
+            - generic [ref=e51]:
+              - generic [ref=e52]:
+                - generic [ref=e53]: Password
+                - link "Forgot password?" [ref=e54] [cursor=pointer]:
+                  - /url: /forgot-password
+              - textbox "Password" [ref=e55]
+            - button "Sign in" [ref=e56] [cursor=pointer]
+            - generic [ref=e57]:
+              - text: No account?
+              - link "Join the Guild" [ref=e58] [cursor=pointer]:
+                - /url: /register
+    - contentinfo [ref=e59]:
+      - generic [ref=e60]:
+        - img [ref=e62]
+        - img [ref=e66]
+        - generic [ref=e69]:
+          - generic [ref=e70]:
+            - link "Guild Guild" [ref=e71] [cursor=pointer]:
+              - /url: /
+              - img "Guild" [ref=e72]
+              - generic [ref=e73]: Guild
+            - paragraph [ref=e74]: Real digital work. Real pay. Climb from F to S rank helping India's businesses grow.
+          - generic [ref=e75]:
+            - generic [ref=e76]:
+              - heading "Platform" [level=4] [ref=e77]
+              - generic [ref=e78]:
+                - link "Browse Quests" [ref=e79] [cursor=pointer]:
+                  - /url: /quests
+                - link "How It Works" [ref=e80] [cursor=pointer]:
+                  - /url: /#how-it-works
+                - link "Rank System" [ref=e81] [cursor=pointer]:
+                  - /url: /#ranks
+                - link "Join Guild" [ref=e82] [cursor=pointer]:
+                  - /url: /register
+            - generic [ref=e83]:
+              - heading "Company" [level=4] [ref=e84]
+              - generic [ref=e85]:
+                - link "FAQ" [ref=e86] [cursor=pointer]:
+                  - /url: /faq
+                - link "Open Source (MIT)" [ref=e87] [cursor=pointer]:
+                  - /url: https://github.com/Adventurers-Guild
+                - link "Post a Quest" [ref=e88] [cursor=pointer]:
+                  - /url: /register?tab=company
+                - generic [ref=e89]:
+                  - text: Blog
+                  - generic [ref=e90]: soon
+            - generic [ref=e91]:
+              - heading "Legal" [level=4] [ref=e92]
+              - generic [ref=e93]:
+                - link "Privacy Policy" [ref=e94] [cursor=pointer]:
+                  - /url: /privacy
+                - link "Terms of Service" [ref=e95] [cursor=pointer]:
+                  - /url: /terms
+                - link "Code of Conduct" [ref=e96] [cursor=pointer]:
+                  - /url: /legal
+      - generic [ref=e97]:
+        - generic [ref=e98]:
+          - paragraph [ref=e99]: ©2026 Guild. Open source under MIT.
+          - generic [ref=e100]:
+            - link "Privacy" [ref=e101] [cursor=pointer]:
+              - /url: /privacy
+            - link "Terms" [ref=e102] [cursor=pointer]:
+              - /url: /terms
+        - generic [ref=e103]:
+          - link "Guild on GitHub" [ref=e104] [cursor=pointer]:
+            - /url: https://github.com/Adventurers-Guild
+            - img [ref=e105]
+          - link "Guild on X (Twitter)" [ref=e108] [cursor=pointer]:
+            - /url: https://x.com/guild_india
+            - img [ref=e109]
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=e116] [cursor=pointer]:
+    - img [ref=e117]
+  - alert [ref=e120]
+```

@@ -46,7 +46,7 @@ export default function ForbiddenPage() {
             asChild
             className="bg-orange-500 hover:bg-orange-600 text-black font-semibold"
           >
-            <Link href="/home">Back to Home</Link>
+            <Link href="/">Back to Home</Link>
           </Button>
         </div>
       </div>

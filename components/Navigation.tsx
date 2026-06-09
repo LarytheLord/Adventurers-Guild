@@ -28,7 +28,7 @@ export default function Navigation() {
   const pathname = usePathname();
   const normalizedPath = pathname ? pathname.replace(/\/+$/, '') || '/' : null;
 
-  const isHome = normalizedPath === '/home' || normalizedPath === '/';
+  const isHome = normalizedPath === '/';
   const isDashboard = !!normalizedPath && (normalizedPath.startsWith('/dashboard') || normalizedPath.startsWith('/admin'));
   const authRoutePrefixes = ['/login', '/register', '/forgot-password', '/reset-password'];
   const isAuthPage = !!normalizedPath && authRoutePrefixes.some((prefix) => normalizedPath === prefix || normalizedPath.startsWith(`${prefix}/`));
@@ -89,7 +89,7 @@ export default function Navigation() {
   if (isDashboard || !mounted) return null;
 
   const handleLogout = async () => {
-    await signOut({ callbackUrl: '/home' });
+    await signOut({ callbackUrl: '/' });
   };
 
   const userRole = session?.user?.role;
@@ -98,9 +98,9 @@ export default function Navigation() {
   const isTransparent = isHome && !scrolled && !mobileMenuOpen;
 
   const marketingLinks = [
-    { href: '/home', label: 'Home' },
-    { href: '/home#ranks', label: 'Ranks' },
-    { href: '/home#how-it-works', label: 'How It Works' },
+    { href: '/', label: 'Home' },
+    { href: '/#ranks', label: 'Ranks' },
+    { href: '/#how-it-works', label: 'How It Works' },
     { href: '/register?tab=company', label: 'For Companies' },
   ];
 
@@ -121,7 +121,7 @@ export default function Navigation() {
 
     const [route, hash] = href.split('#');
 
-    if (route === '/home' && isHome) {
+    if (route === '/' && isHome) {
       if (!hash) return activeSection === 'home';
       return activeSection === hash;
     }
@@ -297,7 +297,7 @@ export default function Navigation() {
         )}
       >
         <div className="flex h-14 items-center justify-between px-3 sm:px-5">
-          {/* <Link href="/home" className="flex items-center gap-2 group">
+          {/* <Link href="/" className="flex items-center gap-2 group">
             <img
               src="/logo/guild-logo.png"
               alt="Guild"

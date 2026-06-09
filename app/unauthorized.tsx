@@ -37,7 +37,7 @@ export default function UnauthorizedPage() {
             variant="outline"
             className="border-slate-700 text-white hover:bg-slate-900"
           >
-            <Link href="/home">
+            <Link href="/">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to Home
             </Link>

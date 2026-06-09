@@ -2,7 +2,7 @@
   "name": "Adventurers Guild",
   "short_name": "Adventurers",
   "description": "Take on real coding quests from companies, earn rewards, and rank up from F to S.",
-  "start_url": "/home",
+  "start_url": "/",
   "display": "standalone",
   "background_color": "#0f172a",
   "theme_color": "#f97316",

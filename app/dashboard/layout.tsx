@@ -14,7 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ThemeToggle } from '@/components/ui/theme-toggle';
+
 import NotificationBell from '@/components/NotificationBell';
 import {
   BarChart3,
@@ -121,28 +121,28 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-full w-72 border-r border-slate-800 bg-slate-950 text-slate-100 transform transition-transform duration-200 ease-in-out lg:translate-x-0 ${
+        className={`fixed top-0 left-0 z-50 h-full w-72 border-r border-slate-200 bg-white text-slate-900 transform transition-transform duration-200 ease-in-out lg:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center justify-between p-4 border-b border-slate-800">
+          <div className="flex items-center justify-between p-4 border-b border-slate-200">
             <Link
               href={isCompany ? '/dashboard/company' : '/dashboard'}
               className="flex items-center space-x-2"
             >
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 font-bold text-black">
+              <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 font-bold text-white">
                 AG
               </span>
-              <span className="text-sm font-semibold tracking-wide text-slate-200">
+              <span className="text-sm font-semibold tracking-wide text-slate-900">
                 Guild
               </span>
             </Link>
             <Button
               variant="ghost"
               size="icon"
-              className="lg:hidden text-slate-200 hover:bg-slate-800"
+              className="lg:hidden text-slate-500 hover:bg-slate-100"
               onClick={() => setSidebarOpen(false)}
             >
               <X className="h-5 w-5" />
@@ -150,12 +150,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </div>
 
           <div className="px-4 pt-4">
-            <div className="rounded-xl border border-slate-800 bg-slate-900/70 p-3">
-              <div className="flex items-center gap-2 text-orange-300">
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+              <div className="flex items-center gap-2 text-orange-600">
                 <RoleIcon className="h-4 w-4" />
                 <p className="text-xs font-semibold uppercase tracking-[0.2em]">{roleTitle}</p>
               </div>
-              <p className="mt-2 text-xs text-slate-400">{roleSubtitle}</p>
+              <p className="mt-2 text-xs text-slate-500">{roleSubtitle}</p>
             </div>
           </div>
 
@@ -168,8 +168,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 className={cn(
                   'flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-colors',
                   isActive(item.href)
-                    ? 'bg-gradient-to-r from-orange-500/25 to-amber-400/20 text-white border border-orange-400/40'
-                    : 'text-slate-300 hover:bg-slate-800 hover:text-slate-100'
+                    ? 'bg-orange-50 text-orange-600 border border-orange-200'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                 )}
                 onClick={() => setSidebarOpen(false)}
               >
@@ -183,8 +183,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 className={cn(
                   'mt-2 flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-colors',
                   pathname === '/admin'
-                    ? 'bg-gradient-to-r from-violet-500/30 to-indigo-500/20 text-white border border-violet-400/50'
-                    : 'text-slate-300 hover:bg-slate-800 hover:text-slate-100'
+                    ? 'bg-violet-50 text-violet-600 border border-violet-200'
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
                 )}
                 onClick={() => setSidebarOpen(false)}
               >
@@ -195,15 +195,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           </nav>
 
           {/* User section */}
-          <div className="p-4 border-t border-slate-800">
-            <div className="flex items-center space-x-3 rounded-xl border border-slate-800 bg-slate-900/70 p-3">
+          <div className="p-4 border-t border-slate-200">
+            <div className="flex items-center space-x-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
               <Avatar>
                 <AvatarImage src={user?.image || undefined} />
-                <AvatarFallback className="bg-slate-800 text-slate-100">{userInitials}</AvatarFallback>
+                <AvatarFallback className="bg-slate-200 text-slate-700">{userInitials}</AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium truncate text-slate-100">{user?.name}</p>
-                <p className="text-xs text-slate-400 truncate">
+                <p className="text-sm font-medium truncate text-slate-900">{user?.name}</p>
+                <p className="text-xs text-slate-500 truncate">
                   {user?.email}
                 </p>
               </div>
@@ -236,7 +236,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
             <div className="flex items-center space-x-2">
               <NotificationBell userId={session?.user?.id || ''} />
-              <ThemeToggle />
               
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -258,7 +257,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
-                    onClick={() => signOut({ callbackUrl: '/home' })}
+                    onClick={() => signOut({ callbackUrl: '/' })}
                     className="text-destructive"
                   >
                     <LogOut className="mr-2 h-4 w-4" />
