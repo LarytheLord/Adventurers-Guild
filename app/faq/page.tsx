@@ -42,7 +42,7 @@ const faqs = [
   },
   {
     q: 'How do I contact support?',
-    a: 'Email support@adventurersguild.space and we aim to reply within 48 hours.',
+    a: 'Email us at abid@guilds.work. We aim to respond within 48 hours.',
   },
 ];
 
@@ -84,7 +84,9 @@ export default function FaqPage() {
           <InfoPageAside title="Need Help">
             <div className="inline-flex items-center gap-2 text-slate-900">
               <Mail className="h-4 w-4 text-orange-500" />
-              support@adventurersguild.space
+              <a href="mailto:abid@guilds.work" className="text-orange-500 hover:text-orange-400">
+                abid@guilds.work
+              </a>
             </div>
             <p>Reach out if you want help with onboarding, quest flow, or a company setup question.</p>
           </InfoPageAside>

@@ -103,7 +103,10 @@ def get_reddit_token(env: dict[str, str]) -> str | None:
             data=data,
             headers={
                 "User-Agent": env.get("REDDIT_USER_AGENT", "LeadMachine/1.0"),
-                "Authorization": f"Basic {base64.b64encode(f'{env['REDDIT_CLIENT_ID']}:{env['REDDIT_CLIENT_SECRET']}'.encode()).decode()}",
+                "Authorization": "Basic "
+                + base64.b64encode(
+                    f"{env.get('REDDIT_CLIENT_ID', '')}:{env.get('REDDIT_CLIENT_SECRET', '')}".encode()
+                ).decode(),
             },
         )
         with urllib.request.urlopen(req, timeout=15) as resp:

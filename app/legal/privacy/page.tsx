@@ -175,7 +175,10 @@ export default function PrivacyPage() {
           <p>
             For privacy-related questions or to exercise your rights:
             <br />
-            <strong>Email:</strong> admin@adventurersguild.com
+            <strong>Email:</strong>{' '}
+            <a href="mailto:abid@guilds.work" className="text-orange-500 hover:text-orange-400">
+              abid@guilds.work
+            </a>
             <br />
             <strong>Address:</strong> Guild, Gandhinagar, Gujarat, India
           </p>

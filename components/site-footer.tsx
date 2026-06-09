@@ -22,6 +22,7 @@ const footerLinks = {
     { label: 'Post Quests', href: '/register-company' },
     { label: 'How It Works', href: '/#how-it-works' },
     { label: 'FAQ', href: '/faq' },
+    { label: 'Contact', href: 'mailto:abid@guilds.work' },
   ],
   legal: [
     { label: 'Terms of Service', href: '/terms' },
