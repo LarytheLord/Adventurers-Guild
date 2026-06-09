@@ -27,7 +27,7 @@ export async function sendEmail({ to, subject, html }: SendEmailParams): Promise
 
   try {
     await resend.emails.send({
-      from: 'Adventurers Guild <noreply@adventurersguild.com>',
+      from: 'Guild <onboarding@resend.dev>',
       to,
       subject,
       html,
