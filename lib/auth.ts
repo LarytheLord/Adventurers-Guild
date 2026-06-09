@@ -1,5 +1,6 @@
 import NextAuth, { AuthOptions } from 'next-auth';
 import type { Session, User } from 'next-auth';
+import { decode as nextAuthDecode, encode as nextAuthEncode } from 'next-auth/jwt';
 import type { JWT } from 'next-auth/jwt';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GitHubProvider from 'next-auth/providers/github';
