@@ -12,6 +12,8 @@ export async function sendEmail({ to, subject, html }: SendEmailParams): Promise
   const isDev = process.env.NODE_ENV !== 'production';
   const resendConfigured = !!process.env.RESEND_API_KEY;
 
+  console.log('[mail] Sending email:', { to, subject, isDev, resendConfigured });
+
   if (!resendConfigured) {
     if (isDev) {
       // Dev fallback: log email to console so you can test without Resend
@@ -26,14 +28,16 @@ export async function sendEmail({ to, subject, html }: SendEmailParams): Promise
   }
 
   try {
-    await resend.emails.send({
+    console.log('[mail] Calling Resend API...');
+    const result = await resend.emails.send({
       from: 'Guild <onboarding@resend.dev>',
       to,
       subject,
       html,
     });
+    console.log('[mail] Resend API response:', result);
   } catch (error) {
-    console.error('Failed to send email via Resend:', error);
+    console.error('[mail] Failed to send email via Resend:', error);
     throw new Error(`Failed to send email: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
