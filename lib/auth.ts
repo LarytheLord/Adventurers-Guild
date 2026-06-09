@@ -82,9 +82,13 @@ export const authOptions: AuthOptions = {
           });
         }
         // Attach DB user info to the user object for JWT callback
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (user as any).id = dbUser.id;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (user as any).role = dbUser.role;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (user as any).rank = dbUser.rank;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (user as any).xp = dbUser.xp;
         // Update last login
         await prisma.user.update({ where: { id: dbUser.id }, data: { lastLoginAt: new Date() } });
