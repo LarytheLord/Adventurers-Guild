@@ -20,7 +20,7 @@ export function InfoPageShell({
   updatedAt,
   children,
   aside,
-  backHref = '/',
+  backHref = '/home',
   backLabel = 'Back to home',
 }: InfoPageShellProps) {
   return (
