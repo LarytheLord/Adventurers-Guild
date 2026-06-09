@@ -102,7 +102,11 @@ export default function PrivacyPage() {
               <li>Object to or restrict processing</li>
             </ul>
             <p>
-              To exercise these rights, contact us at admin@adventurersguild.com.
+              To exercise these rights, contact us at{' '}
+              <a href="mailto:abid@guilds.work" className="text-orange-500 hover:text-orange-400">
+                abid@guilds.work
+              </a>
+              .
             </p>
           </section>
 

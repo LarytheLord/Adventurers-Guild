@@ -53,7 +53,11 @@ export default function TermsPage() {
             <h3 className="text-xl font-medium mb-2">3.3 Account Security</h3>
             <p>
               You are responsible for safeguarding your password and for all activity that occurs under your account.
-              Notify us immediately at {process.env.NEXT_PUBLIC_APP_URL || 'admin@adventurersguild.com'} of any unauthorized use.
+              Notify us immediately at{' '}
+              <a href="mailto:abid@guilds.work" className="text-orange-500 hover:text-orange-400">
+                abid@guilds.work
+              </a>
+              {' '}of any unauthorized use.
             </p>
           </section>
 
@@ -158,7 +162,10 @@ export default function TermsPage() {
             <p>
               For questions about these Terms, contact us at:
               <br />
-              <strong>Email:</strong> admin@adventurersguild.com
+              <strong>Email:</strong>{' '}
+              <a href="mailto:abid@guilds.work" className="text-orange-500 hover:text-orange-400">
+                abid@guilds.work
+              </a>
               <br />
               <strong>Address:</strong> Guild, Gandhinagar, Gujarat, India
             </p>

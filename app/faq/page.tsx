@@ -37,7 +37,7 @@ const faqs = [
   },
   {
     q: 'How do I contact support?',
-    a: 'Email us at support@adventurersguild.space. We aim to respond within 48 hours.',
+    a: 'Email us at abid@guilds.work. We aim to respond within 48 hours.',
   },
 ];
 
@@ -66,7 +66,9 @@ export default function FaqPage() {
           <p className="text-slate-500 text-sm">Still have questions?</p>
           <p className="text-slate-400 text-sm mt-1">
             Email us at{' '}
-            <span className="text-orange-400">support@adventurersguild.space</span>
+            <a href="mailto:abid@guilds.work" className="text-orange-400 hover:text-orange-300 transition-colors">
+              abid@guilds.work
+            </a>
           </p>
         </div>
       </div>
