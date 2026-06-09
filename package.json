@@ -76,6 +76,7 @@
     "react-resizable-panels": "^3.0.6",
     "react-use-measure": "^2.1.7",
     "recharts": "^3.3.0",
+    "resend": "^6.12.4",
     "sonner": "^1.7.1",
     "stripe": "^20.4.1",
     "tailwind-merge": "^2.5.5",
