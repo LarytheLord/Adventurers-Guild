@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
@@ -15,13 +15,15 @@ import {
   BarChart3,
   Shield,
   Activity,
-  DollarSign,
   Plus,
   ClipboardList,
   ArrowRight,
   Loader2,
   CheckCircle,
   Clock,
+  Layers,
+  Wallet,
+  Zap,
 } from 'lucide-react';
 
 interface AdminStats {
@@ -29,6 +31,7 @@ interface AdminStats {
   totalQuests: number;
   activeQuests: number;
   completedQuests: number;
+  pendingQaCount: number;
 }
 
 interface UserItem {
@@ -39,26 +42,29 @@ interface UserItem {
   rank: string;
   xp: number;
   level: number;
+  createdAt: string;
 }
 
-interface QuestItem {
-  status: string;
+interface ActivityItem {
+  id: string;
+  action: string;
+  createdAt: string;
+  user: {
+    name: string;
+    rank: string | null;
+  };
 }
 
-interface AdminUsersResponse {
+interface AdminOverviewResponse {
   success: boolean;
-  users: UserItem[];
-  error?: string;
-}
-
-interface AdminQuestsResponse {
-  success: boolean;
-  quests: QuestItem[];
+  stats: AdminStats;
+  recentUsers: UserItem[];
+  recentActivity: ActivityItem[];
   error?: string;
 }
 
 const EMPTY_USERS: UserItem[] = [];
-const EMPTY_QUESTS: QuestItem[] = [];
+const EMPTY_ACTIVITY: ActivityItem[] = [];
 
 const RANK_COLORS: Record<string, string> = {
   S: 'bg-amber-100 text-amber-800',
@@ -76,17 +82,10 @@ export default function AdminDashboard() {
   const shouldFetch = status === 'authenticated' && session?.user?.role === 'admin';
 
   const {
-    data: usersData,
-    loading: usersLoading,
-    error: usersError,
-  } = useApiFetch<AdminUsersResponse>('/api/admin/users', {
-    skip: !shouldFetch,
-  });
-  const {
-    data: questsData,
-    loading: questsLoading,
-    error: questsError,
-  } = useApiFetch<AdminQuestsResponse>('/api/admin/quests?limit=200', {
+    data: overviewData,
+    loading,
+    error: fetchError,
+  } = useApiFetch<AdminOverviewResponse>('/api/admin/overview', {
     skip: !shouldFetch,
   });
 
@@ -101,24 +100,17 @@ export default function AdminDashboard() {
     }
   }, [router, session, status]);
 
-  const allUsers = usersData?.users ?? EMPTY_USERS;
-  const users = allUsers.slice(0, 10);
-  const questList = questsData?.quests ?? EMPTY_QUESTS;
-  const fetchError = usersError ?? questsError;
+  const users = overviewData?.recentUsers ?? EMPTY_USERS;
+  const recentActivity = overviewData?.recentActivity ?? EMPTY_ACTIVITY;
+  const stats = overviewData?.stats ?? {
+    totalUsers: 0,
+    totalQuests: 0,
+    activeQuests: 0,
+    completedQuests: 0,
+    pendingQaCount: 0,
+  };
 
-  const stats = useMemo<AdminStats>(
-    () => ({
-      totalUsers: allUsers.length,
-      totalQuests: questList.length,
-      activeQuests: questList.filter(
-        (quest) => quest.status === 'available' || quest.status === 'in_progress'
-      ).length,
-      completedQuests: questList.filter((quest) => quest.status === 'completed').length,
-    }),
-    [allUsers, questList]
-  );
-
-  if (status === 'loading' || (shouldFetch && (usersLoading || questsLoading))) {
+  if (status === 'loading' || (shouldFetch && loading)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -162,6 +154,13 @@ export default function AdminDashboard() {
               </Link>
             </Button>
             <Button variant="outline" asChild>
+              <Link href="/admin/analytics">
+                <BarChart3 className="h-4 w-4" />
+                Analytics
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+            <Button variant="outline" asChild>
               <Link href="/admin/quests">
                 <ClipboardList className="h-4 w-4" />
                 Manage Quests
@@ -171,7 +170,7 @@ export default function AdminDashboard() {
             <Button variant="outline" asChild className="border-orange-500/30 text-orange-400 hover:bg-orange-500/10">
               <Link href="/admin/qa-queue">
                 <Shield className="h-4 w-4" />
-                QA Queue
+                QA Queue ({stats.pendingQaCount})
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
@@ -189,12 +188,19 @@ export default function AdminDashboard() {
               </Link>
             </Button>
             <Button variant="outline" asChild>
-               <Link href="/admin/revenue">
-                 <BarChart3 className="h-4 w-4" />
-                 Revenue Dashboard
-                 <ArrowRight className="h-4 w-4" />
-               </Link>
-             </Button>
+              <Link href="/admin/api-budgets">
+                <Zap className="h-4 w-4" />
+                API Budgets
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/admin/revenue">
+                <Wallet className="h-4 w-4" />
+                Revenue Dashboard
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
           </CardContent>
         </Card>
 
@@ -235,6 +241,15 @@ export default function AdminDashboard() {
               <div className="text-2xl font-bold">{stats.completedQuests}</div>
             </CardContent>
           </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Pending QA</CardTitle>
+              <Shield className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.pendingQaCount}</div>
+            </CardContent>
+          </Card>
         </div>
 
         <Card>
@@ -258,8 +273,9 @@ export default function AdminDashboard() {
                 label: 'At least one quest is live and available',
                 link: '/admin/quests',
               },
+              { done: stats.pendingQaCount > 0, label: 'Run the QA mediation queue', link: '/admin/qa-queue' },
               { done: false, label: 'Walk interns through quest selection', link: '/dashboard/quests' },
-              { done: false, label: 'Add observation notes after first session', link: '/admin/quests' },
+              { done: false, label: 'Tune templates and criteria after first session', link: '/admin/quest-templates' },
             ].map((item, index) => (
               <div key={index} className="flex items-center gap-3 rounded-lg border bg-card p-3">
                 {item.done ? (
@@ -311,6 +327,37 @@ export default function AdminDashboard() {
                         Lv.{user.level} | {user.xp} XP
                       </span>
                     </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Activity</CardTitle>
+            <CardDescription>Latest platform actions recorded in the activity log</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {recentActivity.length === 0 ? (
+              <p className="py-8 text-center text-muted-foreground">No recent activity recorded</p>
+            ) : (
+              <div className="space-y-3">
+                {recentActivity.map((entry) => (
+                  <div key={entry.id} className="flex items-center justify-between rounded-lg border p-3">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-medium capitalize">
+                        {entry.action.replace(/_/g, ' ')}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {entry.user.name}
+                        {entry.user.rank ? ` • ${entry.user.rank}-Rank` : ''}
+                      </div>
+                    </div>
+                    <Badge variant="outline">
+                      {new Date(entry.createdAt).toLocaleDateString()}
+                    </Badge>
                   </div>
                 ))}
               </div>

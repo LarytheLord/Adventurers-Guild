@@ -4,6 +4,73 @@ import { requireAuth } from '@/lib/api-auth';
 import { Prisma } from '@prisma/client';
 import crypto from 'crypto';
 
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ assignmentId: string }> }
+) {
+  const user = await requireAuth(request, 'admin');
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
+  }
+
+  const { assignmentId } = await params;
+
+  const assignment = await prisma.questAssignment.findUnique({
+    where: { id: assignmentId },
+    select: {
+      id: true,
+      status: true,
+      assignedAt: true,
+      startedAt: true,
+      completedAt: true,
+      progress: true,
+      quest: {
+        select: {
+          id: true,
+          title: true,
+          track: true,
+          difficulty: true,
+          xpReward: true,
+          monetaryReward: true,
+          detailedDescription: true,
+          acceptanceCriteria: true,
+          briefData: true,
+          fieldTemplate: { select: { briefFields: true, submissionFields: true } },
+        },
+      },
+      user: {
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          rank: true,
+          bootcampLink: {
+            select: { cohort: true, bootcampTrack: true, bootcampWeek: true },
+          },
+        },
+      },
+      submissions: {
+        orderBy: { submittedAt: 'desc' },
+        select: {
+          id: true,
+          submissionContent: true,
+          submissionNotes: true,
+          submissionData: true,
+          submittedAt: true,
+          reviewNotes: true,
+          criteriaResults: true,
+        },
+      },
+    },
+  });
+
+  if (!assignment) {
+    return NextResponse.json({ error: 'Assignment not found', success: false }, { status: 404 });
+  }
+
+  return NextResponse.json({ assignment, success: true });
+}
+
 // PATCH /api/admin/qa-queue/[assignmentId] — approve or reject submission
 export async function PATCH(
   request: NextRequest,

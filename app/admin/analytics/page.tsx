@@ -4,6 +4,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { useSession } from 'next-auth/react';
 import {
   Users,
   Target,
@@ -55,6 +56,7 @@ function AnimatedCounter({ value }: { value: number }) {
 }
 
 export default function AdminAnalyticsPage() {
+  const { data: session, status } = useSession();
   const router = useRouter();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -65,13 +67,16 @@ export default function AdminAnalyticsPage() {
   );
 
   useEffect(() => {
+    if (status !== 'authenticated' || session?.user?.role !== 'admin') {
+      return;
+    }
     fetchAnalytics();
-  }, [dateRange]);
+  }, [dateRange, session?.user?.role, status]);
 
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/admin/analytics');
+      const res = await fetch(`/api/admin/analytics?range=${dateRange}`);
       if (res.status === 401) {
         router.push('/login');
         return;
@@ -90,6 +95,17 @@ export default function AdminAnalyticsPage() {
   const toggleSection = (section: string) => {
     setExpandedSection(expandedSection === section ? null : section);
   };
+
+  useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/login');
+      return;
+    }
+
+    if (status === 'authenticated' && session?.user?.role !== 'admin') {
+      router.push('/dashboard');
+    }
+  }, [router, session?.user?.role, status]);
 
   const StatCard = ({
     title,
@@ -369,11 +385,11 @@ export default function AdminAnalyticsPage() {
 
                 {/* Quests by Track */}
                 <div>
-                  <p className="text-xs text-slate-500 uppercase tracking-wider mb-3">
-                    Quests by Track
-                  </p>
-                  <BarChart
-                    data={data.quests?.byTrack ?? []}
+                    <p className="text-xs text-slate-500 uppercase tracking-wider mb-3">
+                      Quests created by Track
+                    </p>
+                    <BarChart
+                      data={data.quests?.byTrack ?? []}
                     labelKey="track"
                     valueKey="count"
                     color="fill-sky-500"
@@ -427,7 +443,7 @@ export default function AdminAnalyticsPage() {
               {/* Activity Feed */}
               <Section
                 id="activity"
-                title="Activity Feed (Last 7 Days)"
+                title={`Activity Feed (${data.activity?.windowLabel ?? dateRange})`}
                 icon={<Activity className="w-4 h-4" />}
               >
                 <ActivityTimeline activities={data.activity?.last7Days ?? []} />

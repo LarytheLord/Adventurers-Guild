@@ -2,7 +2,15 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BarChart3, ClipboardList, LayoutDashboard, Shield } from 'lucide-react';
+import {
+  BarChart3,
+  ClipboardList,
+  LayoutDashboard,
+  Layers,
+  Shield,
+  Wallet,
+  Zap,
+} from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
@@ -20,10 +28,34 @@ const adminLinks = [
     icon: ClipboardList,
   },
   {
+    href: '/admin/qa-queue',
+    label: 'QA Queue',
+    description: 'Review submissions before client handoff',
+    icon: Shield,
+  },
+  {
+    href: '/admin/analytics',
+    label: 'Analytics',
+    description: 'Platform health, ranks, and activity',
+    icon: BarChart3,
+  },
+  {
     href: '/admin/revenue',
     label: 'Revenue',
     description: 'GMV, take rate, and payout health',
-    icon: BarChart3,
+    icon: Wallet,
+  },
+  {
+    href: '/admin/quest-templates',
+    label: 'Templates',
+    description: 'Manage quest brief and submission schemas',
+    icon: Layers,
+  },
+  {
+    href: '/admin/api-budgets',
+    label: 'API Budgets',
+    description: 'Track internal model spend and caps',
+    icon: Zap,
   },
 ] as const;
 
