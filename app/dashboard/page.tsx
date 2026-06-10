@@ -2,397 +2,358 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import { prisma, withDbRetry } from '@/lib/db';
-import { ShareGuildCard } from '@/components/guild/ShareGuildCard';
-import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import {
-  ArrowRight,
-  Clock,
-  Flame,
-  Sparkles,
-  Target,
-  Trophy,
-  TrendingUp,
-  Zap,
-} from 'lucide-react';
 import Link from 'next/link';
 import { RankBadge } from '@/components/ui/rank-badge';
 import type { Rank } from '@/components/ui/rank-badge';
 import { RANK_THRESHOLDS } from '@/lib/ranks';
-import {
-  GuildCard,
-  GuildChip,
-  GuildHero,
-  GuildKpi,
-  GuildListItem,
-  GuildPage,
-  GuildPanel,
-} from '@/components/guild/primitives';
-import { StreakBadge } from '@/components/ui/streak-badge';
 
 const RANK_ORDER: Rank[] = ['F', 'E', 'D', 'C', 'B', 'A', 'S'];
+
+const rankToTier: Record<string, string> = {
+  F: 'Tier 1',
+  E: 'Tier 2',
+  D: 'Tier 3',
+  C: 'Tier 4',
+  B: 'Tier 5',
+  A: 'Tier 6',
+  S: 'Tier 7',
+};
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
 
-  if (!session?.user) {
-    redirect('/login');
-  }
-
-  if (session.user.role === 'company') {
-    redirect('/dashboard/company');
-  }
-
-  if (session.user.role === 'admin') {
-    redirect('/admin');
-  }
+  if (!session?.user) redirect('/login');
+  if (session.user.role === 'company') redirect('/dashboard/company');
+  if (session.user.role === 'admin') redirect('/admin');
 
   const userId = session.user.id;
 
-  const [user, activeAssignments, availableQuests] = await withDbRetry(() => Promise.all([
-    prisma.user.findUnique({
-      where: { id: userId },
-      select: {
-        xp: true,
-        rank: true,
-        level: true,
-        skillPoints: true,
-        name: true,
-        username: true,
-        adventurerProfile: {
-          select: {
-            specialization: true,
-            totalQuestsCompleted: true,
-            questCompletionRate: true,
-            currentStreak: true,
-            streakMultiplier: true,
+  // ── Core data ─────────────────────────────────────────────────────────────
+  const [user, pendingAssignments, completedAssignments, availableQuests] =
+    await withDbRetry(() =>
+      Promise.all([
+        prisma.user.findUnique({
+          where: { id: userId },
+          select: { xp: true, rank: true, level: true, name: true },
+        }),
+
+        prisma.questAssignment.findMany({
+          where: {
+            userId,
+            status: { in: ['assigned', 'started', 'in_progress', 'submitted', 'review'] },
           },
-        },
-      },
-    }),
-    prisma.questAssignment.findMany({
-      where: {
-        userId,
-        status: { in: ['assigned', 'started', 'in_progress', 'submitted', 'review'] },
-      },
-      include: {
-        quest: {
+          include: {
+            quest: {
+              select: {
+                id: true,
+                title: true,
+                monetaryReward: true,
+                xpReward: true,
+                deadline: true,
+                company: { select: { name: true } },
+              },
+            },
+          },
+          orderBy: { assignedAt: 'desc' },
+          take: 5,
+        }),
+
+        prisma.questAssignment.findMany({
+          where: { userId, status: 'completed' },
+          include: {
+            quest: {
+              select: {
+                id: true,
+                title: true,
+                monetaryReward: true,
+                xpReward: true,
+                company: { select: { name: true } },
+              },
+            },
+          },
+          orderBy: { completedAt: 'desc' },
+        }),
+
+        prisma.quest.findMany({
+          where: { status: 'available' },
           select: {
             id: true,
             title: true,
-            status: true,
+            difficulty: true,
+            questCategory: true,
             xpReward: true,
-            skillPointsReward: true,
             monetaryReward: true,
-            deadline: true,
+            requiredSkills: true,
+            requiredRank: true,
             company: { select: { name: true } },
           },
-        },
-      },
-      orderBy: { assignedAt: 'desc' },
-      take: 5,
-    }),
-    prisma.quest.findMany({
-      where: { status: 'available' },
-      select: {
-        id: true,
-        title: true,
-        difficulty: true,
-        questCategory: true,
-        xpReward: true,
-        skillPointsReward: true,
-        monetaryReward: true,
-        requiredSkills: true,
-        requiredRank: true,
-        company: { select: { name: true } },
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 24,
-    }),
-  ]));
+          orderBy: { createdAt: 'desc' },
+          take: 20,
+        }),
+      ])
+    );
 
-  const [completedCount, reviewCount, totalAdventurers] = await withDbRetry(() => Promise.all([
-    prisma.questAssignment.count({ where: { userId, status: 'completed' } }),
-    prisma.questAssignment.count({ where: { userId, status: { in: ['submitted', 'review'] } } }),
-    prisma.user.count({ where: { role: 'adventurer' } }),
-  ]));
-
+  // ── Derived stats ──────────────────────────────────────────────────────────
   const xp = user?.xp ?? 0;
   const rank = (user?.rank ?? 'F') as Rank;
-  const level = user?.level ?? 1;
   const rankIndex = RANK_ORDER.indexOf(rank);
   const currentThreshold = RANK_THRESHOLDS[rankIndex]?.threshold ?? 0;
   const nextEntry = RANK_THRESHOLDS[rankIndex + 1];
   const xpToNext = nextEntry ? Math.max(0, nextEntry.threshold - xp) : 0;
   const progress =
     nextEntry && nextEntry.threshold > currentThreshold
-      ? Math.max(0, Math.min(100, ((xp - currentThreshold) / (nextEntry.threshold - currentThreshold)) * 100))
+      ? Math.max(
+        0,
+        Math.min(100, ((xp - currentThreshold) / (nextEntry.threshold - currentThreshold)) * 100)
+      )
       : 100;
-  const specialization = user?.adventurerProfile?.specialization || 'Generalist';
 
-  const leaderboardPosition =
-    (await withDbRetry(() => prisma.user.count({ where: { role: 'adventurer', xp: { gt: xp } } }))) + 1;
+  const completedCount = completedAssignments.length;
 
-  const rankValue = (candidate: string | null | undefined) => {
-    if (!candidate) return 0;
-    const idx = RANK_ORDER.indexOf(candidate as Rank);
+  const totalEarned = completedAssignments.reduce(
+    (sum, a) => sum + Number(a.quest.monetaryReward ?? 0),
+    0
+  );
+
+  const rankValue = (r: string | null | undefined) => {
+    if (!r) return 0;
+    const idx = RANK_ORDER.indexOf(r as Rank);
     return idx >= 0 ? idx : 0;
   };
 
   const recommendedQuests = availableQuests
-    .filter((quest) => {
-      const requirement = quest.requiredRank ?? quest.difficulty;
-      return rankValue(requirement) <= rankValue(rank);
-    })
-    .slice(0, 4);
+    .filter((q) => rankValue(q.requiredRank ?? q.difficulty) <= rankValue(rank))
+    .slice(0, 6);
 
+  // ── UI ─────────────────────────────────────────────────────────────────────
   return (
-    <GuildPage>
-      <GuildHero>
-        <div className="relative z-10 flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-          <div className="space-y-3">
-            <Badge className="rounded-full border border-orange-300 bg-orange-100 text-orange-700">
-              Adventurer Command Center
-            </Badge>
-            <div>
-              <h1 className="text-3xl font-bold text-slate-900 sm:text-4xl">
-                Welcome back, {user?.name || session.user.name || 'Adventurer'}.
-              </h1>
-              <p className="mt-2 max-w-2xl text-sm text-slate-600 sm:text-base">
-                You are {leaderboardPosition} of {totalAdventurers} on the guild board. Keep momentum,
-                ship quests, and lock in your next rank.
-              </p>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <GuildChip>{specialization}</GuildChip>
-              <GuildChip>Level {level}</GuildChip>
-              <StreakBadge streak={user?.adventurerProfile?.currentStreak ?? 0} />
-            </div>
-            {user?.username && (
-              <ShareGuildCard username={user.username} />
-            )}
-          </div>
+    <div className="min-h-screen bg-background ds-page-grain">
+      <div className="mx-auto max-w-5xl px-6 py-10 space-y-10">
 
-          <div className="flex w-full max-w-md flex-col gap-3 rounded-2xl border border-slate-200 bg-white/90 p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <RankBadge rank={rank} size="sm" />
-                <p className="text-sm font-semibold text-slate-700">{rank}-Rank progression</p>
-              </div>
-              <p className="text-sm font-semibold text-slate-900">{xp.toLocaleString()} XP</p>
-            </div>
-            <Progress value={progress} className="h-2.5" />
-            <p className="text-xs text-slate-600">
-              {nextEntry
-                ? `${xpToNext.toLocaleString()} XP to ${nextEntry.rank}-Rank`
-                : 'You reached S-Rank. Maintain your lead.'}
-            </p>
-            <div className="flex gap-2 pt-1">
-              <Button className="flex-1" asChild>
-                <Link href="/dashboard/quests">
-                  Discover Quests
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button variant="outline" className="flex-1" asChild>
-                <Link href="/dashboard/leaderboard">View Leaderboard</Link>
-              </Button>
-            </div>
-          </div>
+        {/* Header */}
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-500">
+            Dashboard
+          </p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-900">
+            Welcome back, {user?.name || session.user.name || 'Adventurer'}.
+          </h1>
         </div>
-      </GuildHero>
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <GuildKpi>
-          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Current Rank</p>
-          <div className="mt-2 flex items-center gap-2">
-            <RankBadge rank={rank} size="sm" />
-            <p className="text-xl font-bold text-slate-900">{rank}-Rank</p>
-          </div>
-          <p className="mt-2 text-xs text-slate-500">{user?.skillPoints ?? 0} skill points available</p>
-        </GuildKpi>
+        {/* Stats grid */}
+        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
 
-        <GuildKpi>
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">XP Total</p>
-            <Zap className="h-4 w-4 text-amber-500" />
-          </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">{xp.toLocaleString()}</p>
-          <p className="mt-1 text-xs text-slate-500">
-            {nextEntry ? `${xpToNext.toLocaleString()} XP to ${nextEntry.rank}` : 'Top tier achieved'}
-          </p>
-        </GuildKpi>
-
-        <GuildKpi>
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Active Pipeline</p>
-            <Target className="h-4 w-4 text-sky-500" />
-          </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">{activeAssignments.length}</p>
-          <p className="mt-1 text-xs text-slate-500">{reviewCount} waiting for review</p>
-        </GuildKpi>
-
-        <GuildKpi>
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Completed Quests</p>
-            <Trophy className="h-4 w-4 text-emerald-500" />
-          </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">{completedCount}</p>
-          <p className="mt-1 flex items-center gap-1 text-xs text-slate-500">
-            <Flame className="h-3.5 w-3.5 text-orange-500" />
-            {user?.adventurerProfile?.questCompletionRate?.toString() ?? '0.00'}% completion rate
-          </p>
-        </GuildKpi>
-      </section>
-
-      <section className="grid gap-4 xl:grid-cols-3">
-        <GuildCard className="xl:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-              <CardTitle>Current Quest Pipeline</CardTitle>
-              <CardDescription>Assignments already in your queue</CardDescription>
-            </div>
-            <Button variant="ghost" size="sm" asChild>
-              <Link href="/dashboard/my-quests">View all</Link>
-            </Button>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {activeAssignments.length === 0 ? (
-              <div className="flex h-[120px] sm:h-[200px] flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-slate-300 text-slate-500">
-                <p>No active quests yet.</p>
-                <Button size="sm" asChild>
-                  <Link href="/dashboard/quests">Browse Quest Board</Link>
-                </Button>
+          {/* Rank + XP — spans 2 cols */}
+          <div className="xl:col-span-2 rounded-2xl border border-border/70 bg-white/95 shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur p-5 flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <RankBadge rank={rank} size="md" glow />
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Rank</p>
+                  <p className="text-lg font-bold text-slate-900">{rankToTier[rank] || rank}</p>
+                </div>
               </div>
-            ) : (
-              activeAssignments.map((assignment) => (
-                <GuildListItem
-                  asChild
-                  key={assignment.id}
-                  className="flex items-start justify-between gap-3"
-                >
-                  <Link href={`/dashboard/quests/${assignment.quest.id}`}>
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate font-semibold text-slate-900">{assignment.quest.title}</p>
-                      <p className="mt-0.5 text-xs text-slate-500">
-                        {assignment.quest.company?.name || 'Unknown Company'}
-                      </p>
-                      <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-500">
-                        <span className="flex items-center gap-1">
-                          <Zap className="h-3 w-3 text-amber-500" />
-                          {assignment.quest.xpReward} XP
-                        </span>
-                        <span>{assignment.quest.skillPointsReward} SP</span>
-                        {assignment.quest.monetaryReward && (
-                          <span className="font-medium text-emerald-600">
-                            ${Number(assignment.quest.monetaryReward)}
-                          </span>
-                        )}
-                        {assignment.quest.deadline && (
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {new Date(assignment.quest.deadline).toLocaleDateString()}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    <Badge variant="secondary" className="shrink-0 capitalize">
-                      {assignment.status.replace('_', ' ')}
-                    </Badge>
-                  </Link>
-                </GuildListItem>
-              ))
-            )}
-          </CardContent>
-        </GuildCard>
+              <div className="text-right">
+                <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">XP</p>
+                <p className="text-lg font-bold text-slate-900">{xp.toLocaleString()}</p>
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Progress value={progress} className="h-2" />
+              <p className="text-xs text-slate-500">
+                {nextEntry
+                  ? `${xpToNext.toLocaleString()} XP to ${rankToTier[nextEntry.rank] || nextEntry.rank}`
+                  : 'Maximum rank — Tier 7 Legend'}
+              </p>
+            </div>
+          </div>
 
-        <GuildCard>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <TrendingUp className="h-5 w-5 text-orange-500" />
-              Ranking Snapshot
-            </CardTitle>
-            <CardDescription>Your standing in the guild right now</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Guild Position</p>
-              <p className="mt-1 text-2xl font-bold text-slate-900">
-                #{leaderboardPosition}
-                <span className="ml-1 text-sm font-medium text-slate-500">/ {totalAdventurers}</span>
-              </p>
-            </div>
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Career Focus</p>
-              <p className="mt-1 text-sm font-semibold text-slate-800">{specialization}</p>
-              <p className="mt-2 text-xs text-slate-500">
-                {user?.adventurerProfile?.totalQuestsCompleted ?? completedCount} total quests completed
-              </p>
-            </div>
-            <Button variant="outline" className="w-full justify-between" asChild>
-              <Link href="/dashboard/leaderboard">
-                Open Full Leaderboard
-                <ArrowRight className="h-4 w-4" />
+          {/* Completed */}
+          <StatCard label="Quests Completed" value={String(completedCount)} sub="all time" />
+
+          {/* Pending */}
+          <StatCard
+            label="Active / Pending"
+            value={String(pendingAssignments.length)}
+            sub={`quest${pendingAssignments.length !== 1 ? 's' : ''} in pipeline`}
+          />
+
+          {/* Money earned */}
+          <StatCard
+            label="Total Earned"
+            value={
+              totalEarned > 0
+                ? new Intl.NumberFormat('en-IN', {
+                  style: 'currency',
+                  currency: 'INR',
+                  maximumFractionDigits: 0,
+                }).format(totalEarned)
+                : '₹0'
+            }
+            sub="from completed quests"
+          />
+        </section>
+
+        {/* Active Quests */}
+        <section>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-bold text-slate-900">Active Quests</h2>
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/dashboard/my-quests" className="text-sm text-slate-600 hover:text-slate-900">
+                View all →
               </Link>
             </Button>
-          </CardContent>
-        </GuildCard>
-      </section>
-
-      <GuildPanel>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-sky-500" />
-              Recommended Quests For You
-            </CardTitle>
-            <CardDescription>Matches based on your current rank and progression</CardDescription>
           </div>
-          <Button variant="ghost" size="sm" asChild>
-            <Link href="/dashboard/quests">Open Quest Board</Link>
-          </Button>
-        </CardHeader>
-        <CardContent>
-          {recommendedQuests.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">
-              No matching quests yet. Check back soon for new opportunities.
+
+          {pendingAssignments.length === 0 ? (
+            <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-white/60 px-6 py-12 text-center">
+              <p className="text-sm font-medium text-slate-500">No active quests yet.</p>
+              <Button size="sm" asChild className="mt-4">
+                <Link href="/dashboard/quests">Browse Quest Board</Link>
+              </Button>
             </div>
           ) : (
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-              {recommendedQuests.map((quest) => (
+            <div className="space-y-2">
+              {pendingAssignments.map((a) => (
                 <Link
-                  key={quest.id}
-                  href={`/dashboard/quests/${quest.id}`}
-                  className="rounded-xl border border-slate-200 bg-white p-4 transition-all hover:-translate-y-0.5 hover:shadow-md"
+                  key={a.id}
+                  href={`/dashboard/quests/${a.quest.id}`}
+                  className="flex items-center gap-4 rounded-2xl border border-border/70 bg-white/95 px-5 py-4 shadow-[0_2px_8px_rgba(15,23,42,0.04)] transition-all hover:-translate-y-0.5 hover:shadow-md"
                 >
-                  <div className="flex items-center justify-between">
-                    <Badge variant="outline">{quest.difficulty}-Rank</Badge>
-                    <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                      {quest.questCategory}
-                    </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="truncate font-semibold text-slate-900">{a.quest.title}</p>
+                    <p className="mt-0.5 text-xs text-slate-500">{a.quest.company?.name ?? 'Unknown Company'}</p>
                   </div>
-                  <h3 className="mt-3 line-clamp-2 text-sm font-semibold text-slate-900">{quest.title}</h3>
-                  <p className="mt-1 text-xs text-slate-500">{quest.company?.name || 'Unknown Company'}</p>
-                  <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-600">
-                    <span>{quest.xpReward} XP</span>
-                    <span>{quest.skillPointsReward} SP</span>
-                    {quest.monetaryReward && (
-                      <span className="font-semibold text-emerald-600">${Number(quest.monetaryReward)}</span>
+                  <div className="flex shrink-0 items-center gap-4 text-xs text-slate-500">
+                    <span className="font-medium text-amber-600">{a.quest.xpReward} XP</span>
+                    {a.quest.monetaryReward && Number(a.quest.monetaryReward) > 0 && (
+                      <span className="font-semibold text-emerald-600">
+                        ₹{Number(a.quest.monetaryReward).toLocaleString('en-IN')}
+                      </span>
+                    )}
+                    {a.quest.deadline && (
+                      <span>
+                        Due {new Date(a.quest.deadline).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}
+                      </span>
                     )}
                   </div>
-                  {quest.requiredSkills.length > 0 && (
-                    <p className="mt-2 line-clamp-1 text-xs text-slate-500">
-                      {quest.requiredSkills.slice(0, 3).join(' / ')}
+                  <Badge variant="secondary" className="shrink-0 capitalize text-[10px]">
+                    {a.status.replace('_', ' ')}
+                  </Badge>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* Earnings History */}
+        {completedAssignments.length > 0 && (
+          <section>
+            <div className="mb-4 flex items-center gap-3">
+              <h2 className="text-lg font-bold text-slate-900">Earnings History</h2>
+              <span className="rounded-full bg-emerald-50 border border-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">
+                {completedCount} quests
+              </span>
+            </div>
+            <div className="rounded-2xl border border-border/70 bg-white/95 shadow-[0_8px_24px_rgba(15,23,42,0.04)] overflow-hidden">
+              <div className="divide-y divide-slate-100">
+                {completedAssignments.slice(0, 8).map((a) => (
+                  <div key={a.id} className="flex items-center gap-4 px-5 py-3.5">
+                    <div className="flex-1 min-w-0">
+                      <p className="truncate text-sm font-medium text-slate-900">{a.quest.title}</p>
+                      <p className="mt-0.5 text-xs text-slate-500">{a.quest.company?.name ?? 'Unknown'}</p>
+                    </div>
+                    <div className="shrink-0 text-right">
+                      <p className="text-sm font-bold text-emerald-600">
+                        {a.quest.monetaryReward && Number(a.quest.monetaryReward) > 0
+                          ? `₹${Number(a.quest.monetaryReward).toLocaleString('en-IN')}`
+                          : '—'}
+                      </p>
+                      <p className="mt-0.5 text-xs text-amber-600">+{a.quest.xpReward} XP</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {completedAssignments.length > 8 && (
+                <div className="border-t border-slate-100 bg-slate-50/80 px-5 py-3 text-center">
+                  <p className="text-xs text-slate-500">
+                    Showing 8 of {completedCount} completed quests
+                  </p>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
+
+        {/* Recommended Quests */}
+        <section>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-bold text-slate-900">Recommended Quests</h2>
+            <Button variant="ghost" size="sm" asChild>
+              <Link href="/dashboard/quests" className="text-sm text-slate-600 hover:text-slate-900">
+                Quest Board →
+              </Link>
+            </Button>
+          </div>
+
+          {recommendedQuests.length === 0 ? (
+            <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-white/60 px-6 py-12 text-center">
+              <p className="text-sm text-slate-500">No matching quests right now. Check back soon.</p>
+            </div>
+          ) : (
+            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {recommendedQuests.map((q) => (
+                <Link
+                  key={q.id}
+                  href={`/dashboard/quests/${q.id}`}
+                  className="group rounded-2xl border border-border/70 bg-white/95 p-5 shadow-[0_4px_16px_rgba(15,23,42,0.04)] transition-all hover:-translate-y-0.5 hover:border-orange-200 hover:shadow-[0_8px_24px_rgba(249,115,22,0.08)]"
+                >
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <Badge variant="outline" className="text-[10px] capitalize">
+                      {q.questCategory.replace(/_/g, ' ')}
+                    </Badge>
+                    <RankBadge rank={q.difficulty as Rank} size="sm" />
+                  </div>
+                  <h3 className="line-clamp-2 text-sm font-semibold text-slate-900 group-hover:text-orange-600 transition-colors">
+                    {q.title}
+                  </h3>
+                  <p className="mt-1 text-xs text-slate-500 truncate">{q.company?.name ?? 'Unknown Company'}</p>
+                  <div className="mt-4 flex flex-wrap items-center gap-3 text-xs">
+                    <span className="font-medium text-amber-600">{q.xpReward} XP</span>
+                    {q.monetaryReward && Number(q.monetaryReward) > 0 && (
+                      <span className="font-semibold text-emerald-600">
+                        ₹{Number(q.monetaryReward).toLocaleString('en-IN')}
+                      </span>
+                    )}
+                  </div>
+                  {q.requiredSkills.length > 0 && (
+                    <p className="mt-2 line-clamp-1 text-[11px] text-slate-400">
+                      {q.requiredSkills.slice(0, 3).join(' · ')}
                     </p>
                   )}
                 </Link>
               ))}
             </div>
           )}
-        </CardContent>
-      </GuildPanel>
-    </GuildPage>
+        </section>
+
+      </div>
+    </div>
+  );
+}
+
+// ── Stat Card ─────────────────────────────────────────────────────────────────
+function StatCard({ label, value, sub }: { label: string; value: string; sub: string }) {
+  return (
+    <div className="rounded-2xl border border-border/70 bg-white/95 shadow-[0_8px_24px_rgba(15,23,42,0.04)] backdrop-blur p-5 flex flex-col justify-between gap-4">
+      <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">{label}</p>
+      <div>
+        <p className="text-2xl font-bold text-slate-900 tabular-nums">{value}</p>
+        <p className="mt-0.5 text-xs text-slate-400">{sub}</p>
+      </div>
+    </div>
   );
 }
