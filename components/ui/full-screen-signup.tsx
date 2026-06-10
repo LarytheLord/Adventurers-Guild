@@ -368,13 +368,6 @@ function RegisterForm() {
   );
 }
 
-function LoginFormWrapper() {
-  return (
-    <Suspense fallback={null}>
-      <LoginForm />
-    </Suspense>
-  );
-}
 
 /* ─── Main export ────────────────────────────────────────── */
 export interface FullScreenSignupProps {

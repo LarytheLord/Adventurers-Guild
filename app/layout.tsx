@@ -11,6 +11,7 @@ import ErrorBoundary from "../components/ErrorBoundary"
 import { Toaster } from "@/components/ui/sonner"
 import { GoToTop } from "@/components/ui/go-to-top"
 import ConditionalFooter from "@/components/ConditionalFooter";
+import { MissingEmailPrompt } from "@/components/ui/missing-email-prompt";
 
 export const metadata: Metadata = {
   title: "Guild",
@@ -72,6 +73,7 @@ export default function RootLayout({
               <ConditionalFooter />
             </div>
             <Toaster />
+            <MissingEmailPrompt />
             <GoToTop />
           </ThemeProvider>
         </SessionProvider>

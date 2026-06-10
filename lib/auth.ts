@@ -1,5 +1,5 @@
 import NextAuth, { AuthOptions } from 'next-auth';
-import type { Session, User } from 'next-auth';
+import type { Session, User, Account } from 'next-auth';
 import type { JWT } from 'next-auth/jwt';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import GitHubProvider from 'next-auth/providers/github';
@@ -9,12 +9,18 @@ import { prisma, withDbRetry } from './db';
 import { env } from '@/lib/env';
 import { UserRole, UserRank } from '@prisma/client';
 
-async function upsertOAuthUser(user: User) {
-  if (!user.email) {
-    return { error: 'missing_email' as const };
+async function upsertOAuthUser(user: User, account?: Account | null) {
+  let email = user.email;
+
+  if (!email) {
+    if (account?.provider && account?.providerAccountId) {
+      email = `${account.providerAccountId}@${account.provider}.placeholder.com`;
+    } else {
+      email = `user_${Date.now()}@placeholder.com`;
+    }
   }
 
-  const normalizedEmail = user.email.trim().toLowerCase();
+  const normalizedEmail = email.trim().toLowerCase();
   const existingUser = await prisma.user.findUnique({
     where: { email: normalizedEmail },
     include: { adventurerProfile: true },
@@ -127,7 +133,7 @@ export const authOptions: AuthOptions = {
   callbacks: {
     async signIn({ user, account }) {
       if (account?.provider === 'google' || account?.provider === 'github') {
-        const result = await upsertOAuthUser(user);
+        const result = await upsertOAuthUser(user, account);
 
         if ('error' in result) {
           if (result.error === 'missing_email') {
