@@ -10,7 +10,8 @@ import Navigation from "../components/Navigation"
 import ErrorBoundary from "../components/ErrorBoundary"
 import { Toaster } from "@/components/ui/sonner"
 import { GoToTop } from "@/components/ui/go-to-top"
-import ConditionalFooter from "@/components/ConditionalFooter";
+import ConditionalFooter from "@/components/ConditionalFooter"
+import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
   title: "Guild",
@@ -75,6 +76,7 @@ export default function RootLayout({
             <GoToTop />
           </ThemeProvider>
         </SessionProvider>
+        <Analytics />
 
         <Script id="scrollbar-handler" strategy="afterInteractive">
           {`
