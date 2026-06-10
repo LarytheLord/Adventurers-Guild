@@ -214,6 +214,7 @@ function RegisterFormInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const defaultTab = searchParams.get("tab") === "company" ? "company" : "adventurer";
+  const refCode = searchParams.get("ref") ?? undefined;
   const { data: session, status } = useSession();
   const [isLoading, setIsLoading] = useState(false);
   const [tab, setTab] = useState<"adventurer" | "company">(defaultTab as "adventurer" | "company");
@@ -248,6 +249,7 @@ function RegisterFormInner() {
           email, password, name, role,
           companyName: role === "company" ? cName : "",
           username: role === "adventurer" ? aUsername : undefined,
+          referralCode: refCode,
         }),
       });
       if (!res.ok) {
@@ -268,6 +270,11 @@ function RegisterFormInner() {
 
   return (
     <div className="flex flex-col gap-4">
+      {refCode && (
+        <div className="rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800">
+          🎉 You were referred by a friend! You'll get <strong>50 bonus XP</strong> when you sign up.
+        </div>
+      )}
       {tab === "adventurer" ? (
         <>
           <OAuthSignInButton
