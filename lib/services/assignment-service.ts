@@ -58,23 +58,7 @@ export async function applyToQuest(questId: string, user: SessionUser, tx: Prism
       }
     }
 
-    // Check if the max number of accepted participants has been reached.
-    // Only count adventurers the company has accepted (started or beyond),
-    // matching the same statuses used in quest-lifecycle.ts to keep a slot "filled".
-    if (quest.maxParticipants) {
-      const count = await tx.questAssignment.count({
-        where: {
-          questId: questId,
-          status: { in: ['started', 'in_progress', 'submitted', 'pending_admin_review', 'review', 'needs_rework', 'completed'] },
-        },
-      });
-
-      if (count >= quest.maxParticipants) {
-        return { data: null, error: 'Maximum participants reached for this quest', status: 400 };
-      }
-    }
-
-    // Check if user is already assigned to this quest (ignore cancelled)
+    // Check if user is already assigned to this quest (ignore cancelled) — pre-check only.
     const existingAssignment = await tx.questAssignment.findFirst({
       where: {
         questId: questId,
@@ -87,10 +71,23 @@ export async function applyToQuest(questId: string, user: SessionUser, tx: Prism
       return { data: null, error: 'You are already assigned to this quest', status: 400 };
     }
 
-    // here we are using transaction
-    // Create the assignment
+    // Slot check + insert run inside a serializable transaction to prevent race conditions.
+    // Both the count and the insert must be atomic — two concurrent applications could
+    // otherwise both pass the count check and both insert, over-filling the quest.
     const assignment = await tx.$transaction(
       async (tx) => {
+        if (quest.maxParticipants) {
+          const filledCount = await tx.questAssignment.count({
+            where: {
+              questId,
+              status: { in: ['started', 'in_progress', 'submitted', 'pending_admin_review', 'review', 'needs_rework', 'completed'] },
+            },
+          });
+          if (filledCount >= quest.maxParticipants) {
+            throw new Error('Maximum participants reached for this quest');
+          }
+        }
+
         const created = await tx.questAssignment.create({
           data: {
             questId: questId,
@@ -100,17 +97,19 @@ export async function applyToQuest(questId: string, user: SessionUser, tx: Prism
         });
 
         await syncQuestLifecycleStatus(tx, questId);
-
-        // Log activity
         await logActivity(user.id, 'quest_apply', { questId }, tx);
 
         return created;
       },
-      { maxWait: 10_000, timeout: 20_000 }
+      { maxWait: 10_000, timeout: 20_000, isolationLevel: 'Serializable' }
     );
 
     return { data: assignment, error: null, status: 200 };
   } catch (error) {
+    const msg = error instanceof Error ? error.message : '';
+    if (msg === 'Maximum participants reached for this quest') {
+      return { data: null, error: msg, status: 400 };
+    }
     console.error('Error applying to quest:', error);
     return { data: null, error: 'Failed to apply to quest', status: 500 };
   }
