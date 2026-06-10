@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma, withDbRetry } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
+import { generateReferralCode, REFEREE_SIGNUP_XP } from '@/lib/referral-utils';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -10,6 +11,7 @@ const registerSchema = z.object({
   role: z.enum(['adventurer', 'company']).default('adventurer'),
   companyName: z.string().optional(),
   username: z.string().min(3, 'Username must be at least 3 characters').max(20, 'Username must be at most 20 characters').regex(/^[a-z0-9]+$/, 'Username can only contain lowercase letters and numbers').optional(),
+  referralCode: z.string().optional(),
 });
 
 export async function POST(request: NextRequest) {
@@ -24,7 +26,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { name, email, password, role, companyName } = result.data;
+    const { name, email, password, role, companyName, referralCode: incomingRefCode } = result.data;
     const normalizedEmail = email.trim().toLowerCase();
 
     if (role === 'company' && !companyName) {
@@ -74,17 +76,46 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Resolve referrer from the incoming referral code
+    let referrerId: string | null = null;
+    if (incomingRefCode) {
+      const referrer = await withDbRetry(() =>
+        prisma.user.findUnique({
+          where: { referralCode: incomingRefCode.toUpperCase() },
+          select: { id: true },
+        })
+      );
+      referrerId = referrer?.id ?? null;
+    }
+
+    // Generate a unique referral code for the new user
+    let newReferralCode: string | null = null;
+    for (let i = 0; i < 5; i++) {
+      const candidate = generateReferralCode(name);
+      const taken = await withDbRetry(() =>
+        prisma.user.findUnique({ where: { referralCode: candidate }, select: { id: true } })
+      );
+      if (!taken) { newReferralCode = candidate; break; }
+    }
+
     const user = await withDbRetry(() => prisma.$transaction(async (tx) => {
       const newUser = await tx.user.create({
-        data: { name, email: normalizedEmail, passwordHash, role, username },
+        data: {
+          name,
+          email: normalizedEmail,
+          passwordHash,
+          role,
+          username,
+          referralCode: newReferralCode,
+          referredById: referrerId ?? undefined,
+          // Referee XP bonus on signup
+          xp: referrerId ? REFEREE_SIGNUP_XP : 0,
+        },
       });
 
       if (role === 'company') {
         await tx.companyProfile.create({
-          data: {
-            userId: newUser.id,
-            companyName: companyName!,
-          },
+          data: { userId: newUser.id, companyName: companyName! },
         });
       } else {
         await tx.adventurerProfile.create({ data: { userId: newUser.id } });
@@ -93,7 +124,11 @@ export async function POST(request: NextRequest) {
       return newUser;
     }));
 
-    return NextResponse.json({ success: true, userId: user.id }, { status: 201 });
+    return NextResponse.json({
+      success: true,
+      userId: user.id,
+      referralBonus: referrerId ? REFEREE_SIGNUP_XP : 0,
+    }, { status: 201 });
   } catch (error) {
     console.error('Registration error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });

@@ -318,6 +318,13 @@ export async function PUT(request: NextRequest) {
         assignmentData.questId
       );
 
+      // Referral milestone check — award XP to the referrer if applicable
+      const completionCount = await prisma.questCompletion.count({
+        where: { userId: reviewResult.rewardsPayload.userId },
+      });
+      const { processReferralMilestone } = await import('@/lib/referral-utils');
+      await processReferralMilestone(reviewResult.rewardsPayload.userId, completionCount);
+
       // Bootcamp tutorial tracking — matched by source enum, not fragile title string
       const { questTitle, questSource, userId: rewardUserId } = reviewResult.rewardsPayload;
       if (questSource === 'TUTORIAL') {
