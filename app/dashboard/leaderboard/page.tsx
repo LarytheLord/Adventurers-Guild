@@ -1,28 +1,13 @@
 'use client';
 
-import Link from 'next/link';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import {
-  ArrowUpRight,
-  Award,
-  Building2,
-  Medal,
-  Sparkles,
-  Trophy,
-  Users,
-  Zap,
-} from 'lucide-react';
+import { useState } from 'react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { GuildPage, GuildPanel } from '@/components/guild/primitives';
 import { useApiFetch } from '@/lib/hooks';
-
-type Mode = 'adventurer' | 'company';
 
 type AdventurerRankRow = {
   id: string;
@@ -38,477 +23,159 @@ type AdventurerRankRow = {
   };
 };
 
-type CompanyRankRow = {
-  id: string;
-  name: string;
-  companyName: string;
-  totalSpent: number;
-  questsPosted: number;
-  completedQuests: number;
-  activeQuests: number;
-  position: number;
-  isVerified: boolean;
-};
-
 type RankingsResponse = {
   success: boolean;
-  rankings: Array<AdventurerRankRow | CompanyRankRow>;
+  rankings: AdventurerRankRow[];
   total: number;
-  error?: string;
 };
 
 type UserRankResponse = {
   success: boolean;
-  rank: {
-    position: number;
-    totalUsers: number;
-  } | null;
-  error?: string;
+  rank: { position: number; totalUsers: number } | null;
 };
 
-const EMPTY_ADVENTURERS: AdventurerRankRow[] = [];
-const EMPTY_COMPANIES: CompanyRankRow[] = [];
+const EMPTY: AdventurerRankRow[] = [];
 
 const RANK_COLORS: Record<string, string> = {
-  S: 'border-amber-300 bg-amber-100 text-amber-700',
-  A: 'border-violet-300 bg-violet-100 text-violet-700',
-  B: 'border-blue-300 bg-blue-100 text-blue-700',
-  C: 'border-emerald-300 bg-emerald-100 text-emerald-700',
-  D: 'border-slate-300 bg-slate-100 text-slate-700',
-  E: 'border-stone-300 bg-stone-100 text-stone-600',
-  F: 'border-gray-200 bg-gray-100 text-gray-500',
+  S: 'border-amber-200 bg-amber-50 text-amber-700',
+  A: 'border-violet-200 bg-violet-50 text-violet-700',
+  B: 'border-blue-200 bg-blue-50 text-blue-700',
+  C: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+  D: 'border-slate-200 bg-slate-50 text-slate-600',
+  E: 'border-stone-200 bg-stone-50 text-stone-500',
+  F: 'border-gray-200 bg-gray-50 text-gray-400',
 };
 
-const ADVENTURER_SORT_LABELS = {
-  xp: 'XP',
-  level: 'Level',
-  skillPoints: 'Skill Points',
-} as const;
+const rankToTier: Record<string, string> = {
+  F: 'T1', E: 'T2', D: 'T3', C: 'T4', B: 'T5', A: 'T6', S: 'T7',
+};
 
-const COMPANY_SORT_LABELS = {
-  totalSpent: 'Total Spend',
-  questsPosted: 'Quests Posted',
-  completedQuests: 'Completed Quests',
-  activeQuests: 'Active Quests',
-} as const;
+const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
 
 export default function LeaderboardPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const defaultMode: Mode = session?.user?.role === 'company' ? 'company' : 'adventurer';
-
-  const [mode, setMode] = useState<Mode>(defaultMode);
-  const [adventurerSort, setAdventurerSort] = useState<'xp' | 'level' | 'skillPoints'>('xp');
-  const [companySort, setCompanySort] = useState<
-    'totalSpent' | 'questsPosted' | 'completedQuests' | 'activeQuests'
-  >('totalSpent');
+  const [sort, setSort] = useState<'xp' | 'level' | 'skillPoints'>('xp');
 
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      router.push('/login');
-      return;
-    }
+    if (status === 'unauthenticated') router.push('/login');
+  }, [router, status]);
 
-    if (status === 'authenticated') {
-      setMode(session?.user?.role === 'company' ? 'company' : 'adventurer');
-    }
-  }, [router, session?.user?.role, status]);
-
-  const activeSort = mode === 'adventurer' ? adventurerSort : companySort;
-  const activeSortLabel =
-    mode === 'adventurer'
-      ? ADVENTURER_SORT_LABELS[adventurerSort]
-      : COMPANY_SORT_LABELS[companySort];
   const shouldFetch = status === 'authenticated';
-  const rankingsEndpoint = `/api/rankings?mode=${mode}&sort=${activeSort}&order=desc&limit=50`;
-  const userRankEndpoint = `/api/rankings/user?mode=${mode}&sort=${activeSort}&order=desc`;
 
   const { data: rankingsData, loading: rankingsLoading } = useApiFetch<RankingsResponse>(
-    rankingsEndpoint,
+    `/api/rankings?mode=adventurer&sort=${sort}&order=desc&limit=50`,
     { skip: !shouldFetch }
   );
   const { data: userRankData, loading: userRankLoading } = useApiFetch<UserRankResponse>(
-    userRankEndpoint,
+    `/api/rankings/user?mode=adventurer&sort=${sort}&order=desc`,
     { skip: !shouldFetch }
   );
 
-  const adventurers =
-    mode === 'adventurer'
-      ? ((rankingsData?.rankings as AdventurerRankRow[] | undefined) ?? EMPTY_ADVENTURERS)
-      : EMPTY_ADVENTURERS;
-  const companies =
-    mode === 'company'
-      ? ((rankingsData?.rankings as CompanyRankRow[] | undefined) ?? EMPTY_COMPANIES)
-      : EMPTY_COMPANIES;
+  const adventurers = rankingsData?.rankings ?? EMPTY;
   const userPosition = userRankData?.rank ?? null;
-
-  const topThree = useMemo(() => {
-    if (mode === 'adventurer') {
-      if (adventurers.length < 3) {
-        return [];
-      }
-
-      return [adventurers[1], adventurers[0], adventurers[2]].filter(Boolean);
-    }
-
-    if (companies.length < 3) {
-      return [];
-    }
-
-    return [companies[1], companies[0], companies[2]].filter(Boolean);
-  }, [adventurers, companies, mode]);
-
-  const activeRows = mode === 'adventurer' ? adventurers : companies;
-
-  const getPositionIcon = (position: number) => {
-    if (position === 1) {
-      return <Trophy className="h-5 w-5 text-amber-500" />;
-    }
-
-    if (position === 2) {
-      return <Medal className="h-5 w-5 text-slate-400" />;
-    }
-
-    if (position === 3) {
-      return <Award className="h-5 w-5 text-amber-700" />;
-    }
-
-    return <span className="text-sm font-semibold text-slate-500">{position}</span>;
-  };
 
   if (status === 'loading' || (shouldFetch && (rankingsLoading || userRankLoading))) {
     return (
-      <GuildPage>
-        <GuildPanel className="flex min-h-[50vh] items-center justify-center py-8">
-          <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary" />
-        </GuildPanel>
-      </GuildPage>
+      <div className="min-h-screen bg-background ds-page-grain flex items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-orange-500" />
+      </div>
     );
   }
 
-  if (status !== 'authenticated') {
-    return null;
-  }
+  if (status !== 'authenticated') return null;
 
   return (
-    <div className="guild-page">
-      <section className="guild-hero">
-        <div className="relative z-10 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+    <div className="min-h-screen bg-background ds-page-grain">
+      <div className="mx-auto max-w-4xl px-6 py-8 space-y-6">
+
+        {/* Header */}
+        <div className="flex items-center justify-between gap-4">
           <div>
-            <Badge className="rounded-full border border-violet-300 bg-violet-100 text-violet-700">
-              Guild Rankings
-            </Badge>
-            <h1 className="mt-3 text-3xl font-bold text-slate-900 sm:text-4xl">
-              {mode === 'adventurer' ? 'Adventurer Leaderboard' : 'Company Impact Leaderboard'}
-            </h1>
-            <p className="mt-2 max-w-2xl text-sm text-slate-600 sm:text-base">
-              {mode === 'adventurer'
-                ? 'See who is climbing from F-Rank to S-Rank the fastest.'
-                : 'Track which companies are creating the strongest quest ecosystems.'}
+            <h1 className="text-2xl font-bold tracking-tight text-slate-900">Leaderboard</h1>
+            <p className="mt-0.5 text-sm text-slate-500">
+              {userPosition
+                ? `You're #${userPosition.position} of ${userPosition.totalUsers} adventurers`
+                : 'Guild adventurer rankings'}
             </p>
           </div>
 
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap">
-            <Select value={mode} onValueChange={(value) => setMode(value as Mode)}>
-              <SelectTrigger className="w-full sm:w-[200px]">
-                <SelectValue placeholder="Select board" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="adventurer">Adventurer Board</SelectItem>
-                <SelectItem value="company">Company Board</SelectItem>
-              </SelectContent>
-            </Select>
-
-            {mode === 'adventurer' ? (
-              <Select
-                value={adventurerSort}
-                onValueChange={(value) => setAdventurerSort(value as typeof adventurerSort)}
-              >
-                <SelectTrigger className="w-full sm:w-[200px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="xp">Sort by XP</SelectItem>
-                  <SelectItem value="level">Sort by Level</SelectItem>
-                  <SelectItem value="skillPoints">Sort by Skill Points</SelectItem>
-                </SelectContent>
-              </Select>
-            ) : (
-              <Select
-                value={companySort}
-                onValueChange={(value) => setCompanySort(value as typeof companySort)}
-              >
-                <SelectTrigger className="w-full sm:w-[200px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="totalSpent">Sort by Total Spend</SelectItem>
-                  <SelectItem value="questsPosted">Sort by Quests Posted</SelectItem>
-                  <SelectItem value="completedQuests">Sort by Completed Quests</SelectItem>
-                  <SelectItem value="activeQuests">Sort by Active Quests</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
-          </div>
+          <Select value={sort} onValueChange={(v) => setSort(v as typeof sort)}>
+            <SelectTrigger className="h-8 w-32 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="xp">By XP</SelectItem>
+              <SelectItem value="level">By Level</SelectItem>
+              <SelectItem value="skillPoints">By Skill Points</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-      </section>
 
-      <section className="grid gap-4 md:grid-cols-4">
-        <article className="guild-kpi">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Your Position
-            </p>
-            <Trophy className="h-4 w-4 text-amber-500" />
-          </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">
-            #{userPosition?.position ?? '-'}
-            <span className="ml-1 text-sm font-medium text-slate-500">
-              / {userPosition?.totalUsers ?? '-'}
-            </span>
-          </p>
-          <p className="mt-1 text-xs text-slate-500">Current standing on selected board</p>
-        </article>
-
-        <article className="guild-kpi">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Board Type
-            </p>
-            {mode === 'adventurer' ? (
-              <Users className="h-4 w-4 text-sky-500" />
-            ) : (
-              <Building2 className="h-4 w-4 text-violet-500" />
-            )}
-          </div>
-          <p className="mt-2 text-2xl font-bold capitalize text-slate-900">{mode}</p>
-          <p className="mt-1 text-xs text-slate-500">{activeRows.length} visible entries</p>
-        </article>
-
-        <article className="guild-kpi">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Current Sort
-            </p>
-            <ArrowUpRight className="h-4 w-4 text-amber-500" />
-          </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">{activeSortLabel}</p>
-          <p className="mt-1 text-xs text-slate-500">Descending order</p>
-        </article>
-
-        <article className="guild-kpi">
-          <div className="flex items-center justify-between">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Season Highlight
-            </p>
-            <Sparkles className="h-4 w-4 text-emerald-500" />
-          </div>
-          <p className="mt-2 text-2xl font-bold text-slate-900">Top 3</p>
-          <p className="mt-1 text-xs text-slate-500">Podium updates in real time</p>
-        </article>
-      </section>
-
-      {topThree.length > 0 && (
-        <section className="grid gap-4 md:grid-cols-3">
-          {topThree.map((row, index) => {
-            const isCenter = index === 1;
-            const name =
-              mode === 'adventurer'
-                ? (row as AdventurerRankRow).name
-                : (row as CompanyRankRow).companyName;
-            const position = row.position;
-
-            return (
-              <Card
-                key={`${mode}-${row.id}`}
-                className={`guild-panel text-center ${
-                  isCenter ? 'border-amber-300 bg-amber-50/70 -mt-1 md:-mt-3' : ''
-                }`}
-              >
-                <CardContent className="pt-6">
-                  <div className="mb-2 flex justify-center">{getPositionIcon(position)}</div>
-                  <Avatar className={`mx-auto ${isCenter ? 'h-14 w-14' : 'h-12 w-12'}`}>
-                    <AvatarFallback className="text-lg font-bold">
-                      {name?.charAt(0) || '?'}
-                    </AvatarFallback>
-                  </Avatar>
-                  <p className="mt-2 truncate text-sm font-semibold text-slate-900">{name}</p>
-
-                  {mode === 'adventurer' ? (
-                    <>
-                      <Badge
-                        variant="outline"
-                        className={`mt-2 ${
-                          RANK_COLORS[(row as AdventurerRankRow).rank] || ''
-                        }`}
-                      >
-                        {(row as AdventurerRankRow).rank}-Rank
-                      </Badge>
-                      <p className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-slate-700">
-                        <Zap className="h-3.5 w-3.5 text-amber-500" />
-                        {(row as AdventurerRankRow).xp.toLocaleString()} XP
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <Badge
-                        variant="outline"
-                        className="mt-2 border-sky-300 bg-sky-100 text-sky-700"
-                      >
-                        {(row as CompanyRankRow).isVerified ? 'Verified' : 'Unverified'}
-                      </Badge>
-                      <p className="mt-2 text-sm font-semibold text-slate-700">
-                        ${(row as CompanyRankRow).totalSpent.toLocaleString()} invested
-                      </p>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-            );
-          })}
-        </section>
-      )}
-
-      <Card className="guild-panel">
-        <CardHeader>
-          <CardTitle>
-            {mode === 'adventurer' ? 'Full Adventurer Rankings' : 'Full Company Rankings'}
-          </CardTitle>
-          <CardDescription>
-            {mode === 'adventurer'
-              ? 'Leaderboard by adventurer performance and progression'
-              : 'Leaderboard by company spend and quest operations'}
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-0">
-          {activeRows.length === 0 ? (
-            <div className="p-10 text-center text-sm text-slate-500">
-              No ranking data available yet.
-            </div>
+        {/* Rankings list */}
+        <div className="rounded-2xl border border-border/70 bg-white/95 shadow-[0_8px_24px_rgba(15,23,42,0.04)] overflow-hidden">
+          {adventurers.length === 0 ? (
+            <div className="py-16 text-center text-sm text-slate-500">No ranking data yet.</div>
           ) : (
-            <div className="divide-y">
-              {mode === 'adventurer'
-                ? adventurers.map((user) => {
-                    const isCurrentUser = session?.user?.id === user.id;
-                    const profile = user.adventurer_profiles;
+            <div className="divide-y divide-slate-100">
+              {adventurers.map((user) => {
+                const isCurrentUser = session?.user?.id === user.id;
+                const profile = user.adventurer_profiles;
 
-                    return (
-                      <div
-                        key={user.id}
-                        className={`px-4 py-4 sm:px-5 ${
-                          isCurrentUser ? 'bg-indigo-50/70' : 'hover:bg-slate-50'
-                        }`}
-                      >
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                          <div className="flex min-w-0 items-start gap-3 sm:flex-1 sm:items-center">
-                            <div className="w-8 shrink-0 pt-0.5 text-center sm:pt-0">
-                              {getPositionIcon(user.position)}
-                            </div>
-                            <Avatar className="h-9 w-9 shrink-0">
-                              <AvatarFallback>{user.name?.charAt(0) || '?'}</AvatarFallback>
-                            </Avatar>
-                            <div className="min-w-0 flex-1">
-                              <p className="truncate text-sm font-semibold text-slate-900">
-                                {user.name}
-                                {isCurrentUser && (
-                                  <span className="ml-2 text-xs font-medium text-slate-500">
-                                    (You)
-                                  </span>
-                                )}
-                              </p>
-                              <p className="text-xs text-slate-500">
-                                {profile?.specialization || 'Adventurer'} / Level {user.level}
-                                {profile?.totalQuestsCompleted
-                                  ? ` / ${profile.totalQuestsCompleted} quests`
-                                  : ''}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between gap-3 sm:ml-auto sm:min-w-[180px] sm:justify-end">
-                            <Badge variant="outline" className={RANK_COLORS[user.rank] || ''}>
-                              {user.rank}
-                            </Badge>
-                            <div className="text-right">
-                              <p className="text-sm font-semibold text-slate-900">
-                                {user.xp.toLocaleString()} XP
-                              </p>
-                              <p className="text-xs text-slate-500">{user.skillPoints} SP</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })
-                : companies.map((company) => {
-                    const isCurrentUser = session?.user?.id === company.id;
+                return (
+                  <div
+                    key={user.id}
+                    className={`flex items-center gap-3 px-5 py-3 transition-colors ${
+                      isCurrentUser ? 'bg-orange-50/60' : 'hover:bg-slate-50'
+                    }`}
+                  >
+                    {/* Position */}
+                    <div className="w-8 shrink-0 text-center">
+                      {MEDALS[user.position] ? (
+                        <span className="text-base">{MEDALS[user.position]}</span>
+                      ) : (
+                        <span className="text-sm font-semibold text-slate-400">{user.position}</span>
+                      )}
+                    </div>
 
-                    return (
-                      <div
-                        key={company.id}
-                        className={`px-4 py-4 sm:px-5 ${
-                          isCurrentUser ? 'bg-indigo-50/70' : 'hover:bg-slate-50'
-                        }`}
-                      >
-                        <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-                          <div className="flex min-w-0 items-start gap-3 sm:flex-1 sm:items-center">
-                            <div className="w-8 shrink-0 pt-0.5 text-center sm:pt-0">
-                              {getPositionIcon(company.position)}
-                            </div>
-                            <Avatar className="h-9 w-9 shrink-0">
-                              <AvatarFallback>
-                                {company.companyName?.charAt(0) || '?'}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="min-w-0 flex-1">
-                              <p className="truncate text-sm font-semibold text-slate-900">
-                                {company.companyName}
-                                {isCurrentUser && (
-                                  <span className="ml-2 text-xs font-medium text-slate-500">
-                                    (You)
-                                  </span>
-                                )}
-                              </p>
-                              <p className="text-xs text-slate-500">
-                                {company.completedQuests} completed / {company.activeQuests} active
-                                / {company.questsPosted} posted
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between gap-3 sm:ml-auto sm:min-w-[220px] sm:justify-end">
-                            <Badge
-                              variant="outline"
-                              className={
-                                company.isVerified
-                                  ? 'border-emerald-300 bg-emerald-100 text-emerald-700'
-                                  : ''
-                              }
-                            >
-                              {company.isVerified ? 'Verified' : 'Pending'}
-                            </Badge>
-                            <div className="text-right">
-                              <p className="text-sm font-semibold text-slate-900">
-                                ${company.totalSpent.toLocaleString()}
-                              </p>
-                              <p className="text-xs text-slate-500">total spend</p>
-                            </div>
-                          </div>
-                        </div>
+                    {/* Avatar */}
+                    <Avatar className="h-8 w-8 shrink-0">
+                      <AvatarFallback className="text-xs font-semibold bg-slate-100 text-slate-600">
+                        {user.name?.charAt(0) || '?'}
+                      </AvatarFallback>
+                    </Avatar>
+
+                    {/* Name + meta */}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-slate-900 truncate">
+                        {user.name}
+                        {isCurrentUser && (
+                          <span className="ml-1.5 text-[10px] font-medium text-orange-500">you</span>
+                        )}
+                      </p>
+                      <p className="text-[11px] text-slate-400 truncate">
+                        {profile?.specialization ?? 'Adventurer'}
+                        {profile?.totalQuestsCompleted ? ` · ${profile.totalQuestsCompleted} quests` : ''}
+                      </p>
+                    </div>
+
+                    {/* Tier badge + XP */}
+                    <div className="flex items-center gap-3 shrink-0">
+                      <Badge variant="outline" className={`text-[10px] py-0 ${RANK_COLORS[user.rank] ?? ''}`}>
+                        {rankToTier[user.rank] ?? user.rank}
+                      </Badge>
+                      <div className="text-right min-w-[72px]">
+                        <p className="text-sm font-bold text-slate-900">{user.xp.toLocaleString()} XP</p>
+                        <p className="text-[11px] text-slate-400">{user.skillPoints} SP</p>
                       </div>
-                    );
-                  })}
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
-        </CardContent>
-      </Card>
+        </div>
 
-      <div className="flex justify-end">
-        <Button asChild>
-          <Link
-            href={mode === 'adventurer' ? '/dashboard/quests' : '/dashboard/company/create-quest'}
-          >
-            {mode === 'adventurer' ? 'Find Next Quest' : 'Launch New Quest'}
-          </Link>
-        </Button>
       </div>
     </div>
   );

@@ -22,6 +22,9 @@ export function isRateLimited(
   request: NextRequest,
   options: RateLimitOptions
 ): boolean {
+  if (process.env.NODE_ENV === 'development') {
+    return false;
+  }
   const {
     windowMs = 60 * 1000,
     maxRequests = 60,

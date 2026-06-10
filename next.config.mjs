@@ -5,6 +5,11 @@ const nextConfig = {
   },
   reactStrictMode: true,
   serverExternalPackages: ['@prisma/client', 'prisma'],
+  async redirects() {
+    return [
+      { source: '/home', destination: '/', permanent: true },
+    ];
+  },
 };
 
 // Import Sentry configuration (only wraps with Sentry if DSN is configured)
