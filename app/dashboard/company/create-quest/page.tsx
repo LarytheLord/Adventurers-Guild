@@ -541,10 +541,10 @@ export default function CreateQuestPage() {
                         <SelectValue placeholder="Any rank" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="any">Any Rank</SelectItem>
+                        <SelectItem value="any">F-Rank (open to all)</SelectItem>
                         {DIFFICULTY_RANKS.map((rank) => (
                           <SelectItem key={rank} value={rank}>
-                            {rank}-Rank
+                            {rank}-Rank minimum
                           </SelectItem>
                         ))}
                       </SelectContent>

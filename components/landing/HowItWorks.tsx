@@ -2,7 +2,7 @@
 
 import { useRef } from 'react';
 import { motion, useScroll, useTransform, useInView } from 'framer-motion';
-import { ArrowRight, UserPlus, Search, Rocket, TrendingUp } from 'lucide-react';
+import { ArrowRight, UserPlus, Search, Rocket, TrendingUp, MessageCircle } from 'lucide-react';
 import Link from 'next/link';
 
 const steps = [
@@ -163,6 +163,15 @@ export default function HowItWorks() {
                 Start at F-Rank
                 <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} />
               </Link>
+              <a
+                href="https://chat.whatsapp.com/FFR8bOzvsJr3xHDnhGpB95"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-3 inline-flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 text-[13px] font-semibold text-slate-700 transition-all hover:border-green-300 hover:text-green-700 hover:shadow-sm"
+              >
+                <MessageCircle className="h-4 w-4 text-green-500" />
+                Join our WhatsApp
+              </a>
             </div>
           </div>
         </div>
