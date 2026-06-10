@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -21,10 +21,13 @@ import {
   ArrowLeft,
   Coins,
   Crown,
+  Github,
   Loader2,
+  Plus,
   Rocket,
   Sparkles,
   Target,
+  X,
 } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -40,7 +43,7 @@ import {
   type FieldValue,
   type FieldValues,
 } from '@/lib/quest-field-templates';
-import { Plus, X } from 'lucide-react';
+import type { GitHubQuestPrefill } from '@/lib/github-quest-prefill';
 
 interface BriefTemplate {
   id: string;
@@ -58,6 +61,7 @@ export default function CreateQuestPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
 
+  const [intakeMode, setIntakeMode] = useState<'standard' | 'oss'>('standard');
   const [form, setForm] = useState({
     title: '',
     description: '',
@@ -73,6 +77,9 @@ export default function CreateQuestPage() {
     maxParticipants: 1,
     deadline: '',
   });
+  const [ossIssueUrl, setOssIssueUrl] = useState('');
+  const [ossPartnerName, setOssPartnerName] = useState('');
+  const [ossLoading, setOssLoading] = useState(false);
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -82,6 +89,7 @@ export default function CreateQuestPage() {
   const [briefData, setBriefData] = useState<FieldValues>({});
   const [criteria, setCriteria] = useState<string[]>([]);
   const [activeTemplateId, setActiveTemplateId] = useState<string | null>(null);
+  const pendingCriteriaRef = useRef<string[] | null>(null);
 
   useEffect(() => {
     fetchWithAuth('/api/quest-field-templates')
@@ -104,7 +112,8 @@ export default function CreateQuestPage() {
     if (selectedTemplate.id === activeTemplateId) return;
     setActiveTemplateId(selectedTemplate.id);
     setBriefData({});
-    setCriteria(selectedTemplate.defaultCriteria ?? []);
+    setCriteria(pendingCriteriaRef.current ?? selectedTemplate.defaultCriteria ?? []);
+    pendingCriteriaRef.current = null;
   }, [selectedTemplate, activeTemplateId]);
 
   const briefFields = useMemo(() => asFieldDefs(selectedTemplate?.briefFields), [selectedTemplate]);
@@ -133,6 +142,62 @@ export default function CreateQuestPage() {
 
   const updateField = (field: string, value: string | number) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const applyGitHubPrefill = (prefill: GitHubQuestPrefill) => {
+    pendingCriteriaRef.current = prefill.acceptanceCriteria;
+    setOssPartnerName(prefill.partnerOrgName);
+    setOssIssueUrl(prefill.githubIssueUrl);
+    setForm((prev) => ({
+      ...prev,
+      title: prefill.title,
+      description: prefill.description,
+      detailedDescription: prefill.detailedDescription,
+      questType: prefill.questType,
+      questCategory: prefill.questCategory,
+      difficulty: prefill.difficulty,
+      xpReward: prefill.xpReward,
+      skillPointsReward: prefill.skillPointsReward,
+      requiredSkills: prefill.requiredSkills.join(', '),
+      requiredRank: prefill.requiredRank,
+      maxParticipants: prefill.maxParticipants,
+    }));
+    setCriteria(prefill.acceptanceCriteria);
+  };
+
+  const handleImportGithubIssue = async () => {
+    setError('');
+
+    if (!ossIssueUrl.trim()) {
+      setError('Add a GitHub issue URL first.');
+      return;
+    }
+
+    setOssLoading(true);
+    try {
+      const response = await fetchWithAuth('/api/company/quests/github-prefill', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          issueUrl: ossIssueUrl.trim(),
+          partnerOrgName: ossPartnerName.trim() || undefined,
+        }),
+      });
+
+      const data = await response.json();
+      if (!data?.success || !data.prefill) {
+        setError(data?.error || 'Failed to import the GitHub issue.');
+        return;
+      }
+
+      applyGitHubPrefill(data.prefill as GitHubQuestPrefill);
+      toast.success('GitHub issue imported into a quest draft.');
+    } catch (importError) {
+      console.error('Error importing GitHub issue:', importError);
+      setError('Failed to import the GitHub issue.');
+    } finally {
+      setOssLoading(false);
+    }
   };
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -173,6 +238,9 @@ export default function CreateQuestPage() {
         fieldTemplateId: selectedTemplate?.id ?? null,
         briefData,
         acceptanceCriteria: criteria.map((c) => c.trim()).filter(Boolean),
+        partnerOrgName: ossPartnerName.trim() || null,
+        track: intakeMode === 'oss' ? 'OPEN' : undefined,
+        source: intakeMode === 'oss' ? 'CLIENT_PORTAL' : undefined,
       };
 
       const response = await fetchWithAuth('/api/company/quests', {
@@ -242,6 +310,119 @@ export default function CreateQuestPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-8">
+            <div className="space-y-4 rounded-xl border border-slate-200 bg-slate-50/70 p-5">
+              <div className="space-y-1">
+                <h3 className="text-sm font-semibold text-slate-900">Intake Mode</h3>
+                <p className="text-xs text-slate-600">
+                  Use the open-source path when a partner already has work written as a GitHub issue.
+                </p>
+              </div>
+
+              <div className="grid gap-3 md:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => setIntakeMode('standard')}
+                  className={`rounded-xl border p-4 text-left transition ${
+                    intakeMode === 'standard'
+                      ? 'border-slate-900 bg-white shadow-sm'
+                      : 'border-slate-200 bg-white/70 hover:border-slate-300'
+                  }`}
+                >
+                  <p className="text-sm font-semibold text-slate-900">Standard Quest Form</p>
+                  <p className="mt-1 text-xs text-slate-600">
+                    Best for normal client briefs where the partner defines the work directly inside the platform.
+                  </p>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIntakeMode('oss')}
+                  className={`rounded-xl border p-4 text-left transition ${
+                    intakeMode === 'oss'
+                      ? 'border-emerald-700 bg-emerald-50 shadow-sm'
+                      : 'border-slate-200 bg-white/70 hover:border-slate-300'
+                  }`}
+                >
+                  <p className="text-sm font-semibold text-slate-900">Open Source Partner Form</p>
+                  <p className="mt-1 text-xs text-slate-600">
+                    Paste a GitHub issue and we prefill the quest so students get repo context much faster.
+                  </p>
+                </button>
+              </div>
+
+              {intakeMode === 'oss' && (
+                <div className="space-y-4 rounded-xl border border-emerald-200 bg-white p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="rounded-lg bg-slate-900 p-2 text-white">
+                      <Github className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <h4 className="text-sm font-semibold text-slate-900">GitHub Issue Import</h4>
+                      <p className="text-xs text-slate-600">
+                        We will pull the public issue title, body, labels, and repo metadata to generate a quest draft.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-4 lg:grid-cols-[0.8fr_1.2fr_auto]">
+                    <div className="space-y-2">
+                      <Label htmlFor="ossPartnerName">Partner / Org Name</Label>
+                      <Input
+                        id="ossPartnerName"
+                        placeholder="e.g. Open Source Org"
+                        value={ossPartnerName}
+                        onChange={(event) => setOssPartnerName(event.target.value)}
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="ossIssueUrl">GitHub Issue URL</Label>
+                      <Input
+                        id="ossIssueUrl"
+                        placeholder="https://github.com/org/repo/issues/123"
+                        value={ossIssueUrl}
+                        onChange={(event) => setOssIssueUrl(event.target.value)}
+                      />
+                    </div>
+
+                    <div className="flex items-end">
+                      <Button
+                        type="button"
+                        className="w-full lg:w-auto"
+                        variant="outline"
+                        onClick={handleImportGithubIssue}
+                        disabled={ossLoading}
+                      >
+                        {ossLoading ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Importing...
+                          </>
+                        ) : (
+                          <>
+                            <Github className="h-4 w-4" />
+                            Import Issue
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-3 text-xs text-slate-600 md:grid-cols-3">
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      Auto-fills title, summary, repo context, and student-facing brief copy.
+                    </div>
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      Suggests category, difficulty, XP, and required skills from labels and issue text.
+                    </div>
+                    <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+                      Keeps the normal form editable so your team can tune the draft before publishing.
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="grid gap-8 lg:grid-cols-[1.2fr_1fr]">
               <div className="space-y-6">
                 <div className="space-y-2">
