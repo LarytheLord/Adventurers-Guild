@@ -9,7 +9,8 @@
       "Bash(mkdir -p /Users/abi/Documents/Adventurers-Guild/app/api/admin/qa-queue/[assignmentId])",
       "Bash(mkdir -p /Users/abi/Documents/Adventurers-Guild/app/admin/qa-queue/[assignmentId])",
       "Bash(git -C /Users/abi/Documents/Adventurers-Guild add -A)",
-      "Bash(npx playwright *)"
+      "Bash(npx playwright *)",
+      "Bash(RESEND_API_KEY=test npx ts-node scripts/recruit-vit-students.ts)"
     ],
     "additionalDirectories": [
       "/Users/abi/Documents/Adventurers-Guild/app/api/parties/[id]/members"
