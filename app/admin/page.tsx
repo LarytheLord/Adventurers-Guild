@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useApiFetch } from '@/lib/hooks';
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
 import {
   Users,
   Target,
@@ -21,9 +21,10 @@ import {
   Loader2,
   CheckCircle,
   Clock,
-  Layers,
   Wallet,
   Zap,
+  UserPlus,
+  LogIn,
 } from 'lucide-react';
 
 interface AdminStats {
@@ -32,6 +33,13 @@ interface AdminStats {
   activeQuests: number;
   completedQuests: number;
   pendingQaCount: number;
+  newUsersToday: number;
+  newUsersThisWeek: number;
+  newUsersThisMonth: number;
+  totalAssignments: number;
+  activeAssignments: number;
+  loginsToday: number;
+  loginsThisWeek: number;
 }
 
 interface UserItem {
@@ -76,41 +84,65 @@ const RANK_COLORS: Record<string, string> = {
   F: 'bg-gray-100 text-gray-800',
 };
 
+const DEFAULT_STATS: AdminStats = {
+  totalUsers: 0,
+  totalQuests: 0,
+  activeQuests: 0,
+  completedQuests: 0,
+  pendingQaCount: 0,
+  newUsersToday: 0,
+  newUsersThisWeek: 0,
+  newUsersThisMonth: 0,
+  totalAssignments: 0,
+  activeAssignments: 0,
+  loginsToday: 0,
+  loginsThisWeek: 0,
+};
+
 export default function AdminDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const shouldFetch = status === 'authenticated' && session?.user?.role === 'admin';
-
-  const {
-    data: overviewData,
-    loading,
-    error: fetchError,
-  } = useApiFetch<AdminOverviewResponse>('/api/admin/overview', {
-    skip: !shouldFetch,
-  });
+  const [overviewData, setOverviewData] = useState<AdminOverviewResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login');
       return;
     }
-
     if (status === 'authenticated' && session?.user?.role !== 'admin') {
       router.push('/dashboard');
     }
   }, [router, session, status]);
 
+  const fetchOverview = useCallback(async () => {
+    if (status !== 'authenticated' || session?.user?.role !== 'admin') return;
+    setLoading(true);
+    try {
+      const res = await fetchWithAuth('/api/admin/overview');
+      const data: AdminOverviewResponse = await res.json();
+      if (!res.ok || !data.success) {
+        setFetchError(data.error ?? 'Failed to load overview');
+      } else {
+        setOverviewData(data);
+      }
+    } catch (e) {
+      setFetchError(e instanceof Error ? e.message : 'Network error');
+    } finally {
+      setLoading(false);
+    }
+  }, [status, session]);
+
+  useEffect(() => {
+    fetchOverview();
+  }, [fetchOverview]);
+
   const users = overviewData?.recentUsers ?? EMPTY_USERS;
   const recentActivity = overviewData?.recentActivity ?? EMPTY_ACTIVITY;
-  const stats = overviewData?.stats ?? {
-    totalUsers: 0,
-    totalQuests: 0,
-    activeQuests: 0,
-    completedQuests: 0,
-    pendingQaCount: 0,
-  };
+  const stats = overviewData?.stats ?? DEFAULT_STATS;
 
-  if (status === 'loading' || (shouldFetch && loading)) {
+  if (status === 'loading' || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
@@ -204,52 +236,125 @@ export default function AdminDashboard() {
           </CardContent>
         </Card>
 
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalUsers}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Quests</CardTitle>
-              <Target className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.totalQuests}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Quests</CardTitle>
-              <Activity className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.activeQuests}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Completed</CardTitle>
-              <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.completedQuests}</div>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pending QA</CardTitle>
-              <Shield className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.pendingQaCount}</div>
-            </CardContent>
-          </Card>
+        {/* Platform KPIs */}
+        <div>
+          <h2 className="text-lg font-semibold mb-3">Platform Overview</h2>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                <Users className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.totalUsers}</div>
+                <p className="text-xs text-muted-foreground mt-1">all registered accounts</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Quests</CardTitle>
+                <Target className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.totalQuests}</div>
+                <p className="text-xs text-muted-foreground mt-1">{stats.activeQuests} currently active</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Completed Quests</CardTitle>
+                <TrendingUp className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.completedQuests}</div>
+                <p className="text-xs text-muted-foreground mt-1">{stats.activeAssignments} in progress</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Pending QA</CardTitle>
+                <Shield className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.pendingQaCount}</div>
+                <p className="text-xs text-muted-foreground mt-1">awaiting review</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Registrations */}
+        <div>
+          <h2 className="text-lg font-semibold mb-3">Registrations</h2>
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">New Today</CardTitle>
+                <UserPlus className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.newUsersToday}</div>
+                <p className="text-xs text-muted-foreground mt-1">sign-ups in last 24h</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">This Week</CardTitle>
+                <UserPlus className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.newUsersThisWeek}</div>
+                <p className="text-xs text-muted-foreground mt-1">sign-ups last 7 days</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">This Month</CardTitle>
+                <UserPlus className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.newUsersThisMonth}</div>
+                <p className="text-xs text-muted-foreground mt-1">sign-ups last 30 days</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Activity */}
+        <div>
+          <h2 className="text-lg font-semibold mb-3">Activity</h2>
+          <div className="grid gap-4 md:grid-cols-3">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Active Today</CardTitle>
+                <LogIn className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.loginsToday}</div>
+                <p className="text-xs text-muted-foreground mt-1">users with activity last 24h</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Active This Week</CardTitle>
+                <LogIn className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.loginsThisWeek}</div>
+                <p className="text-xs text-muted-foreground mt-1">users with activity last 7 days</p>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total Applications</CardTitle>
+                <Activity className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stats.totalAssignments}</div>
+                <p className="text-xs text-muted-foreground mt-1">quest applications ever</p>
+              </CardContent>
+            </Card>
+          </div>
         </div>
 
         <Card>
@@ -304,8 +409,8 @@ export default function AdminDashboard() {
 
         <Card>
           <CardHeader>
-            <CardTitle>Recent Users</CardTitle>
-            <CardDescription>Latest registered users on the platform</CardDescription>
+            <CardTitle>Recent Registrations</CardTitle>
+            <CardDescription>Latest users who signed up on the platform</CardDescription>
           </CardHeader>
           <CardContent>
             {users.length === 0 ? (
@@ -319,13 +424,13 @@ export default function AdminDashboard() {
                       <div className="truncate text-sm text-muted-foreground">{user.email}</div>
                     </div>
                     <div className="ml-3 flex shrink-0 items-center gap-2">
+                      <span className="text-xs text-muted-foreground hidden sm:inline">
+                        {new Date(user.createdAt).toLocaleDateString()}
+                      </span>
                       <Badge variant="outline">{user.role}</Badge>
                       <Badge className={RANK_COLORS[user.rank] ?? RANK_COLORS.F}>
                         {user.rank}-Rank
                       </Badge>
-                      <span className="hidden text-sm text-muted-foreground sm:inline">
-                        Lv.{user.level} | {user.xp} XP
-                      </span>
                     </div>
                   </div>
                 ))}
