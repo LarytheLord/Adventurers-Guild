@@ -377,8 +377,8 @@ export const FullScreenSignup = ({ mode = "register" }: FullScreenSignupProps) =
   const isLogin = mode === "login";
 
   return (
-    <div
-      className="min-h-[calc(100vh-4rem)] flex flex-col overflow-hidden relative bg-background"
+    <main
+      className="min-h-screen flex flex-col overflow-hidden relative bg-background pt-20"
     >
       {/* Subtle ink-spread from the card's bottom-left corner */}
       <div
@@ -394,7 +394,7 @@ export const FullScreenSignup = ({ mode = "register" }: FullScreenSignupProps) =
       />
 
       {/* Card */}
-      <div className="flex-1 flex items-center justify-center p-4 pb-12">
+      <div className="flex-1 flex items-start justify-center px-4 pb-12">
         <div className="w-full relative max-w-5xl overflow-hidden flex flex-col md:flex-row shadow-2xl rounded-2xl">
 
         {/* Left panel */}
@@ -438,6 +438,6 @@ export const FullScreenSignup = ({ mode = "register" }: FullScreenSignupProps) =
         </div>
       </div>
       </div>
-    </div>
+    </main>
   );
 };
