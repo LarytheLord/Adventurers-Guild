@@ -1,12 +1,99 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
+import { toast } from 'sonner';
+import { fetchWithAuth } from '@/lib/fetch-with-auth';
 
 interface ValidationErrors {
   accountHolderName?: string;
   accountNumber?: string;
   ifscCode?: string;
+}
+
+interface ReferralStats {
+  referralCode: string;
+  referralLink: string;
+  stats: { totalReferrals: number; totalXpEarned: number; milestoneXp: Record<string, number>; refereeSignupBonus: number };
+  referrals: Array<{ id: string; name: string | null; username: string; joinedAt: string; questsCompleted: number }>;
+}
+
+function ReferralCard() {
+  const [data, setData] = useState<ReferralStats | null>(null);
+
+  useEffect(() => {
+    fetchWithAuth('/api/referral').then(r => r.json()).then(d => { if (d.success) setData(d); }).catch(() => {});
+  }, []);
+
+  const copyLink = useCallback(() => {
+    if (!data?.referralLink) return;
+    navigator.clipboard.writeText(data.referralLink).then(() => toast.success('Referral link copied!')).catch(() => {});
+  }, [data?.referralLink]);
+
+  if (!data) return (
+    <section className="rounded-2xl border border-slate-200 bg-white p-6 animate-pulse">
+      <div className="h-5 w-32 rounded bg-slate-200 mb-4" />
+      <div className="h-10 w-full rounded-xl bg-slate-100" />
+    </section>
+  );
+
+  return (
+    <section className="rounded-2xl border border-slate-200 bg-white p-6 space-y-5">
+      <div>
+        <h2 className="text-lg font-semibold text-slate-900">Referral Program</h2>
+        <p className="mt-1 text-sm text-slate-500">
+          Share your link. When a friend signs up they get 50 XP — and when they complete their first quest you earn 200 XP. Three quests earns you 500 XP more.
+        </p>
+      </div>
+
+      {/* Code + copy */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-mono text-sm text-slate-800 select-all">
+          {data.referralLink}
+        </div>
+        <button
+          onClick={copyLink}
+          className="rounded-xl border border-slate-900 bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800 transition-colors"
+        >
+          Copy
+        </button>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-center">
+          <p className="text-2xl font-bold text-slate-900">{data.stats.totalReferrals}</p>
+          <p className="text-xs text-slate-500 mt-1">Friends referred</p>
+        </div>
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-center">
+          <p className="text-2xl font-bold text-orange-500">{data.stats.totalXpEarned}</p>
+          <p className="text-xs text-slate-500 mt-1">XP earned</p>
+        </div>
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-center">
+          <p className="text-2xl font-bold text-slate-900">{data.stats.milestoneXp.first_quest_completed}</p>
+          <p className="text-xs text-slate-500 mt-1">XP per referral</p>
+        </div>
+      </div>
+
+      {/* Referral list */}
+      {data.referrals.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Your referrals</p>
+          {data.referrals.map((r) => (
+            <div key={r.id} className="flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 px-4 py-2.5">
+              <div>
+                <p className="text-sm font-medium text-slate-900">{r.name ?? r.username}</p>
+                <p className="text-xs text-slate-400">{r.questsCompleted} quest{r.questsCompleted !== 1 ? 's' : ''} completed</p>
+              </div>
+              <span className={`text-xs font-semibold px-2 py-1 rounded-full ${r.questsCompleted >= 1 ? 'bg-orange-100 text-orange-700' : 'bg-slate-100 text-slate-500'}`}>
+                {r.questsCompleted >= 1 ? '+200 XP earned' : 'Pending'}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
+  );
 }
 
 export default function SettingsPage() {
@@ -185,6 +272,8 @@ export default function SettingsPage() {
           </form>
         )}
       </section>
+
+      {session?.user?.role === 'adventurer' && <ReferralCard />}
     </div>
   );
 }
