@@ -10,6 +10,7 @@ import {
   Layers,
   LogOut,
   Shield,
+  Users,
   Wallet,
   Zap,
 } from 'lucide-react';
@@ -28,6 +29,12 @@ const adminLinks = [
     label: 'Quests',
     description: 'Review, annotate, and moderate quests',
     icon: ClipboardList,
+  },
+  {
+    href: '/admin/users',
+    label: 'Users',
+    description: 'Manage accounts, roles, and verification',
+    icon: Users,
   },
   {
     href: '/admin/qa-queue',

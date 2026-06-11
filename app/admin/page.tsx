@@ -220,6 +220,13 @@ export default function AdminDashboard() {
               </Link>
             </Button>
             <Button variant="outline" asChild>
+              <Link href="/admin/users">
+                <Users className="h-4 w-4" />
+                Manage Users
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+            <Button variant="outline" asChild>
               <Link href="/admin/api-budgets">
                 <Zap className="h-4 w-4" />
                 API Budgets
