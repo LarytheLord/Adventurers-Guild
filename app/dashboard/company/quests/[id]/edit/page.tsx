@@ -49,6 +49,9 @@ interface QuestData {
   deadline?: string | null;
   status: string;
   companyId?: string | null;
+  partnerOrgName?: string | null;
+  track?: string | null;
+  source?: string | null;
 }
 
 export default function EditQuestPage({ params }: { params: Promise<{ id: string }> }) {
@@ -70,6 +73,9 @@ export default function EditQuestPage({ params }: { params: Promise<{ id: string
     requiredRank: '',
     maxParticipants: 1,
     deadline: '',
+    partnerOrgName: '',
+    track: 'OPEN',
+    source: 'CLIENT_PORTAL',
   });
 
   const [fetchLoading, setFetchLoading] = useState(true);
@@ -122,6 +128,9 @@ export default function EditQuestPage({ params }: { params: Promise<{ id: string
           requiredRank: q.requiredRank || '',
           maxParticipants: q.maxParticipants ?? 1,
           deadline: q.deadline ? new Date(q.deadline).toISOString().split('T')[0] : '',
+          partnerOrgName: q.partnerOrgName || '',
+          track: q.track || 'OPEN',
+          source: q.source || 'CLIENT_PORTAL',
         });
       } catch {
         toast.error('Failed to load quest');
@@ -174,6 +183,9 @@ export default function EditQuestPage({ params }: { params: Promise<{ id: string
         requiredRank: form.requiredRank || null,
         maxParticipants: Number(form.maxParticipants) || 1,
         deadline: form.deadline || null,
+        partnerOrgName: form.partnerOrgName.trim() || null,
+        track: form.track,
+        source: form.source,
       };
 
       const response = await fetchWithAuth('/api/company/quests', {
@@ -384,6 +396,40 @@ export default function EditQuestPage({ params }: { params: Promise<{ id: string
                     />
                   </div>
                 </div>
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="space-y-2">
+                <Label>Track</Label>
+                <Select value={form.track} onValueChange={v => updateField('track', v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="OPEN">Open</SelectItem>
+                    <SelectItem value="BOOTCAMP">Bootcamp</SelectItem>
+                    <SelectItem value="INTERN">Intern</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Source</Label>
+                <Select value={form.source} onValueChange={v => updateField('source', v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="CLIENT_PORTAL">Client Portal</SelectItem>
+                    <SelectItem value="TUTORIAL">Tutorial</SelectItem>
+                    <SelectItem value="HACKATHON">Hackathon</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="partnerOrgName">Partner Org Name</Label>
+                <Input
+                  id="partnerOrgName"
+                  placeholder="Optional partner organization"
+                  value={form.partnerOrgName}
+                  onChange={e => updateField('partnerOrgName', e.target.value)}
+                />
               </div>
             </div>
 

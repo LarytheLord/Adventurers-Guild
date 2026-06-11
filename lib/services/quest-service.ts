@@ -39,7 +39,8 @@ export async function getQuests(searchParams: URLSearchParams, user: SessionUser
     // no restriction
     console.log('[quest-service] Admin view - no restrictions');
   } else if (user.role === 'company') {
-    visibilityFilter = { OR: [{ companyId: user.id }, { status: 'available', track: 'OPEN' }] };
+    // Companies see their own quests (any status) + public open quests
+    visibilityFilter = { OR: [{ companyId: user.id }, { companyId: null, status: 'available', track: 'OPEN' }] };
     console.log('[quest-service] Company view');
   } else if (bootcampLink) {
     // Bootcamp students: locked to BOOTCAMP track, tutorial-only until eligible

@@ -13,7 +13,8 @@ export async function GET(request: NextRequest) {
 
     // Parse query parameters
     const { searchParams } = new URL(request.url);
-    const companyId = authUser.id;
+    const isOwner = authUser.role === 'company';
+    const ownerCompanyId = authUser.id;
     const status = searchParams.get('status');
     const questType = searchParams.get('questType');
     const difficulty = searchParams.get('difficulty');
@@ -21,8 +22,8 @@ export async function GET(request: NextRequest) {
     const limit = searchParams.get('limit') || '10';
     const offset = searchParams.get('offset') || '0';
 
-    // Build where clause
-    const where: Prisma.QuestWhereInput = { companyId };
+    // Build where clause — admins see all quests, companies see only their own
+    const where: Prisma.QuestWhereInput = isOwner ? { companyId: ownerCompanyId } : {};
 
     if (status) {
       if (!Object.values(QuestStatus).includes(status as QuestStatus)) {
@@ -153,29 +154,33 @@ export async function PUT(request: NextRequest) {
 
     const body = await request.json();
     const { questId } = body;
-    const companyId = authUser.id;
+    const isOwner = authUser.role === 'company';
+    const ownerCompanyId = authUser.id;
 
     if (!questId) {
       return NextResponse.json({ error: 'Quest ID is required', success: false }, { status: 400 });
     }
 
-    // Verify the company owns this quest
+    // Verify the company owns this quest (admins can edit any quest)
     const quest = await prisma.quest.findUnique({
       where: { id: questId },
       select: { companyId: true },
     });
 
-    if (!quest || quest.companyId !== companyId) {
+    if (!quest) {
+      return NextResponse.json({ error: 'Quest not found', success: false }, { status: 404 });
+    }
+
+    if (isOwner && quest.companyId !== ownerCompanyId) {
       return NextResponse.json({ error: 'Unauthorized: You do not own this quest', success: false }, { status: 403 });
     }
 
-    // Explicit allowlist — never spread raw body into Prisma to prevent field injection
+    // Explicit allowlist — matches the Quest model fields exactly
     const ALLOWED_FIELDS = [
       'title', 'description', 'detailedDescription', 'questType', 'difficulty',
       'xpReward', 'skillPointsReward', 'monetaryReward', 'requiredSkills',
       'requiredRank', 'maxParticipants', 'questCategory', 'track', 'source', 'deadline',
-      'partnerOrgName',
-      'submissionInstructions', 'expectedDeliverables',
+      'partnerOrgName', 'fieldTemplateId', 'briefData', 'acceptanceCriteria', 'parentQuestId',
     ] as const;
 
     const prismaUpdateFields: Record<string, unknown> = {};
@@ -207,20 +212,25 @@ export async function DELETE(request: NextRequest) {
 
     const body = await request.json();
     const { questId } = body;
-    const companyId = authUser.id;
+    const isOwner = authUser.role === 'company';
+    const ownerCompanyId = authUser.id;
 
     // Validate required fields
-    if (!questId || !companyId) {
-      return NextResponse.json({ error: 'Quest ID and Company ID are required', success: false }, { status: 400 });
+    if (!questId) {
+      return NextResponse.json({ error: 'Quest ID is required', success: false }, { status: 400 });
     }
 
-    // Verify the company owns this quest
+    // Verify the company owns this quest (admins can cancel any quest)
     const quest = await prisma.quest.findUnique({
       where: { id: questId },
       select: { companyId: true },
     });
 
-    if (!quest || quest.companyId !== companyId) {
+    if (!quest) {
+      return NextResponse.json({ error: 'Quest not found', success: false }, { status: 404 });
+    }
+
+    if (isOwner && quest.companyId !== ownerCompanyId) {
       return NextResponse.json({ error: 'Unauthorized: You do not own this quest', success: false }, { status: 403 });
     }
 
