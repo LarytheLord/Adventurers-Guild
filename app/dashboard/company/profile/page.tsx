@@ -25,6 +25,15 @@ import { toast } from 'sonner';
 import { useApiFetch } from '@/lib/hooks';
 import { fetchWithAuth } from '@/lib/fetch-with-auth';
 
+interface CompanyProfileData {
+  name: string | null;
+  companyProfile: {
+    companyName: string | null;
+    companyWebsite: string | null;
+    companyDescription: string | null;
+  } | null;
+}
+
 export default function CompanyProfilePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -34,10 +43,13 @@ export default function CompanyProfilePage() {
   const [website, setWebsite] = useState('');
   const shouldFetch =
     status === 'authenticated' && (session?.user?.role === 'company' || session?.user?.role === 'admin');
-  const { data, loading } = useApiFetch<{ success: boolean; quests: Array<{ status: string }> }>(
+  const { data, loading } = useApiFetch<{ quests: Array<{ status: string }>; success: boolean }>(
     '/api/company/quests',
     { skip: !shouldFetch }
   );
+  const { data: profileData } = useApiFetch<CompanyProfileData>('/api/users/me', {
+    skip: !shouldFetch,
+  });
 
   useEffect(() => {
     if (status === 'authenticated' && session?.user?.role !== 'company' && session?.user?.role !== 'admin') {
@@ -46,12 +58,20 @@ export default function CompanyProfilePage() {
     }
 
     if (status === 'authenticated') {
-      setCompanyName(session?.user?.name || '');
+      setCompanyName(
+        profileData?.companyProfile?.companyName ||
+        profileData?.name ||
+        session?.user?.name ||
+        ''
+      );
+      setWebsite(profileData?.companyProfile?.companyWebsite || '');
+      setDescription(profileData?.companyProfile?.companyDescription || '');
     }
-  }, [status, session, router]);
+  }, [status, session, router, profileData]);
 
   const quests = data?.quests || [];
   const questCount = quests.length;
+
   const completedCount = quests.filter((quest) => quest.status === 'completed').length;
 
   const handleSave = async () => {

@@ -21,7 +21,7 @@ export function useCompanyPortalState(companyId: string) {
     loading,
     refetch: loadCompanyQuests,
     mutate,
-  } = useApiFetch<CompanyQuestsResponse>(`/api/company/quests?company_id=${companyId}`, {
+  } = useApiFetch<CompanyQuestsResponse>(`/api/company/quests?companyId=${companyId}`, {
     skip: !shouldFetch,
   });
   const companyQuests = data?.quests ?? EMPTY_COMPANY_QUESTS;

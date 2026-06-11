@@ -55,7 +55,7 @@ export default function CompanyQuestsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const shouldFetch =
     status === 'authenticated' && (session?.user?.role === 'company' || session?.user?.role === 'admin');
-  const { data, loading, error } = useApiFetch<{ success: boolean; quests: Quest[]; error?: string }>(
+  const { data, loading, error } = useApiFetch<{ quests: Quest[]; success: boolean }>(
     '/api/company/quests?limit=80',
     { skip: !shouldFetch }
   );

@@ -4,6 +4,10 @@ import { requireAuth } from '@/lib/api-auth';
 import { prisma } from '@/lib/db';
 import { Prisma, QuestStatus, QuestType, UserRank, QuestTrack, QuestSource } from '@prisma/client';
 
+function canManageQuest(authUser: { id: string; role: string }, questCompanyId: string | null) {
+  return authUser.role === 'admin' || (!!questCompanyId && questCompanyId === authUser.id);
+}
+
 export async function GET(request: NextRequest) {
   try {
     const authUser = await requireAuth(request, 'company', 'admin');
@@ -15,6 +19,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const isOwner = authUser.role === 'company';
     const ownerCompanyId = authUser.id;
+    const requestedCompanyId = searchParams.get('companyId');
     const status = searchParams.get('status');
     const questType = searchParams.get('questType');
     const difficulty = searchParams.get('difficulty');
@@ -22,8 +27,12 @@ export async function GET(request: NextRequest) {
     const limit = searchParams.get('limit') || '10';
     const offset = searchParams.get('offset') || '0';
 
-    // Build where clause — admins see all quests, companies see only their own
-    const where: Prisma.QuestWhereInput = isOwner ? { companyId: ownerCompanyId } : {};
+    // Build where clause — companies see only their own, admins see all (or filter by ?companyId=)
+    const where: Prisma.QuestWhereInput = isOwner
+      ? { companyId: ownerCompanyId }
+      : requestedCompanyId
+        ? { companyId: requestedCompanyId }
+        : {};
 
     if (status) {
       if (!Object.values(QuestStatus).includes(status as QuestStatus)) {
@@ -154,9 +163,6 @@ export async function PUT(request: NextRequest) {
 
     const body = await request.json();
     const { questId } = body;
-    const isOwner = authUser.role === 'company';
-    const ownerCompanyId = authUser.id;
-
     if (!questId) {
       return NextResponse.json({ error: 'Quest ID is required', success: false }, { status: 400 });
     }
@@ -171,23 +177,62 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Quest not found', success: false }, { status: 404 });
     }
 
-    if (isOwner && quest.companyId !== ownerCompanyId) {
+    if (!canManageQuest(authUser, quest.companyId)) {
       return NextResponse.json({ error: 'Unauthorized: You do not own this quest', success: false }, { status: 403 });
     }
 
-    // Explicit allowlist — matches the Quest model fields exactly
-    const ALLOWED_FIELDS = [
-      'title', 'description', 'detailedDescription', 'questType', 'difficulty',
-      'xpReward', 'skillPointsReward', 'monetaryReward', 'requiredSkills',
-      'requiredRank', 'maxParticipants', 'questCategory', 'track', 'source', 'deadline',
-      'partnerOrgName', 'fieldTemplateId', 'briefData', 'acceptanceCriteria', 'parentQuestId',
-    ] as const;
+    if (body.questType && !Object.values(QuestType).includes(body.questType as QuestType)) {
+      return NextResponse.json({ error: 'Invalid questType value', success: false }, { status: 400 });
+    }
+    if (body.difficulty && !Object.values(UserRank).includes(body.difficulty as UserRank)) {
+      return NextResponse.json({ error: 'Invalid difficulty value', success: false }, { status: 400 });
+    }
+    if (body.track && !Object.values(QuestTrack).includes(body.track as QuestTrack)) {
+      return NextResponse.json({ error: 'Invalid track value', success: false }, { status: 400 });
+    }
+    if (body.source && !Object.values(QuestSource).includes(body.source as QuestSource)) {
+      return NextResponse.json({ error: 'Invalid source value', success: false }, { status: 400 });
+    }
 
-    const prismaUpdateFields: Record<string, unknown> = {};
-    for (const field of ALLOWED_FIELDS) {
-      if (field in body && body[field] !== undefined) {
-        prismaUpdateFields[field] = body[field];
-      }
+    const prismaUpdateFields: Prisma.QuestUpdateInput = {};
+
+    if ('title' in body) prismaUpdateFields.title = body.title;
+    if ('description' in body) prismaUpdateFields.description = body.description;
+    if ('detailedDescription' in body) prismaUpdateFields.detailedDescription = body.detailedDescription;
+    if ('questType' in body) prismaUpdateFields.questType = body.questType;
+    if ('difficulty' in body) prismaUpdateFields.difficulty = body.difficulty;
+    if ('xpReward' in body) prismaUpdateFields.xpReward = body.xpReward;
+    if ('skillPointsReward' in body) prismaUpdateFields.skillPointsReward = body.skillPointsReward;
+    if ('monetaryReward' in body) prismaUpdateFields.monetaryReward = body.monetaryReward;
+    if ('requiredSkills' in body) prismaUpdateFields.requiredSkills = body.requiredSkills;
+    if ('requiredRank' in body) prismaUpdateFields.requiredRank = body.requiredRank;
+    if ('maxParticipants' in body) prismaUpdateFields.maxParticipants = body.maxParticipants;
+    if ('questCategory' in body) prismaUpdateFields.questCategory = body.questCategory;
+    if ('track' in body) prismaUpdateFields.track = body.track;
+    if ('source' in body) prismaUpdateFields.source = body.source;
+    if ('partnerOrgName' in body) prismaUpdateFields.partnerOrgName = body.partnerOrgName;
+    if ('parentQuestId' in body) {
+      prismaUpdateFields.parentQuest = body.parentQuestId
+        ? { connect: { id: body.parentQuestId } }
+        : { disconnect: true };
+    }
+    if ('fieldTemplateId' in body) {
+      prismaUpdateFields.fieldTemplate = body.fieldTemplateId
+        ? { connect: { id: body.fieldTemplateId } }
+        : { disconnect: true };
+    }
+    if ('acceptanceCriteria' in body) {
+      prismaUpdateFields.acceptanceCriteria = Array.isArray(body.acceptanceCriteria) ? body.acceptanceCriteria : [];
+    }
+    if ('briefData' in body) {
+      prismaUpdateFields.briefData = body.briefData ?? Prisma.JsonNull;
+    }
+    if ('deadline' in body) {
+      prismaUpdateFields.deadline = body.deadline ? new Date(body.deadline) : null;
+    }
+
+    if (Object.keys(prismaUpdateFields).length === 0) {
+      return NextResponse.json({ error: 'No valid fields to update', success: false }, { status: 400 });
     }
 
     // Update the quest
@@ -212,9 +257,6 @@ export async function DELETE(request: NextRequest) {
 
     const body = await request.json();
     const { questId } = body;
-    const isOwner = authUser.role === 'company';
-    const ownerCompanyId = authUser.id;
-
     // Validate required fields
     if (!questId) {
       return NextResponse.json({ error: 'Quest ID is required', success: false }, { status: 400 });
@@ -230,7 +272,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: 'Quest not found', success: false }, { status: 404 });
     }
 
-    if (isOwner && quest.companyId !== ownerCompanyId) {
+    if (!canManageQuest(authUser, quest.companyId)) {
       return NextResponse.json({ error: 'Unauthorized: You do not own this quest', success: false }, { status: 403 });
     }
 

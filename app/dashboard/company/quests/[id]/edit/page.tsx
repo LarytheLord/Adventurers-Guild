@@ -49,9 +49,19 @@ interface QuestData {
   deadline?: string | null;
   status: string;
   companyId?: string | null;
-  partnerOrgName?: string | null;
   track?: string | null;
   source?: string | null;
+  partnerOrgName?: string | null;
+  parentQuestId?: string | null;
+  fieldTemplateId?: string | null;
+  briefData?: unknown;
+  acceptanceCriteria?: string[];
+}
+
+function mergeDeadlineDateWithExistingTime(dateOnly: string, existingIso: string | null) {
+  if (!dateOnly) return null;
+  if (!existingIso || !existingIso.includes('T')) return dateOnly;
+  return `${dateOnly}${existingIso.slice(existingIso.indexOf('T'))}`;
 }
 
 export default function EditQuestPage({ params }: { params: Promise<{ id: string }> }) {
@@ -82,6 +92,16 @@ export default function EditQuestPage({ params }: { params: Promise<{ id: string
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [questData, setQuestData] = useState<QuestData | null>(null);
+  const [metadata, setMetadata] = useState({
+    track: null as string | null,
+    source: null as string | null,
+    partnerOrgName: null as string | null,
+    parentQuestId: null as string | null,
+    fieldTemplateId: null as string | null,
+    briefData: null as unknown,
+    acceptanceCriteria: [] as string[],
+    deadlineIso: null as string | null,
+  });
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -105,6 +125,16 @@ export default function EditQuestPage({ params }: { params: Promise<{ id: string
         }
         const q: QuestData = data.quest;
         setQuestData(q);
+        setMetadata({
+          track: q.track ?? null,
+          source: q.source ?? null,
+          partnerOrgName: q.partnerOrgName ?? null,
+          parentQuestId: q.parentQuestId ?? null,
+          fieldTemplateId: q.fieldTemplateId ?? null,
+          briefData: q.briefData ?? null,
+          acceptanceCriteria: Array.isArray(q.acceptanceCriteria) ? q.acceptanceCriteria : [],
+          deadlineIso: q.deadline ?? null,
+        });
 
         // Verify ownership (admin can edit any quest)
         if (session?.user?.role === 'company' && q.companyId !== session.user.id) {
@@ -182,10 +212,16 @@ export default function EditQuestPage({ params }: { params: Promise<{ id: string
           : [],
         requiredRank: form.requiredRank || null,
         maxParticipants: Number(form.maxParticipants) || 1,
-        deadline: form.deadline || null,
+        deadline: form.deadline
+          ? mergeDeadlineDateWithExistingTime(form.deadline, metadata.deadlineIso)
+          : null,
         partnerOrgName: form.partnerOrgName.trim() || null,
         track: form.track,
         source: form.source,
+        parentQuestId: metadata.parentQuestId,
+        fieldTemplateId: metadata.fieldTemplateId,
+        briefData: metadata.briefData,
+        acceptanceCriteria: metadata.acceptanceCriteria,
       };
 
       const response = await fetchWithAuth('/api/company/quests', {
