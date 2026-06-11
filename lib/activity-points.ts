@@ -1,5 +1,6 @@
 // lib/activity-points.ts
 export const ACTIVITY_POINTS: Record<string, number> = {
+  user_register: 0,
   quest_view: 1,
   quest_apply: 10,
   quest_start: 5,

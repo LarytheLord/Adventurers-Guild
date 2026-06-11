@@ -3,6 +3,7 @@ import { prisma, withDbRetry } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { generateReferralCode, REFEREE_SIGNUP_XP } from '@/lib/referral-utils';
+import { logActivity } from '@/lib/activity-logger';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -123,6 +124,9 @@ export async function POST(request: NextRequest) {
 
       return newUser;
     }));
+
+    // Non-blocking — log registration so admin overview login/activity counts work
+    logActivity(user.id, 'user_register', { role }).catch(console.warn);
 
     return NextResponse.json({
       success: true,

@@ -46,6 +46,7 @@ import {
 import { toast } from 'sonner';
 import { useApiFetch } from '@/lib/hooks';
 import { QUEST_STATUS_COLORS, QUEST_STATUS_LABELS, RANK_COLORS } from '@/lib/quest-constants';
+import { RANK_TO_TIER } from '@/lib/ranks';
 import { fetchWithAuth } from '@/lib/fetch-with-auth';
 
 interface AdminNote {
@@ -394,19 +395,22 @@ export default function AdminQuestsPage() {
                           {QUEST_STATUS_LABELS[quest.status] ?? quest.status}
                         </Badge>
                         <Badge className={RANK_COLORS[quest.difficulty] ?? ''} variant="secondary">
-                          {quest.difficulty}-Rank
+                          {RANK_TO_TIER[quest.difficulty] ?? `${quest.difficulty}-Rank`}
                         </Badge>
                       </div>
                       <p className="mb-2 line-clamp-2 text-sm text-muted-foreground">
                         {quest.description}
                       </p>
                       <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
+                        <Link
+                          href={`/admin/qa-queue?questId=${quest.id}`}
+                          className="flex items-center gap-1 hover:text-slate-700 underline underline-offset-2"
+                        >
                           <Users className="h-3 w-3" />
                           {quest._count.assignments} applicant
                           {quest._count.assignments !== 1 ? 's' : ''}
                           {quest.maxParticipants ? ` / ${quest.maxParticipants} max` : ''}
-                        </span>
+                        </Link>
                         <span className="flex items-center gap-1">
                           <Target className="h-3 w-3" />
                           {quest.xpReward} XP
@@ -466,9 +470,9 @@ export default function AdminQuestsPage() {
                       </Button>
 
                       <Button variant="outline" size="sm" className="h-8 text-xs" asChild>
-                        <Link href={`/dashboard/company/quests/${quest.id}`}>
+                        <Link href={`/dashboard/company/quests/${quest.id}/edit`}>
                           <Edit className="h-3 w-3" />
-                          View
+                          Edit
                         </Link>
                       </Button>
 
