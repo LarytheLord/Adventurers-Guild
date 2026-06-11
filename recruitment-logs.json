@@ -1,0 +1,1601 @@
+[
+  {
+    "timestamp": "2026-06-09T20:22:07.116Z",
+    "email": "vcreddy1995@gmail.com",
+    "name": "Chiranjeevi reddy veerapureddy",
+    "status": "failed",
+    "error": "API key is invalid"
+  },
+  {
+    "timestamp": "2026-06-09T20:22:07.872Z",
+    "email": "mukeshpotnuru2005@gmail.com",
+    "name": "Potnuru Mukesh",
+    "status": "failed",
+    "error": "API key is invalid"
+  },
+  {
+    "timestamp": "2026-06-09T20:22:09.265Z",
+    "email": "vijaybala687@gmail.com",
+    "name": "Vijay Bala K G",
+    "status": "failed",
+    "error": "API key is invalid"
+  },
+  {
+    "timestamp": "2026-06-09T20:22:10.042Z",
+    "email": "varshithachintareddy@gmail.com",
+    "name": "Chintareddy Varshitha",
+    "status": "failed",
+    "error": "API key is invalid"
+  },
+  {
+    "timestamp": "2026-06-09T20:22:10.855Z",
+    "email": "haneenmd123@gmail.com",
+    "name": "Haneen mohammed",
+    "status": "failed",
+    "error": "API key is invalid"
+  },
+  {
+    "timestamp": "2026-06-09T20:22:11.610Z",
+    "email": "roshni.kumari2023@vitstudent.ac.in",
+    "name": "Roshni Kumari",
+    "status": "failed",
+    "error": "API key is invalid"
+  },
+  {
+    "timestamp": "2026-06-09T20:22:12.371Z",
+    "email": "dsdeepan30@gmail.com",
+    "name": "Deepan Sakravarthi D S",
+    "status": "failed",
+    "error": "API key is invalid"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:03.120Z",
+    "email": "vcreddy1995@gmail.com",
+    "name": "Chiranjeevi reddy veerapureddy",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:04.027Z",
+    "email": "mukeshpotnuru2005@gmail.com",
+    "name": "Potnuru Mukesh",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:04.945Z",
+    "email": "vijaybala687@gmail.com",
+    "name": "Vijay Bala K G",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:06.466Z",
+    "email": "varshithachintareddy@gmail.com",
+    "name": "Chintareddy Varshitha",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:07.284Z",
+    "email": "haneenmd123@gmail.com",
+    "name": "Haneen mohammed",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:08.228Z",
+    "email": "roshni.kumari2023@vitstudent.ac.in",
+    "name": "Roshni Kumari",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:09.112Z",
+    "email": "dsdeepan30@gmail.com",
+    "name": "Deepan Sakravarthi D S",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:09.982Z",
+    "email": "devanshsin2020@gmail.com",
+    "name": "Devansh Singh",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:10.821Z",
+    "email": "rudra.atharvag@gmail.com",
+    "name": "Rudra Atharva Gupta",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:12.314Z",
+    "email": "omprakash.2021@vitstudent.ac.in",
+    "name": "Omprakash",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:13.149Z",
+    "email": "arijit.sahay2025@vitstudent.ac.in",
+    "name": "Arjit Sahay",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:14.023Z",
+    "email": "aasifkhan.a2006@gmail.com",
+    "name": "Aasif Khan A",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:14.892Z",
+    "email": "singhalkharsh@gmail.com",
+    "name": "Harsh Singhal",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:15.791Z",
+    "email": "abhinavbhuniya76@gmail.com",
+    "name": "Abhinav Bhuniya",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:16.681Z",
+    "email": "meenatchiramya05@gmail.com",
+    "name": "Ramya K M",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:17.610Z",
+    "email": "rishi.kukreti2025@vitstudent.ac.in",
+    "name": "Rishi Kukreti",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:18.519Z",
+    "email": "samarth.saxena2023@vitstudent.ac.in",
+    "name": "Samarth Saxena",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:19.610Z",
+    "email": "anshadityasharma23@gmail.com",
+    "name": "Anshaditya Sharma",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:20.445Z",
+    "email": "subhasravani.k2022@vitstudent.ac.in",
+    "name": "Subha Sravani K",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:21.298Z",
+    "email": "nidadavolu.naveen2022@vitstudent.ac.in",
+    "name": "Nidadavolu Naveen",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:22.218Z",
+    "email": "abhinav.mathew2022@vitstudent.ac.in",
+    "name": "Abhinav Mathew",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:23.046Z",
+    "email": "jayanth.v2023@vitstudent.ac.in",
+    "name": "Jayanth V",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:23.879Z",
+    "email": "joelj7033@gmail.com",
+    "name": "Joel John Kizhakkayil",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:24.776Z",
+    "email": "tanish.y2024@vitstudent.ac.in",
+    "name": "Tanish Y",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:25.614Z",
+    "email": "prathamgupta.wk@gmail.com",
+    "name": "Pratham Gupta",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:26.495Z",
+    "email": "ashwin.kumaranku2024@vitstudent.ac.in",
+    "name": "Ashwin Kumaran Ku",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:27.444Z",
+    "email": "rahul.krishnamoorthy2023@vitstudent.ac.in",
+    "name": "Rahul krishnamoorthy",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:28.363Z",
+    "email": "dhatrilekkala@gmail.com",
+    "name": "Lekkala Dhatri",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:29.285Z",
+    "email": "prasannavenkatesh.k2023@vitstudent.ac.in",
+    "name": "Prasanna Venkatesh",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:30.205Z",
+    "email": "raj.koyani2021@vitstudent.ac.in",
+    "name": "Raj Koyani",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:31.048Z",
+    "email": "rgakshaya2020@gmail.com",
+    "name": "Akshaya R G",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:31.946Z",
+    "email": "hariteij.ghantoji2024@vitstudent.ac.in",
+    "name": "HARITEIJ GHANTOJI",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:32.801Z",
+    "email": "krishnaprasad.b2021@vitstudent.ac.in",
+    "name": "Krishna Prasad",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:33.638Z",
+    "email": "lakshmi11nandana@gmail.com",
+    "name": "Lakshmi Nandana M",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:34.610Z",
+    "email": "riteshchoudhary.v2022@vitstudent.ac.in",
+    "name": "Ritesh Choudhary V",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:35.530Z",
+    "email": "msrikanthkarthikeyan@gmail.com",
+    "name": "Srikanth Karthikeyan",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:36.430Z",
+    "email": "karthikeyan.2023@vitstudent.ac.in",
+    "name": "Karthikeyan M",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:37.270Z",
+    "email": "mirdulaa235@gmail.com",
+    "name": "Mirdulaa Balaji",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:38.193Z",
+    "email": "hritujamalgundkar2510@gmail.com",
+    "name": "Hrituja Sanjay Malgundkar",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:39.021Z",
+    "email": "arnav.v2023@vitstudent.ac.in",
+    "name": "V Arnav",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:39.934Z",
+    "email": "sakapuram.prashanth2024@vitstudent.ac.in",
+    "name": "Sakapuram Prashanth",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:40.777Z",
+    "email": "sakshisrivastava04june@gmail.com",
+    "name": "Sakshi Srivastava",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:41.675Z",
+    "email": "lingaraj.s2023@vitstudent.ac.in",
+    "name": "Lingaraj S",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:42.495Z",
+    "email": "keshavharshavardhan2008@gmail.com",
+    "name": "G Keshav Harshavardhan",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:43.330Z",
+    "email": "muhammed.gassali2024@vitstudent.ac.in",
+    "name": "Muhammed Gassali",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:44.235Z",
+    "email": "sharukesh.v2024@vitstudent.ac.in",
+    "name": "Sharukesh V",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:45.077Z",
+    "email": "suneeth.s2022@vitstudent.ac.in",
+    "name": "Suneeth S",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:45.897Z",
+    "email": "dishita.mallick2024@vitstudent.ac.in",
+    "name": "Dishita Mallick",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:46.797Z",
+    "email": "shamantak.kataraki2024@vitstudent.ac.in",
+    "name": "Shamantak Kataraki",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:47.667Z",
+    "email": "gursharath@gmail.com",
+    "name": "Gursharath",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:48.537Z",
+    "email": "bharath.v2023@vitstudent.ac.in",
+    "name": "Bharath Vinyagam",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:49.457Z",
+    "email": "aishwarya.s2023@vitstudent.ac.in",
+    "name": "S Aishwarya",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:50.378Z",
+    "email": "roshan.jhawar2024@vitstudent.ac.in",
+    "name": "Roshan Jhawar",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:51.300Z",
+    "email": "achal.pramod2023@vitstudent.ac.in",
+    "name": "Achal Pramod Tripathi",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:52.222Z",
+    "email": "srivastavadrona@gmail.com",
+    "name": "Drona Srivastava",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:53.127Z",
+    "email": "sarthak.shinde2006@gmail.com",
+    "name": "Sarthak Shinde",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:54.067Z",
+    "email": "parth.tripathi2023@vitstudent.ac.in",
+    "name": "Parth Tripathi",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:54.986Z",
+    "email": "ektagupta.s2024@vitstudent.ac.in",
+    "name": "Ekta Gupta S",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:56.011Z",
+    "email": "advesh.sanjay2022@vitstudent.ac.in",
+    "name": "Advesh Sanjay Darvekar",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:56.933Z",
+    "email": "mirutamil5719@gmail.com",
+    "name": "Mrinalini T",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:57.854Z",
+    "email": "abhimantr.singh2024@vitstudent.ac.in",
+    "name": "Abhimantr Singh",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:58.715Z",
+    "email": "krishnanelango8@gmail.com",
+    "name": "E.M.Krishnan",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:29:59.595Z",
+    "email": "shivam.goel2023@vitstudent.ac.in",
+    "name": "Shivam Goel",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:00.516Z",
+    "email": "mohammad.muzammil2024@vitstudent.ac.in",
+    "name": "Mohammad Muzammil",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:01.363Z",
+    "email": "alviyarizwan10@gmail.com",
+    "name": "Alviya Rizwan",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:02.313Z",
+    "email": "anshu.priya2023@vitstudent.ac.in",
+    "name": "Anshu Priya",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:03.211Z",
+    "email": "anjalim9681@gmail.com",
+    "name": "Anjali Maurya",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:04.060Z",
+    "email": "raghuvanshianurag09@gmail.com",
+    "name": "Anurag Raghuvanshi",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:05.534Z",
+    "email": "aditya.kumarsahu2025@vitstudent.ac.in",
+    "name": "Aditya Kumar Sahu",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:06.456Z",
+    "email": "piyushsharmassm1@gmail.com",
+    "name": "Piyush Kumar",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:07.377Z",
+    "email": "dev.datya2025@vitstudent.ac.in",
+    "name": "Dev Datya Pratap Bansal",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:08.403Z",
+    "email": "twinkle.ghodki04@gmail.com",
+    "name": "Twinkle Ghodki",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:09.231Z",
+    "email": "dharshana.s2024a@vitstudent.ac.in",
+    "name": "Dharshana S",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:10.066Z",
+    "email": "prodhosh.vs2025@vitstudent.ac.in",
+    "name": "Prodhosh VS",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:10.943Z",
+    "email": "summana2603@gmail.com",
+    "name": "Summana",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:11.775Z",
+    "email": "pasalaneelima2004@gmail.com",
+    "name": "Pasala Neelima",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:12.600Z",
+    "email": "arnav.gupta2024@vitstudent.ac.in",
+    "name": "Arnav Gupta",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:13.524Z",
+    "email": "mohammedsayeed.a1@gmail.com",
+    "name": "Mohammed Sayeed A",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:14.374Z",
+    "email": "priyadarshini.t2023@vitstudent.ac.in",
+    "name": "Priyadarshini.T",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:15.209Z",
+    "email": "janani.vl2023@vitstudent.ac.in",
+    "name": "Janani VL",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:16.061Z",
+    "email": "sreeramvarshith@gmail.com",
+    "name": "G Veda Sree Ram Varshith",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:16.955Z",
+    "email": "lavanya.neelkantan2024@vitstudent.ac.in",
+    "name": "LAVANYA NEELKANTAN",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:17.822Z",
+    "email": "nikhilsai551@gmail.com",
+    "name": "Vempati nikhil sai",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:18.652Z",
+    "email": "shrinikhaythan.vp2024@vitstudent.ac.in",
+    "name": "V.P. Shrinikhaythan",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:19.488Z",
+    "email": "sriharan.rajesh2024@vitstudent.ac.in",
+    "name": "Sriharan Rajesh",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:20.357Z",
+    "email": "mayank.saikia2024@vitstudent.ac.in",
+    "name": "Mayank Saikia",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:21.191Z",
+    "email": "swaraj.shandilya2025@vitstudent.ac.in",
+    "name": "Swaraj Shandilya",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:22.058Z",
+    "email": "sanjay.s2024b@vitstudent.ac.in",
+    "name": "S.Sanjay",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:22.889Z",
+    "email": "vanshita.vikramsinh2024@vitstudent.ac.in",
+    "name": "Vanshita Patil",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:23.720Z",
+    "email": "roshan.r2026@gmail.com",
+    "name": "Roshan R",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:24.585Z",
+    "email": "akarsh035@gmail.com",
+    "name": "Akarsh Shrivastava",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:25.502Z",
+    "email": "nisha.venkatesh2024@vitstudent.ac.in",
+    "name": "Nisha Venkatesh",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:26.429Z",
+    "email": "krishnajaswl@gmail.com",
+    "name": "KRISHNA JAISWAL",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:27.281Z",
+    "email": "madhurkjindal@gmail.com",
+    "name": "Madhur Kumar Jindal",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:28.122Z",
+    "email": "kriti.saini2023@vitstudent.ac.in",
+    "name": "Kriti Saini",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:28.955Z",
+    "email": "shaik.abdulkhader2023@vitstudent.ac.in",
+    "name": "Sk Abdul Khader Masthan",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:29.805Z",
+    "email": "krishna.s2025a@vitstudent.ac.in",
+    "name": "Krishna S",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:30.634Z",
+    "email": "lahari.mp2023@vitstudent.ac.in",
+    "name": "M.P. Lahari",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:31.486Z",
+    "email": "sanjanabarath@gmail.com",
+    "name": "SANJANA B",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:32.304Z",
+    "email": "adriza23banerji@gmail.com",
+    "name": "ADRIZA BANERJI",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:33.161Z",
+    "email": "sakshiarora.arora2002@gmail.com",
+    "name": "Sakshi Arora",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:34.006Z",
+    "email": "krish.agarwal2023@vitstudent.ac.in",
+    "name": "KRISH AGARWAL",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:34.826Z",
+    "email": "paramasivan.t2021@vitstudent.ac.in",
+    "name": "Paramasivan T",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:35.673Z",
+    "email": "sundar04072006@gmail.com",
+    "name": "GOHUL SUNDAR J",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:36.585Z",
+    "email": "andreddy.upada2024@vitstudent.ac.in",
+    "name": "Andreddy Upada",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:37.484Z",
+    "email": "priyadharshini.v2024a@vitstudent.ac.in",
+    "name": "Priya Dharshini V",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:38.507Z",
+    "email": "sumit.sherkar@gmail.com",
+    "name": "Sumeet Sherkar",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:39.347Z",
+    "email": "kaushiksayi2003@gmail.com",
+    "name": "Kaushik S",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:40.248Z",
+    "email": "rithunpriya31@gmail.com",
+    "name": "Rithun Priya C",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:41.107Z",
+    "email": "devna.s2024@vitstudent.ac.in",
+    "name": "DEVNA S",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:41.990Z",
+    "email": "rudrakshpurbia28@gmail.com",
+    "name": "Rudraksh Purbia",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:42.879Z",
+    "email": "psarthak992@gmail.com",
+    "name": "Sarthak Patel",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:43.834Z",
+    "email": "haroonofficial1811@gmail.com",
+    "name": "Haroon Rashid",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:44.857Z",
+    "email": "shrinivas.jagannath2022@vitstudent.ac.in",
+    "name": "SHRINIVAS J ACHARI",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:45.778Z",
+    "email": "preethisri.vs2023@vitstudent.ac.in",
+    "name": "V S Preethi Sri",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:46.614Z",
+    "email": "jhofredsmile.r2024@vitstudent.ac.in",
+    "name": "Jhofred Smile R",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:47.520Z",
+    "email": "thirugnanam.vs2024@vitstudent.ac.in",
+    "name": "Thirugnanam V S",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:48.442Z",
+    "email": "sidharth.ganesh2023@vitstudent.ac.in",
+    "name": "Sidharth Ganesh",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:49.316Z",
+    "email": "susmitbhar@gmail.com",
+    "name": "Susmit Bhar",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:50.180Z",
+    "email": "kirthick3110@gmail.com",
+    "name": "Kirthick. S",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:51.103Z",
+    "email": "rtanuj.14@gmail.com",
+    "name": "Tanuj Rai",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:52.024Z",
+    "email": "jyoti.2023@vitstudent.ac.in",
+    "name": "Jyoti",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:52.912Z",
+    "email": "ruchir.sushil2023@vitstudent.ac.in",
+    "name": "Ruchir Sushil",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:53.764Z",
+    "email": "popattirth@gmail.com",
+    "name": "Tirth Bhavinkumar Popat",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:54.629Z",
+    "email": "chiragsrivastava626@gmail.com",
+    "name": "Chirag Srivastava",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:55.507Z",
+    "email": "tanujsinghchauhan38@gmail.com",
+    "name": "Tanuj Singh Chauhan",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:56.429Z",
+    "email": "hansiddh.gurram2024@vitstudent.ac.in",
+    "name": "Gurram Hansiddh",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:57.348Z",
+    "email": "sounak.ghosh2024@vitstudent.ac.in",
+    "name": "Sounak Ghosh",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:58.270Z",
+    "email": "kannan.d2022@vitstudent.ac.in",
+    "name": "Kannan Durairaj",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:30:59.295Z",
+    "email": "charulatha.s2025@vitstudent.ac.in",
+    "name": "S.Charulatha",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:00.215Z",
+    "email": "siddhardharoy11@gmail.com",
+    "name": "Dubba Siddhardha Roy",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:01.232Z",
+    "email": "myuvanpranav@gmail.com",
+    "name": "Yuvan Pranav M",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:02.102Z",
+    "email": "immanueljoshua.s2022@vitstudent.ac.in",
+    "name": "Immanuel Joshua S",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:02.981Z",
+    "email": "kamalesh.p2024@vitstudent.ac.in",
+    "name": "Kamalesh. P",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:03.903Z",
+    "email": "vaishnavi.shukla2021@vitstudent.ac.in",
+    "name": "Vaishnavi Shukla",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:04.721Z",
+    "email": "yaswanth.sri2023@vitstudent.ac.in",
+    "name": "Yaswanth Sri Varma Ambati",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:05.644Z",
+    "email": "aurnav1007@gmail.com",
+    "name": "AURNAV TYAGI",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:06.565Z",
+    "email": "saurabhkumar.verma2023@vitstudent.ac.in",
+    "name": "SAURABH KUMAR VERMA",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:07.488Z",
+    "email": "atharv.shyleshdave2024@vitstudent.ac.in",
+    "name": "Atharv Shylesh Dave",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:08.408Z",
+    "email": "harsh.2024@vitstudent.ac.in",
+    "name": "Harsh",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:09.331Z",
+    "email": "jegadiswar.sm2024@vitstudent.ac.in",
+    "name": "Jegadiswar SM",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:10.253Z",
+    "email": "parit.gupta2023@vitstudent.ac.in",
+    "name": "Parit Gupta",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:11.275Z",
+    "email": "tanu.chaudhary2025@vitstudent.ac.in",
+    "name": "Tanu Chaudhary",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:12.198Z",
+    "email": "dhyan081206@gmail.com",
+    "name": "Dhyan Patel",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:13.119Z",
+    "email": "tapishmantri@gmail.com",
+    "name": "Tapish Mantri",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:14.041Z",
+    "email": "pramodviknesh.e2024@vitstudent.ac.in",
+    "name": "Pramod Viknesh E R",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:14.906Z",
+    "email": "deekshitha.t2025@vitstudent.ac.in",
+    "name": "Deekshitha",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:15.780Z",
+    "email": "13vishwa05@gmail.com",
+    "name": "Vishwa p",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:16.703Z",
+    "email": "tejasreebalugu9@gmail.com",
+    "name": "Tejasree Balugu",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:17.623Z",
+    "email": "pranav.bhatia2024@vitstudent.ac.in",
+    "name": "Pranav Bhatia",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:18.546Z",
+    "email": "arghadwip.sarkar2024@vitstudent.ac.in",
+    "name": "Arghadwip Sarkar",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:19.467Z",
+    "email": "shalinsunilkumar@gmail.com",
+    "name": "Shalin S K",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:20.388Z",
+    "email": "lakshitanair@gmail.com",
+    "name": "Lakshita Nair",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:21.309Z",
+    "email": "shrivastavaadityaraj2005@gmail.com",
+    "name": "Adityaraj Shrivastava",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:22.232Z",
+    "email": "chaitanya.siddartha2021@vitstudent.ac.in",
+    "name": "Lakamsani Chaitanya Sai Surya Siddartha",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:23.158Z",
+    "email": "nandhini.s2021c@vitstudent.ac.in",
+    "name": "Nandhini S",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:24.076Z",
+    "email": "karen.kshaylee2023@vitstudent.ac.in",
+    "name": "Karen.K.Shaylee",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:24.997Z",
+    "email": "jeevithchidananda@gmail.com",
+    "name": "JEEVITH HC",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:25.919Z",
+    "email": "ajay.pokkali2024@vitstudent.ac.in",
+    "name": "Ajay Pokkali",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:26.750Z",
+    "email": "venkatesan.gk2024@vitstudent.ac.in",
+    "name": "GK Venkatesan",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:27.661Z",
+    "email": "priyadarshini.v2025@vitstudent.ac.in",
+    "name": "Priyadarshini V",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:28.582Z",
+    "email": "varsh04.2004@gmail.com",
+    "name": "",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:29.503Z",
+    "email": "shreya.mahapatra2024@vitstudent.ac.in",
+    "name": "Shreya Mahapatra",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:30.425Z",
+    "email": "manasa.vg2024@vitstudent.ac.in",
+    "name": "V G Manasa",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:31.266Z",
+    "email": "shruthi.narayanan2024@vitstudent.ac.in",
+    "name": "Shruthi Narayanan",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:32.237Z",
+    "email": "balaji.t2024@vitstudent.ac.in",
+    "name": "Balaji T",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:33.126Z",
+    "email": "ankana.datta2024@vitstudent.ac.in",
+    "name": "Ankana Datta",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:34.009Z",
+    "email": "navneetvipin123@gmail.com",
+    "name": "Navneet Vipin",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:34.929Z",
+    "email": "shravansanjeev9871@gmail.com",
+    "name": "Shravan Sanjeev",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:35.852Z",
+    "email": "jothika.d2024@vitstudent.ac.in",
+    "name": "D. Jothika",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:36.773Z",
+    "email": "raihaanmohammed.k2024@vitstudent.ac.in",
+    "name": "Raihaan Mohammed K S",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:37.798Z",
+    "email": "dinesh.a2023@vitstudent.ac.in",
+    "name": "Dinesh A",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:38.726Z",
+    "email": "kommera.srivanreddy2024@vitstudent.ac.in",
+    "name": "Kommera Srivan Reddy",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:39.641Z",
+    "email": "frolicky2411@gmail.com",
+    "name": "Jagadheshvar MM",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:40.564Z",
+    "email": "ranjana.2025@vitstudent.ac.in",
+    "name": "Ranjana Senthilmurugan",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:41.486Z",
+    "email": "skbalavenkat@gmail.com",
+    "name": "Balavenkat",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:42.405Z",
+    "email": "tanish.bhardwaj2024@vitstudent.ac.in",
+    "name": "Tanish Bhardwaj",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:43.298Z",
+    "email": "kiruthikajayaramanofficial@gmail.com",
+    "name": "Kiruthika J",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:44.249Z",
+    "email": "vishaalmadhav.s2024@vitstudent.ac.in",
+    "name": "Vishaal Madhav S.K",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:45.169Z",
+    "email": "devanshsingh.rawat2021@vitstudent.ac.in",
+    "name": "Devansh Singh Rawat",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:46.093Z",
+    "email": "ayush.raj2021a@vitstudent.ac.in",
+    "name": "Ayush Raj",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:47.014Z",
+    "email": "shreecharran.r2023@vitstudent.ac.in",
+    "name": "SHREE CHARRAN",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:47.935Z",
+    "email": "swethasona600@gmail.com",
+    "name": "SWETHA.S",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:48.857Z",
+    "email": "aura.jain2023@vitstudent.ac.in",
+    "name": "Aura Jain",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:49.729Z",
+    "email": "sujitra.m2025@vitstudent.ac.in",
+    "name": "Sujitra M",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:50.587Z",
+    "email": "harshvardhan.rai2023@vitstudent.ac.in",
+    "name": "Harshvardhan Rai Malik",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:51.518Z",
+    "email": "vishujain.activa@gmail.com",
+    "name": "Vishu jain",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:52.441Z",
+    "email": "hebenroy6@gmail.com",
+    "name": "Heben Roy",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:53.363Z",
+    "email": "md.zuberkhan2025@vitstudent.ac.in",
+    "name": "Md Zuber Khan",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:54.284Z",
+    "email": "jegadeesh.2020@vitstudent.ac.in",
+    "name": "Jegadeesh D",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:55.206Z",
+    "email": "maanvith.reddy2024@vitstudent.ac.in",
+    "name": "Maanvith Reddy Dumpala",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:56.128Z",
+    "email": "ramantusheta@gmail.com",
+    "name": "Tusheta raman",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:56.969Z",
+    "email": "deeksha.p2025@vitstudent.ac.in",
+    "name": "Deeksha.P",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:57.867Z",
+    "email": "soumya.gupta2024@vitstudent.ac.in",
+    "name": "Soumya Gupta",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:58.789Z",
+    "email": "vinayak.mishra2024@vitstudent.ac.in",
+    "name": "Vinayak Mishra",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:31:59.712Z",
+    "email": "kishorekumar67834@gmail.com",
+    "name": "Kishorekumar R",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:32:00.634Z",
+    "email": "manaskole123@gmail.com",
+    "name": "Kole Manas",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:32:01.658Z",
+    "email": "aishwaryamol.s2024@vitstudent.ac.in",
+    "name": "Aishwarya Mol S",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:32:02.486Z",
+    "email": "abhishekchandra2206@gmail.com",
+    "name": "Abhishek Chandra",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:32:03.336Z",
+    "email": "klikhithareddy18@gmail.com",
+    "name": "Konudhula Likhitha",
+    "status": "sent"
+  },
+  {
+    "timestamp": "2026-06-09T20:32:04.123Z",
+    "email": "neelimasr2005@gmail.com",
+    "name": "Neelima S R",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:04.892Z",
+    "email": "dhruve.theypra2023@vitstudent.ac.in",
+    "name": "Dhruve Theypra",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:05.658Z",
+    "email": "sideshwaroffl@gmail.com",
+    "name": "Sideshwar",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:06.453Z",
+    "email": "madhumitha.sd2023@vitstudent.ac.in",
+    "name": "S.D.Madhumitha",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:07.215Z",
+    "email": "azhagesh.s2023@vitstudent.ac.in",
+    "name": "Azhagesh.S",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:07.994Z",
+    "email": "priyansh.2024@vitstudent.ac.in",
+    "name": "Priyansh",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:08.768Z",
+    "email": "aryan.kapoor2024@vitstudent.ac.in",
+    "name": "Aryan Kapoor",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:09.552Z",
+    "email": "rohithganesh.kanchi2023@vitstudent.ac.in",
+    "name": "Rohith Ganesh Kanchi",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:10.333Z",
+    "email": "kanzariya.nimesh296@ptuniv.edu.in",
+    "name": "Kanzariya Nimesh",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:11.182Z",
+    "email": "arvinthraajhen@gmail.com",
+    "name": "SRIEE ARVINTH RAAJHEN A G",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:11.944Z",
+    "email": "jpanirudh22@gmail.com",
+    "name": "JP Anirudh",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:12.711Z",
+    "email": "swetha.arul2023@vitstudent.ac.in",
+    "name": "Swetha Arul",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:13.473Z",
+    "email": "swathi.sivakumar2024@vitstudent.ac.in",
+    "name": "Swathi Sivakumar",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:14.452Z",
+    "email": "lavish.chutani2025@vitstudent.ac.in",
+    "name": "Lavish Chutani",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:15.352Z",
+    "email": "pillarammanoj16@gmail.com",
+    "name": "Pillaram Manoj",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:16.198Z",
+    "email": "sanjaynakul.s2024@vitstudent.ac.in",
+    "name": "SANJAY NAKUL",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:16.974Z",
+    "email": "krishu.kumar2024@vitstudent.ac.in",
+    "name": "KRISHU KUMAR",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:17.758Z",
+    "email": "sohan.chitluri2024@vitstudent.ac.in",
+    "name": "Sohan Chitluri",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:18.552Z",
+    "email": "abhinav.pramod2024@vitstudent.ac.in",
+    "name": "Abhinav Pramod",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:19.315Z",
+    "email": "premnath.ts2024@vitstudent.ac.in",
+    "name": "Premnath T S",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:20.090Z",
+    "email": "divyanshagarwal1971@gmail.com",
+    "name": "Divyansh agarwal",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:20.862Z",
+    "email": "sanjaymurali3369@gmail.com",
+    "name": "M Sanjay",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:21.635Z",
+    "email": "muhammed.raslan2022@vitstudent.ac.in",
+    "name": "Muhammed Raslan Thalassery",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:22.411Z",
+    "email": "ashray.arjun2024@vitstudent.ac.in",
+    "name": "Ashray Arjun",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:23.265Z",
+    "email": "shiva.s2024@vitstudent.ac.in",
+    "name": "Shiva S",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:24.272Z",
+    "email": "sooraj3006.vasan@gmail.com",
+    "name": "Sooraj V",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:25.106Z",
+    "email": "manasa.mahesh2023@vitstudent.ac.in",
+    "name": "Manasa Mahesh",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:25.870Z",
+    "email": "pabbineedi.harshith2023@vitstudent.ac.in",
+    "name": "Pabbineedi Harshith Subhash",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:26.640Z",
+    "email": "tejaswiee.tj@gmail.com",
+    "name": "Tejaswi Ealumalai",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:27.421Z",
+    "email": "tejaswiee.tj@gmail.com",
+    "name": "Tejaswi Ealumalai",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:28.282Z",
+    "email": "chaitanyasingh1811@gmail.com",
+    "name": "Chaitanya Singh",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:29.099Z",
+    "email": "chandrasekaran.k2025@vitstudent.ac.in",
+    "name": "Chandrasekaran K",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:29.919Z",
+    "email": "tharunvenkataramanan@gmail.com",
+    "name": "Tharun V G",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:30.691Z",
+    "email": "saideepak.k2024@vitstudent.ac.in",
+    "name": "K Sai Deepak",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:31.476Z",
+    "email": "shaik.musharaf2022a@vitstudent.ac.in",
+    "name": "SHAIK MUSHARAF",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:32.240Z",
+    "email": "karthik1904b@gmail.com",
+    "name": "Karthik Brahmadevu",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:33.011Z",
+    "email": "preetha.arul2024@vitstudent.ac.in",
+    "name": "Preetha Arul",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:33.772Z",
+    "email": "santhosh.v2024c@vitstudent.ac.in",
+    "name": "Santhosh Vijayakumar",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:34.546Z",
+    "email": "adhvaitha.b2022@vitstudent.ac.in",
+    "name": "B Adhvaitha",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:35.347Z",
+    "email": "tharunkrishna.si2024@vitstudent.ac.in",
+    "name": "S I Tharun Krishna",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:36.165Z",
+    "email": "tarlana.vidya2023@vitstudent.ac.in",
+    "name": "Tarlana Vidya",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:36.927Z",
+    "email": "saurabhdewangan26111970@gmail.com",
+    "name": "SAURABH DEWANGAN",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:37.806Z",
+    "email": "sona.vr2022@vitstudent.ac.in",
+    "name": "V R Sona",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:38.583Z",
+    "email": "ks.muhammad2025@vitstudent.ac.in",
+    "name": "K S MUHAMMAD UMAR SHAKEEL",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:39.443Z",
+    "email": "jahshmuhammed@gmail.com",
+    "name": "MUHAMMED JAHSH",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:40.212Z",
+    "email": "mudit.agrawal2024@vitstudent.ac.in",
+    "name": "Mudit Agrawal",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:41.082Z",
+    "email": "ragavi.gs2024@vitstudent.ac.in",
+    "name": "G.S.RAGAVI",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:41.899Z",
+    "email": "andrea.a2024@vitstudent.ac.in",
+    "name": "ANDREA A",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:42.719Z",
+    "email": "sudhishnarayan.s2024@vitstudent.ac.in",
+    "name": "Sudhish Narayan S",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  },
+  {
+    "timestamp": "2026-06-09T20:32:43.538Z",
+    "email": "jairam.r2023@vitstudent.ac.in",
+    "name": "Jairam",
+    "status": "failed",
+    "error": "You have reached your daily email sending quota."
+  }
+]

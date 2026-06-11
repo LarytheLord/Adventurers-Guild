@@ -282,6 +282,14 @@ model AdventurerProfile {
   razorpayContactId     String?            @map("razorpay_contact_id")
   razorpayFundAccountId String?            @map("razorpay_fund_account_id")
 
+  studentType          String?            @map("student_type")
+  institutionName      String?            @map("institution_name")
+  yearOrExperience     String?            @map("year_or_experience")
+  interests            String[]           @map("interests")
+  dailyWorkHours       String?            @map("daily_work_hours")
+  expectations         String?            @map("expectations")
+  onboardingCompleted  Boolean            @default(false) @map("onboarding_completed")
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("adventurer_profiles")

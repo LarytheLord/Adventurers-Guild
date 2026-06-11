@@ -272,7 +272,7 @@ function RegisterFormInner() {
     <div className="flex flex-col gap-4">
       {refCode && (
         <div className="rounded-xl border border-orange-200 bg-orange-50 px-4 py-3 text-sm text-orange-800">
-          🎉 You were referred by a friend! You'll get <strong>50 bonus XP</strong> when you sign up.
+          🎉 You were referred by a friend! You&apos;ll get <strong>50 bonus XP</strong> when you sign up.
         </div>
       )}
       {tab === "adventurer" ? (

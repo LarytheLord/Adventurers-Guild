@@ -53,13 +53,13 @@ type Quest = {
 };
 
 const DIFFICULTY_LABELS: Record<Rank, string> = {
-  F: 'F - Beginner',
-  E: 'E - Intermediate',
-  D: 'D - Advanced',
-  C: 'C - Expert',
-  B: 'B - Master',
-  A: 'A - Grandmaster',
-  S: 'S - Legendary',
+  F: 'Tier 1 - Novice',
+  E: 'Tier 2 - Apprentice',
+  D: 'Tier 3 - Journeyman',
+  C: 'Tier 4 - Expert',
+  B: 'Tier 5 - Master',
+  A: 'Tier 6 - Champion',
+  S: 'Tier 7 - Legend',
 };
 
 const CATEGORY_ICONS: Record<string, string> = {
@@ -257,7 +257,7 @@ export default function QuestsPage() {
                   className="h-12 rounded-xl bg-slate-950 px-7 text-white hover:bg-slate-800"
                 >
                   <Link href="/register" className="flex items-center gap-2">
-                    Start at F-Rank
+                    Start at Tier 1
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>
@@ -342,7 +342,7 @@ export default function QuestsPage() {
               </h2>
             </div>
             <p className="max-w-xl text-sm leading-7 text-slate-500 md:text-right">
-              Filter by category, rank, and track. Every card here is meant to feel like part of the
+              Filter by category, tier, and track. Every card here is meant to feel like part of the
               same editorial system as the rest of the site, not a separate dashboard.
             </p>
           </div>
@@ -467,10 +467,10 @@ export default function QuestsPage() {
                     }}
                   >
                     <SelectTrigger className="h-11 rounded-xl border-slate-200 bg-slate-50 text-slate-700">
-                      <SelectValue placeholder="All Ranks" />
+                      <SelectValue placeholder="All Tiers" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Ranks</SelectItem>
+                      <SelectItem value="all">All Tiers</SelectItem>
                       {Object.keys(DIFFICULTY_LABELS).map((rank) => (
                         <SelectItem key={rank} value={rank}>
                           {DIFFICULTY_LABELS[rank as Rank]}

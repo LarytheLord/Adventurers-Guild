@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 import NotificationBell from '@/components/NotificationBell';
+import { OnboardingPrompt } from '@/components/ui/onboarding-prompt';
 import {
   BarChart3,
   Briefcase,
@@ -84,9 +85,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const adventurerNav = [
     { name: 'Dashboard', href: '/dashboard', icon: Home },
     { name: 'Quests', href: '/dashboard/quests', icon: Target },
-    { name: 'My Pipeline', href: '/dashboard/my-quests', icon: Briefcase },
-    { name: 'Skill Tree', href: '/dashboard/skill-tree', icon: Zap },
-    { name: 'Teams', href: '/dashboard/teams', icon: Users },
+    { name: 'My Quests', href: '/dashboard/my-quests', icon: Briefcase },
+    // { name: 'Skill Tree', href: '/dashboard/skill-tree', icon: Zap },  // hidden for now
+    // { name: 'Teams', href: '/dashboard/teams', icon: Users },            // hidden for now
     { name: 'Leaderboard', href: '/dashboard/leaderboard', icon: Trophy },
   ];
 
@@ -107,10 +108,16 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const roleIcon = isCompany ? Briefcase : Sword;
   const RoleIcon = roleIcon;
 
-  const isActive = (href: string) => pathname === href || pathname?.startsWith(`${href}/`);
+  // Exact-match-only hrefs — don't highlight when on a sub-route
+  const exactMatchHrefs = ['/dashboard', '/dashboard/company'];
+  const isActive = (href: string) =>
+    exactMatchHrefs.includes(href)
+      ? pathname === href
+      : pathname === href || pathname?.startsWith(`${href}/`);
 
   return (
     <div className="min-h-screen guild-shell">
+      <OnboardingPrompt />
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
@@ -121,9 +128,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-full w-72 border-r border-slate-200 bg-white text-slate-900 transform transition-transform duration-200 ease-in-out lg:translate-x-0 ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        }`}
+        className={`fixed top-0 left-0 z-50 h-full w-72 border-r border-slate-200 bg-white text-slate-900 transform transition-transform duration-200 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          }`}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
@@ -132,9 +138,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               href={isCompany ? '/dashboard/company' : '/dashboard'}
               className="flex items-center space-x-2"
             >
-              <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 font-bold text-white">
-                AG
-              </span>
+              <img src="/logo/guild-logo.png" alt="Guild Logo" className="h-8 w-8 object-contain" />
               <span className="text-sm font-semibold tracking-wide text-slate-900">
                 Guild
               </span>
@@ -147,16 +151,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             >
               <X className="h-5 w-5" />
             </Button>
-          </div>
-
-          <div className="px-4 pt-4">
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-              <div className="flex items-center gap-2 text-orange-600">
-                <RoleIcon className="h-4 w-4" />
-                <p className="text-xs font-semibold uppercase tracking-[0.2em]">{roleTitle}</p>
-              </div>
-              <p className="mt-2 text-xs text-slate-500">{roleSubtitle}</p>
-            </div>
           </div>
 
           {/* Navigation */}
@@ -227,16 +221,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </Button>
 
             <div className="hidden lg:flex items-center gap-2 text-sm text-slate-500">
-              <Compass className="h-4 w-4" />
               <span>
-                {isCompany ? 'Company Dashboard' : 'Adventurer Dashboard'}
+                {isCompany ? 'Company Dashboard' : 'Dashboard'}
               </span>
-              <LineChart className="h-4 w-4 text-orange-500" />
             </div>
 
             <div className="flex items-center space-x-2">
               <NotificationBell userId={session?.user?.id || ''} />
-              
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon">
