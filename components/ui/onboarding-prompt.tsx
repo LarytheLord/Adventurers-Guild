@@ -214,22 +214,24 @@ export function OnboardingPrompt() {
   if (isLoadingStatus || !isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-      <div className="bg-white text-slate-900 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row animate-in fade-in zoom-in-95 duration-200 border border-slate-100">
-        
-        {/* Left branding panel */}
-        <div className="bg-gradient-to-br from-orange-600 to-amber-500 text-white p-8 md:w-1/3 flex flex-col justify-between relative overflow-hidden">
-          <div className="relative z-10">
-            <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm p-1.5 mb-6">
+    <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center sm:p-4 bg-black/80 backdrop-blur-md">
+      <div className="bg-white text-slate-900 w-full max-w-2xl rounded-t-3xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row animate-in fade-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200 border border-slate-100 max-h-[95dvh] sm:max-h-[calc(100dvh-32px)]">
+
+        {/* Left branding panel — horizontal strip on mobile, full sidebar on md+ */}
+        <div className="bg-gradient-to-br from-orange-600 to-amber-500 text-white md:w-1/3 flex md:flex-col md:justify-between relative overflow-hidden flex-row items-center gap-4 p-4 md:p-8">
+          <div className="relative z-10 flex md:flex-col items-center md:items-start gap-3 md:gap-0">
+            <div className="inline-flex h-9 w-9 md:h-10 md:w-10 shrink-0 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm p-1.5 md:mb-6">
               <img src="/logo/guild-logo.png" alt="Guild Logo" className="h-full w-full object-contain invert brightness-0" />
             </div>
-            <h2 className="text-2xl font-bold tracking-tight mb-2 font-display">Claim Your Identity</h2>
-            <p className="text-white/85 text-xs leading-relaxed">
-              Configure your profile parameters to adjust matching quest ranks and unlock custom recommendations.
-            </p>
+            <div>
+              <h2 className="text-base md:text-2xl font-bold tracking-tight md:mb-2 font-display">Claim Your Identity</h2>
+              <p className="text-white/85 text-[11px] leading-relaxed hidden md:block">
+                Configure your profile parameters to adjust matching quest ranks and unlock custom recommendations.
+              </p>
+            </div>
           </div>
 
-          <div className="relative z-10 pt-8 mt-auto flex flex-col gap-2">
+          <div className="relative z-10 md:pt-8 md:mt-auto flex flex-col gap-2 ml-auto md:ml-0">
             <div className="flex items-center gap-2">
               <span className={`h-2 w-2 rounded-full ${step >= 1 ? 'bg-white' : 'bg-white/40'}`}></span>
               <span className={`h-2 w-2 rounded-full ${step >= 2 ? 'bg-white' : 'bg-white/40'}`}></span>
@@ -239,9 +241,12 @@ export function OnboardingPrompt() {
           </div>
         </div>
 
-        {/* Right form panel */}
-        <div className="p-8 md:w-2/3 flex flex-col justify-between max-h-[90vh] overflow-y-auto bg-white">
-          
+        {/* Right form panel — scrollable content, pinned action buttons */}
+        <div className="md:w-2/3 flex flex-col flex-1 min-h-0 bg-white overflow-hidden">
+
+          {/* Scrollable form content */}
+          <div className="flex-1 overflow-y-auto p-6 md:p-8 min-h-0">
+
           {/* STEP 1: BACKGROUND */}
           {step === 1 && (
             <div className="space-y-6">
@@ -446,8 +451,10 @@ export function OnboardingPrompt() {
             </div>
           )}
 
-          {/* Action buttons */}
-          <div className="mt-8 flex gap-3 border-t border-slate-100 pt-4 justify-between">
+          </div>{/* end scrollable form content */}
+
+          {/* Action buttons — always visible, pinned at bottom */}
+          <div className="flex gap-3 border-t border-slate-100 px-6 md:px-8 py-4 justify-between flex-shrink-0 bg-white">
             {step > 1 ? (
               <button
                 type="button"
@@ -458,14 +465,14 @@ export function OnboardingPrompt() {
                 Back
               </button>
             ) : (
-              <div></div> // dummy spacer
+              <div></div>
             )}
 
             {step < 3 ? (
               <button
                 type="button"
                 onClick={nextStep}
-                className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold py-2.5 px-5 rounded-xl transition-colors"
+                className="bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold py-2.5 px-5 rounded-xl transition-colors min-h-[44px]"
               >
                 Continue
               </button>
@@ -474,7 +481,7 @@ export function OnboardingPrompt() {
                 type="button"
                 onClick={handleSubmit}
                 disabled={isSubmitting || !dailyWorkHours || expectations.length < 10}
-                className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold py-2.5 px-5 rounded-xl transition-colors disabled:opacity-50 inline-flex items-center justify-center min-w-[150px]"
+                className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold py-2.5 px-5 rounded-xl transition-colors disabled:opacity-50 inline-flex items-center justify-center min-w-[150px] min-h-[44px]"
               >
                 {isSubmitting ? (
                   <Loader2 className="h-4 w-4 animate-spin text-white" />
