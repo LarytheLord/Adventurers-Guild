@@ -6,6 +6,7 @@ import { UserRank } from '@prisma/client';
 import { logActivity } from './activity-logger';
 import { updateStreak } from './streak-utils';
 import { checkAchievements } from './achievement-checker';
+import { recalculateGuildScore } from './guild-score';
 
 /**
  * Calculate level from total XP.
@@ -76,6 +77,8 @@ export async function updateUserXpAndSkills(
         questCompletionRate: completionRate,
       },
     });
+
+    await recalculateGuildScore(userId, tx);
 
     await updateStreak(userId, tx);
 

@@ -8,8 +8,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { AlertCircle, CheckCircle } from 'lucide-react';
+import { AlertCircle, CheckCircle, CalendarDays } from 'lucide-react';
 import { toast } from 'sonner';
+import Link from 'next/link';
+import { DailyStandupModal } from '@/components/daily-standup-modal';
 import { PartyPanel, type Party } from '@/components/quest/PartyPanel';
 import { fetchWithAuth } from '@/lib/fetch-with-auth';
 import { StreakMultiplierNotice } from '@/components/ui/streak-badge';
@@ -41,6 +43,7 @@ interface Quest {
   shareCount?: number;
   company?: { name: string; email?: string };
   party?: Party | null;
+  tasks?: string[];
 }
 
 interface Assignment {
@@ -52,6 +55,8 @@ interface Assignment {
   startedAt?: string;
   completedAt?: string;
   progress?: number;
+  completedTasks?: string[];
+  lastUpdateAt?: string;
 }
 
 function assignmentStatusClass(status: string) {
@@ -175,6 +180,7 @@ export default function QuestDetailPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentStreak, setCurrentStreak] = useState(0);
   const [shareCount, setShareCount] = useState(0);
+  const [isStandupOpen, setIsStandupOpen] = useState(false);
 
   useEffect(() => {
     if (status === 'unauthenticated') { router.push('/login'); return; }
@@ -492,12 +498,37 @@ export default function QuestDetailPage() {
                     <CheckCircle className="h-3.5 w-3.5" /> Completed successfully
                   </div>
                 )}
+                <div className="pt-2 flex flex-col gap-2">
+                  <Button asChild variant="outline" className="w-full text-xs border-slate-200 text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 shadow-sm flex items-center justify-center gap-1.5">
+                    <Link href={`/dashboard/my-quests/${quest.id}/story`}>
+                      View Update Story
+                    </Link>
+                  </Button>
+                  {['assigned', 'started', 'in_progress', 'needs_rework'].includes(assignment.status) && (
+                    <Button 
+                      onClick={() => setIsStandupOpen(true)} 
+                      className="w-full text-xs bg-orange-500 hover:bg-orange-600 text-white shadow-sm flex items-center justify-center gap-1.5"
+                    >
+                      <CalendarDays className="h-3.5 w-3.5" />
+                      Daily Standup
+                    </Button>
+                  )}
+                </div>
               </div>
             ) : canAssign ? (
               <div className="rounded-2xl border border-border/70 bg-white/95 shadow-[0_4px_16px_rgba(15,23,42,0.04)] p-5 space-y-3">
                 <div>
                   <h2 className="text-sm font-semibold text-slate-900">Accept This Quest</h2>
                   <p className="mt-0.5 text-xs text-slate-500">Claim the brief and move it into your active pipeline.</p>
+                </div>
+                <div className="p-3 bg-amber-50 border border-amber-200 rounded-xl text-[11px] text-amber-800 space-y-1">
+                  <div className="flex items-center gap-1 font-bold text-amber-900">
+                    <AlertCircle className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+                    Daily Updates Required
+                  </div>
+                  <p className="leading-normal">
+                    You must submit a daily standup for this quest. Missing updates will decrease your Guild Score and reduce your final XP/Money payout by 5% per missed day.
+                  </p>
                 </div>
                 <Button
                   className="w-full"
@@ -577,6 +608,20 @@ export default function QuestDetailPage() {
           </div>
         </div>
       </div>
+      {assignment && (
+        <DailyStandupModal
+          isOpen={isStandupOpen}
+          onClose={() => setIsStandupOpen(false)}
+          assignmentId={assignment.id}
+          onSuccess={() => {
+            setAssignment((prev) => prev ? { ...prev, lastUpdateAt: new Date().toISOString() } : prev);
+          }}
+          tasks={quest.tasks}
+          completedTasks={assignment.completedTasks}
+          questTitle={quest.title}
+          xpReward={quest.xpReward}
+        />
+      )}
     </div>
   );
 }

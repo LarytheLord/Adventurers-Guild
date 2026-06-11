@@ -206,6 +206,13 @@ export default function AdminDashboard() {
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
+            <Button variant="outline" asChild className="border-rose-500/30 text-rose-400 hover:bg-rose-500/10">
+              <Link href="/admin/updates">
+                <Clock className="h-4 w-4" />
+                Missed Updates
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
             <Button variant="outline" asChild>
               <Link href="/admin/quest-templates">
                 <ClipboardList className="h-4 w-4" />

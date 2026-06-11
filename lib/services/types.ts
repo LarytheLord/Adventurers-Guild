@@ -29,4 +29,5 @@ export type CreateQuestBody = {
   source: QuestSource;
   parentQuestId: string;
   deadline: string;
+  tasks?: string[];
 };

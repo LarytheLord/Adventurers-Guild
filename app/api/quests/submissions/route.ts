@@ -192,6 +192,8 @@ export async function PUT(request: NextRequest) {
       select: {
         questId: true,
         userId: true,
+        startedAt: true,
+        assignedAt: true,
         quest: {
           select: {
             companyId: true,
@@ -262,6 +264,26 @@ export async function PUT(request: NextRequest) {
           });
           if (!quest) throw new Error('Quest not found for completion recording');
 
+          // Calculate daily standup penalty (5% per missed daily update)
+          const startedTime = assignmentData.startedAt ?? assignmentData.assignedAt;
+          const activeMs = new Date().getTime() - startedTime.getTime();
+          const expectedUpdates = Math.floor(activeMs / (1000 * 60 * 60 * 24));
+          
+          const actualUpdatesCount = await tx.dailyUpdate.count({
+            where: { assignmentId: submission.assignmentId }
+          });
+          
+          let penaltyPercentage = 0;
+          if (expectedUpdates > 0 && actualUpdatesCount < expectedUpdates) {
+            const missedUpdates = expectedUpdates - actualUpdatesCount;
+            penaltyPercentage = Math.min(100, missedUpdates * 5); // 5% per missed update, max 100%
+          }
+          
+          const multiplier = 1 - (penaltyPercentage / 100);
+          const finalXpReward = Math.round(quest.xpReward * multiplier);
+          const finalSkillPointsReward = Math.round(quest.skillPointsReward * multiplier);
+          const finalMonetaryReward = quest.monetaryReward ? Number(quest.monetaryReward) * multiplier : 0;
+
           await tx.questCompletion.upsert({
             where: {
               questId_userId: {
@@ -272,21 +294,21 @@ export async function PUT(request: NextRequest) {
             create: {
               questId: assignmentData.questId,
               userId: assignmentData.userId,
-              xpEarned: quest.xpReward,
-              skillPointsEarned: quest.skillPointsReward,
+              xpEarned: finalXpReward,
+              skillPointsEarned: finalSkillPointsReward,
               qualityScore: quality_score ?? null,
             },
             update: {
-              xpEarned: quest.xpReward,
-              skillPointsEarned: quest.skillPointsReward,
+              xpEarned: finalXpReward,
+              skillPointsEarned: finalSkillPointsReward,
               qualityScore: quality_score ?? null,
             },
           });
 
           rewardsPayload = {
             userId: assignmentData.userId,
-            xpReward: quest.xpReward,
-            skillPointsReward: quest.skillPointsReward,
+            xpReward: finalXpReward,
+            skillPointsReward: finalSkillPointsReward,
             questTitle: assignmentData.quest?.title ?? '',
             questSource: quest.source,
           };
@@ -298,7 +320,7 @@ export async function PUT(request: NextRequest) {
               userId: assignmentData.userId,
               track: quest.track,
               source: quest.source,
-              monetaryReward: Number(quest.monetaryReward),
+              monetaryReward: finalMonetaryReward,
             };
           }
         }

@@ -10,10 +10,14 @@ const onboardingSchema = z.object({
   }),
   institutionName: z.string().min(1, 'Please enter the name of your school, college, or workplace'),
   yearOrExperience: z.string().min(1, 'Please select or enter your class, year, or work experience'),
+  phoneNumber: z.string().min(10, 'Please enter a valid WhatsApp number'),
   skills: z.array(z.string()).min(1, 'Please add at least one skill'),
   interests: z.array(z.string()).min(1, 'Please select at least one interest'),
   dailyWorkHours: z.string().min(1, 'Please select how much you can work daily'),
   expectations: z.string().min(10, 'Please write at least a few sentences about your expectations'),
+  autoAssign: z.boolean({
+    required_error: 'Please select your quest assignment preference',
+  }),
 });
 
 export async function GET() {
@@ -31,11 +35,13 @@ export async function GET() {
       where: { userId: session.user.id },
       select: {
         onboardingCompleted: true,
+        phoneNumber: true,
       },
     });
 
     return NextResponse.json({
       onboardingCompleted: profile?.onboardingCompleted ?? false,
+      hasPhoneNumber: !!profile?.phoneNumber,
     });
   } catch (error) {
     console.error('Failed to get onboarding status:', error);
@@ -64,13 +70,16 @@ export async function POST(req: Request) {
         studentType: data.studentType,
         institutionName: data.institutionName,
         yearOrExperience: data.yearOrExperience,
+        phoneNumber: data.phoneNumber,
         primarySkills: data.skills, // sync with primarySkills in schema
         interests: data.interests,
         dailyWorkHours: data.dailyWorkHours,
         expectations: data.expectations,
+        autoAssign: data.autoAssign,
         onboardingCompleted: true,
       },
     });
+
 
     return NextResponse.json({ success: true });
   } catch (error) {

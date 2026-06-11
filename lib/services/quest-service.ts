@@ -149,7 +149,7 @@ export async function createQuest(body: CreateQuestBody, user: SessionUser): Pro
     title, description, detailedDescription, questType, difficulty,
     xpReward, skillPointsReward, monetaryReward, requiredSkills,
     requiredRank, maxParticipants, questCategory, track, source,
-    parentQuestId, deadline,
+    parentQuestId, deadline, tasks,
   } = body;
 
   if (!title || !description || !questType || !difficulty || !xpReward) {
@@ -179,6 +179,7 @@ export async function createQuest(body: CreateQuestBody, user: SessionUser): Pro
       parentQuestId: parentQuestId || null,
       companyId: user.id,
       deadline: deadline ? new Date(deadline) : null,
+      tasks: tasks || [],
     },
   });
 

@@ -17,6 +17,7 @@ import {
 
 import NotificationBell from '@/components/NotificationBell';
 import { OnboardingPrompt } from '@/components/ui/onboarding-prompt';
+import { PhoneNumberPrompt } from '@/components/ui/phone-number-prompt';
 import {
   BarChart3,
   Briefcase,
@@ -118,6 +119,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen guild-shell">
       <OnboardingPrompt />
+      <PhoneNumberPrompt />
       {/* Mobile sidebar backdrop */}
       {sidebarOpen && (
         <div
