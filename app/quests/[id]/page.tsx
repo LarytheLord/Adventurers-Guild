@@ -149,7 +149,7 @@ export default function QuestDetailPage() {
   ].filter(Boolean) as { label: string; icon: React.ReactNode; color: string }[];
 
   return (
-    <div className="min-h-screen bg-background ds-page-grain relative pt-24 pb-16">
+    <div className="min-h-screen bg-background ds-page-grain relative pt-24 pb-16 overflow-x-hidden">
       {/* Top radial light spreads */}
       <div className="absolute inset-x-0 top-0 h-96 bg-[radial-gradient(circle_at_top,rgba(249,115,22,0.12),transparent_60%)] pointer-events-none" />
       <div className="absolute right-[-8rem] top-20 h-80 w-80 rounded-full bg-orange-100/30 blur-3xl pointer-events-none" />

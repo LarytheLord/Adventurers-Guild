@@ -136,6 +136,7 @@ export async function POST(request: NextRequest) {
         fieldTemplateId: body.fieldTemplateId || null,
         briefData: body.briefData ?? Prisma.JsonNull,
         acceptanceCriteria: Array.isArray(body.acceptanceCriteria) ? body.acceptanceCriteria : [],
+        tasks: Array.isArray(body.tasks) ? body.tasks : [],
       },
     });
 
@@ -223,6 +224,9 @@ export async function PUT(request: NextRequest) {
     }
     if ('acceptanceCriteria' in body) {
       prismaUpdateFields.acceptanceCriteria = Array.isArray(body.acceptanceCriteria) ? body.acceptanceCriteria : [];
+    }
+    if ('tasks' in body) {
+      prismaUpdateFields.tasks = Array.isArray(body.tasks) ? body.tasks : [];
     }
     if ('briefData' in body) {
       prismaUpdateFields.briefData = body.briefData ?? Prisma.JsonNull;

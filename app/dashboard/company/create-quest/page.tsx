@@ -83,6 +83,37 @@ export default function CreateQuestPage() {
 
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [tasks, setTasks] = useState<string[]>([]);
+  const [isGeneratingTasks, setIsGeneratingTasks] = useState(false);
+
+  const handleGenerateTasks = async () => {
+    if (!form.title.trim() || !form.description.trim()) {
+      toast.error("Please fill in the Quest Title and Description first.");
+      return;
+    }
+    setIsGeneratingTasks(true);
+    try {
+      const res = await fetchWithAuth("/api/quests/generate-tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: form.title.trim(),
+          description: form.description.trim(),
+          category: form.questCategory,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to generate tasks");
+      }
+      setTasks(data.tasks);
+      toast.success("Tasks generated successfully! Feel free to edit them.");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to generate tasks");
+    } finally {
+      setIsGeneratingTasks(false);
+    }
+  };
 
   // ── Structured brief (Quest Context Loop) ───────────────────────────────
   const [templates, setTemplates] = useState<BriefTemplate[]>([]);
@@ -241,6 +272,7 @@ export default function CreateQuestPage() {
         partnerOrgName: ossPartnerName.trim() || null,
         track: intakeMode === 'oss' ? 'OPEN' : undefined,
         source: intakeMode === 'oss' ? 'CLIENT_PORTAL' : undefined,
+        tasks: tasks.map((t) => t.trim()).filter(Boolean),
       };
 
       const response = await fetchWithAuth('/api/company/quests', {
@@ -643,6 +675,64 @@ export default function CreateQuestPage() {
                 </div>
                 <Button type="button" variant="outline" size="sm" onClick={() => setCriteria((prev) => [...prev, ''])}>
                   <Plus className="h-4 w-4" /> Add criterion
+                </Button>
+              </div>
+
+              {/* Quest Checklist Tasks */}
+              <div className="space-y-2 border-t border-sky-200/70 pt-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <Label>Quest Tasks (To-Do List)</Label>
+                    <p className="text-xs text-slate-500">
+                      Predefined to-do list tasks that the adventurer must complete to finish the quest.
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={handleGenerateTasks}
+                    disabled={isGeneratingTasks}
+                    className="border-indigo-200 text-indigo-700 bg-indigo-50/50 hover:bg-indigo-100/70"
+                  >
+                    {isGeneratingTasks ? (
+                      <>
+                        <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Sparkles className="h-3.5 w-3.5 mr-1.5" />
+                        AI Generate Tasks
+                      </>
+                    )}
+                  </Button>
+                </div>
+
+                <div className="space-y-2 mt-2">
+                  {tasks.map((task, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <Input
+                        value={task}
+                        placeholder={`Task ${i + 1}`}
+                        onChange={(e) =>
+                          setTasks((prev) => prev.map((p, idx) => (idx === i ? e.target.value : p)))
+                        }
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setTasks((prev) => prev.filter((_, idx) => idx !== i))}
+                        aria-label="Remove task"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+                <Button type="button" variant="outline" size="sm" onClick={() => setTasks((prev) => [...prev, ''])}>
+                  <Plus className="h-4 w-4" /> Add Task
                 </Button>
               </div>
             </div>

@@ -235,6 +235,7 @@ model User {
   referrals            User[]                @relation("Referrals")
   referralRewardsGiven ReferralReward[]      @relation("ReferralGiver")
   referralRewardsEarned ReferralReward[]     @relation("ReferralEarner")
+  dailyUpdates          DailyUpdate[]
 
   @@index([email])
   @@index([username])
@@ -289,6 +290,13 @@ model AdventurerProfile {
   dailyWorkHours       String?            @map("daily_work_hours")
   expectations         String?            @map("expectations")
   onboardingCompleted  Boolean            @default(false) @map("onboarding_completed")
+  autoAssign           Boolean            @default(false) @map("auto_assign")
+  
+  guildScore           Int                @default(100) @map("guild_score")
+  deliveryRate         Decimal            @default(100.0) @map("delivery_rate") @db.Decimal(5, 2)
+  onTimeRate           Decimal            @default(100.0) @map("on_time_rate") @db.Decimal(5, 2)
+  updateConsistency    Decimal            @default(100.0) @map("update_consistency") @db.Decimal(5, 2)
+  phoneNumber          String?            @map("phone_number")
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -346,6 +354,7 @@ model Quest {
   fieldTemplateId     String?       @map("field_template_id") @db.Uuid
   briefData           Json?         @map("brief_data") // { fieldKey: value } answered from template.briefFields
   acceptanceCriteria  String[]      @map("acceptance_criteria") // criteria the submission is evaluated against
+  tasks               String[]      @map("tasks") // predefined todo list items
 
   company          User?               @relation("CompanyQuests", fields: [companyId], references: [id])
   fieldTemplate    QuestFieldTemplate? @relation(fields: [fieldTemplateId], references: [id])
@@ -480,10 +489,13 @@ model QuestAssignment {
   startedAt   DateTime?        @map("started_at") @db.Timestamptz
   completedAt DateTime?        @map("completed_at") @db.Timestamptz
   progress    Decimal          @default(0.00) @db.Decimal(5, 2)
+  completedTasks String[]      @map("completed_tasks") // list of tasks completed by student
+  lastUpdateAt   DateTime?     @map("last_update_at") @db.Timestamptz // track last daily standup
 
   quest       Quest             @relation(fields: [questId], references: [id], onDelete: Cascade)
   user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   submissions QuestSubmission[]
+  dailyUpdates DailyUpdate[]
 
   @@unique([questId, userId])
   @@index([userId])
@@ -740,3 +752,23 @@ model ReferralReward {
   @@index([earnerId])
   @@map("referral_rewards")
 }
+
+model DailyUpdate {
+  id           String   @id @default(uuid()) @db.Uuid
+  assignmentId String   @map("assignment_id") @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  yesterday    String   @db.Text
+  today        String   @db.Text
+  blockers     String?  @db.Text
+  evidenceUrl  String?  @map("evidence_url")
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  assignment QuestAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  user       User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([assignmentId])
+  @@index([userId])
+  @@index([createdAt])
+  @@map("daily_updates")
+}
+
