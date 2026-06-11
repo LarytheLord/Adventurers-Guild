@@ -227,7 +227,7 @@ export default function QuestsPage() {
       <div className="mx-auto max-w-6xl px-6 py-8 space-y-6">
 
         {/* ── Compact header ── */}
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">Quest Board</h1>
             <p className="mt-0.5 text-sm text-slate-500">
@@ -247,11 +247,11 @@ export default function QuestsPage() {
               placeholder="Search quests, skills, company…"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="h-8 text-sm flex-1 min-w-[180px]"
+              className="h-8 text-sm flex-1 min-w-[140px] sm:min-w-[180px]"
             />
 
             <Select value={difficulty} onValueChange={setDifficulty}>
-              <SelectTrigger className="h-8 text-xs w-32">
+              <SelectTrigger className="h-8 text-xs w-24 sm:w-32">
                 <SelectValue placeholder="Difficulty" />
               </SelectTrigger>
               <SelectContent>

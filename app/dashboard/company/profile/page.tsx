@@ -137,7 +137,7 @@ export default function CompanyProfilePage() {
       </Card>
 
       {/* Quick Stats */}
-      <div className="grid gap-4 grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
         <Card>
           <CardContent className="p-4 text-center">
             <Target className="w-5 h-5 mx-auto mb-1 text-muted-foreground" />

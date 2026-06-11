@@ -280,7 +280,7 @@ export default function AdminQuestsPage() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
           {[
             { label: 'Total', value: stats.total, icon: Target, color: 'text-slate-600' },
             {
@@ -436,7 +436,7 @@ export default function AdminQuestsPage() {
                         onValueChange={(value) => handleStatusChange(quest.id, value)}
                         disabled={changingStatusId === quest.id}
                       >
-                        <SelectTrigger className="h-8 w-[140px] text-xs">
+                        <SelectTrigger className="h-8 w-[120px] sm:w-[140px] text-xs">
                           {changingStatusId === quest.id ? (
                             <Loader2 className="h-3 w-3 animate-spin" />
                           ) : (

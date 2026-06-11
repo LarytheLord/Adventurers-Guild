@@ -66,22 +66,16 @@ export default function HomePage() {
       </div>
 
       {/* #1 — The Rank Journey (main attraction) */}
-      <section id="ranks">
-        <RankJourney />
-      </section>
+      <RankJourney />
 
       {/* #3 — Trust signals (MIT, Open Paws, BharatCode, live numbers) */}
       <TrustStrip />
 
       {/* #4 — How it works (single column, large numbers) */}
-      <section id="how-it-works">
-        <HowItWorks />
-      </section>
+      <HowItWorks />
 
       {/* #5 — Live quest board + top adventurers */}
-      <section id="quests">
-        <QuestShowcase />
-      </section>
+      <QuestShowcase />
     </>
   );
 }
