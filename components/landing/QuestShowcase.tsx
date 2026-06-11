@@ -78,7 +78,7 @@ export default function QuestBoard() {
   }, []);
 
   return (
-    <section id="quests" ref={ref} className="bg-slate-50 py-24 md:py-32">
+    <section id="quests" ref={ref} className="bg-slate-50 pt-20 lg:pt-0 py-24 md:py-32">
       <div className="mx-auto max-w-6xl px-6">
         {/* Header */}
         <motion.div

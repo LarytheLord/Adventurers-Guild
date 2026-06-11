@@ -65,7 +65,7 @@ export default function RootLayout({
 
         <SessionProvider>
           <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
-            <div id="main-content" className="min-h-screen flex-col">
+            <div id="main-content" className="min-h-screen flex flex-col">
               <Navigation />
               <ErrorBoundary>
                 {children}

@@ -117,7 +117,7 @@ export default function HowItWorks() {
         className="pointer-events-none absolute -left-32 bottom-24 h-[400px] w-[400px] rounded-full bg-slate-100/80 blur-3xl"
       />
 
-      <div className="relative mx-auto max-w-5xl px-6">
+      <div className="relative mx-auto max-w-5xl px-6 pt-20 lg:pt-0">
         {/* Header */}
         <motion.div
           ref={headerRef}
