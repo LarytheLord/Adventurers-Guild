@@ -3,6 +3,48 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getAuthUser } from '@/lib/api-auth';
 import { prisma } from '@/lib/db';
 
+export async function GET(request: NextRequest) {
+  try {
+    const authUser = await getAuthUser(request);
+    if (!authUser) {
+      return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: authUser.id },
+      select: {
+        id: true,
+        name: true,
+        username: true,
+        email: true,
+        bio: true,
+        location: true,
+        website: true,
+        github: true,
+        linkedin: true,
+        discord: true,
+        role: true,
+        companyProfile: {
+          select: {
+            companyName: true,
+            companyWebsite: true,
+            companyDescription: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'User not found', success: false }, { status: 404 });
+    }
+
+    return NextResponse.json({ user, success: true });
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    return NextResponse.json({ error: 'Failed to fetch profile', success: false }, { status: 500 });
+  }
+}
+
 export async function PATCH(request: NextRequest) {
   try {
     const authUser = await getAuthUser(request);
