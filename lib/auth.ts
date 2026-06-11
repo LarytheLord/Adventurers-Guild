@@ -136,10 +136,6 @@ export const authOptions: AuthOptions = {
         const result = await upsertOAuthUser(user, account);
 
         if ('error' in result) {
-          if (result.error === 'missing_email') {
-            return '/login?error=oauth-email-required';
-          }
-
           if (result.error === 'role_not_allowed') {
             return '/login?error=oauth-adventurer-only';
           }

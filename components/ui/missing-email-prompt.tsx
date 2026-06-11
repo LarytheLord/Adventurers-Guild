@@ -62,7 +62,7 @@ export function MissingEmailPrompt() {
           <div className="space-y-2">
             <h2 className="text-xl font-semibold tracking-tight">Complete your profile</h2>
             <p className="text-sm text-gray-500">
-              Your OAuth provider didn't share an email address. We need a valid email to send you important updates and recovery links.
+              Your OAuth provider didn&apos;t share an email address. We need a valid email to send you important updates and recovery links.
             </p>
           </div>
         </div>

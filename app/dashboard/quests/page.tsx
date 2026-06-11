@@ -67,6 +67,9 @@ interface Quest {
   shareCount?: number;
   party?: QuestParty | null;
   company?: { name: string; email: string };
+  canAccess?: boolean;
+  isVisible?: boolean;
+  lockedUntil?: string;
 }
 
 type SortOption = 'newest' | 'xp_desc' | 'pay_desc' | 'deadline_asc';
@@ -495,12 +498,18 @@ function QuestCard({
           </div>
         )}
 
-        <Link
-          href={`/dashboard/quests/${quest.id}`}
-          className="block w-full rounded-xl bg-slate-900 px-4 py-2.5 text-center text-xs font-semibold text-white transition-colors hover:bg-orange-600"
-        >
-          View Quest Details
-        </Link>
+        {quest.canAccess === false ? (
+          <div className="block w-full rounded-xl bg-slate-100 px-4 py-2.5 text-center text-xs font-semibold text-slate-400 cursor-not-allowed select-none">
+            🔒 Locked — Reach Rank {quest.lockedUntil} to unlock
+          </div>
+        ) : (
+          <Link
+            href={`/dashboard/quests/${quest.id}`}
+            className="block w-full rounded-xl bg-slate-900 px-4 py-2.5 text-center text-xs font-semibold text-white transition-colors hover:bg-orange-600"
+          >
+            View Quest Details
+          </Link>
+        )}
       </div>
     </div>
   );
