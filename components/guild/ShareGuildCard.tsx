@@ -16,16 +16,16 @@ export function ShareGuildCard({ username }: { username: string }) {
   };
 
   return (
-    <div className="flex gap-2">
-      <Button variant="outline" size="sm" asChild>
+    <div className="flex flex-wrap gap-2">
+      <Button variant="outline" size="sm" className="shrink-0" asChild>
         <Link href={`/adventurer/${username}`}>
           <Share2 className="h-4 w-4 mr-1" />
           My Guild Card
         </Link>
       </Button>
-      <Button variant="outline" size="sm" onClick={handleCopy}>
+      <Button variant="outline" size="sm" className="shrink-0" onClick={handleCopy}>
         {copied ? <Check className="h-4 w-4 mr-1" /> : <Copy className="h-4 w-4 mr-1" />}
-        {copied ? 'Guild Card link copied!' : 'Copy link'}
+        {copied ? 'Copied' : 'Copy link'}
       </Button>
     </div>
   );
