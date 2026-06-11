@@ -175,7 +175,7 @@ export default async function DashboardPage() {
             )}
           </div>
 
-          <div className="flex w-full max-w-md flex-col gap-3 rounded-2xl border border-slate-200 bg-white/90 p-4">
+          <div className="flex w-full max-w-md flex-col gap-3 rounded-[8px] border border-slate-200 bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_1px_3px_rgba(15,23,42,0.05)]">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <RankBadge rank={rank} size="sm" />
@@ -189,7 +189,7 @@ export default async function DashboardPage() {
                 ? `${xpToNext.toLocaleString()} XP to ${nextEntry.rank}-Rank`
                 : 'You reached S-Rank. Maintain your lead.'}
             </p>
-            <div className="flex gap-2 pt-1">
+            <div className="flex flex-col gap-2 pt-1 sm:flex-row">
               <Button className="flex-1" asChild>
                 <Link href="/dashboard/quests">
                   Discover Quests
@@ -249,7 +249,7 @@ export default async function DashboardPage() {
 
       <section className="grid gap-4 xl:grid-cols-3">
         <GuildCard className="xl:col-span-2">
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-col gap-3 space-y-0 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <CardTitle>Current Quest Pipeline</CardTitle>
               <CardDescription>Assignments already in your queue</CardDescription>
@@ -342,7 +342,7 @@ export default async function DashboardPage() {
       </section>
 
       <GuildPanel>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col gap-3 space-y-0 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <CardTitle className="flex items-center gap-2">
               <Sparkles className="h-5 w-5 text-sky-500" />
