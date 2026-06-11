@@ -470,6 +470,13 @@ export default function AdminQuestsPage() {
                       </Button>
 
                       <Button variant="outline" size="sm" className="h-8 text-xs" asChild>
+                        <Link href={`/admin/quests/${quest.id}/assignments`}>
+                          <Users className="h-3 w-3" />
+                          Applicants
+                        </Link>
+                      </Button>
+
+                      <Button variant="outline" size="sm" className="h-8 text-xs" asChild>
                         <Link href={`/dashboard/company/quests/${quest.id}/edit`}>
                           <Edit className="h-3 w-3" />
                           Edit
