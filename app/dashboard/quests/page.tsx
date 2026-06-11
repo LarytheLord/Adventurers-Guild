@@ -144,7 +144,12 @@ export default function QuestsPage() {
     }
   }, [status, session?.user?.role]);
 
-  const filteredQuests = quests.filter((quest) => {
+  const accessibleQuests = quests.filter((q) => q.canAccess !== false);
+  const lockedQuests = quests.filter((q) => q.canAccess === false && q.isVisible !== false);
+
+  const displayedQuests = showLockedQuests ? lockedQuests : accessibleQuests;
+
+  const filteredQuests = displayedQuests.filter((quest) => {
     const isSquadQuest = (quest.maxParticipants ?? 1) > 1;
     if (partyFilter === 'solo') return !isSquadQuest;
     if (partyFilter === 'squad') return isSquadQuest;

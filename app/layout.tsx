@@ -12,6 +12,8 @@ import { Toaster } from "@/components/ui/sonner"
 import { GoToTop } from "@/components/ui/go-to-top"
 import ConditionalFooter from "@/components/ConditionalFooter";
 import { MissingEmailPrompt } from "@/components/ui/missing-email-prompt";
+import ConditionalFooter from "@/components/ConditionalFooter"
+import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
   title: "Guild",
@@ -77,6 +79,7 @@ export default function RootLayout({
             <GoToTop />
           </ThemeProvider>
         </SessionProvider>
+        <Analytics />
 
         <Script id="scrollbar-handler" strategy="afterInteractive">
           {`

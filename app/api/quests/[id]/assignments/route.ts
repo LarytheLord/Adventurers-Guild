@@ -82,7 +82,7 @@ export async function PUT(
     // Verify the quest exists and the caller owns it
     const quest = await prisma.quest.findUnique({
       where: { id: params.id },
-      select: { companyId: true },
+      select: { companyId: true, maxParticipants: true },
     });
 
     if (!quest) {
@@ -114,6 +114,19 @@ export async function PUT(
 
     const updated = await prisma.$transaction(
       async (tx) => {
+        // Guard against accepting beyond maxParticipants inside the transaction
+        if (newStatus === 'started' && quest.maxParticipants) {
+          const filledCount = await tx.questAssignment.count({
+            where: {
+              questId: params.id,
+              status: { in: ['started', 'in_progress', 'submitted', 'pending_admin_review', 'review', 'needs_rework', 'completed'] },
+            },
+          });
+          if (filledCount >= quest.maxParticipants) {
+            throw new Error('Maximum participants already reached for this quest');
+          }
+        }
+
         const assignment = await tx.questAssignment.update({
           where: { id: assignmentId },
           data: {
@@ -125,11 +138,15 @@ export async function PUT(
         await syncQuestLifecycleStatus(tx, params.id);
         return assignment;
       },
-      { maxWait: 10_000, timeout: 20_000 }
+      { maxWait: 10_000, timeout: 20_000, isolationLevel: 'Serializable' }
     );
 
     return NextResponse.json({ assignment: updated, success: true });
   } catch (error) {
+    const msg = error instanceof Error ? error.message : '';
+    if (msg === 'Maximum participants already reached for this quest') {
+      return NextResponse.json({ error: msg, success: false }, { status: 400 });
+    }
     console.error('Error updating assignment:', error);
     return NextResponse.json({ error: 'Failed to update assignment', success: false }, { status: 500 });
   }

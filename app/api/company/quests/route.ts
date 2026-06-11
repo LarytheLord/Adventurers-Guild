@@ -114,11 +114,12 @@ export async function POST(request: NextRequest) {
         skillPointsReward: body.skillPointsReward || 0,
         monetaryReward: body.monetaryReward || null,
         requiredSkills: body.requiredSkills || [],
-        requiredRank: body.requiredRank || null,
+        requiredRank: body.requiredRank || 'F',
         maxParticipants: body.maxParticipants || null,
         questCategory: body.questCategory,
         track: (body.track as QuestTrack) || undefined,
         source: (body.source as QuestSource) || undefined,
+        partnerOrgName: body.partnerOrgName || null,
         parentQuestId: body.parentQuestId || null,
         companyId,
         deadline: body.deadline ? new Date(body.deadline) : null,
@@ -172,7 +173,8 @@ export async function PUT(request: NextRequest) {
     const ALLOWED_FIELDS = [
       'title', 'description', 'detailedDescription', 'questType', 'difficulty',
       'xpReward', 'skillPointsReward', 'monetaryReward', 'requiredSkills',
-      'requiredRank', 'maxParticipants', 'questCategory', 'track', 'deadline',
+      'requiredRank', 'maxParticipants', 'questCategory', 'track', 'source', 'deadline',
+      'partnerOrgName',
       'submissionInstructions', 'expectedDeliverables',
     ] as const;
 

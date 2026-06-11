@@ -2,7 +2,17 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { BarChart3, ClipboardList, LayoutDashboard, Shield } from 'lucide-react';
+import { signOut, useSession } from 'next-auth/react';
+import {
+  BarChart3,
+  ClipboardList,
+  LayoutDashboard,
+  Layers,
+  LogOut,
+  Shield,
+  Wallet,
+  Zap,
+} from 'lucide-react';
 
 import { cn } from '@/lib/utils';
 
@@ -20,15 +30,40 @@ const adminLinks = [
     icon: ClipboardList,
   },
   {
+    href: '/admin/qa-queue',
+    label: 'QA Queue',
+    description: 'Review submissions before client handoff',
+    icon: Shield,
+  },
+  {
+    href: '/admin/analytics',
+    label: 'Analytics',
+    description: 'Platform health, ranks, and activity',
+    icon: BarChart3,
+  },
+  {
     href: '/admin/revenue',
     label: 'Revenue',
     description: 'GMV, take rate, and payout health',
-    icon: BarChart3,
+    icon: Wallet,
+  },
+  {
+    href: '/admin/quest-templates',
+    label: 'Templates',
+    description: 'Manage quest brief and submission schemas',
+    icon: Layers,
+  },
+  {
+    href: '/admin/api-budgets',
+    label: 'API Budgets',
+    description: 'Track internal model spend and caps',
+    icon: Zap,
   },
 ] as const;
 
 export function AdminRail() {
   const pathname = usePathname();
+  const { data: session } = useSession();
 
   return (
     <aside className="w-full shrink-0 lg:sticky lg:top-4 lg:h-fit lg:w-72">
@@ -86,6 +121,26 @@ export function AdminRail() {
             );
           })}
         </nav>
+
+        {/* User info + logout */}
+        <div className="border-t border-slate-800 px-5 py-4">
+          <div className="flex items-center gap-3 mb-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-800 text-slate-300 text-sm font-bold shrink-0">
+              {session?.user?.name?.[0]?.toUpperCase() ?? 'A'}
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-slate-200 truncate">{session?.user?.name ?? 'Admin'}</p>
+              <p className="text-xs text-slate-500 truncate">{session?.user?.email ?? ''}</p>
+            </div>
+          </div>
+          <button
+            onClick={() => signOut({ callbackUrl: '/login' })}
+            className="flex w-full items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/70 px-4 py-2.5 text-sm text-slate-400 transition-colors hover:border-red-800/50 hover:bg-red-950/30 hover:text-red-400"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign out
+          </button>
+        </div>
       </div>
     </aside>
   );

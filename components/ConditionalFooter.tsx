@@ -6,7 +6,6 @@ import { Component as GuildFooter } from '@/components/ui/footer-taped-design';
 const FOOTER_ROUTES = new Set([
   '/',
   '/login',
-  '/register',
   '/quests',
   '/faq',
   '/privacy',

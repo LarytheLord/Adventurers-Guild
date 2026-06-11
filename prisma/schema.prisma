@@ -229,12 +229,19 @@ model User {
   partyMembers         PartyMember[]
   activityLogs         ActivityLog[]
   achievements         Achievement[]
+  referralCode         String?               @unique @map("referral_code")
+  referredById         String?               @map("referred_by_id") @db.Uuid
+  referredBy           User?                 @relation("Referrals", fields: [referredById], references: [id])
+  referrals            User[]                @relation("Referrals")
+  referralRewardsGiven ReferralReward[]      @relation("ReferralGiver")
+  referralRewardsEarned ReferralReward[]     @relation("ReferralEarner")
 
   @@index([email])
   @@index([username])
   @@index([role])
   @@index([rank])
   @@index([isActive])
+  @@index([referralCode])
   @@map("users")
 }
 
@@ -715,4 +722,21 @@ model Achievement {
   @@unique([userId, type])
   @@index([userId])
   @@map("achievements")
+}
+
+model ReferralReward {
+  id         String   @id @default(uuid()) @db.Uuid
+  giverId    String   @map("giver_id") @db.Uuid   // the referrer who earns
+  earnerId   String   @map("earner_id") @db.Uuid  // the referee who triggered it
+  event      String   // 'first_quest_completed' | 'three_quests_completed'
+  xpAwarded  Int      @map("xp_awarded")
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  giver  User @relation("ReferralGiver", fields: [giverId], references: [id], onDelete: Cascade)
+  earner User @relation("ReferralEarner", fields: [earnerId], references: [id], onDelete: Cascade)
+
+  @@unique([giverId, earnerId, event])
+  @@index([giverId])
+  @@index([earnerId])
+  @@map("referral_rewards")
 }
