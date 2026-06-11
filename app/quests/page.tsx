@@ -670,7 +670,7 @@ function QuestCardSkeleton() {
         <Skeleton className="h-6 w-16 rounded-full" />
         <Skeleton className="h-6 w-20 rounded-full" />
       </div>
-      <div className="mt-5 grid grid-cols-3 gap-3 border-t border-slate-100 pt-5">
+      <div className="mt-5 grid grid-cols-2 md:grid-cols-3 gap-3 border-t border-slate-100 pt-5">
         <Skeleton className="h-5 w-full rounded-lg" />
         <Skeleton className="h-5 w-full rounded-lg" />
         <Skeleton className="h-5 w-full rounded-lg" />

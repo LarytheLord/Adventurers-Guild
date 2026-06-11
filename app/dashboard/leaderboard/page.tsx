@@ -164,7 +164,7 @@ export default function LeaderboardPage() {
                       <Badge variant="outline" className={`text-[10px] py-0 ${RANK_COLORS[user.rank] ?? ''}`}>
                         {rankToTier[user.rank] ?? user.rank}
                       </Badge>
-                      <div className="text-right min-w-[72px]">
+                      <div className="text-right min-w-[60px] sm:min-w-[72px]">
                         <p className="text-sm font-bold text-slate-900">{user.xp.toLocaleString()} XP</p>
                         <p className="text-[11px] text-slate-400">{user.skillPoints} SP</p>
                       </div>

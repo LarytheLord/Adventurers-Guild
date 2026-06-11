@@ -91,7 +91,7 @@ export default function QuestBoard() {
             <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-orange-500">
               Live on the Guild
             </p>
-            <h2 className="mt-3 text-[36px] font-bold leading-[1.1] tracking-[-0.03em] text-slate-900 md:text-[44px]">
+            <h2 className="mt-3 text-2xl font-bold leading-[1.1] tracking-[-0.03em] text-slate-900 sm:text-[36px] md:text-[44px]">
               Real work. Real people.
             </h2>
           </div>

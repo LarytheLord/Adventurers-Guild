@@ -253,7 +253,7 @@ export function OnboardingPrompt() {
               {/* Career Status selector */}
               <div className="space-y-3">
                 <label className="block text-sm font-medium text-slate-700">Career Status</label>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   {[
                     { id: "college", label: "College Student" },
                     { id: "school", label: "School Student" },

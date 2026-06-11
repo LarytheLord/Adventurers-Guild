@@ -247,11 +247,11 @@ export default function QuestsPage() {
               placeholder="Search quests, skills, company…"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="h-8 text-sm flex-1 min-w-[180px]"
+              className="h-8 text-sm flex-1 min-w-[140px] sm:min-w-[180px]"
             />
 
             <Select value={difficulty} onValueChange={setDifficulty}>
-              <SelectTrigger className="h-8 text-xs w-32">
+              <SelectTrigger className="h-8 text-xs w-24 sm:w-32">
                 <SelectValue placeholder="Difficulty" />
               </SelectTrigger>
               <SelectContent>

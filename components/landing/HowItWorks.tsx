@@ -148,7 +148,7 @@ export default function HowItWorks() {
               <p className="text-[11px] font-semibold uppercase tracking-[0.15em] text-orange-500">
                 What you walk away with
               </p>
-              <h3 className="mt-4 text-[22px] font-semibold leading-[1.2] tracking-[-0.02em] text-slate-900">
+              <h3 className="mt-4 text-xl font-semibold leading-[1.2] tracking-[-0.02em] text-slate-900 sm:text-[22px]">
                 A portfolio that proves what you can ship.
               </h3>
               <p className="mt-4 text-[14px] leading-[1.65] text-slate-500">

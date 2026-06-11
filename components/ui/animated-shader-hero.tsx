@@ -358,7 +358,7 @@ const Hero: React.FC<HeroProps> = ({
   const { canvasRef, webglFailed } = useShaderBackground();
 
   return (
-    <div className={`relative w-full h-screen overflow-hidden bg-black ${className}`}>
+    <div className={`relative w-full min-h-[500px] md:h-screen overflow-hidden bg-black ${className}`}>
       <style jsx>{`
         @keyframes fade-in-down {
           from {

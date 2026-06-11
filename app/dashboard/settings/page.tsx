@@ -47,20 +47,20 @@ function ReferralCard() {
       </div>
 
       {/* Code + copy */}
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row gap-3">
         <div className="flex-1 rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 font-mono text-sm text-slate-800 select-all">
           {data.referralLink}
         </div>
         <button
           onClick={copyLink}
-          className="rounded-xl border border-slate-900 bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800 transition-colors"
+          className="rounded-xl border border-slate-900 bg-slate-900 px-4 py-3 text-sm font-semibold text-white hover:bg-slate-800 transition-colors sm:shrink-0"
         >
           Copy
         </button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-center">
           <p className="text-2xl font-bold text-slate-900">{data.stats.totalReferrals}</p>
           <p className="text-xs text-slate-500 mt-1">Friends referred</p>
