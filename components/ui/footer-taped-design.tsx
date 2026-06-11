@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Github, Twitter } from 'lucide-react';
+import { FeedbackButton } from '@/components/ui/feedback-button';
 
 const tape = <svg xmlns="http://www.w3.org/2000/svg" width="95" height="80" viewBox="0 0 95 80" fill="none">
 <path d="M1 45L70.282 5L88.282 36.1769L19 76.1769L1 45Z" fill="#222222"/>
@@ -83,6 +84,7 @@ export const Component = () => {
         </div>
 
         <div className="flex gap-3 items-center">
+          <FeedbackButton />
           <a
             href="https://github.com/LarytheLord/Adventurers-Guild"
             target="_blank"
