@@ -54,6 +54,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Only adventurers can onboard' }, { status: 403 });
     }
 
+    const profile = await prisma.adventurerProfile.findUnique({
+      where: { userId: session.user.id },
+      select: { onboardingCompleted: true },
+    });
+
+    if (profile?.onboardingCompleted) {
+      return NextResponse.json({ error: 'Onboarding already completed' }, { status: 409 });
+    }
+
     const json = await req.json();
     const data = onboardingSchema.parse(json);
 

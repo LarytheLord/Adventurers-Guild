@@ -16,7 +16,9 @@ async function upsertOAuthUser(user: User, account?: Account | null) {
     if (account?.provider && account?.providerAccountId) {
       email = `${account.providerAccountId}@${account.provider}.placeholder.com`;
     } else {
-      email = `user_${Date.now()}@placeholder.com`;
+      // No stable identifier available — reject rather than create a non-deterministic
+      // placeholder that would produce a new account on every sign-in.
+      return { error: 'role_not_allowed' as const };
     }
   }
 

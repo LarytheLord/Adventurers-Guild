@@ -18,6 +18,7 @@ import type { Rank } from '@/components/ui/rank-badge';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
+import { RANK_TO_TIER } from '@/lib/ranks';
 import 'highlight.js/styles/github.css';
 
 interface Quest {
@@ -153,10 +154,6 @@ function MarkdownContent({ content }: { content: string }) {
     </ReactMarkdown>
   );
 }
-
-const rankToTier: Record<string, string> = {
-  F: 'Tier 1', E: 'Tier 2', D: 'Tier 3', C: 'Tier 4', B: 'Tier 5', A: 'Tier 6', S: 'Tier 7',
-};
 
 export default function QuestDetailPage() {
   const params = useParams<{ id: string }>();
@@ -323,7 +320,7 @@ export default function QuestDetailPage() {
             <p className="mt-1 text-sm text-slate-500">
               {quest.company?.name ?? 'Unknown Company'}
               {quest.requiredRank && (
-                <> · Requires {rankToTier[quest.requiredRank] ?? `${quest.requiredRank}-Rank`}</>
+                <> · Requires {RANK_TO_TIER[quest.requiredRank] ?? `${quest.requiredRank}-Rank`}</>
               )}
               {quest.deadline && (
                 <> · Due {new Date(quest.deadline).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</>
@@ -560,7 +557,7 @@ export default function QuestDetailPage() {
                 <div className="flex justify-between py-2">
                   <span className="text-slate-500">Rank required</span>
                   <span className="font-medium text-slate-800">
-                    {quest.requiredRank ? (rankToTier[quest.requiredRank] ?? `${quest.requiredRank}-Rank`) + ' or above' : 'Open'}
+                    {quest.requiredRank ? (RANK_TO_TIER[quest.requiredRank] ?? `${quest.requiredRank}-Rank`) + ' or above' : 'Open'}
                   </span>
                 </div>
                 <div className="flex justify-between py-2">

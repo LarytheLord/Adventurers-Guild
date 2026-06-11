@@ -8,19 +8,9 @@ import { Progress } from '@/components/ui/progress';
 import Link from 'next/link';
 import { RankBadge } from '@/components/ui/rank-badge';
 import type { Rank } from '@/components/ui/rank-badge';
-import { RANK_THRESHOLDS } from '@/lib/ranks';
+import { RANK_THRESHOLDS, RANK_TO_TIER } from '@/lib/ranks';
 
 const RANK_ORDER: Rank[] = ['F', 'E', 'D', 'C', 'B', 'A', 'S'];
-
-const rankToTier: Record<string, string> = {
-  F: 'Tier 1',
-  E: 'Tier 2',
-  D: 'Tier 3',
-  C: 'Tier 4',
-  B: 'Tier 5',
-  A: 'Tier 6',
-  S: 'Tier 7',
-};
 
 export default async function DashboardPage() {
   const session = await getServerSession(authOptions);
@@ -153,7 +143,7 @@ export default async function DashboardPage() {
                 <RankBadge rank={rank} size="md" glow />
                 <div>
                   <p className="text-[10px] font-semibold uppercase tracking-wide text-slate-400">Rank</p>
-                  <p className="text-lg font-bold text-slate-900">{rankToTier[rank] || rank}</p>
+                  <p className="text-lg font-bold text-slate-900">{RANK_TO_TIER[rank] || rank}</p>
                 </div>
               </div>
               <div className="text-right">
@@ -165,7 +155,7 @@ export default async function DashboardPage() {
               <Progress value={progress} className="h-2" />
               <p className="text-xs text-slate-500">
                 {nextEntry
-                  ? `${xpToNext.toLocaleString()} XP to ${rankToTier[nextEntry.rank] || nextEntry.rank}`
+                  ? `${xpToNext.toLocaleString()} XP to ${RANK_TO_TIER[nextEntry.rank] || nextEntry.rank}`
                   : 'Maximum rank — Tier 7 Legend'}
               </p>
             </div>

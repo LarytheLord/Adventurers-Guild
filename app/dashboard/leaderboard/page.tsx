@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useApiFetch } from '@/lib/hooks';
+import { RANK_TO_TIER } from '@/lib/ranks';
 
 type AdventurerRankRow = {
   id: string;
@@ -44,10 +45,6 @@ const RANK_COLORS: Record<string, string> = {
   D: 'border-slate-200 bg-slate-50 text-slate-600',
   E: 'border-stone-200 bg-stone-50 text-stone-500',
   F: 'border-gray-200 bg-gray-50 text-gray-400',
-};
-
-const rankToTier: Record<string, string> = {
-  F: 'T1', E: 'T2', D: 'T3', C: 'T4', B: 'T5', A: 'T6', S: 'T7',
 };
 
 const MEDALS: Record<number, string> = { 1: '🥇', 2: '🥈', 3: '🥉' };
@@ -162,7 +159,7 @@ export default function LeaderboardPage() {
                     {/* Tier badge + XP */}
                     <div className="flex items-center gap-3 shrink-0">
                       <Badge variant="outline" className={`text-[10px] py-0 ${RANK_COLORS[user.rank] ?? ''}`}>
-                        {rankToTier[user.rank] ?? user.rank}
+                        {RANK_TO_TIER[user.rank] ?? user.rank}
                       </Badge>
                       <div className="text-right min-w-[72px]">
                         <p className="text-sm font-bold text-slate-900">{user.xp.toLocaleString()} XP</p>

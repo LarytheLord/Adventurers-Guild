@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/db';
 import { z } from 'zod';
+import { Prisma } from '@prisma/client';
 
 const updateEmailSchema = z.object({
   email: z.string().email('Please provide a valid email address'),
@@ -19,19 +20,8 @@ export async function POST(req: Request) {
     const { email } = updateEmailSchema.parse(json);
     const normalizedEmail = email.trim().toLowerCase();
 
-    // Check if email is already in use
-    const existingUser = await prisma.user.findUnique({
-      where: { email: normalizedEmail },
-    });
-
-    if (existingUser) {
-      return NextResponse.json(
-        { error: 'This email is already in use by another account' },
-        { status: 400 }
-      );
-    }
-
-    // Update user's email
+    // Update directly — DB @unique constraint is the authoritative check.
+    // This avoids a TOCTOU race between findUnique + update.
     await prisma.user.update({
       where: { id: session.user.id },
       data: { email: normalizedEmail },
@@ -42,6 +32,12 @@ export async function POST(req: Request) {
     console.error('Failed to update email:', error);
     if (error instanceof z.ZodError) {
       return NextResponse.json({ error: error.errors[0].message }, { status: 400 });
+    }
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      return NextResponse.json(
+        { error: 'This email is already in use by another account' },
+        { status: 400 }
+      );
     }
     return NextResponse.json(
       { error: 'Something went wrong while updating your email' },

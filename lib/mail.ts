@@ -6,8 +6,6 @@ interface SendEmailParams {
   html: string;
 }
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function sendEmail({ to, subject, html }: SendEmailParams): Promise<void> {
   const isDev = process.env.NODE_ENV !== 'production';
   const resendConfigured = !!process.env.RESEND_API_KEY;
@@ -26,6 +24,10 @@ export async function sendEmail({ to, subject, html }: SendEmailParams): Promise
     }
     throw new Error('Resend API key is not configured. Set RESEND_API_KEY environment variable.');
   }
+
+  // Lazy-init: only construct Resend when a key is confirmed present so module-level
+  // import during Next.js static analysis (CI without env vars) never throws.
+  const resend = new Resend(process.env.RESEND_API_KEY);
 
   try {
     console.log('[mail] Calling Resend API...');

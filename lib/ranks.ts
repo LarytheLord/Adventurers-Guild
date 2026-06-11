@@ -31,6 +31,17 @@ export function getNextRankThreshold(xp: number): { currentRank: Rank; nextRankX
   return { currentRank, nextRankXp: next ? next.threshold : -1 };
 }
 
+/** Human-readable Tier labels for each rank (F→Tier 1 … S→Tier 7) */
+export const RANK_TO_TIER: Record<string, string> = {
+  F: 'Tier 1',
+  E: 'Tier 2',
+  D: 'Tier 3',
+  C: 'Tier 4',
+  B: 'Tier 5',
+  A: 'Tier 6',
+  S: 'Tier 7',
+};
+
 /** Calculate percentage progress toward next rank (0–100) */
 export function getRankProgressPercent(xp: number): number {
   const { currentRank, nextRankXp } = getNextRankThreshold(xp);
