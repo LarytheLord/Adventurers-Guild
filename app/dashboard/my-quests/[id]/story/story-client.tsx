@@ -50,7 +50,7 @@ export function StoryClient({ assignment, quest, updates }: { assignment: any; q
           <div className="text-center py-12 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
             <FileText className="h-8 w-8 text-slate-400 mx-auto mb-3" />
             <h3 className="text-lg font-semibold text-slate-900 mb-1">No updates yet</h3>
-            <p className="text-sm text-slate-500 mb-4">You haven't submitted any daily standups for this quest.</p>
+            <p className="text-sm text-slate-500 mb-4">You haven&apos;t submitted any daily standups for this quest.</p>
             <Button onClick={() => setIsModalOpen(true)} variant="outline" className="border-orange-200 text-orange-600 hover:bg-orange-50">
               Submit Your First Update
             </Button>

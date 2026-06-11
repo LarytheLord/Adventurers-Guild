@@ -255,7 +255,7 @@ export function DailyStandupModal({
             {/* Yesterday Input */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                Yesterday's Work <span className="text-orange-500">*</span>
+                Yesterday&apos;s Work <span className="text-orange-500">*</span>
               </label>
               <textarea
                 required
@@ -270,7 +270,7 @@ export function DailyStandupModal({
             {/* Today Input */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                Today's Objectives <span className="text-orange-500">*</span>
+                Today&apos;s Objectives <span className="text-orange-500">*</span>
               </label>
               <textarea
                 required

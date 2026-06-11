@@ -3,11 +3,10 @@ import { prisma } from '@/lib/db';
 import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
 
 export async function GET(req: Request) {
-  // In a real production scenario, we'd verify a secret or vercel cron header here
-  // const authHeader = req.headers.get('authorization');
-  // if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
-  //   return new Response('Unauthorized', { status: 401 });
-  // }
+  const authHeader = req.headers.get('authorization');
+  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    return new Response('Unauthorized', { status: 401 });
+  }
 
   try {
     const now = new Date();
