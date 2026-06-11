@@ -156,15 +156,16 @@ export default function QuestDetailPage() {
       
       {/* Sub Navigation Bar — sticks below the global fixed nav (top-[72px]) */}
       <div className="sticky top-[72px] z-40 border-b border-border/70 bg-white/80 backdrop-blur-md">
-        <div className="container px-6 mx-auto max-w-5xl h-14 flex items-center justify-between">
+        <div className="container px-6 mx-auto max-w-5xl h-14 flex items-center justify-between sm:justify-start sm:gap-4">
           <button
             onClick={() => router.back()}
-            className="flex items-center gap-1.5 text-slate-600 hover:text-slate-950 transition-colors text-sm font-medium"
+            className="flex items-center gap-1.5 text-slate-600 hover:text-slate-950 transition-colors text-sm font-medium sm:shrink-0"
           >
             <ArrowLeft className="w-4 h-4" />
-            Back to quests
+            <span className="hidden sm:inline">Back to quests</span>
+            <span className="sm:hidden">Back</span>
           </button>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 sm:ml-auto">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
