@@ -94,7 +94,7 @@ export function MyQuestCard({ initialAssignment }: { initialAssignment: any }) {
                     : "bg-blue-500/15 text-blue-400 border-blue-500/20"
                 }
               >
-                {assignment.status.replace("_", " ").toUpperCase()}
+                {assignment.status.replaceAll("_", " ").toUpperCase()}
               </Badge>
               <span className="text-xs text-slate-500">{quest.company?.name}</span>
             </div>
@@ -105,7 +105,7 @@ export function MyQuestCard({ initialAssignment }: { initialAssignment: any }) {
               </span>
               <span className="text-orange-400 font-semibold">{quest.xpReward} XP</span>
               {quest.monetaryReward && (
-                <span className="text-emerald-400 font-semibold">${Number(quest.monetaryReward)}</span>
+                <span className="text-emerald-400 font-semibold">₹{Number(quest.monetaryReward)}</span>
               )}
             </div>
           </div>

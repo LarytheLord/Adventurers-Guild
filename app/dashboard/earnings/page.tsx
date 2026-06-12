@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useApiFetch } from '@/lib/hooks';
 import { formatCurrency, type Transaction } from '@/lib/payment-utils';
+import { toast } from 'sonner';
 import { getStatusColor } from '@/lib/status-utils';
 
 type PaymentsResponse = {
@@ -231,7 +232,7 @@ export default function EarningsPage() {
                     </p>
                   </div>
                   <div className="flex gap-2">
-                    <Button variant="outline" size="sm">
+                    <Button variant="outline" size="sm" onClick={() => toast.info("Receipt download — coming soon")}>
                       <Download className="mr-2 h-4 w-4" />
                       Receipt
                     </Button>

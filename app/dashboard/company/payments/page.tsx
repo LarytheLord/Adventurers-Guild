@@ -20,6 +20,7 @@ import {
   Wallet,
 } from 'lucide-react';
 import { formatCurrency, getPaymentHistory, Transaction } from '@/lib/payment-utils';
+import { toast } from 'sonner';
 import { GuildCard, GuildHero, GuildKpi, GuildPage, GuildPanel } from '@/components/guild/primitives';
 
 function paymentStatusClass(status: string) {
@@ -279,7 +280,7 @@ export default function CompanyPaymentsPage() {
                 </div>
 
                 <div className="mt-5 flex flex-wrap gap-2">
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" onClick={() => toast.info("Receipt download — coming soon")}>
                     <Download className="h-4 w-4" />
                     Receipt
                   </Button>

@@ -425,7 +425,7 @@ export default function AdminQuestsPage() {
                           </span>
                         )}
                         <span className="capitalize">
-                          {quest.questCategory.replace('_', ' ')}
+                          {quest.questCategory.replaceAll('_', ' ')}
                         </span>
                       </div>
                     </div>

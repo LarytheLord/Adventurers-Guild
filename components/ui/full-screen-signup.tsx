@@ -427,7 +427,7 @@ export const FullScreenSignup = ({ mode = "register" }: FullScreenSignupProps) =
 
         {/* Right panel */}
         <div className="p-8 md:p-12 md:w-1/2 flex flex-col bg-secondary z-99 text-secondary-foreground">
-          <div className="flex flex-col items-left mb-8">
+          <div className="flex flex-col items-start mb-8">
             <div className="text-orange-500 mb-4">
               <Sunburst className="h-10 w-10" />
             </div>

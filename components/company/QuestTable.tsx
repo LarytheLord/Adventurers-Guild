@@ -106,7 +106,7 @@ export function QuestTable({
               </TableCell>
               <TableCell>
                 <Badge variant="outline" className={getStatusColor(quest.status)}>
-                  {quest.status.replace('_', ' ')}
+                  {quest.status.replaceAll('_', ' ')}
                 </Badge>
               </TableCell>
               <TableCell>

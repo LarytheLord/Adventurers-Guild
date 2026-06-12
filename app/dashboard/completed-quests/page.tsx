@@ -101,7 +101,7 @@ export default async function CompletedQuestsPage() {
                       {c.quest.difficulty}-Rank
                     </Badge>
                     <Badge variant="secondary" className="capitalize">
-                      {c.quest.questCategory.replace('_', ' ')}
+                      {c.quest.questCategory.replaceAll('_', ' ')}
                     </Badge>
                   </div>
                   <h3 className="text-base font-semibold truncate">{c.quest.title}</h3>

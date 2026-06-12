@@ -320,7 +320,7 @@ export default async function CompanyDashboardPage() {
                       </div>
                     </div>
                     <Badge variant="outline" className={getStatusColor(quest.status)}>
-                      {quest.status.replace('_', ' ')}
+                      {quest.status.replaceAll('_', ' ')}
                     </Badge>
                   </Link>
                 </GuildListItem>
