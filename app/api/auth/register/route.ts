@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma, withDbRetry } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import { z } from 'zod';
+import { Prisma } from '@prisma/client';
 import { generateReferralCode, REFEREE_SIGNUP_XP } from '@/lib/referral-utils';
 
 const registerSchema = z.object({
@@ -130,6 +131,10 @@ export async function POST(request: NextRequest) {
       referralBonus: referrerId ? REFEREE_SIGNUP_XP : 0,
     }, { status: 201 });
   } catch (error) {
+    // Concurrent signup race: unique constraint on email or username
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2002') {
+      return NextResponse.json({ error: 'User with this email already exists' }, { status: 409 });
+    }
     console.error('Registration error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

@@ -6,6 +6,7 @@ import GitHubProvider from 'next-auth/providers/github';
 import GoogleProvider from 'next-auth/providers/google';
 import bcrypt from 'bcryptjs';
 import { prisma, withDbRetry } from './db';
+import { generateReferralCode } from '@/lib/referral-utils';
 import { env } from '@/lib/env';
 import { UserRole, UserRank } from '@prisma/client';
 
@@ -21,16 +22,30 @@ async function upsertOAuthUser(user: User, account?: Account | null) {
   }
 
   const normalizedEmail = email.trim().toLowerCase();
-  const existingUser = await prisma.user.findUnique({
-    where: { email: normalizedEmail },
-    include: { adventurerProfile: true },
-  });
+  const existingUser = await withDbRetry(() =>
+    prisma.user.findUnique({
+      where: { email: normalizedEmail },
+      include: { adventurerProfile: true },
+    })
+  );
 
   if (existingUser?.role === 'company' || existingUser?.role === 'admin') {
     return { error: 'role_not_allowed' as const };
   }
 
-  const dbUser = await prisma.$transaction(async (tx) => {
+  // Generate a referral code for new OAuth users before entering the transaction
+  let newReferralCode: string | null = null;
+  if (!existingUser) {
+    for (let i = 0; i < 5; i++) {
+      const candidate = generateReferralCode(user.name ?? 'USER');
+      const taken = await withDbRetry(() =>
+        prisma.user.findUnique({ where: { referralCode: candidate }, select: { id: true } })
+      );
+      if (!taken) { newReferralCode = candidate; break; }
+    }
+  }
+
+  const dbUser = await withDbRetry(() => prisma.$transaction(async (tx) => {
     if (!existingUser) {
       const username =
         normalizedEmail.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '') + Math.floor(Math.random() * 1000);
@@ -44,6 +59,7 @@ async function upsertOAuthUser(user: User, account?: Account | null) {
           role: 'adventurer' as UserRole,
           rank: 'F' as UserRank,
           xp: 0,
+          referralCode: newReferralCode,
           adventurerProfile: {
             create: {},
           },
@@ -63,7 +79,7 @@ async function upsertOAuthUser(user: User, account?: Account | null) {
       where: { id: existingUser.id },
       data: { lastLoginAt: new Date() },
     });
-  });
+  }));
 
   (user as unknown as Record<string, unknown>).id = dbUser.id;
   (user as unknown as Record<string, unknown>).role = dbUser.role;
@@ -143,12 +159,30 @@ export const authOptions: AuthOptions = {
       }
       return true;
     },
-    async jwt({ token, user }: { token: JWT; user?: User }) {
+    async jwt({ token, user, trigger }: { token: JWT; user?: User; trigger?: string }) {
       if (user) {
         token.id = user.id;
         token.role = user.role as UserRole;
         token.rank = user.rank;
         token.xp = user.xp;
+      }
+      // On session update (e.g. after XP/rank change), refresh from DB
+      if (trigger === 'update' && token.id) {
+        try {
+          const fresh = await withDbRetry(() =>
+            prisma.user.findUnique({
+              where: { id: token.id as string },
+              select: { rank: true, xp: true, role: true },
+            })
+          );
+          if (fresh) {
+            token.rank = fresh.rank;
+            token.xp = fresh.xp;
+            token.role = fresh.role as UserRole;
+          }
+        } catch (e) {
+          console.warn('[Auth] jwt refresh failed:', e);
+        }
       }
       return token;
     },
