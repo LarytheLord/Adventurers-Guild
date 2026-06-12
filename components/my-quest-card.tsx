@@ -78,11 +78,11 @@ export function MyQuestCard({ initialAssignment }: { initialAssignment: any }) {
       const res = await fetchWithAuth(`/api/quests/assignments/${assignment.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status: "in_progress" }),
+        body: JSON.stringify({ status: "started" }),
       });
       const data = await res.json();
       if (!data.success) { toast.error(data.error || "Failed to start quest"); return; }
-      setAssignment((prev: any) => ({ ...prev, status: "in_progress" }));
+      setAssignment((prev: any) => ({ ...prev, status: "started" }));
       toast.success("Quest started! Use the Submit Work button when ready.");
     } catch { toast.error("Failed to start quest"); }
     finally { setIsStarting(false); }

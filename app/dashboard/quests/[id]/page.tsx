@@ -511,11 +511,11 @@ export default function QuestDetailPage() {
                         const res = await fetchWithAuth(`/api/quests/assignments/${assignment.id}`, {
                           method: 'PATCH',
                           headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ status: 'in_progress' }),
+                          body: JSON.stringify({ status: 'started' }),
                         });
                         const data = await res.json();
                         if (!data.success) { toast.error(data.error || 'Failed to start quest'); return; }
-                        setAssignment((prev) => prev ? { ...prev, status: 'in_progress' } : prev);
+                        setAssignment((prev) => prev ? { ...prev, status: 'started' } : prev);
                         toast.success('Quest started! Submit your work below.');
                       } catch { toast.error('Failed to start quest'); }
                       finally { setIsStarting(false); }
