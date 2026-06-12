@@ -385,7 +385,7 @@ export default function AdminDashboard() {
                 label: 'At least one quest is live and available',
                 link: '/admin/quests',
               },
-              { done: stats.pendingQaCount > 0, label: 'Run the QA mediation queue', link: '/admin/qa-queue' },
+              { done: stats.pendingQaCount === 0, label: 'Run the QA mediation queue', link: '/admin/qa-queue' },
               { done: false, label: 'Walk interns through quest selection', link: '/dashboard/quests' },
               { done: false, label: 'Tune templates and criteria after first session', link: '/admin/quest-templates' },
             ].map((item, index) => (

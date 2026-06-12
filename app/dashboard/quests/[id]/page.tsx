@@ -291,15 +291,15 @@ export default function QuestDetailPage() {
             {/* Tags row */}
             <div className="flex flex-wrap items-center gap-1.5 mb-2">
               <Badge variant="outline" className={`text-[11px] py-0 ${questStatusClass(quest.status)}`}>
-                {quest.status.replace('_', ' ')}
+                {quest.status.replaceAll('_', ' ')}
               </Badge>
               <RankBadge rank={quest.difficulty as Rank} size="sm" />
               <Badge variant="secondary" className="text-[11px] py-0 capitalize">
-                {quest.questCategory.replace(/_/g, ' ')}
+                {quest.questCategory.replaceAll('_', ' ')}
               </Badge>
               {quest.questType && quest.questType !== 'commission' && (
                 <Badge variant="outline" className="text-[11px] py-0 capitalize">
-                  {quest.questType.replace('_', ' ')}
+                  {quest.questType.replaceAll('_', ' ')}
                 </Badge>
               )}
               {utmSource && (

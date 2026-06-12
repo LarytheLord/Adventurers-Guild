@@ -10,14 +10,13 @@ const onboardingSchema = z.object({
   }),
   institutionName: z.string().min(1, 'Please enter the name of your school, college, or workplace'),
   yearOrExperience: z.string().min(1, 'Please select or enter your class, year, or work experience'),
-  phoneNumber: z.string().min(10, 'Please enter a valid WhatsApp number'),
+  // phoneNumber collected separately via PhoneNumberPrompt — optional here
+  phoneNumber: z.string().min(10, 'Please enter a valid 10-digit WhatsApp number').optional().or(z.literal('')),
   skills: z.array(z.string()).min(1, 'Please add at least one skill'),
   interests: z.array(z.string()).min(1, 'Please select at least one interest'),
   dailyWorkHours: z.string().min(1, 'Please select how much you can work daily'),
-  expectations: z.string().min(10, 'Please write at least a few sentences about your expectations'),
-  autoAssign: z.boolean({
-    required_error: 'Please select your quest assignment preference',
-  }),
+  expectations: z.string().min(10, 'Please write at least a few sentences (minimum 10 characters) about your expectations'),
+  autoAssign: z.boolean().optional().default(false),
 });
 
 export async function GET() {

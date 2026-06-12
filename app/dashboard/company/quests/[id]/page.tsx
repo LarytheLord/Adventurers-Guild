@@ -352,7 +352,7 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
                                       : 'destructive'
                                 }
                               >
-                                {applicant.status.replace('_', ' ')}
+                                {applicant.status.replaceAll('_', ' ')}
                               </Badge>
                             )}
                             <DropdownMenu>
@@ -360,8 +360,8 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
                                 <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
-                                <DropdownMenuItem>View Profile</DropdownMenuItem>
-                                <DropdownMenuItem>Message</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => toast.info("View Profile — coming soon")}>View Profile</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => toast.info("Messaging — coming soon")}>Message</DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>
                           </div>
@@ -436,7 +436,7 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
                       <div className="flex gap-4">
                         <div className="flex items-center gap-1"><Zap className="w-4 h-4 text-yellow-500" /> {quest.xpReward} XP</div>
                         {quest.monetaryReward && (
-                          <div className="flex items-center gap-1"><DollarSign className="w-4 h-4 text-green-500" /> ${quest.monetaryReward}</div>
+                          <div className="flex items-center gap-1"><DollarSign className="w-4 h-4 text-green-500" /> ₹{quest.monetaryReward}</div>
                         )}
                       </div>
                     </div>

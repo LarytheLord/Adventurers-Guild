@@ -45,6 +45,7 @@ export function OnboardingPrompt() {
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [dailyWorkHours, setDailyWorkHours] = useState("");
   const [expectations, setExpectations] = useState("");
+  const [autoAssign, setAutoAssign] = useState(false);
 
   // Check onboarding status
   useEffect(() => {
@@ -117,10 +118,13 @@ export function OnboardingPrompt() {
     setStep(step - 1);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!dailyWorkHours || expectations.length < 10) {
-      toast.error("Please specify daily hours and write expectations (minimum 10 characters)");
+  const handleSubmit = async () => {
+    if (!dailyWorkHours) {
+      toast.error("Please select how many hours per day you can work");
+      return;
+    }
+    if (expectations.trim().length < 10) {
+      toast.error("Please write a bit more about your expectations — at least a sentence or two");
       return;
     }
 
@@ -136,7 +140,8 @@ export function OnboardingPrompt() {
           skills,
           interests: selectedInterests,
           dailyWorkHours,
-          expectations
+          expectations,
+          autoAssign,
         }),
       });
 
@@ -421,32 +426,64 @@ export function OnboardingPrompt() {
 
               {/* Daily commitment */}
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-slate-700">How much can you work daily?</label>
+                <label className="block text-sm font-medium text-slate-700">
+                  How much can you work daily? <span className="text-orange-500">*</span>
+                </label>
                 <select
-                  required
                   value={dailyWorkHours}
                   onChange={(e) => setDailyWorkHours(e.target.value)}
-                  className="w-full h-10 px-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-black text-sm"
+                  className={`w-full h-10 px-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white text-black text-sm ${
+                    !dailyWorkHours ? 'border-gray-300' : 'border-orange-400'
+                  }`}
                 >
-                  <option value="">Select commitment</option>
-                  <option value="1-2 hours">1-2 hours / day</option>
-                  <option value="2-4 hours">2-4 hours / day</option>
-                  <option value="4-6 hours">4-6 hours / day</option>
-                  <option value="6+ hours">6+ hours / day</option>
+                  <option value="">Select how many hours you can commit</option>
+                  <option value="1-2 hours">1–2 hours / day (light commitment)</option>
+                  <option value="2-4 hours">2–4 hours / day (part-time)</option>
+                  <option value="4-6 hours">4–6 hours / day (serious)</option>
+                  <option value="6+ hours">6+ hours / day (full-time)</option>
                 </select>
               </div>
 
               {/* Expectations textarea */}
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-slate-700">What are your expectations from the Guild?</label>
+                <label className="block text-sm font-medium text-slate-700">
+                  What are your expectations from the Guild? <span className="text-orange-500">*</span>
+                </label>
                 <textarea
-                  required
                   rows={4}
-                  placeholder="Tell us what you expect to achieve, build, or learn. Minimum 10 characters."
+                  placeholder="e.g. I want to build real-world projects, earn money, and level up my skills while helping businesses."
                   value={expectations}
                   onChange={(e) => setExpectations(e.target.value)}
                   className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 text-sm bg-white text-black resize-none"
                 />
+                {expectations.length > 0 && expectations.trim().length < 10 && (
+                  <p className="text-xs text-red-500">Write a bit more — at least a sentence so we can match you well.</p>
+                )}
+              </div>
+
+              {/* Auto-assign preference */}
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-slate-700">Quest assignment preference</label>
+                <div className="flex gap-3">
+                  {[
+                    { value: false, label: "I'll pick my quests", desc: "Browse and apply to quests yourself" },
+                    { value: true, label: "Auto-assign me", desc: "Get matched to quests automatically" },
+                  ].map((opt) => (
+                    <button
+                      key={String(opt.value)}
+                      type="button"
+                      onClick={() => setAutoAssign(opt.value)}
+                      className={`flex-1 p-3 rounded-xl border text-left transition-all ${
+                        autoAssign === opt.value
+                          ? 'bg-orange-50 text-orange-600 border-orange-400 shadow-sm'
+                          : 'border-slate-200 text-slate-600 bg-white hover:bg-slate-50'
+                      }`}
+                    >
+                      <p className="text-xs font-semibold">{opt.label}</p>
+                      <p className="text-[10px] text-slate-500 mt-0.5">{opt.desc}</p>
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -479,8 +516,8 @@ export function OnboardingPrompt() {
             ) : (
               <button
                 type="button"
-                onClick={handleSubmit}
-                disabled={isSubmitting || !dailyWorkHours || expectations.length < 10}
+                onClick={() => handleSubmit()}
+                disabled={isSubmitting || !dailyWorkHours || expectations.trim().length < 10}
                 className="bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold py-2.5 px-5 rounded-xl transition-colors disabled:opacity-50 inline-flex items-center justify-center min-w-[150px] min-h-[44px]"
               >
                 {isSubmitting ? (

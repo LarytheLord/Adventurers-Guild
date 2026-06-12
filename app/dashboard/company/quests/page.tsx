@@ -210,7 +210,7 @@ export default function CompanyQuestsPage() {
                     </CardDescription>
                   </div>
                   <Badge variant="outline" className={getStatusColor(quest.status)}>
-                    {quest.status.replace('_', ' ')}
+                    {quest.status.replaceAll('_', ' ')}
                   </Badge>
                 </div>
                 <div className="flex flex-wrap gap-2">

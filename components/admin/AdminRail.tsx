@@ -10,6 +10,7 @@ import {
   Layers,
   LogOut,
   Shield,
+  Users,
   Wallet,
   Zap,
 } from 'lucide-react';
@@ -22,42 +23,56 @@ const adminLinks = [
     label: 'Overview',
     description: 'Pilot operations and platform status',
     icon: LayoutDashboard,
+    exact: true,
+  },
+  {
+    href: '/admin/users',
+    label: 'Users',
+    description: 'Manage user roles, status, and profiles',
+    icon: Users,
+    exact: false,
   },
   {
     href: '/admin/quests',
     label: 'Quests',
     description: 'Review, annotate, and moderate quests',
     icon: ClipboardList,
+    exact: false,
   },
   {
     href: '/admin/qa-queue',
     label: 'QA Queue',
     description: 'Review submissions before client handoff',
     icon: Shield,
+    exact: false,
   },
   {
     href: '/admin/analytics',
     label: 'Analytics',
     description: 'Platform health, ranks, and activity',
     icon: BarChart3,
+    exact: false,
   },
   {
     href: '/admin/revenue',
     label: 'Revenue',
     description: 'GMV, take rate, and payout health',
     icon: Wallet,
+    exact: false,
   },
   {
     href: '/admin/quest-templates',
     label: 'Templates',
     description: 'Manage quest brief and submission schemas',
     icon: Layers,
+    exact: false,
   },
   {
     href: '/admin/api-budgets',
     label: 'API Budgets',
     description: 'Track internal model spend and caps',
     icon: Zap,
+    exact: false,
   },
 ] as const;
 
@@ -87,7 +102,9 @@ export function AdminRail() {
 
         <nav className="flex gap-2 overflow-x-auto p-3 lg:flex-col lg:overflow-visible">
           {adminLinks.map((item) => {
-            const active = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+            const active = item.exact
+              ? pathname === item.href
+              : pathname === item.href || pathname?.startsWith(`${item.href}/`);
             const Icon = item.icon;
 
             return (

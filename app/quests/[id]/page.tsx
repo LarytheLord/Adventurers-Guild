@@ -137,7 +137,7 @@ export default function QuestDetailPage() {
   const rewardBadges = [
     { label: `${quest.xpReward} XP`, icon: <Zap className="w-4 h-4" />, color: 'text-orange-600 border-orange-100 bg-orange-50/50' },
     quest.monetaryReward != null && {
-      label: `$${quest.monetaryReward}`,
+      label: `₹${quest.monetaryReward}`,
       icon: <DollarSign className="w-4 h-4" />,
       color: 'text-emerald-700 border-emerald-100 bg-emerald-50/50',
     },
@@ -504,7 +504,7 @@ export default function QuestDetailPage() {
                 <div className="flex justify-center gap-3">
                   <button
                     onClick={() => {
-                      const text = `🔥 ${quest.title} on @AdventurersGuild — ${quest.xpReward} XP, $${quest.monetaryReward || 'XP only'}. Claim it!`;
+                      const text = `🔥 ${quest.title} on @AdventurersGuild — ${quest.xpReward} XP, ₹${quest.monetaryReward || 'XP only'}. Claim it!`;
                       const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(window.location.href)}`;
                       window.open(url, '_blank', 'width=550,height=420');
                     }}

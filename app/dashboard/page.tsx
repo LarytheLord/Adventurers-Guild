@@ -241,7 +241,7 @@ export default async function DashboardPage() {
                     )}
                   </div>
                   <Badge variant="secondary" className="shrink-0 capitalize text-[10px]">
-                    {a.status.replace('_', ' ')}
+                    {a.status.replaceAll('_', ' ')}
                   </Badge>
                 </Link>
               ))}

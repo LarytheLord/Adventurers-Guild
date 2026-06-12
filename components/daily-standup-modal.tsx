@@ -2,21 +2,7 @@
 
 import { useState } from "react";
 import { toast } from "sonner";
-import { 
-  X, 
-  Loader2, 
-  Award, 
-  Calendar, 
-  AlertCircle, 
-  CheckCircle2, 
-  PlayCircle, 
-  ShieldAlert, 
-  Link as LinkIcon, 
-  Flame, 
-  Check, 
-  ChevronRight, 
-  Sparkles 
-} from "lucide-react";
+import { X, Loader2, AlertCircle } from "lucide-react";
 
 interface DailyStandupModalProps {
   isOpen: boolean;
