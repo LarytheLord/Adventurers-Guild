@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { Fragment, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -20,8 +20,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { OnboardingPrompt } from '@/components/ui/onboarding-prompt';
-
 import NotificationBell from '@/components/NotificationBell';
 import { OnboardingPrompt } from '@/components/ui/onboarding-prompt';
 import { PhoneNumberPrompt } from '@/components/ui/phone-number-prompt';
@@ -140,8 +138,29 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       ? pathname === href
       : pathname === href || pathname?.startsWith(`${href}/`);
 
+  const sidebarModeLabel = sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar';
+
+  const renderNavLink = (item: DashboardNavItem) => (
+    <Link
+      key={item.href}
+      href={item.href}
+      className={cn(
+        'flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-colors',
+        sidebarCollapsed && 'lg:justify-center lg:space-x-0 lg:px-2',
+        isActive(item.href)
+          ? 'bg-orange-50 text-orange-600 border border-orange-200'
+          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+      )}
+      onClick={() => setSidebarOpen(false)}
+    >
+      <item.icon className="h-5 w-5 shrink-0" />
+      <span className={cn(sidebarCollapsed && 'lg:hidden')}>{item.name}</span>
+    </Link>
+  );
+
   return (
-    <div className="min-h-screen guild-shell">
+    <TooltipProvider>
+      <div className="min-h-screen guild-shell">
       <OnboardingPrompt />
       <PhoneNumberPrompt />
       {/* Mobile sidebar backdrop */}
@@ -158,50 +177,19 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           }`}
       >
         <div className="flex flex-col h-full">
-          {/* Logo */}
+          {/* Logo / Header */}
           <div className="flex items-center justify-between p-4 border-b border-slate-200">
             <Link
               href={isCompany ? '/dashboard/company' : '/dashboard'}
               className="flex items-center space-x-2"
+              aria-label="Guild dashboard"
             >
-              <img src="/logo/guild-logo.png" alt="Guild Logo" className="h-8 w-8 object-contain" />
-              <span className="text-sm font-semibold tracking-wide text-slate-900">
+              <img src="/logo/guild-logo.png" alt="Guild Logo" className="h-8 w-8 shrink-0 object-contain" />
+              <span className={cn('text-sm font-semibold tracking-wide text-slate-900', sidebarCollapsed && 'lg:hidden')}>
                 Guild
               </span>
             </Link>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden text-slate-500 hover:bg-slate-100"
-              onClick={() => setSidebarOpen(false)}
-            >
-              <X className="h-5 w-5" />
-            </Button>
-          </div>
-
-          {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-            {navigation.map((item) => (
-              <Link
-                href={isCompany ? '/dashboard/company' : '/dashboard'}
-                className="flex items-center space-x-2"
-                aria-label="Guild dashboard"
-              >
-                <img
-                  src="/logo/guild-logo.png"
-                  alt="Guild Logo"
-                  className="h-8 w-8 shrink-0 object-contain"
-                />
-                <span
-                  className={cn(
-                    'text-sm font-semibold tracking-wide text-slate-900',
-                    sidebarCollapsed && 'lg:hidden'
-                  )}
-                >
-                  Guild
-                </span>
-              </Link>
-
+            <div className="flex items-center gap-1">
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
@@ -215,11 +203,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                     <PanelLeft className={cn('h-5 w-5 transition-transform', sidebarCollapsed && 'rotate-180')} />
                   </Button>
                 </TooltipTrigger>
-                <TooltipContent side={sidebarCollapsed ? 'right' : 'bottom'}>
-                  {sidebarModeLabel}
-                </TooltipContent>
+                <TooltipContent side="right">{sidebarModeLabel}</TooltipContent>
               </Tooltip>
-
               <Button
                 variant="ghost"
                 size="icon"
@@ -230,43 +215,35 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <X className="h-5 w-5" />
               </Button>
             </div>
+          </div>
 
-            <div className={cn('px-4 pt-4', sidebarCollapsed && 'lg:hidden')}>
-              <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
-                <div className="flex items-center gap-2 text-orange-600">
-                  <RoleIcon className="h-4 w-4" />
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em]">{roleTitle}</p>
-                </div>
-                <p className="mt-2 text-xs text-slate-500">{roleSubtitle}</p>
+          {/* Role badge */}
+          <div className={cn('px-4 pt-4', sidebarCollapsed && 'lg:hidden')}>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+              <div className="flex items-center gap-2 text-orange-600">
+                <RoleIcon className="h-4 w-4" />
+                <p className="text-xs font-semibold uppercase tracking-[0.2em]">{roleTitle}</p>
               </div>
+              <p className="mt-2 text-xs text-slate-500">{roleSubtitle}</p>
             </div>
+          </div>
 
-            <nav className={cn('flex-1 p-4 space-y-2 overflow-y-auto', sidebarCollapsed && 'lg:px-3')}>
-              {navigation.map(renderNavLink)}
-              {isAdmin &&
-                renderNavLink({
-                  name: 'Admin Console',
-                  href: '/admin',
-                  icon: ShieldCheck,
-                  exact: true,
-                })}
-            </nav>
+          {/* Navigation */}
+          <nav className={cn('flex-1 p-4 space-y-2 overflow-y-auto', sidebarCollapsed && 'lg:px-3')}>
+            {navigation.map((item) => renderNavLink(item))}
+            {isAdmin && renderNavLink({ name: 'Admin Console', href: '/admin', icon: ShieldCheck, exact: true })}
+          </nav>
 
-            <div className="p-4 border-t border-slate-200">
-              <div
-                className={cn(
-                  'flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3',
-                  sidebarCollapsed && 'lg:justify-center lg:gap-0 lg:p-2'
-                )}
-              >
-                <Avatar>
-                  <AvatarImage src={user?.image || undefined} />
-                  <AvatarFallback className="bg-slate-200 text-slate-700">{userInitials}</AvatarFallback>
-                </Avatar>
-                <div className={cn('flex-1 min-w-0', sidebarCollapsed && 'lg:hidden')}>
-                  <p className="text-sm font-medium truncate text-slate-900">{user?.name}</p>
-                  <p className="text-xs text-slate-500 truncate">{user?.email}</p>
-                </div>
+          {/* User section */}
+          <div className="p-4 border-t border-slate-200">
+            <div className={cn('flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3', sidebarCollapsed && 'lg:justify-center lg:gap-0 lg:p-2')}>
+              <Avatar>
+                <AvatarImage src={user?.image || undefined} />
+                <AvatarFallback className="bg-slate-200 text-slate-700">{userInitials}</AvatarFallback>
+              </Avatar>
+              <div className={cn('flex-1 min-w-0', sidebarCollapsed && 'lg:hidden')}>
+                <p className="text-sm font-medium truncate text-slate-900">{user?.name}</p>
+                <p className="text-xs text-slate-500 truncate">{user?.email}</p>
               </div>
             </div>
           </div>
@@ -325,11 +302,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
+          </div>
           </header>
 
           <main className="px-4 pb-8 pt-6 lg:px-8">{children}</main>
         </div>
       </div>
     </TooltipProvider>
+
   );
 }
