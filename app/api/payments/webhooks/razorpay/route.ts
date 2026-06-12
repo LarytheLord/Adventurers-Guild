@@ -138,7 +138,6 @@ export async function POST(request: NextRequest) {
           where: { providerPaymentId: transfer.id },
           data: { status: 'completed' },
         });
-        console.log(`Transfer ${transfer.id} marked as completed`);
         break;
       }
 

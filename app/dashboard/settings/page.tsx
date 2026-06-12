@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { fetchWithAuth } from '@/lib/fetch-with-auth';
 
@@ -98,6 +99,7 @@ function ReferralCard() {
 
 export default function SettingsPage() {
   const { data: session, status } = useSession();
+  const router = useRouter();
   const [bankDetails, setBankDetails] = useState({
     accountHolderName: '',
     accountNumber: '',
@@ -135,17 +137,18 @@ export default function SettingsPage() {
   };
 
   useEffect(() => {
+    if (status === 'unauthenticated') { router.push('/login'); return; }
     const checkStatus = async () => {
       try {
         const res = await fetch('/api/payments/razorpay/contact/status');
         const data = await res.json();
         setIsLinked(data.hasFundAccount);
       } catch {
-        console.error('Failed to check payout status');
+        // non-critical — payment status check failure doesn't block the page
       }
     };
     if (status === 'authenticated') checkStatus();
-  }, [status]);
+  }, [status, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

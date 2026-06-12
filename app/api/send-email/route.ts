@@ -104,7 +104,6 @@ export async function POST(request: NextRequest) {
         // Verify transporter configuration
         try {
             await transporter.verify()
-            console.log('SMTP server is ready to take our messages')
         } catch (verifyError) {
             console.error('SMTP verification failed:', verifyError)
             return NextResponse.json({
@@ -224,15 +223,11 @@ export async function POST(request: NextRequest) {
         }
 
         // Send emails sequentially instead of parallel to avoid rate limits
-        console.log('Sending welcome email...')
-        const userEmailResult = await transporter.sendMail(welcomeEmail)
-        console.log('Welcome email sent:', userEmailResult.messageId)
+        await transporter.sendMail(welcomeEmail)
 
         // Send admin email with error handling
         try {
-            console.log('Sending admin notification...')
-            const adminEmailResult = await transporter.sendMail(adminEmail)
-            console.log('Admin email sent:', adminEmailResult.messageId)
+            await transporter.sendMail(adminEmail)
         } catch (adminError) {
             console.error('Admin email failed (non-critical):', adminError)
             // Don't fail the request if admin email fails

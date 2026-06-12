@@ -5,7 +5,6 @@ import { Prisma, QuestStatus, QuestTrack, QuestCategory, Quest, UserRank } from 
 import { getQuestAccessStatus } from "@/lib/quest-access";
 
 export async function getQuests(searchParams: URLSearchParams, user: SessionUser | null): Promise<ServiceResult<Quest[]>> {
-  console.log('[quest-service] getQuests called:', { userRole: user?.role, userId: user?.id });
 
   const status = searchParams.get('status');
   const category = searchParams.get('category');
@@ -34,14 +33,11 @@ export async function getQuests(searchParams: URLSearchParams, user: SessionUser
 
   if (!user) {
     visibilityFilter = { status: 'available', track: 'OPEN' };
-    console.log('[quest-service] No user - public view');
   } else if (user.role === 'admin') {
     // no restriction
-    console.log('[quest-service] Admin view - no restrictions');
   } else if (user.role === 'company') {
     // Companies see their own quests (any status) + public open quests
     visibilityFilter = { OR: [{ companyId: user.id }, { companyId: null, status: 'available', track: 'OPEN' }] };
-    console.log('[quest-service] Company view');
   } else if (bootcampLink) {
     // Bootcamp students: locked to BOOTCAMP track, tutorial-only until eligible
     visibilityFilter = {
@@ -53,7 +49,6 @@ export async function getQuests(searchParams: URLSearchParams, user: SessionUser
         { OR: [{ status: 'available' }, { assignments: { some: { userId: user.id } } }] },
       ],
     };
-    console.log('[quest-service] Bootcamp view - eligible:', bootcampLink.eligibleForRealQuests);
   } else {
     // Regular adventurer: open available quests + their own assigned quests
     visibilityFilter = {
@@ -62,10 +57,8 @@ export async function getQuests(searchParams: URLSearchParams, user: SessionUser
         { assignments: { some: { userId: user.id } } },
       ],
     };
-    console.log('[quest-service] Regular adventurer view');
   }
 
-  console.log('[quest-service] Visibility filter:', JSON.stringify(visibilityFilter, null, 2));
 
   // Optional filters — AND-nested with visibility, never replacing it
   const filterClauses: Prisma.QuestWhereInput[] = [];
@@ -116,7 +109,6 @@ export async function getQuests(searchParams: URLSearchParams, user: SessionUser
     take: limit,
   });
 
-  console.log('[quest-service] Found', quests.length, 'quests with filter');
 
   // Add access control metadata for adventurers
   const enrichedQuests = quests.map((quest) => {
