@@ -9,6 +9,7 @@ const config: Config = {
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
   },
+  setupFiles: ['<rootDir>/jest.setup.ts'],
   collectCoverageFrom: [
     'lib/**/*.ts',
     'app/api/**/*.ts',

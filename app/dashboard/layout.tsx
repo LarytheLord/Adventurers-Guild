@@ -2,7 +2,7 @@
 
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -20,6 +20,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { OnboardingPrompt } from '@/components/ui/onboarding-prompt';
 
 import NotificationBell from '@/components/NotificationBell';
 import {
@@ -38,9 +39,7 @@ import {
   Sword,
   Target,
   Trophy,
-  Users,
   X,
-  Zap,
   type LucideIcon,
 } from 'lucide-react';
 import Link from 'next/link';
@@ -63,12 +62,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
-  useEffect(() => {
-    const savedMode = window.localStorage.getItem('guild-sidebar-mode');
-    setSidebarCollapsed(savedMode === 'icon');
-  }, []);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      localStorage.getItem('guild-sidebar-mode') === 'icon'
+  );
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -76,12 +74,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     }
   }, [status, router]);
 
+  useEffect(() => {
+    localStorage.setItem('guild-sidebar-mode', sidebarCollapsed ? 'icon' : 'full');
+  }, [sidebarCollapsed]);
+
   const toggleSidebarMode = () => {
-    setSidebarCollapsed((current) => {
-      const next = !current;
-      window.localStorage.setItem('guild-sidebar-mode', next ? 'icon' : 'full');
-      return next;
-    });
+    setSidebarCollapsed((current) => !current);
   };
 
   if (status === 'loading') {
@@ -110,9 +108,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const adventurerNav: DashboardNavItem[] = [
     { name: 'Dashboard', href: '/dashboard', icon: Home, exact: true },
     { name: 'Quests', href: '/dashboard/quests', icon: Target },
-    { name: 'My Pipeline', href: '/dashboard/my-quests', icon: Briefcase },
-    { name: 'Skill Tree', href: '/dashboard/skill-tree', icon: Zap },
-    { name: 'Teams', href: '/dashboard/teams', icon: Users },
+    { name: 'My Quests', href: '/dashboard/my-quests', icon: Briefcase },
     { name: 'Leaderboard', href: '/dashboard/leaderboard', icon: Trophy },
   ];
 
@@ -144,7 +140,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
     const link = (
       <Link
-        key={item.name}
         href={item.href}
         aria-label={sidebarCollapsed ? item.name : undefined}
         aria-current={active ? 'page' : undefined}
@@ -163,7 +158,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     );
 
     if (!sidebarCollapsed) {
-      return link;
+      return <Fragment key={item.name}>{link}</Fragment>;
     }
 
     return (
@@ -179,6 +174,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <TooltipProvider delayDuration={100}>
       <div className="min-h-screen guild-shell">
+        <OnboardingPrompt />
+
         {sidebarOpen && (
           <div
             className="fixed inset-0 bg-black/50 z-40 lg:hidden"
@@ -205,9 +202,11 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 className="flex items-center space-x-2"
                 aria-label="Guild dashboard"
               >
-                <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-orange-500 font-bold text-white">
-                  AG
-                </span>
+                <img
+                  src="/logo/guild-logo.png"
+                  alt="Guild Logo"
+                  className="h-8 w-8 shrink-0 object-contain"
+                />
                 <span
                   className={cn(
                     'text-sm font-semibold tracking-wide text-slate-900',
