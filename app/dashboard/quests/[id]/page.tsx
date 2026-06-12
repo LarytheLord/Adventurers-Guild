@@ -181,6 +181,7 @@ export default function QuestDetailPage() {
   const [submissionNotes, setSubmissionNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
+  const [isStarting, setIsStarting] = useState(false);
   const [currentStreak, setCurrentStreak] = useState(0);
   const [shareCount, setShareCount] = useState(0);
   const [isStandupOpen, setIsStandupOpen] = useState(false);
@@ -251,7 +252,8 @@ export default function QuestDetailPage() {
 
   const isAssigned = !!assignment;
   const canAssign = quest?.status === 'available' && !isAssigned;
-  const canSubmit = !!assignment && ['assigned', 'started', 'in_progress', 'needs_rework'].includes(assignment.status);
+  const canSubmit = !!assignment && ['started', 'in_progress', 'needs_rework'].includes(assignment.status);
+  const canStart = !!assignment && assignment.status === 'assigned';
   const showPartyPanel = (quest?.maxParticipants ?? 1) > 1;
 
   if (status === 'loading' || loading) {
@@ -493,9 +495,35 @@ export default function QuestDetailPage() {
                     : assignment.status === 'submitted' || assignment.status === 'pending_admin_review'
                       ? 'Delivery is in review.'
                       : assignment.status === 'needs_rework'
-                        ? 'Submission needs revision — resubmit below.'
-                        : 'You are responsible for this quest. Keep momentum.'}
+                        ? 'Submission needs revision — use the form below to resubmit.'
+                        : assignment.status === 'assigned'
+                          ? 'Quest claimed! Start working to unlock the submission form.'
+                          : 'Quest in progress. Submit your work using the form below.'}
                 </div>
+                {canStart && (
+                  <Button
+                    className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs"
+                    disabled={isStarting}
+                    onClick={async () => {
+                      if (!assignment?.id) return;
+                      setIsStarting(true);
+                      try {
+                        const res = await fetchWithAuth(`/api/quests/assignments/${assignment.id}`, {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ status: 'started' }),
+                        });
+                        const data = await res.json();
+                        if (!data.success) { toast.error(data.error || 'Failed to start quest'); return; }
+                        setAssignment((prev) => prev ? { ...prev, status: 'started' } : prev);
+                        toast.success('Quest started! Submit your work below.');
+                      } catch { toast.error('Failed to start quest'); }
+                      finally { setIsStarting(false); }
+                    }}
+                  >
+                    {isStarting ? 'Starting…' : 'Start Quest'}
+                  </Button>
+                )}
                 {assignment.status === 'completed' && (
                   <div className="flex items-center gap-2 text-xs font-medium text-emerald-700">
                     <CheckCircle className="h-3.5 w-3.5" /> Completed successfully

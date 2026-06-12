@@ -6,14 +6,16 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { QuestSubmissionDialog } from "@/components/quest-submission-dialog";
 import { DailyStandupModal } from "./daily-standup-modal";
-import { Clock, CheckCircle2, AlertTriangle, ListTodo, CalendarDays } from "lucide-react";
+import { Clock, CheckCircle2, AlertTriangle, ListTodo, CalendarDays, Play } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { fetchWithAuth } from "@/lib/fetch-with-auth";
 
 export function MyQuestCard({ initialAssignment }: { initialAssignment: any }) {
   const [assignment, setAssignment] = useState(initialAssignment);
   const [isStandupOpen, setIsStandupOpen] = useState(false);
   const [togglingTask, setTogglingTask] = useState<string | null>(null);
+  const [isStarting, setIsStarting] = useState(false);
 
   const quest = assignment.quest;
   const tasks = quest.tasks || [];
@@ -67,7 +69,24 @@ export function MyQuestCard({ initialAssignment }: { initialAssignment: any }) {
 
   const isCompletedStatus = assignment.status === "completed";
   const isUnderReviewStatus = assignment.status === "submitted" || assignment.status === "pending_admin_review";
-  const isActive = ["assigned", "started", "in_progress", "needs_rework"].includes(assignment.status);
+  const isActive = ["started", "in_progress", "needs_rework"].includes(assignment.status);
+  const isJustAssigned = assignment.status === "assigned";
+
+  const handleStartQuest = async () => {
+    setIsStarting(true);
+    try {
+      const res = await fetchWithAuth(`/api/quests/assignments/${assignment.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "started" }),
+      });
+      const data = await res.json();
+      if (!data.success) { toast.error(data.error || "Failed to start quest"); return; }
+      setAssignment((prev: any) => ({ ...prev, status: "started" }));
+      toast.success("Quest started! Use the Submit Work button when ready.");
+    } catch { toast.error("Failed to start quest"); }
+    finally { setIsStarting(false); }
+  };
 
   return (
     <Card className="flex flex-col md:flex-row overflow-hidden border-slate-200 bg-white shadow-sm text-slate-900 transition-all hover:shadow-md hover:border-slate-300">
@@ -160,7 +179,7 @@ export function MyQuestCard({ initialAssignment }: { initialAssignment: any }) {
                     >
                       <input
                         type="checkbox"
-                        disabled={!isActive || togglingTask === task}
+                        disabled={(!isActive && !isJustAssigned) || togglingTask === task}
                         checked={isChecked}
                         onChange={() => handleToggleTask(task)}
                         className="h-4 w-4 rounded border-slate-300 text-orange-500 bg-white focus:ring-orange-500 focus:ring-offset-white cursor-pointer disabled:opacity-50"
@@ -194,16 +213,27 @@ export function MyQuestCard({ initialAssignment }: { initialAssignment: any }) {
               <Link href={`/dashboard/quests/${quest.id}`}>View Details</Link>
             </Button>
             
+            {isJustAssigned && (
+              <Button
+                onClick={handleStartQuest}
+                disabled={isStarting}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm flex items-center gap-1.5"
+              >
+                <Play className="h-4 w-4" />
+                {isStarting ? "Starting…" : "Start Quest"}
+              </Button>
+            )}
+
             {isActive && (
               <>
-                <Button 
+                <Button
                   onClick={() => setIsStandupOpen(true)}
                   className="bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 shadow-sm flex items-center gap-1.5"
                 >
                   <CalendarDays className="h-4 w-4 text-slate-500" />
                   Daily Standup
                 </Button>
-                
+
                 <QuestSubmissionDialog
                   questTitle={quest.title}
                   assignmentId={assignment.id}
