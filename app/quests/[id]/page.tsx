@@ -32,6 +32,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { RankBadge } from '@/components/ui/rank-badge';
 import type { Rank } from '@/components/ui/rank-badge';
 import { toast } from 'sonner';
+import { useSession } from 'next-auth/react';
 
 interface Quest {
   id: string;
@@ -57,6 +58,9 @@ export default function QuestDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const questId = params?.id;
+  const { data: session } = useSession();
+  const isAdventurer = session?.user?.role === 'adventurer';
+  const isLoggedIn = !!session;
 
   const [quest, setQuest] = useState<Quest | null>(null);
   const [loading, setLoading] = useState(true);
@@ -370,22 +374,56 @@ export default function QuestDetailPage() {
               </Card>
             )}
 
-            {/* CTA: Sign up to claim */}
+            {/* CTA: Claim or Sign up */}
             <div className="rounded-2xl border border-orange-200 bg-gradient-to-br from-orange-50 to-amber-50/50 p-8 text-center shadow-[0_10px_30px_rgba(249,115,22,0.02)]">
-              <h3 className="text-xl font-bold text-slate-900 mb-2 font-display">
-                Ready to Accept This Quest?
-              </h3>
-              <p className="text-sm text-slate-600 mb-5 max-w-md mx-auto">
-                Join the Guild, claim this quest, earn verified XP and real money
-                when you deliver.
-              </p>
+              {isAdventurer ? (
+                <>
+                  <CheckCircle2 className="w-8 h-8 mx-auto mb-3 text-orange-500" />
+                  <h3 className="text-xl font-bold text-slate-900 mb-2 font-display">
+                    Ready to Accept This Quest?
+                  </h3>
+                  <p className="text-sm text-slate-600 mb-5 max-w-md mx-auto">
+                    Head to your dashboard to claim this quest and start earning XP.
+                  </p>
+                </>
+              ) : isLoggedIn ? (
+                <>
+                  <ShieldCheck className="w-8 h-8 mx-auto mb-3 text-slate-400" />
+                  <h3 className="text-xl font-bold text-slate-900 mb-2 font-display">
+                    This Quest is for Adventurers
+                  </h3>
+                  <p className="text-sm text-slate-600 mb-5 max-w-md mx-auto">
+                    Only adventurer accounts can claim quests.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <Sword className="w-8 h-8 mx-auto mb-3 text-orange-500" />
+                  <h3 className="text-xl font-bold text-slate-900 mb-2 font-display">
+                    Ready to Accept This Quest?
+                  </h3>
+                  <p className="text-sm text-slate-600 mb-5 max-w-md mx-auto">
+                    Join the Guild, claim this quest, earn verified XP and real money
+                    when you deliver.
+                  </p>
+                </>
+              )}
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button asChild size="lg" className="h-11 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold">
-                  <Link href="/register">
-                    <Sword className="w-4 h-4 mr-2" />
-                    Join & Claim Quest
-                  </Link>
-                </Button>
+                {isAdventurer ? (
+                  <Button asChild size="lg" className="h-11 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold">
+                    <Link href={`/dashboard/quests/${questId}`}>
+                      <Sword className="w-4 h-4 mr-2" />
+                      Claim Quest
+                    </Link>
+                  </Button>
+                ) : !isLoggedIn ? (
+                  <Button asChild size="lg" className="h-11 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-semibold">
+                    <Link href={`/register?redirect=/quests/${questId}`}>
+                      <Sword className="w-4 h-4 mr-2" />
+                      Join & Claim Quest
+                    </Link>
+                  </Button>
+                ) : null}
                 <Button
                   variant="outline"
                   size="lg"
