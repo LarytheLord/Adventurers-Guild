@@ -53,7 +53,7 @@ export async function GET(request: NextRequest) {
       startedAt: item.startedAt,
       completedAt: item.completedAt,
       progress: item.progress,
-      quests: item.quest,
+      quest: item.quest,
     }));
 
     return NextResponse.json({
