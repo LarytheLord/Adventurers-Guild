@@ -14,7 +14,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 import NotificationBell from '@/components/NotificationBell';
 import { OnboardingPrompt } from '@/components/ui/onboarding-prompt';
 import { PhoneNumberPrompt } from '@/components/ui/phone-number-prompt';
@@ -27,15 +32,15 @@ import {
   LineChart,
   LogOut,
   Menu,
+  PanelLeft,
   Plus,
   Settings,
   ShieldCheck,
   Sword,
   Target,
   Trophy,
-  Users,
   X,
-  Zap,
+  type LucideIcon,
 } from 'lucide-react';
 import Link from 'next/link';
 import { signOut } from 'next-auth/react';
@@ -45,20 +50,38 @@ interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
+interface DashboardNavItem {
+  name: string;
+  href: string;
+  icon: LucideIcon;
+  exact?: boolean;
+}
+
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const { data: session, status } = useSession();
   const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(
+    () =>
+      typeof window !== 'undefined' &&
+      localStorage.getItem('guild-sidebar-mode') === 'icon'
+  );
 
-  // Redirect to login if not authenticated
   useEffect(() => {
     if (status === 'unauthenticated') {
       router.push('/login');
     }
   }, [status, router]);
 
-  // Show loading state while checking authentication
+  useEffect(() => {
+    localStorage.setItem('guild-sidebar-mode', sidebarCollapsed ? 'icon' : 'full');
+  }, [sidebarCollapsed]);
+
+  const toggleSidebarMode = () => {
+    setSidebarCollapsed((current) => !current);
+  };
+
   if (status === 'loading') {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -67,7 +90,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     );
   }
 
-  // Don't render if not authenticated
   if (!session) {
     return null;
   }
@@ -83,8 +105,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const isAdmin = user?.role === 'admin';
   const profileHref = isCompany ? '/dashboard/company/profile' : '/dashboard/profile';
 
-  const adventurerNav = [
-    { name: 'Dashboard', href: '/dashboard', icon: Home },
+  const adventurerNav: DashboardNavItem[] = [
+    { name: 'Dashboard', href: '/dashboard', icon: Home, exact: true },
     { name: 'Quests', href: '/dashboard/quests', icon: Target },
     { name: 'My Quests', href: '/dashboard/my-quests', icon: Briefcase },
     // { name: 'Skill Tree', href: '/dashboard/skill-tree', icon: Zap },  // hidden for now
@@ -92,8 +114,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     { name: 'Leaderboard', href: '/dashboard/leaderboard', icon: Trophy },
   ];
 
-  const companyNav = [
-    { name: 'Dashboard', href: '/dashboard/company', icon: Home },
+  const companyNav: DashboardNavItem[] = [
+    { name: 'Dashboard', href: '/dashboard/company', icon: Home, exact: true },
     { name: 'My Quests', href: '/dashboard/company/quests', icon: Target },
     { name: 'Create Quest', href: '/dashboard/company/create-quest', icon: Plus },
     { name: 'Rankings', href: '/dashboard/leaderboard', icon: Trophy },
@@ -116,8 +138,29 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       ? pathname === href
       : pathname === href || pathname?.startsWith(`${href}/`);
 
+  const sidebarModeLabel = sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar';
+
+  const renderNavLink = (item: DashboardNavItem) => (
+    <Link
+      key={item.href}
+      href={item.href}
+      className={cn(
+        'flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-colors',
+        sidebarCollapsed && 'lg:justify-center lg:space-x-0 lg:px-2',
+        isActive(item.href)
+          ? 'bg-orange-50 text-orange-600 border border-orange-200'
+          : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+      )}
+      onClick={() => setSidebarOpen(false)}
+    >
+      <item.icon className="h-5 w-5 shrink-0" />
+      <span className={cn(sidebarCollapsed && 'lg:hidden')}>{item.name}</span>
+    </Link>
+  );
+
   return (
-    <div className="min-h-screen guild-shell">
+    <TooltipProvider>
+      <div className="min-h-screen guild-shell">
       <OnboardingPrompt />
       <PhoneNumberPrompt />
       {/* Mobile sidebar backdrop */}
@@ -134,74 +177,73 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           }`}
       >
         <div className="flex flex-col h-full">
-          {/* Logo */}
+          {/* Logo / Header */}
           <div className="flex items-center justify-between p-4 border-b border-slate-200">
             <Link
               href={isCompany ? '/dashboard/company' : '/dashboard'}
               className="flex items-center space-x-2"
+              aria-label="Guild dashboard"
             >
-              <img src="/logo/guild-logo.png" alt="Guild Logo" className="h-8 w-8 object-contain" />
-              <span className="text-sm font-semibold tracking-wide text-slate-900">
+              <img src="/logo/guild-logo.png" alt="Guild Logo" className="h-8 w-8 shrink-0 object-contain" />
+              <span className={cn('text-sm font-semibold tracking-wide text-slate-900', sidebarCollapsed && 'lg:hidden')}>
                 Guild
               </span>
             </Link>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden text-slate-500 hover:bg-slate-100"
-              onClick={() => setSidebarOpen(false)}
-            >
-              <X className="h-5 w-5" />
-            </Button>
+            <div className="flex items-center gap-1">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="hidden text-slate-500 hover:bg-slate-100 lg:inline-flex"
+                    onClick={toggleSidebarMode}
+                    aria-label={sidebarModeLabel}
+                    aria-pressed={sidebarCollapsed}
+                  >
+                    <PanelLeft className={cn('h-5 w-5 transition-transform', sidebarCollapsed && 'rotate-180')} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent side="right">{sidebarModeLabel}</TooltipContent>
+              </Tooltip>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden text-slate-500 hover:bg-slate-100"
+                onClick={() => setSidebarOpen(false)}
+                aria-label="Close sidebar"
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Role badge */}
+          <div className={cn('px-4 pt-4', sidebarCollapsed && 'lg:hidden')}>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+              <div className="flex items-center gap-2 text-orange-600">
+                <RoleIcon className="h-4 w-4" />
+                <p className="text-xs font-semibold uppercase tracking-[0.2em]">{roleTitle}</p>
+              </div>
+              <p className="mt-2 text-xs text-slate-500">{roleSubtitle}</p>
+            </div>
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-            {navigation.map((item) => (
-              <Link
-                key={item.name}
-                href={item.href}
-                className={cn(
-                  'flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-colors',
-                  isActive(item.href)
-                    ? 'bg-orange-50 text-orange-600 border border-orange-200'
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                )}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <item.icon className="h-5 w-5" />
-                <span>{item.name}</span>
-              </Link>
-            ))}
-            {isAdmin && (
-              <Link
-                href="/admin"
-                className={cn(
-                  'mt-2 flex items-center space-x-3 rounded-lg px-3 py-2 text-sm transition-colors',
-                  pathname === '/admin'
-                    ? 'bg-violet-50 text-violet-600 border border-violet-200'
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                )}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <ShieldCheck className="h-5 w-5" />
-                <span>Admin Console</span>
-              </Link>
-            )}
+          <nav className={cn('flex-1 p-4 space-y-2 overflow-y-auto', sidebarCollapsed && 'lg:px-3')}>
+            {navigation.map((item) => renderNavLink(item))}
+            {isAdmin && renderNavLink({ name: 'Admin Console', href: '/admin', icon: ShieldCheck, exact: true })}
           </nav>
 
           {/* User section */}
           <div className="p-4 border-t border-slate-200">
-            <div className="flex items-center space-x-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
+            <div className={cn('flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-3', sidebarCollapsed && 'lg:justify-center lg:gap-0 lg:p-2')}>
               <Avatar>
                 <AvatarImage src={user?.image || undefined} />
                 <AvatarFallback className="bg-slate-200 text-slate-700">{userInitials}</AvatarFallback>
               </Avatar>
-              <div className="flex-1 min-w-0">
+              <div className={cn('flex-1 min-w-0', sidebarCollapsed && 'lg:hidden')}>
                 <p className="text-sm font-medium truncate text-slate-900">{user?.name}</p>
-                <p className="text-xs text-slate-500 truncate">
-                  {user?.email}
-                </p>
+                <p className="text-xs text-slate-500 truncate">{user?.email}</p>
               </div>
             </div>
           </div>
@@ -261,11 +303,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               </DropdownMenu>
             </div>
           </div>
-        </header>
+          </header>
 
-        {/* Page content */}
-        <main className="px-4 pb-8 pt-6 lg:px-8">{children}</main>
+          <main className="px-4 pb-8 pt-6 lg:px-8">{children}</main>
+        </div>
       </div>
-    </div>
+    </TooltipProvider>
+
   );
 }
