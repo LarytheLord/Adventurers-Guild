@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/api-auth';
 import { prisma } from '@/lib/db';
-import { Prisma, QuestStatus, QuestType, UserRank, QuestTrack, QuestSource } from '@prisma/client';
+import { Prisma, QuestStatus, QuestType, UserRank, QuestTrack, QuestSource, QuestCategory } from '@prisma/client';
 
 function canManageQuest(authUser: { id: string; role: string }, questCompanyId: string | null) {
   return authUser.role === 'admin' || (!!questCompanyId && questCompanyId === authUser.id);
@@ -104,7 +104,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Validate optional enums
+    // Validate enums
+    if (!Object.values(QuestCategory).includes(body.questCategory as QuestCategory)) {
+      return NextResponse.json({ error: `Invalid questCategory — must be one of: ${Object.values(QuestCategory).join(', ')}`, success: false }, { status: 422 });
+    }
     if (body.track && !Object.values(QuestTrack).includes(body.track as QuestTrack)) {
       return NextResponse.json({ error: 'Invalid track value', success: false }, { status: 400 });
     }
