@@ -29,7 +29,7 @@ import {
 } from '@/components/guild/primitives';
 import { getStatusColor } from '@/lib/status-utils';
 
-const ACTIVE_ASSIGNMENT_STATUSES = ['assigned', 'started', 'in_progress', 'submitted', 'review'] as const;
+const ACTIVE_ASSIGNMENT_STATUSES = ['assigned', 'started', 'in_progress', 'submitted', 'review', 'needs_rework', 'pending_admin_review'] as const;
 
 export default async function CompanyDashboardPage() {
   const session = await getServerSession(authOptions);
