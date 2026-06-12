@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { SunIcon as Sunburst, ArrowRight, CheckCircle2, Loader2 } from 'lucide-react';
 
@@ -11,6 +11,7 @@ const labelClass = 'block text-sm mb-2';
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const token = searchParams.get('token');
 
   const [password, setPassword] = useState('');
@@ -20,7 +21,13 @@ function ResetPasswordForm() {
   const [loading, setLoading] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
 
-  useEffect(() => { setIsHydrated(true); }, []);
+  useEffect(() => {
+    setIsHydrated(true);
+    if (!searchParams.get('token')) {
+      setError('Invalid reset link — please request a new one');
+    }
+  }, [searchParams]);
+
   if (!isHydrated) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -43,7 +50,7 @@ function ResetPasswordForm() {
         setError(data.error || 'Failed to reset password');
       } else {
         setSuccess(true);
-        setTimeout(() => { window.location.href = '/login'; }, 2000);
+        setTimeout(() => { router.push('/login'); }, 2000);
       }
     } catch {
       setError('An unexpected error occurred');
