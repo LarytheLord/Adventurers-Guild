@@ -101,8 +101,8 @@ export default function ProfilePage() {
     .join('')
     .toUpperCase() || 'U';
 
-  const xpToNextLevel = profile ? (profile.level + 1) * 1000 : 1000;
-  const xpProgress = profile ? ((profile.xp % 1000) / 10) : 0;
+  const xpInLevel = profile ? profile.xp % 1000 : 0;
+  const xpProgress = profile ? (xpInLevel / 10) : 0;
   const rankColor = RANK_COLORS[profile?.rank || 'F'] || RANK_COLORS.F;
 
   return (
@@ -182,7 +182,7 @@ export default function ProfilePage() {
         <CardHeader className="pb-3">
           <CardTitle className="text-base">Level Progress</CardTitle>
           <CardDescription>
-            {profile?.xp || 0} / {xpToNextLevel} XP to Level {(profile?.level || 1) + 1}
+            {xpInLevel} / 1000 XP — {1000 - xpInLevel} more to Level {(profile?.level || 1) + 1}
           </CardDescription>
         </CardHeader>
         <CardContent>

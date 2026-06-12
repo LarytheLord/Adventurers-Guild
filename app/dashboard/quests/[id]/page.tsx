@@ -1,5 +1,7 @@
 'use client';
 
+export const dynamic = 'force-dynamic';
+
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSession } from 'next-auth/react';
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
@@ -178,6 +180,7 @@ export default function QuestDetailPage() {
   const [submissionContent, setSubmissionContent] = useState('');
   const [submissionNotes, setSubmissionNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isApplying, setIsApplying] = useState(false);
   const [currentStreak, setCurrentStreak] = useState(0);
   const [shareCount, setShareCount] = useState(0);
   const [isStandupOpen, setIsStandupOpen] = useState(false);
@@ -532,8 +535,9 @@ export default function QuestDetailPage() {
                 </div>
                 <Button
                   className="w-full"
-                  disabled={!!(quest.maxParticipants && quest.maxParticipants <= 0)}
+                  disabled={isApplying || !!(quest.maxParticipants && quest.maxParticipants <= 0)}
                   onClick={async () => {
+                    setIsApplying(true);
                     try {
                       const res = await fetchWithAuth('/api/quests/assignments', {
                         method: 'POST',
@@ -545,10 +549,10 @@ export default function QuestDetailPage() {
                       if (!data.success) { toast.error(data.error || 'Failed to assign to quest'); return; }
                       setAssignment(data.assignment);
                       toast.success('Successfully assigned to quest!');
-                    } catch { toast.error('An error occurred while assigning to quest'); }
+                    } catch { toast.error('An error occurred while assigning to quest'); } finally { setIsApplying(false); }
                   }}
                 >
-                  Claim Quest
+                  {isApplying ? 'Claiming...' : 'Claim Quest'}
                 </Button>
               </div>
             ) : (

@@ -65,6 +65,7 @@ export default function QuestDetailPage() {
 
   useEffect(() => {
     if (!questId) return;
+    setIsBookmarked(localStorage.getItem(`bookmark:${questId}`) === '1');
     fetchQuest();
   }, [questId]);
 
@@ -171,8 +172,11 @@ export default function QuestDetailPage() {
                 <TooltipTrigger asChild>
                   <button
                     onClick={() => {
-                      setIsBookmarked(!isBookmarked);
-                      toast(isBookmarked ? 'Removed from bookmarks' : 'Saved to bookmarks');
+                      const next = !isBookmarked;
+                      setIsBookmarked(next);
+                      if (next) { localStorage.setItem(`bookmark:${questId}`, '1'); }
+                      else { localStorage.removeItem(`bookmark:${questId}`); }
+                      toast(next ? 'Saved to bookmarks' : 'Removed from bookmarks');
                     }}
                     className="p-2 rounded-lg text-slate-500 hover:text-amber-600 hover:bg-slate-100 transition-colors"
                   >
