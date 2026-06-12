@@ -45,7 +45,7 @@ interface Submission {
 interface Applicant {
   id: string;
   userId: string;
-  status: 'assigned' | 'started' | 'in_progress' | 'submitted' | 'review' | 'completed' | 'cancelled';
+  status: 'assigned' | 'started' | 'in_progress' | 'submitted' | 'review' | 'pending_admin_review' | 'needs_rework' | 'completed' | 'cancelled';
   assignedAt: string;
   user: {
     name: string;
@@ -161,7 +161,9 @@ export default function CompanyQuestDetailsPage({ params }: { params: Promise<{ 
 
       if (data.success) {
         const newAssignmentStatus: Applicant['status'] =
-          action === 'approved' ? 'completed' : 'in_progress';
+          action === 'approved' ? 'completed'
+          : action === 'needs_rework' ? 'needs_rework'
+          : 'cancelled';
         const label = action === 'approved' ? 'Approved' : action === 'needs_rework' ? 'Sent back for rework' : 'Rejected';
         toast.success(label);
         setQuest(prev => prev ? {

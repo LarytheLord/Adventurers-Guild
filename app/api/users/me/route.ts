@@ -24,6 +24,7 @@ export async function GET(request: NextRequest) {
         linkedin: true,
         discord: true,
         role: true,
+        createdAt: true,
         companyProfile: {
           select: {
             companyName: true,
