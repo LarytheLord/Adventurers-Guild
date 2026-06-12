@@ -7,21 +7,7 @@ export async function GET(request: NextRequest) {
     const user = await getAuthUser(request);
     const { searchParams } = new URL(request.url);
 
-    console.log('[quests-api] GET request:', {
-      authenticated: !!user,
-      userRole: user?.role,
-      userId: user?.id,
-      params: Object.fromEntries(searchParams),
-    });
-
     const result = await getQuests(searchParams, user);
-
-    console.log('[quests-api] Result:', {
-      hasError: !!result.error,
-      questCount: result.data?.length || 0,
-      error: result.error,
-      status: result.status,
-    });
 
     if (result.error) {
       return NextResponse.json({ error: result.error, success: false }, { status: result.status });

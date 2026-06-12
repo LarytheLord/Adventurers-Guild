@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -45,6 +46,7 @@ const RANK_COLORS: Record<string, string> = {
 
 export default function ProfilePage() {
   const { data: session, status } = useSession();
+  const router = useRouter();
   const [name, setName] = useState('');
   const [saving, setSaving] = useState(false);
   const { data, loading } = useApiFetch<Partial<UserProfile>>('/api/users/me/stats', {
@@ -52,9 +54,10 @@ export default function ProfilePage() {
   });
 
   useEffect(() => {
+    if (status === 'unauthenticated') { router.push('/login'); return; }
     if (!session) return;
     setName(session.user?.name || '');
-  }, [session]);
+  }, [session, status, router]);
 
   const profile = data
     ? {

@@ -171,6 +171,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
       {/* Sidebar */}
       <aside
+        aria-label="Main navigation"
         className={`fixed top-0 left-0 z-50 h-full w-72 border-r border-slate-200 bg-white text-slate-900 transform transition-transform duration-200 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
           }`}
       >
@@ -258,6 +259,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               size="icon"
               className="lg:hidden"
               onClick={() => setSidebarOpen(true)}
+              aria-label="Open navigation"
             >
               <Menu className="h-5 w-5" />
             </Button>
