@@ -308,7 +308,7 @@ export default function QualityAssuranceDashboard({ userId, userRole }: QualityA
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5">
           <TabsTrigger value="pending">Pending Review</TabsTrigger>
           <TabsTrigger value="review">In Review</TabsTrigger>
           <TabsTrigger value="approved">Approved</TabsTrigger>

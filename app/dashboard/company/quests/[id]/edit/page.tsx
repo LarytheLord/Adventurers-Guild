@@ -49,6 +49,19 @@ interface QuestData {
   deadline?: string | null;
   status: string;
   companyId?: string | null;
+  track?: string | null;
+  source?: string | null;
+  partnerOrgName?: string | null;
+  parentQuestId?: string | null;
+  fieldTemplateId?: string | null;
+  briefData?: unknown;
+  acceptanceCriteria?: string[];
+}
+
+function mergeDeadlineDateWithExistingTime(dateOnly: string, existingIso: string | null) {
+  if (!dateOnly) return null;
+  if (!existingIso || !existingIso.includes('T')) return dateOnly;
+  return `${dateOnly}${existingIso.slice(existingIso.indexOf('T'))}`;
 }
 
 export default function EditQuestPage({ params }: { params: Promise<{ id: string }> }) {
@@ -70,12 +83,25 @@ export default function EditQuestPage({ params }: { params: Promise<{ id: string
     requiredRank: '',
     maxParticipants: 1,
     deadline: '',
+    partnerOrgName: '',
+    track: 'OPEN',
+    source: 'CLIENT_PORTAL',
   });
 
   const [fetchLoading, setFetchLoading] = useState(true);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [questData, setQuestData] = useState<QuestData | null>(null);
+  const [metadata, setMetadata] = useState({
+    track: null as string | null,
+    source: null as string | null,
+    partnerOrgName: null as string | null,
+    parentQuestId: null as string | null,
+    fieldTemplateId: null as string | null,
+    briefData: null as unknown,
+    acceptanceCriteria: [] as string[],
+    deadlineIso: null as string | null,
+  });
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -99,6 +125,16 @@ export default function EditQuestPage({ params }: { params: Promise<{ id: string
         }
         const q: QuestData = data.quest;
         setQuestData(q);
+        setMetadata({
+          track: q.track ?? null,
+          source: q.source ?? null,
+          partnerOrgName: q.partnerOrgName ?? null,
+          parentQuestId: q.parentQuestId ?? null,
+          fieldTemplateId: q.fieldTemplateId ?? null,
+          briefData: q.briefData ?? null,
+          acceptanceCriteria: Array.isArray(q.acceptanceCriteria) ? q.acceptanceCriteria : [],
+          deadlineIso: q.deadline ?? null,
+        });
 
         // Verify ownership (admin can edit any quest)
         if (session?.user?.role === 'company' && q.companyId !== session.user.id) {
@@ -122,6 +158,9 @@ export default function EditQuestPage({ params }: { params: Promise<{ id: string
           requiredRank: q.requiredRank || '',
           maxParticipants: q.maxParticipants ?? 1,
           deadline: q.deadline ? new Date(q.deadline).toISOString().split('T')[0] : '',
+          partnerOrgName: q.partnerOrgName || '',
+          track: q.track || 'OPEN',
+          source: q.source || 'CLIENT_PORTAL',
         });
       } catch {
         toast.error('Failed to load quest');
@@ -173,7 +212,16 @@ export default function EditQuestPage({ params }: { params: Promise<{ id: string
           : [],
         requiredRank: form.requiredRank || null,
         maxParticipants: Number(form.maxParticipants) || 1,
-        deadline: form.deadline || null,
+        deadline: form.deadline
+          ? mergeDeadlineDateWithExistingTime(form.deadline, metadata.deadlineIso)
+          : null,
+        partnerOrgName: form.partnerOrgName.trim() || null,
+        track: form.track,
+        source: form.source,
+        parentQuestId: metadata.parentQuestId,
+        fieldTemplateId: metadata.fieldTemplateId,
+        briefData: metadata.briefData,
+        acceptanceCriteria: metadata.acceptanceCriteria,
       };
 
       const response = await fetchWithAuth('/api/company/quests', {
@@ -384,6 +432,40 @@ export default function EditQuestPage({ params }: { params: Promise<{ id: string
                     />
                   </div>
                 </div>
+              </div>
+            </div>
+
+            <div className="grid gap-4 sm:grid-cols-3">
+              <div className="space-y-2">
+                <Label>Track</Label>
+                <Select value={form.track} onValueChange={v => updateField('track', v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="OPEN">Open</SelectItem>
+                    <SelectItem value="BOOTCAMP">Bootcamp</SelectItem>
+                    <SelectItem value="INTERN">Intern</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Source</Label>
+                <Select value={form.source} onValueChange={v => updateField('source', v)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="CLIENT_PORTAL">Client Portal</SelectItem>
+                    <SelectItem value="TUTORIAL">Tutorial</SelectItem>
+                    <SelectItem value="HACKATHON">Hackathon</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="partnerOrgName">Partner Org Name</Label>
+                <Input
+                  id="partnerOrgName"
+                  placeholder="Optional partner organization"
+                  value={form.partnerOrgName}
+                  onChange={e => updateField('partnerOrgName', e.target.value)}
+                />
               </div>
             </div>
 

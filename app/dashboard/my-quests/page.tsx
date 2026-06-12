@@ -3,10 +3,9 @@ import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma, withDbRetry } from "@/lib/db";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { QuestSubmissionDialog } from "@/components/quest-submission-dialog";
-import { Clock, CheckCircle2, AlertCircle } from "lucide-react";
+import { MyQuestCard } from "@/components/my-quest-card";
+import { AlertCircle } from "lucide-react";
 import Link from "next/link";
 
 export default async function MyQuestsPage() {
@@ -38,7 +37,7 @@ export default async function MyQuestsPage() {
   }));
 
   return (
-    <div className="container py-8">
+    <div className="container py-8 max-w-5xl">
       <h1 className="text-3xl font-bold mb-2">My Quests</h1>
       <p className="text-muted-foreground mb-8">Manage your active quests and view your history.</p>
 
@@ -58,59 +57,7 @@ export default async function MyQuestsPage() {
           </Card>
         ) : (
           assignments.map((assignment) => (
-            <Card key={assignment.id} className="flex flex-col md:flex-row overflow-hidden">
-              <div className={`w-2 md:w-2 ${
-                assignment.status === 'completed' ? 'bg-green-500' :
-                assignment.status === 'assigned' ? 'bg-blue-500' :
-                assignment.status === 'submitted' ? 'bg-yellow-500' :
-                'bg-gray-300'
-              }`} />
-              <div className="flex-1 flex flex-col md:flex-row">
-                <div className="flex-1 p-6">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Badge variant={
-                      assignment.status === 'completed' ? 'default' :
-                      assignment.status === 'assigned' ? 'secondary' :
-                      'outline'
-                    }>
-                      {assignment.status.charAt(0).toUpperCase() + assignment.status.slice(1)}
-                    </Badge>
-                    <span className="text-sm text-muted-foreground">
-                      {assignment.quest.company?.name}
-                    </span>
-                  </div>
-                  <h3 className="text-xl font-bold mb-2">{assignment.quest.title}</h3>
-                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-4 w-4" />
-                      Due {assignment.quest.deadline ? new Date(assignment.quest.deadline).toLocaleDateString() : 'No deadline'}
-                    </span>
-                    <span>{assignment.quest.xpReward} XP</span>
-                    {assignment.quest.monetaryReward && <span>${Number(assignment.quest.monetaryReward)}</span>}
-                  </div>
-                </div>
-                <div className="p-6 bg-muted/30 flex items-center justify-end gap-3 border-t md:border-t-0 md:border-l">
-                  <Button variant="outline" asChild>
-                    <Link href={`/dashboard/quests/${assignment.quest.id}`}>View Details</Link>
-                  </Button>
-                  
-                  {assignment.status === 'assigned' && (
-                    <QuestSubmissionDialog
-                      questTitle={assignment.quest.title}
-                      assignmentId={assignment.id}
-                      questId={assignment.quest.id}
-                    />
-                  )}
-                  
-                  {assignment.status === 'submitted' && (
-                    <Button disabled variant="secondary">
-                      <CheckCircle2 className="mr-2 h-4 w-4" />
-                      Under Review
-                    </Button>
-                  )}
-                </div>
-              </div>
-            </Card>
+            <MyQuestCard key={assignment.id} initialAssignment={assignment} />
           ))
         )}
       </div>

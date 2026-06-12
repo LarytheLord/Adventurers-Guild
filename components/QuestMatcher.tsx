@@ -234,7 +234,7 @@ export default function QuestMatcher({ userId, onQuestSelect }: QuestMatcherProp
                   )}
                 </div>
                 
-                <div className="grid grid-cols-3 gap-4 text-sm">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm">
                   <div className="flex items-center">
                     <Zap className="h-4 w-4 mr-1 text-yellow-500" />
                     <span>{quest.xpReward} XP</span>

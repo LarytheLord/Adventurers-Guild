@@ -46,7 +46,7 @@ export function GoToTop() {
       {isVisible && (
         <Button
           onClick={scrollToTop}
-          className="fixed bottom-8 right-8 z-50 w-12 h-12 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 animate-in slide-in-from-bottom-2"
+          className="fixed bottom-4 right-4 z-50 w-10 h-10 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-110 animate-in slide-in-from-bottom-2 sm:bottom-8 sm:right-8 sm:w-12 sm:h-12"
           aria-label="Go to top"
         >
           <ChevronUp className="h-6 w-6" />

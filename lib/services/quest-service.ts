@@ -39,7 +39,8 @@ export async function getQuests(searchParams: URLSearchParams, user: SessionUser
     // no restriction
     console.log('[quest-service] Admin view - no restrictions');
   } else if (user.role === 'company') {
-    visibilityFilter = { OR: [{ companyId: user.id }, { status: 'available', track: 'OPEN' }] };
+    // Companies see their own quests (any status) + public open quests
+    visibilityFilter = { OR: [{ companyId: user.id }, { companyId: null, status: 'available', track: 'OPEN' }] };
     console.log('[quest-service] Company view');
   } else if (bootcampLink) {
     // Bootcamp students: locked to BOOTCAMP track, tutorial-only until eligible
@@ -148,7 +149,7 @@ export async function createQuest(body: CreateQuestBody, user: SessionUser): Pro
     title, description, detailedDescription, questType, difficulty,
     xpReward, skillPointsReward, monetaryReward, requiredSkills,
     requiredRank, maxParticipants, questCategory, track, source,
-    parentQuestId, deadline,
+    parentQuestId, deadline, tasks,
   } = body;
 
   if (!title || !description || !questType || !difficulty || !xpReward) {
@@ -178,6 +179,7 @@ export async function createQuest(body: CreateQuestBody, user: SessionUser): Pro
       parentQuestId: parentQuestId || null,
       companyId: user.id,
       deadline: deadline ? new Date(deadline) : null,
+      tasks: tasks || [],
     },
   });
 

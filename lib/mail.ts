@@ -6,8 +6,6 @@ interface SendEmailParams {
   html: string;
 }
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function sendEmail({ to, subject, html }: SendEmailParams): Promise<void> {
   const isDev = process.env.NODE_ENV !== 'production';
   const resendConfigured = !!process.env.RESEND_API_KEY;
@@ -27,6 +25,7 @@ export async function sendEmail({ to, subject, html }: SendEmailParams): Promise
     throw new Error('Resend API key is not configured. Set RESEND_API_KEY environment variable.');
   }
 
+  const resend = new Resend(process.env.RESEND_API_KEY);
   try {
     console.log('[mail] Calling Resend API...');
     const result = await resend.emails.send({

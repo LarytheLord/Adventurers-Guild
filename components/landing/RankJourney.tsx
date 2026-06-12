@@ -98,7 +98,7 @@ export default function RankJourney() {
   const activeIndex = ranks.findIndex((r) => r.rank === active);
 
   return (
-    <section id="ranks" ref={ref} className="relative overflow-hidden bg-slate-50 py-24 md:py-32">
+    <section id="ranks" ref={ref} className="relative overflow-hidden bg-slate-50 pt-20 lg:pt-0 py-24 md:py-32">
       {/* Subtle dot grid */}
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.4]"

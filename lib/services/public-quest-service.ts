@@ -19,10 +19,11 @@ export async function getPublicQuests(filters: PublicQuestFilters = {}) {
     status: QuestStatus.available,
   };
 
-  // Track filter (default to OPEN for public visitors)
+  // Track filter — default to OPEN for public visitors, but respect explicit filter
   if (track && Object.values(QuestTrack).includes(track as QuestTrack)) {
     where.track = track as QuestTrack;
   } else {
+    // Show OPEN quests publicly (INTERN and BOOTCAMP are private tracks)
     where.track = QuestTrack.OPEN;
   }
 

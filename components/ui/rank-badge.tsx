@@ -61,6 +61,16 @@ interface RankBadgeProps {
   className?: string;
 }
 
+const rankToTier: Record<Rank, string> = {
+  F: '1',
+  E: '2',
+  D: '3',
+  C: '4',
+  B: '5',
+  A: '6',
+  S: '7',
+};
+
 export function RankBadge({ rank, size = 'md', glow = false, className }: RankBadgeProps) {
   const styles = rankStyles[rank];
   return (
@@ -75,7 +85,7 @@ export function RankBadge({ rank, size = 'md', glow = false, className }: RankBa
         className
       )}
     >
-      {rank}
+      {rankToTier[rank] || rank}
     </div>
   );
 }
