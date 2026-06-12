@@ -27,6 +27,7 @@ import { fetchWithAuth } from '@/lib/fetch-with-auth';
 
 interface CompanyProfileData {
   name: string | null;
+  createdAt: string;
   companyProfile: {
     companyName: string | null;
     companyWebsite: string | null;
@@ -52,6 +53,10 @@ export default function CompanyProfilePage() {
   });
 
   useEffect(() => {
+    if (status === 'unauthenticated') {
+      router.push('/login');
+      return;
+    }
     if (status === 'authenticated' && session?.user?.role !== 'company' && session?.user?.role !== 'admin') {
       router.push('/dashboard');
       return;
@@ -148,7 +153,9 @@ export default function CompanyProfilePage() {
                 </span>
                 <span className="flex items-center gap-1">
                   <Clock className="w-3.5 h-3.5" />
-                  Member since 2025
+                  Member since {profileData?.createdAt
+                    ? new Date(profileData.createdAt).getFullYear()
+                    : new Date().getFullYear()}
                 </span>
               </div>
             </div>
