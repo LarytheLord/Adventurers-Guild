@@ -149,7 +149,6 @@ export async function GET(
     return NextResponse.json({
       success: true,
       quest: normalizedQuest,
-      quests: [normalizedQuest],
     });
   } catch (error) {
     console.error('Error fetching quest:', error);

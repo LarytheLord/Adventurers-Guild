@@ -35,7 +35,7 @@ export function useCompanyPortalState(companyId: string) {
         },
         body: JSON.stringify({
           ...formData,
-          company_id: companyId,
+          companyId: companyId,
           requiredSkills: formData.requiredSkills.filter((skill) => skill.trim() !== ''),
         }),
       });
@@ -68,7 +68,7 @@ export function useCompanyPortalState(companyId: string) {
         },
         body: JSON.stringify({
           questId,
-          company_id: companyId,
+          companyId: companyId,
         }),
       });
 

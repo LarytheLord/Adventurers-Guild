@@ -18,7 +18,8 @@ export async function GET(request: NextRequest) {
     const search = searchParams.get('search');
     const limitRaw = searchParams.get('limit') || '10';
     const take = Math.min(Math.max(1, parseInt(limitRaw)), 200);
-    const offset = searchParams.get('offset') || '0';
+    const offsetRaw = searchParams.get('offset') || '0';
+    const offset = isNaN(parseInt(offsetRaw)) ? '0' : offsetRaw;
 
     // Build where clause
     const where: Prisma.UserWhereInput = {};
@@ -124,6 +125,11 @@ export async function PUT(request: NextRequest) {
     const data = await prisma.user.update({
       where: { id: userId },
       data: updateData,
+      select: {
+        id: true, name: true, email: true, role: true,
+        isVerified: true, isActive: true, rank: true, xp: true,
+        createdAt: true, updatedAt: true,
+      },
     });
 
     return NextResponse.json({ user: data, success: true });
