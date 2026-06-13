@@ -82,18 +82,6 @@ const TRACK_OPTIONS = [
     shortLabel: 'Open',
     description: 'Paid work from live company quests',
   },
-  {
-    value: 'INTERN',
-    label: 'Intern Track',
-    shortLabel: 'Intern',
-    description: 'Longer-run proving grounds for internships',
-  },
-  {
-    value: 'BOOTCAMP',
-    label: 'Bootcamp Track',
-    shortLabel: 'Bootcamp',
-    description: 'Structured learning with hands-on outputs',
-  },
 ] as const;
 
 function formatDeadline(iso: string | null): string {
