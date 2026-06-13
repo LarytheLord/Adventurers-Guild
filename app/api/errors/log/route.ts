@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { env } from '@/lib/env';
-import { strictRateLimit } from '@/lib/rate-limit';
+import { requireAuth } from '@/lib/api-auth';
+import { apiRateLimit } from '@/lib/rate-limit';
 
 /**
  * API endpoint for logging client-side errors
@@ -14,80 +14,71 @@ import { strictRateLimit } from '@/lib/rate-limit';
  * - IP-based rate limiting (20 req / 15 min via strictRateLimit)
  */
 export async function POST(request: NextRequest) {
-  const rateLimitResponse = await strictRateLimit(request);
+  // Rate limit early (IP-based) to prevent abuse even before auth
+  const rateLimitResponse = apiRateLimit(request);
   if (rateLimitResponse) return rateLimitResponse;
 
-  // Authentication: static API key (separate from other secrets, set per-deployment)
-  const authHeader = request.headers.get('authorization') || '';
-  const providedKey = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
-
-  if (process.env.NODE_ENV === 'production') {
-    if (!env.ERROR_LOG_API_KEY || providedKey !== env.ERROR_LOG_API_KEY) {
+  try {
+    // Require authentication — this endpoint must not be callable by unauthenticated users
+    const authUser = await requireAuth(request, 'adventurer', 'company', 'admin');
+    if (!authUser) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
       );
     }
-  }
 
-  try {
     const errorLog = await request.json();
 
-    // Validate error log structure
-    if (!errorLog.message || !errorLog.timestamp) {
+    // Strict validation + length caps to prevent abuse / DB bloat
+    if (typeof errorLog.message !== 'string' || errorLog.message.trim().length === 0) {
       return NextResponse.json(
         { success: false, error: 'Invalid error log format' },
         { status: 400 }
       );
     }
-
-    // Cap lengths to prevent DB flooding and excessive storage
-    const cappedMessage = String(errorLog.message).slice(0, 2000);
-    const cappedUrl = errorLog.url ? String(errorLog.url).slice(0, 500) : undefined;
-    const cappedUserAgent = errorLog.userAgent ? String(errorLog.userAgent).slice(0, 500) : undefined;
+    const message = errorLog.message.length > 2000 ? errorLog.message.slice(0, 2000) : errorLog.message;
 
     // Whitelist severity
-    const validSeverities = ['error', 'warning', 'info'];
-    const severity = validSeverities.includes(errorLog.severity) ? errorLog.severity : 'error';
-
-    // Parse timestamp safely
-    const timestamp = new Date(errorLog.timestamp);
-    if (isNaN(timestamp.getTime())) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid timestamp' },
-        { status: 400 }
-      );
+    const allowedSeverities = ['info', 'warning', 'error', 'critical'] as const;
+    let severity: (typeof allowedSeverities)[number] = 'error';
+    if (typeof errorLog.severity === 'string') {
+      const s = errorLog.severity.toLowerCase() as (typeof allowedSeverities)[number];
+      if ((allowedSeverities as readonly string[]).includes(s)) {
+        severity = s;
+      }
     }
 
-    // Log to server console (with caps applied)
+    const url = typeof errorLog.url === 'string' ? errorLog.url.slice(0, 500) : undefined;
+    const userAgent = typeof errorLog.userAgent === 'string' ? errorLog.userAgent.slice(0, 300) : undefined;
+
+    // Sanitize timestamp
+    let timestamp: Date;
+    try {
+      timestamp = errorLog.timestamp ? new Date(errorLog.timestamp) : new Date();
+      if (isNaN(timestamp.getTime())) timestamp = new Date();
+    } catch {
+      timestamp = new Date();
+    }
+
     console.error('Client Error Logged:', {
       severity,
-      message: cappedMessage,
-      url: cappedUrl,
-      timestamp: errorLog.timestamp,
-      userAgent: cappedUserAgent,
+      message,
+      url,
+      timestamp,
+      userAgent,
+      userId: authUser.id,
     });
 
-    // Store in database (capped + validated)
     await prisma.errorLog.create({
       data: {
-        message: cappedMessage,
+        message,
         severity,
-        url: cappedUrl,
-        userAgent: cappedUserAgent,
+        url,
+        userAgent,
         timestamp,
       },
     });
-
-    // TODO: Send to error tracking service
-    // if (process.env.SENTRY_DSN) {
-    //   await sendToSentry(errorLog);
-    // }
-
-    // TODO: Send alerts for critical errors
-    // if (severity === 'critical') {
-    //   await sendAlertToAdmin(errorLog);
-    // }
 
     return NextResponse.json({ success: true });
   } catch (error) {
