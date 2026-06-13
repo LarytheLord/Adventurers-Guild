@@ -141,7 +141,10 @@ export async function POST(request: NextRequest) {
       })
     );
 
-    // Email the auto-generated password to the user (never return it in the API response)
+    // Email the auto-generated password to the user (never return it in the API response).
+    // If email delivery fails, account is still created — caller receives emailFailed: true
+    // so the bootcamp system can alert an admin to manually reset the password.
+    let emailFailed = false;
     if (!bootcampProvidedPassword) {
       const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://guilds.work';
       await sendEmail({
@@ -163,7 +166,8 @@ export async function POST(request: NextRequest) {
           </p>
         </div>`,
       }).catch((err) => {
-        console.error('[onboard] Failed to email password:', err);
+        console.error('[onboard] Failed to email initial password — user will need manual password reset:', err);
+        emailFailed = true;
       });
     }
 
@@ -172,6 +176,7 @@ export async function POST(request: NextRequest) {
         success: true,
         adventurerId: user.id,
         rank: 'F',
+        ...(emailFailed ? { emailFailed: true, warning: 'Initial password email failed to deliver — user needs manual password reset' } : {}),
       },
       { status: 201 }
     );
