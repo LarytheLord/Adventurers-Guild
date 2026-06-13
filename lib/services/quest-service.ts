@@ -129,7 +129,11 @@ export async function getQuests(searchParams: URLSearchParams, user: SessionUser
     };
   });
 
-  return { data: enrichedQuests as Quest[], error: null, status: 200 };
+  // Drop quests the user shouldn't even discover (2+ ranks above their own).
+  // Filtered server-side so hidden quests never reach the client.
+  const visibleQuests = enrichedQuests.filter((quest) => quest.isVisible !== false);
+
+  return { data: visibleQuests as Quest[], error: null, status: 200 };
 }
 
 export async function createQuest(body: CreateQuestBody, user: SessionUser): Promise<ServiceResult<Quest>> {
