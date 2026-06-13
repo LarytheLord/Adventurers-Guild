@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
   });
 
   // Check for existing payments on completed assignments to prevent double-pay
-  let paymentMap: Record<string, boolean> = {};
+  const paymentMap: Record<string, boolean> = {};
   if (status === 'completed' && assignments.length > 0) {
     const existingPayments = await prisma.transaction.findMany({
       where: {
