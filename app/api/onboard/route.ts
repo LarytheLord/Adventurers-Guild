@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma, withDbRetry } from '@/lib/db';
 import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
+import { sendEmail } from '@/lib/mail';
 
 const VALID_BOOTCAMP_TRACKS = ['animal_advocacy', 'climate_action', 'ai_safety', 'hybrid', 'beginner'] as const;
 
@@ -12,8 +13,8 @@ interface OnboardPayload {
   cohort?: string;
   bootcampTrack: (typeof VALID_BOOTCAMP_TRACKS)[number];
   bootcampWeek?: number;
-  webhookSecret?: string; // legacy: allow secret in body
-  initialPassword?: string; // optional: provided by bootcamp system for initial login
+  webhookSecret?: string;
+  initialPassword?: string;
 }
 
 function readBearerToken(req: NextRequest): string | null {
@@ -100,10 +101,12 @@ export async function POST(request: NextRequest) {
     }
 
     // 5. Create User + AdventurerProfile + BootcampLink in transaction
-    const passwordPlaintext =
-      typeof body.initialPassword === 'string' && body.initialPassword.trim().length >= 8
-        ? body.initialPassword.trim()
-        : crypto.randomBytes(16).toString('hex');
+    const bootcampProvidedPassword =
+      typeof body.initialPassword === 'string' && body.initialPassword.trim().length >= 8;
+
+    const passwordPlaintext = bootcampProvidedPassword
+      ? body.initialPassword!.trim()
+      : crypto.randomBytes(16).toString('hex');
     const passwordHash = await bcrypt.hash(passwordPlaintext, 12);
 
     const user = await withDbRetry(() =>
@@ -138,14 +141,37 @@ export async function POST(request: NextRequest) {
       })
     );
 
-    const shouldReturnPassword = process.env.BOOTCAMP_ONBOARD_RETURN_PASSWORD === 'true';
+    // Email the auto-generated password to the user (never return it in the API response)
+    if (!bootcampProvidedPassword) {
+      const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://guilds.work';
+      await sendEmail({
+        to: normalizedEmail,
+        subject: 'Welcome to Adventurers Guild — Your Login Credentials',
+        html: `<div style="font-family:sans-serif;max-width:480px;margin:0 auto;">
+          <h2>Welcome to Adventurers Guild</h2>
+          <p>Your bootcamp account has been created. Here are your login credentials:</p>
+          <p style="font-size:14px;color:#555;">Email: <strong>${normalizedEmail}</strong></p>
+          <p style="font-size:14px;color:#555;">Password: <strong>${passwordPlaintext}</strong></p>
+          <p style="margin-top:20px;">
+            <a href="${appUrl}/login"
+               style="display:inline-block;padding:12px 24px;background:#f97316;color:#fff;text-decoration:none;border-radius:8px;">
+              Sign In
+            </a>
+          </p>
+          <p style="margin-top:20px;font-size:12px;color:#999;">
+            For security, we recommend changing your password after your first login.
+          </p>
+        </div>`,
+      }).catch((err) => {
+        console.error('[onboard] Failed to email password:', err);
+      });
+    }
 
     return NextResponse.json(
       {
         success: true,
         adventurerId: user.id,
         rank: 'F',
-        ...(shouldReturnPassword ? { initialPassword: passwordPlaintext } : {}),
       },
       { status: 201 }
     );
