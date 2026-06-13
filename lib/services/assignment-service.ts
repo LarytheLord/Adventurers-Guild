@@ -30,12 +30,18 @@ export async function applyToQuest(questId: string, user: SessionUser, tx: Prism
 
     // Check rank gating: user must have minimum rank to accept quest
     // Admins bypass rank checks, but adventurers must meet requirement
+    // Use fresh DB rank (not stale JWT token) to avoid gating issues after rank-up
     if (user.role === 'adventurer') {
-      const canAccept = canUserAcceptQuest(user.rank as UserRank, quest.requiredRank);
+      const fresh = await tx.user.findUnique({
+        where: { id: user.id },
+        select: { rank: true },
+      });
+      const currentRank = (fresh?.rank || user.rank) as UserRank;
+      const canAccept = canUserAcceptQuest(currentRank, quest.requiredRank);
       if (!canAccept) {
         return {
           data: null,
-          error: `You must reach Rank ${quest.requiredRank} to accept this quest. Current rank: ${user.rank}`,
+          error: `You must reach Rank ${quest.requiredRank} to accept this quest. Current rank: ${currentRank}`,
           status: 403,
         };
       }

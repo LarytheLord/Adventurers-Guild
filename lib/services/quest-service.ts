@@ -111,9 +111,15 @@ export async function getQuests(searchParams: URLSearchParams, user: SessionUser
 
 
   // Add access control metadata for adventurers
-  const enrichedQuests = quests.map((quest) => {
+  // Use fresh DB rank (not stale JWT) for quest access/gating after rank-up
+  const enrichedQuests = await Promise.all(quests.map(async (quest) => {
     if (user && user.role === 'adventurer') {
-      const accessStatus = getQuestAccessStatus(user.rank as UserRank, quest.requiredRank);
+      const fresh = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { rank: true },
+      });
+      const currentRank = (fresh?.rank || user.rank) as UserRank;
+      const accessStatus = getQuestAccessStatus(currentRank, quest.requiredRank);
       return {
         ...quest,
         canAccess: accessStatus.canAccess,
@@ -127,7 +133,7 @@ export async function getQuests(searchParams: URLSearchParams, user: SessionUser
       canAccess: true,
       isVisible: true,
     };
-  });
+  }));
 
   return { data: enrichedQuests as Quest[], error: null, status: 200 };
 }
