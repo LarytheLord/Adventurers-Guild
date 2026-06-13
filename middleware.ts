@@ -40,11 +40,11 @@ export async function middleware(request: NextRequest) {
 
   // Apply strict rate limiting to auth routes only
   if (isAuthRoute) {
-    const rateLimitResponse = strictRateLimit(request);
+    const rateLimitResponse = await strictRateLimit(request);
     if (rateLimitResponse) return rateLimitResponse;
   } else if (pathname.startsWith('/api/')) {
     // Apply general rate limiting to non-auth API routes
-    const rateLimitResponse = apiRateLimit(request);
+    const rateLimitResponse = await apiRateLimit(request);
     if (rateLimitResponse) return rateLimitResponse;
   }
 
