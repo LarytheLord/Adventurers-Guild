@@ -32,7 +32,7 @@ export default async function DashboardPage() {
   const userId = session.user.id;
 
   // ── Core data ─────────────────────────────────────────────────────────────
-  const [user, pendingAssignments, completedAssignments, availableQuests] =
+  const [user, pendingAssignments, completedAssignments, availableQuests, earnedAgg] =
     await withDbRetry(() =>
       Promise.all([
         prisma.user.findUnique({
@@ -93,6 +93,11 @@ export default async function DashboardPage() {
           orderBy: { createdAt: 'desc' },
           take: 20,
         }),
+
+        prisma.transaction.aggregate({
+          _sum: { amount: true },
+          where: { toUserId: userId, status: 'completed' },
+        }),
       ])
     );
 
@@ -113,10 +118,7 @@ export default async function DashboardPage() {
 
   const completedCount = completedAssignments.length;
 
-  const totalEarned = completedAssignments.reduce(
-    (sum, a) => sum + Number(a.quest.monetaryReward ?? 0),
-    0
-  );
+  const totalEarned = Number(earnedAgg._sum.amount ?? 0);
 
   const rankValue = (r: string | null | undefined) => {
     if (!r) return 0;
