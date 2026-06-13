@@ -28,20 +28,15 @@ export async function applyToQuest(questId: string, user: SessionUser, tx: Prism
       return { data: null, error: 'Quest not available', status: 400 };
     }
 
-    // Check rank gating using *current* DB rank (not stale JWT).
-    // This fixes the bug where after a rank-up on quest approval, the JWT is stale
-    // until the user manually refreshes their session.
+    // Check rank gating: user must have minimum rank to accept quest
+    // Admins bypass rank checks, but adventurers must meet requirement
+    // Use fresh DB rank (not stale JWT token) to avoid gating issues after rank-up
     if (user.role === 'adventurer') {
-      let currentRank = user.rank as UserRank;
-      if (user.id) {
-        const dbUser = await tx.user.findUnique({
-          where: { id: user.id },
-          select: { rank: true },
-        });
-        if (dbUser?.rank) {
-          currentRank = dbUser.rank;
-        }
-      }
+      const fresh = await tx.user.findUnique({
+        where: { id: user.id },
+        select: { rank: true },
+      });
+      const currentRank = (fresh?.rank || user.rank) as UserRank;
       const canAccept = canUserAcceptQuest(currentRank, quest.requiredRank);
       if (!canAccept) {
         return {
