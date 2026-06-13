@@ -6,6 +6,12 @@ import { apiRateLimit } from '@/lib/rate-limit';
 /**
  * API endpoint for logging client-side errors
  * POST /api/errors/log
+ *
+ * Security:
+ * - Requires Authorization: Bearer <ERROR_LOG_API_KEY>
+ * - Field length caps to prevent DB bloat / injection
+ * - Severity whitelist
+ * - IP-based rate limiting (20 req / 15 min via strictRateLimit)
  */
 export async function POST(request: NextRequest) {
   // Rate limit early (IP-based) to prevent abuse even before auth
