@@ -102,27 +102,35 @@ export default function QAQueuePage() {
 
   const handleApprove = async (item: QueueItem) => {
     setSubmitting(true);
-    await fetchWithAuth(`/api/admin/qa-queue/${item.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'approve', criteriaResults: buildCriteriaResults(item) }),
-    });
-    setSubmitting(false);
-    fetchQueue();
+    try {
+      await fetchWithAuth(`/api/admin/qa-queue/${item.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'approve', criteriaResults: buildCriteriaResults(item) }),
+      });
+      // Await the refresh so buttons stay disabled until the stale item is gone.
+      await fetchQueue();
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleReject = async () => {
     if (!rejectTarget || !rejectNotes.trim()) return;
     setSubmitting(true);
-    await fetchWithAuth(`/api/admin/qa-queue/${rejectTarget.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'reject', notes: rejectNotes.trim(), criteriaResults: buildCriteriaResults(rejectTarget) }),
-    });
-    setSubmitting(false);
-    setRejectTarget(null);
-    setRejectNotes('');
-    fetchQueue();
+    try {
+      await fetchWithAuth(`/api/admin/qa-queue/${rejectTarget.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reject', notes: rejectNotes.trim(), criteriaResults: buildCriteriaResults(rejectTarget) }),
+      });
+      setRejectTarget(null);
+      setRejectNotes('');
+      // Await the refresh so buttons stay disabled until the stale item is gone.
+      await fetchQueue();
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (status === 'loading' || loading) {
