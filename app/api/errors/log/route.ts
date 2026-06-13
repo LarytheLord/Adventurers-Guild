@@ -1,11 +1,39 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { env } from '@/lib/env';
+import { rateLimitMiddleware } from '@/lib/rate-limit';
 
 /**
  * API endpoint for logging client-side errors
  * POST /api/errors/log
+ *
+ * Security:
+ * - Requires Authorization: Bearer <ERROR_LOG_API_KEY>
+ * - Field length caps to prevent DB bloat / injection
+ * - Severity whitelist
+ * - IP-based rate limiting (100 req / hour)
  */
 export async function POST(request: NextRequest) {
+  // Rate limiting: 100 requests per hour per IP (stricter than general API)
+  const rateLimitResponse = rateLimitMiddleware(request, {
+    windowMs: 60 * 60 * 1000,
+    maxRequests: 100,
+  });
+  if (rateLimitResponse) return rateLimitResponse;
+
+  // Authentication: static API key (separate from other secrets, set per-deployment)
+  const authHeader = request.headers.get('authorization') || '';
+  const providedKey = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+
+  if (process.env.NODE_ENV === 'production') {
+    if (!env.ERROR_LOG_API_KEY || providedKey !== env.ERROR_LOG_API_KEY) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+  }
+
   try {
     const errorLog = await request.json();
 
@@ -17,29 +45,41 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // In production, you would:
-    // 1. Store in a database
-    // 2. Send to error tracking service (Sentry, LogRocket, etc.)
-    // 3. Send alerts for critical errors
-    // 4. Aggregate for analytics
+    // Cap lengths to prevent DB flooding and excessive storage
+    const cappedMessage = String(errorLog.message).slice(0, 2000);
+    const cappedUrl = errorLog.url ? String(errorLog.url).slice(0, 500) : undefined;
+    const cappedUserAgent = errorLog.userAgent ? String(errorLog.userAgent).slice(0, 500) : undefined;
 
-    // For now, log to server console
+    // Whitelist severity
+    const validSeverities = ['error', 'warning', 'info'];
+    const severity = validSeverities.includes(errorLog.severity) ? errorLog.severity : 'error';
+
+    // Parse timestamp safely
+    const timestamp = new Date(errorLog.timestamp);
+    if (isNaN(timestamp.getTime())) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid timestamp' },
+        { status: 400 }
+      );
+    }
+
+    // Log to server console (with caps applied)
     console.error('Client Error Logged:', {
-      severity: errorLog.severity,
-      message: errorLog.message,
-      url: errorLog.url,
+      severity,
+      message: cappedMessage,
+      url: cappedUrl,
       timestamp: errorLog.timestamp,
-      userAgent: errorLog.userAgent,
+      userAgent: cappedUserAgent,
     });
 
-    // Store in database
+    // Store in database (capped + validated)
     await prisma.errorLog.create({
       data: {
-        message: errorLog.message,
-        severity: errorLog.severity || 'error',
-        url: errorLog.url,
-        userAgent: errorLog.userAgent,
-        timestamp: new Date(errorLog.timestamp),
+        message: cappedMessage,
+        severity,
+        url: cappedUrl,
+        userAgent: cappedUserAgent,
+        timestamp,
       },
     });
 
@@ -49,7 +89,7 @@ export async function POST(request: NextRequest) {
     // }
 
     // TODO: Send alerts for critical errors
-    // if (errorLog.severity === 'critical') {
+    // if (severity === 'critical') {
     //   await sendAlertToAdmin(errorLog);
     // }
 
