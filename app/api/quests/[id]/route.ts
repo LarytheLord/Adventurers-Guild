@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { UserRank } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { getAuthUser } from '@/lib/api-auth';
+import { getQuestAccessStatus } from '@/lib/quest-access';
 
 export async function GET(
   req: NextRequest,
@@ -140,10 +142,20 @@ export async function GET(
           }
         : null;
 
+    // Rank-based access gating (mirrors the quest list endpoint) so the
+    // detail page can disable the claim button for rank-locked quests.
+    const accessStatus =
+      user?.role === 'adventurer'
+        ? getQuestAccessStatus(user.rank as UserRank, quest.requiredRank)
+        : { canAccess: true, isVisible: true, lockedUntil: undefined };
+
     const normalizedQuest = {
       ...quest,
       company: sanitizedCompany,
       assignments,
+      canAccess: accessStatus.canAccess,
+      isVisible: accessStatus.isVisible,
+      lockedUntil: accessStatus.lockedUntil,
     };
 
     return NextResponse.json({
