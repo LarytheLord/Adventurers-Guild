@@ -32,10 +32,9 @@ export async function POST(request: NextRequest) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
     const resetLink = `${appUrl}/reset-password?token=${token}`;
 
-    // Persist the token to the DB *first*, then send the email.
-    // If the email send fails (Resend transient error, config issue, etc.), the token already exists.
-    // The user can re-request a reset; deleteMany + create will replace it with a fresh token.
-    // This prevents the bad case: email delivered with a link that has no matching record in the database.
+    // Persist token FIRST, then send email.
+    // This ensures the link is valid as soon as the email is sent (no race where user clicks before DB write).
+    // If email fails, token expires in 24h and user can retry.
     await prisma.passwordResetToken.deleteMany({ where: { userId: user.id } });
     await prisma.passwordResetToken.create({
       data: { userId: user.id, token: tokenHash, expiresAt },
