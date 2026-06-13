@@ -2,8 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { sendEmail } from '@/lib/mail';
 import { createHash, randomBytes } from 'crypto';
+import { strictRateLimit } from '@/lib/rate-limit';
 
 export async function POST(request: NextRequest) {
+  // Defense-in-depth rate limiting for auth-sensitive endpoint
+  const rateLimitResponse = await strictRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const { email } = await request.json();
     const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';

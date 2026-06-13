@@ -191,23 +191,7 @@ export async function PUT(request: NextRequest) {
 
     const updateData: Prisma.QuestUpdateInput = {};
 
-    // Handle observation note addition
-    if (addNote && typeof addNote === 'string' && addNote.trim()) {
-      const quest = await prisma.quest.findUnique({
-        where: { id: questId },
-        select: { adminNotes: true },
-      });
-      const existing = (quest?.adminNotes as AdminNote[] | null) || [];
-      const newNote: AdminNote = {
-        id: crypto.randomUUID(),
-        timestamp: new Date().toISOString(),
-        author: user.name ?? user.email ?? 'Admin',
-        note: addNote.trim(),
-      };
-      updateData.adminNotes = [...existing, newNote];
-    }
-
-    // Handle standard field updates
+    // Handle standard field updates first (populated for potential merge with note append)
     const validStatuses = Object.values(QuestStatus);
     if (updateFields.status !== undefined) {
       if (!validStatuses.includes(updateFields.status as QuestStatus)) {
@@ -248,6 +232,35 @@ export async function PUT(request: NextRequest) {
       updateData.deadline = updateFields.deadline ? new Date(updateFields.deadline) : null;
     }
 
+    // Handle observation note addition inside a transaction to prevent lost updates
+    // on concurrent admin note appends (read the latest list, append, write atomically).
+    if (addNote && typeof addNote === 'string' && addNote.trim()) {
+      const data = await prisma.$transaction(async (tx) => {
+        const quest = await tx.quest.findUnique({
+          where: { id: questId },
+          select: { adminNotes: true },
+        });
+        const existing = (quest?.adminNotes as AdminNote[] | null) || [];
+        const newNote: AdminNote = {
+          id: crypto.randomUUID(),
+          timestamp: new Date().toISOString(),
+          author: user.name ?? user.email ?? 'Admin',
+          note: addNote.trim(),
+        };
+        const noteUpdateData: Prisma.QuestUpdateInput = {
+          ...updateData,
+          adminNotes: [...existing, newNote],
+        };
+        const updated = await tx.quest.update({
+          where: { id: questId },
+          data: noteUpdateData,
+        });
+        return updated;
+      });
+      return NextResponse.json({ quest: data, success: true });
+    }
+
+    // Regular field updates (no addNote in this request)
     const data = await prisma.quest.update({
       where: { id: questId },
       data: updateData,

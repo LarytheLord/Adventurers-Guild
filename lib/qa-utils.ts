@@ -8,7 +8,7 @@ export async function fetchSubmissionsForReview(
   status: string | null = null
 ) {
   const where: Prisma.QuestSubmissionWhereInput = {
-    status: { notIn: ['approved', 'rejected'] },
+    status: { notIn: ['approved', 'rejected', 'superseded'] },
   };
 
   if (status) {
