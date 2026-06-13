@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { env } from '@/lib/env';
-import { rateLimitMiddleware } from '@/lib/rate-limit';
+import { strictRateLimit } from '@/lib/rate-limit';
 
 /**
  * API endpoint for logging client-side errors
@@ -11,14 +11,10 @@ import { rateLimitMiddleware } from '@/lib/rate-limit';
  * - Requires Authorization: Bearer <ERROR_LOG_API_KEY>
  * - Field length caps to prevent DB bloat / injection
  * - Severity whitelist
- * - IP-based rate limiting (100 req / hour)
+ * - IP-based rate limiting (20 req / 15 min via strictRateLimit)
  */
 export async function POST(request: NextRequest) {
-  // Rate limiting: 100 requests per hour per IP (stricter than general API)
-  const rateLimitResponse = rateLimitMiddleware(request, {
-    windowMs: 60 * 60 * 1000,
-    maxRequests: 100,
-  });
+  const rateLimitResponse = await strictRateLimit(request);
   if (rateLimitResponse) return rateLimitResponse;
 
   // Authentication: static API key (separate from other secrets, set per-deployment)
