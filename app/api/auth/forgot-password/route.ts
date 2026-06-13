@@ -27,8 +27,14 @@ export async function POST(request: NextRequest) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000';
     const resetLink = `${appUrl}/reset-password?token=${token}`;
 
-    // Send email FIRST — only save the token to DB if email succeeds.
-    // This prevents dangling tokens when the mail service is down.
+    // Persist token FIRST, then send email.
+    // This ensures the link is valid as soon as the email is sent (no race where user clicks before DB write).
+    // If email fails, token expires in 24h and user can retry.
+    await prisma.passwordResetToken.deleteMany({ where: { userId: user.id } });
+    await prisma.passwordResetToken.create({
+      data: { userId: user.id, token: tokenHash, expiresAt },
+    });
+
     await sendEmail({
       to: normalizedEmail,
       subject: 'Reset your password — Guild',
@@ -43,12 +49,6 @@ export async function POST(request: NextRequest) {
           <p style="color:#94a3b8;font-size:11px;word-break:break-all">Or copy this link: ${resetLink}</p>
         </div>
       `,
-    });
-
-    // Email sent — now persist the token
-    await prisma.passwordResetToken.deleteMany({ where: { userId: user.id } });
-    await prisma.passwordResetToken.create({
-      data: { userId: user.id, token: tokenHash, expiresAt },
     });
 
     return NextResponse.json({ message: 'If an account exists, a reset link has been sent.' });
