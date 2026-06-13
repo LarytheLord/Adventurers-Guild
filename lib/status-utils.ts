@@ -17,6 +17,7 @@ const STATUS_COLOR_MAP: Record<string, string> = {
   review: 'bg-amber-100 text-amber-700 border-amber-300',
   submitted: 'bg-yellow-100 text-yellow-700 border-yellow-300',
   under_review: 'bg-sky-100 text-sky-700 border-sky-300',
+  superseded: 'bg-slate-100 text-slate-700 border-slate-300',
 };
 
 export function getStatusColor(status: string): string {

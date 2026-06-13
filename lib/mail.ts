@@ -42,12 +42,9 @@ export async function sendEmail({ to, subject, html }: SendEmailParams): Promise
 
       // Handle testing mode limitation
       if (result.error.message?.includes('testing emails')) {
-        console.log('[mail] Resend is in testing mode. In dev/testing, we fall back to console logging.');
-        console.log('\n─── [RESET PASSWORD EMAIL - TESTING MODE] ───────────────');
-        console.log(`To: ${to}`);
-        console.log(`Subject: ${subject}`);
-        console.log(`Body:\n${html.replace(/<[^>]+>/g, '').trim()}`);
-        console.log('──────────────────────────────────────────────────────\n');
+        // Resend testing mode — email was not delivered. Log metadata only (never body,
+        // which may contain credentials or PII).
+        console.log('[mail] Resend testing mode: email not delivered (body redacted).', { to, subject });
         return; // Don't throw error, allow testing to continue
       }
 

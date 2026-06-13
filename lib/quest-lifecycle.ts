@@ -1,6 +1,6 @@
 import { AssignmentStatus, Prisma, PrismaClient, QuestStatus } from '@prisma/client';
 
-const REVIEW_STATUSES: AssignmentStatus[] = ['submitted', 'review'];
+const REVIEW_STATUSES: AssignmentStatus[] = ['submitted', 'review', 'pending_admin_review'];
 
 // Statuses that mean a company has accepted the adventurer (slot is filled)
 const FILLED_STATUSES: AssignmentStatus[] = [
