@@ -1,7 +1,7 @@
 // app/api/quests/submissions/route.ts
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { AssignmentStatus, Prisma } from '@prisma/client';
+import { AssignmentStatus, Prisma, SubmissionStatus } from '@prisma/client';
 import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
 import { getAuthUser } from '@/lib/api-auth';
 import { logActivity } from '@/lib/activity-logger';
@@ -141,6 +141,13 @@ export async function POST(request: NextRequest) {
           },
         });
 
+        // Invalidate all previous submissions for this assignment so QA/client always sees the latest.
+        // This prevents stale work from being reviewable (especially important for needs_rework resubmissions).
+        await tx.questSubmission.updateMany({
+          where: { assignmentId, id: { not: submission.id } },
+          data: { status: SubmissionStatus.superseded },
+        });
+
         await tx.questAssignment.update({
           where: { id: assignmentId },
           data: { status: postSubmitStatus },
@@ -185,6 +192,10 @@ export async function PUT(request: NextRequest) {
     });
     if (!submission) {
       return NextResponse.json({ error: 'Submission not found', success: false }, { status: 404 });
+    }
+
+    if (submission.status === SubmissionStatus.superseded) {
+      return NextResponse.json({ error: 'Cannot review a superseded submission', success: false }, { status: 400 });
     }
 
     const assignmentData = await prisma.questAssignment.findUnique({

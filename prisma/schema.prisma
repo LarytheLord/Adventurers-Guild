@@ -90,6 +90,7 @@ enum SubmissionStatus {
   approved
   needs_rework
   rejected
+  superseded
 }
 
 enum RevisionStatus {
