@@ -107,8 +107,8 @@ export default function QAQueuePage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'approve', criteriaResults: buildCriteriaResults(item) }),
     });
+    await fetchQueue();
     setSubmitting(false);
-    fetchQueue();
   };
 
   const handleReject = async () => {
@@ -119,10 +119,10 @@ export default function QAQueuePage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'reject', notes: rejectNotes.trim(), criteriaResults: buildCriteriaResults(rejectTarget) }),
     });
+    await fetchQueue();
     setSubmitting(false);
     setRejectTarget(null);
     setRejectNotes('');
-    fetchQueue();
   };
 
   if (status === 'loading' || loading) {
