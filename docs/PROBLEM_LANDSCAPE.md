@@ -2,7 +2,7 @@
 
 > Landscaping analysis of the India developer talent + project-work value chain, following the IIMA Ventures *Landscaping: AI Summer Residency Framework* methodology. The purpose is to situate Adventurers Guild inside the wider sector, surface the *buildable gaps* the IIMA framework asks for, and give a mentor or analyst the structural picture in one place.
 
-> Companion to `IIMA_VENTURES_THESIS_FIT.md` (which applies the Enterprise AI thesis rubric) and `COMPETITIVE_ANALYSIS_RENDERED.md` (which goes deeper on individual competitors).
+> Companion to `COMPETITIVE_ANALYSIS_RENDERED.md` (which goes deeper on individual competitors).
 
 ---
 
@@ -85,7 +85,7 @@ A residency mentor will check whether the team has discipline. These are adjacen
 |---|---|
 | AI tutor / curriculum platform (sit in *Production*) | Crowded (Scaler, Newton, Masai, Pesto); content production is not our edge; we'd rather *integrate with* curriculum providers via the bootcamp track. |
 | Pure freelance marketplace (sit in *Consumption* without the credential layer) | This is the Upwork commodity. Our rank-first design *intentionally* breaks the commodity dynamic. We are not competing on cheapness. |
-| Global developer marketplace (international-first) | India Stack rails + cost structure + cultural fit are our wedge. International expansion is Phase 4 (24+ months) per `FINANCIAL_MODEL.md`. |
+| Global developer marketplace (international-first) | India Stack rails + cost structure + cultural fit are our wedge. International expansion is Phase 4 (24+ months). |
 | LinkedIn-style social graph for developers | Network effects are a defensive moat we get for free if Gaps A–C work, not a primary product to build first. |
 
 This discipline matters because the IIMA Landscaping doc quotes the *Elephants and Cheetahs* elective: *"Strategy is the art of closing n-1 doors."* Naming the doors we are closing is the proof that we have done the work.

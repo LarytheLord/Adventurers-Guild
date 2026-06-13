@@ -70,25 +70,7 @@
 
 ---
 
-## 🟡 P5: Product Hunt Launch Prep
-
-**Files**: `docs/PRODUCT_HUNT_LAUNCH_STRATEGY.md`, `docs/PRODUCT_HUNT_ASSET_KIT.md`
-
-**What**: Full Product Hunt launch requires:
-- **Screenshots** (7 total — quest board, detail page, dashboard, guild card, analytics, mobile views)
-- **45-second demo video** showing the quest flow
-- **Gather testimonials** from existing 14+ users
-- **Write killer description** (already drafted — needs polish)
-- **Pre-launch outreach** to 50+ people
-- **Prep comment strategy** (5 staggered comments)
-
-**Checklist**: See `docs/PRODUCT_HUNT_QUICK_REFERENCE.md` for full checklist.
-
-**Effort**: ~6 hours total
-
----
-
-## 🟡 P6: OG Image Generation for Quest Pages
+## 🟡 P5: OG Image Generation for Quest Pages
 
 **Files**: Create `app/api/og/quests/[id]/route.ts`
 

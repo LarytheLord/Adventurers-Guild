@@ -1,6 +1,6 @@
 # Adventurers Guild — Executive Brief
 
-> Five-minute onramp for a mentor, investor, contributor, or partner who has never seen the project before. For the operational deep dive, see `CLAUDE.md`. For the gamification rationale, see `IIM_A_VENTURES_MENTOR_BRIEF.md`. For the investment thesis fit, see `IIMA_VENTURES_THESIS_FIT.md`.
+> Five-minute onramp for a mentor, investor, contributor, or partner who has never seen the project before. For the operational deep dive, see `CLAUDE.md`. For the gamification rationale, see `IIM_A_VENTURES_MENTOR_BRIEF.md`.
 
 ---
 
@@ -34,7 +34,7 @@ A LinkedIn profile is a *claim*. A LeetCode score is a *practice metric*. An Upw
 
 - Production money movement at scale (Razorpay flows scaffolded, escrow + dispute handling not battle-tested).
 - Full bootcamp-track gating (schema fields exist; UX-level enforcement is in progress).
-- Talent search / direct-hire pipeline (Phase 3 in `FINANCIAL_MODEL.md`).
+- Talent search / direct-hire pipeline (Phase 3).
 - Subscription billing (planned, not built).
 
 ## Who is using it / who has committed
@@ -59,7 +59,7 @@ Operating context: built alongside Knight Medicare (production mental-health pla
 - **Quest boosts** (Featured, Urgent) at the moment of intent.
 - **Talent Pipeline** (Phase 3) — direct-hire placement fee (~10% of annual salary) and `Talent Search` subscription for recruiters browsing ranked Guild Cards.
 
-Break-even at growth-stage fixed costs: ~88 quests/month. Full unit economics: `FINANCIAL_MODEL.md`.
+Break-even at growth-stage fixed costs: ~88 quests/month.
 
 ## The 60-second pitch
 
@@ -69,11 +69,9 @@ Break-even at growth-stage fixed costs: ~88 quests/month. Full unit economics: `
 
 | If you are a… | Start here |
 |---|---|
-| Mentor / investor | `IIMA_VENTURES_THESIS_FIT.md`, then `FINANCIAL_MODEL.md` |
+| Mentor / investor | This brief, then `PROBLEM_LANDSCAPE.md` |
 | Sector analyst | `PROBLEM_LANDSCAPE.md` (Landscaping analysis), then `COMPETITIVE_ANALYSIS_RENDERED.md` |
 | Engineer / contributor | `CLAUDE.md`, then `docs/contributor-onboarding.md`, then `docs/IMPLEMENTATION_TASKS.md` |
-| Customer-discovery / GTM | `docs/MOM_TEST_CUSTOMER_DISCOVERY_AUDIT.md`, then `MONETIZATION_ROADMAP.md` |
-| Pitching VCs | `docs/VC_PITCH_GUIDE.md`, then this brief, then `IIMA_VENTURES_THESIS_FIT.md` |
 
 ---
 

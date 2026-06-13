@@ -184,9 +184,6 @@ Project files reviewed:
 
 - `README.md`
 - `CLAUDE.md`
-- `STRATEGIC_ROADMAP.md`
-- `FINANCIAL_MODEL.md`
-- `MONETIZATION_ROADMAP.md`
 - `prisma/schema.prisma`
 - `app/home/page.tsx`
 - `app/quests/page.tsx`
