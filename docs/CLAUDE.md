@@ -130,7 +130,6 @@ Both have full merge and review authority across the entire codebase. See [MAINT
 | `MAINTAINERS.md` | Maintainer team, authority, and escalation rules |
 | `CLAUDE_CODE_INSTRUCTIONS.md` | Working rules for Claude Code sessions |
 | `docs/EXECUTIVE_BRIEF.md` | 5-minute onramp for any newcomer (mentors, contributors, investors) |
-| `docs/IIMA_VENTURES_THESIS_FIT.md` | Positioning against IIMA Ventures' Enterprise AI thesis (3-criteria rubric) |
 | `docs/PROBLEM_LANDSCAPE.md` | Landscaping matrix for the India developer talent value chain |
 | `docs/IMPLEMENTATION_TASKS.md` | Task queue with code-level specs |
 | `docs/QUEST_BRIEF_SCHEMA.md` | Quest data format reference |
@@ -138,8 +137,4 @@ Both have full merge and review authority across the entire codebase. See [MAINT
 | `docs/INFRA_AND_PRODUCT_PLAN_2026-03-04.md` | Full infrastructure and product plan |
 | `docs/contributor-onboarding.md` | Setup guide for new contributors |
 | `docs/IIM_A_VENTURES_MENTOR_BRIEF.md` | Mentor-friendly explanation of the gamification language |
-| `docs/VC_PITCH_GUIDE.md` | VC pitch structure and FAQ |
 | `docs/COMPETITIVE_ANALYSIS_RENDERED.md` | Competitor deep-dive (Upwork, Toptal, LinkedIn, etc.) |
-| `docs/MOM_TEST_CUSTOMER_DISCOVERY_AUDIT.md` | Customer-discovery audit |
-| `FINANCIAL_MODEL.md` | Revenue model and growth projections |
-| `MONETIZATION_ROADMAP.md` | Technical implementation plan for monetization |
