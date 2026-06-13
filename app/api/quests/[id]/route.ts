@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { UserRank } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { getAuthUser } from '@/lib/api-auth';
 import { getQuestAccessStatus } from "@/lib/quest-access";
