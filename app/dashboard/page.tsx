@@ -32,7 +32,7 @@ export default async function DashboardPage() {
   const userId = session.user.id;
 
   // ── Core data ─────────────────────────────────────────────────────────────
-  const [user, pendingAssignments, completedAssignments, availableQuests] =
+  const [user, pendingAssignments, completedAssignments, availableQuests, earnedAgg] =
     await withDbRetry(() =>
       Promise.all([
         prisma.user.findUnique({
@@ -93,6 +93,11 @@ export default async function DashboardPage() {
           orderBy: { createdAt: 'desc' },
           take: 20,
         }),
+
+        prisma.transaction.aggregate({
+          _sum: { amount: true },
+          where: { toUserId: userId, status: 'completed' },
+        }),
       ])
     );
 
@@ -113,21 +118,7 @@ export default async function DashboardPage() {
 
   const completedCount = completedAssignments.length;
 
-  // Calculate Total Earned from actual Transaction records (net after 15% platform fee + daily standup penalties)
-  // instead of gross quest.monetaryReward. This ensures the displayed amount matches what the adventurer actually earns/receives.
-  const transactions = await withDbRetry(() =>
-    prisma.transaction.findMany({
-      where: {
-        toUserId: userId,
-        status: { in: ['pending', 'completed'] }, // include booked (pending payout) + completed
-      },
-      select: { amount: true },
-    })
-  );
-  const totalEarned = transactions.reduce(
-    (sum, t) => sum + Number(t.amount ?? 0),
-    0
-  );
+  const totalEarned = Number(earnedAgg._sum.amount ?? 0);
 
   const rankValue = (r: string | null | undefined) => {
     if (!r) return 0;
