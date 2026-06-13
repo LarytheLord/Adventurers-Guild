@@ -136,10 +136,28 @@ export async function PATCH(
     return NextResponse.json({ message: 'Submission approved — forwarded to client review', success: true });
   }
 
-  // reject — append QA note to submission reviewNotes (stored as JSON string) + record criteria
-  let existingNotes: Record<string, string>[] = [];
+  // reject — append QA note to submission reviewNotes (now native Json array) + record criteria
+  // Use direct array (Prisma Json) instead of stringify/parse to avoid silent data loss on parse errors.
+  let existingNotes: any[] = [];
   if (latestSubmission?.reviewNotes) {
-    try { existingNotes = JSON.parse(latestSubmission.reviewNotes); } catch { existingNotes = []; }
+    if (Array.isArray(latestSubmission.reviewNotes)) {
+      existingNotes = latestSubmission.reviewNotes;
+    } else if (typeof latestSubmission.reviewNotes === 'string') {
+      // legacy data from when field was String containing JSON
+      try {
+        const parsed = JSON.parse(latestSubmission.reviewNotes);
+        existingNotes = Array.isArray(parsed) ? parsed : [];
+      } catch {
+        console.error(
+          '[qa-queue] Failed to parse legacy reviewNotes string for submission',
+          latestSubmission.id,
+          '— preserving no history for this append only (was non-JSON or corrupted). Review history may have been at risk.'
+        );
+        existingNotes = [];
+      }
+    } else {
+      existingNotes = [];
+    }
   }
   const newNote: Record<string, string> = {
     id: crypto.randomUUID(),
@@ -147,7 +165,7 @@ export async function PATCH(
     author: `Admin (${adminId})`,
     note: notes!.trim(),
   };
-  const updatedNotes = JSON.stringify([...existingNotes, newNote]);
+  const updatedNotes = [...existingNotes, newNote];
 
   await prisma.$transaction([
     prisma.questAssignment.update({

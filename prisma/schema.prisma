@@ -516,7 +516,7 @@ model QuestSubmission {
   status            SubmissionStatus @default(pending)
   reviewerId        String?          @map("reviewer_id") @db.Uuid
   reviewedAt        DateTime?        @map("reviewed_at") @db.Timestamptz
-  reviewNotes       String?          @map("review_notes")
+  reviewNotes       Json?            @map("review_notes") // [{ id, timestamp, author, note }] — QA revision / review history (was legacy String JSON)
   criteriaResults   Json?            @map("criteria_results") // [{ criterion, met, note }] — per-criterion evaluation
   qualityScore      Int?             @map("quality_score")
 
