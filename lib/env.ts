@@ -43,6 +43,9 @@ const envSchema = z.object({
   UPSTASH_REDIS_REST_URL: z.string().url().optional(),
   UPSTASH_REDIS_REST_TOKEN: z.string().optional(),
 
+  // Optional: Error logging endpoint API key (for /api/errors/log - static key for client error reporting)
+  ERROR_LOG_API_KEY: z.string().min(16).optional(),
+
   // Node Environment
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 });
