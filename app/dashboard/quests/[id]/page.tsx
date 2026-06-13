@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { AlertCircle, CheckCircle, CalendarDays } from 'lucide-react';
 import { toast } from 'sonner';
 import Link from 'next/link';
@@ -37,6 +38,8 @@ interface Quest {
   monetaryReward?: number;
   requiredSkills: string[];
   requiredRank?: string;
+  canAccess?: boolean;
+  lockedUntil?: string;
   maxParticipants?: number;
   questCategory: string;
   companyId: string;
@@ -251,7 +254,9 @@ export default function QuestDetailPage() {
   }, [getShareUrl, trackShare]);
 
   const isAssigned = !!assignment;
-  const canAssign = quest?.status === 'available' && !isAssigned;
+  const isRankLocked = quest?.canAccess === false;
+  const rankLockLabel = quest?.lockedUntil ?? quest?.requiredRank;
+  const canAssign = quest?.status === 'available' && !isAssigned && !isRankLocked;
   const canSubmit = !!assignment && ['started', 'in_progress', 'needs_rework'].includes(assignment.status);
   const canStart = !!assignment && assignment.status === 'assigned';
   const showPartyPanel = (quest?.maxParticipants ?? 1) > 1;
@@ -582,6 +587,33 @@ export default function QuestDetailPage() {
                 >
                   {isApplying ? 'Claiming...' : 'Claim Quest'}
                 </Button>
+              </div>
+            ) : isRankLocked ? (
+              <div className="rounded-2xl border border-border/70 bg-white/95 shadow-[0_4px_16px_rgba(15,23,42,0.04)] p-5 space-y-3">
+                <div>
+                  <h2 className="text-sm font-semibold text-slate-900">Rank Locked</h2>
+                  <p className="mt-0.5 text-xs text-slate-500">
+                    {rankLockLabel
+                      ? `This quest requires ${rankToTier[rankLockLabel] ?? `${rankLockLabel}-Rank`} or above.`
+                      : 'You don’t meet the rank requirement for this quest yet.'}
+                  </p>
+                </div>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="block w-full">
+                        <Button className="w-full" disabled>
+                          🔒 Claim Quest
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {rankLockLabel
+                        ? `Reach Rank ${rankLockLabel} to unlock this quest.`
+                        : 'Increase your rank to unlock this quest.'}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             ) : (
               <div className="rounded-2xl border border-border/70 bg-white/95 shadow-[0_4px_16px_rgba(15,23,42,0.04)] p-5">
