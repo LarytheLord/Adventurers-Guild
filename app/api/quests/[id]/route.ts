@@ -142,11 +142,19 @@ export async function GET(
           }
         : null;
 
-    // Rank-based access gating (mirrors the quest list endpoint) so the
-    // detail page can disable the claim button for rank-locked quests.
+    // Rank-based access gating using fresh DB rank (not stale JWT) so the
+    // detail page can correctly show/disable the claim button after a rank-up.
+    let effectiveRank = user?.rank as UserRank | undefined;
+    if (user?.role === 'adventurer' && user.id) {
+      const dbUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { rank: true },
+      });
+      if (dbUser?.rank) effectiveRank = dbUser.rank;
+    }
     const accessStatus =
-      user?.role === 'adventurer'
-        ? getQuestAccessStatus(user.rank as UserRank, quest.requiredRank)
+      effectiveRank
+        ? getQuestAccessStatus(effectiveRank, quest.requiredRank)
         : { canAccess: true, isVisible: true, lockedUntil: undefined };
 
     const normalizedQuest = {
