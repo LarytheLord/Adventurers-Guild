@@ -138,6 +138,12 @@ export default function QuestsPage() {
   } | null>(null);
   const [categories, setCategories] = useState<string[]>([]);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [platformStats, setPlatformStats] = useState<{
+    adventurers: number;
+    companies: number;
+    completedQuests: number;
+    openQuests: number;
+  } | null>(null);
 
   const fetchQuests = useCallback(async () => {
     try {
@@ -205,6 +211,24 @@ export default function QuestsPage() {
   useEffect(() => {
     fetchQuests();
   }, [fetchQuests]);
+
+  // Pull real live platform stats (same source as landing) for the hero cards.
+  // This fixes the misleading "page only / visible only" numbers in the prominent stats.
+  useEffect(() => {
+    fetch('/api/public/stats')
+      .then((r) => r.json())
+      .then((data) => {
+        setPlatformStats({
+          adventurers: data.adventurers ?? 0,
+          companies: data.companies ?? 0,
+          completedQuests: data.completedQuests ?? 0,
+          openQuests: data.openQuests ?? 0,
+        });
+      })
+      .catch(() => {
+        setPlatformStats({ adventurers: 0, companies: 0, completedQuests: 0, openQuests: 0 });
+      });
+  }, []);
 
   const resetFilters = () => {
     setSearchQuery('');
@@ -274,28 +298,28 @@ export default function QuestsPage() {
 
             <div className="grid gap-4 sm:grid-cols-2">
               <StatCard
-                value={String(totalQuests || '12+')}
-                label="Quests in this track"
+                value={platformStats ? platformStats.adventurers.toLocaleString() : '—'}
+                label="Adventurers"
                 tone="orange"
-                detail={activeTrack.shortLabel}
+                detail="Live on Guild"
               />
               <StatCard
-                value={String(totalApplicantsVisible || '200+')}
-                label="Applications on visible quests"
+                value={platformStats ? platformStats.companies.toLocaleString() : '—'}
+                label="Partner companies"
                 tone="slate"
-                detail="Live demand"
+                detail="Active"
               />
               <StatCard
-                value={`${totalXpVisible || 1000}+`}
-                label="XP across this page"
+                value={platformStats ? platformStats.completedQuests.toLocaleString() : '—'}
+                label="Quests completed"
                 tone="amber"
-                detail="Reputation fuel"
+                detail="All time"
               />
               <StatCard
-                value={String(paidQuestCount || quests.length || '8')}
-                label="Paid quests visible"
+                value={platformStats ? platformStats.openQuests.toLocaleString() : '—'}
+                label="Open quests"
                 tone="emerald"
-                detail="Cash + XP"
+                detail="Right now"
               />
             </div>
           </div>
