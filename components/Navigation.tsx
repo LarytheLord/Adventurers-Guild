@@ -297,14 +297,13 @@ export default function Navigation() {
         )}
       >
         <div className="flex h-14 items-center justify-between px-3 sm:px-5">
-          {/* <Link href="/" className="flex items-center gap-2 group">
+          <Link href="/" className="flex items-center gap-2 group">
             <img
               src="/logo/guild-logo.png"
               alt="Guild"
-              className="h-12 w-12 object-contain"
+              className="h-10 w-10 flex-shrink-0 object-contain"
             />
-
-          </Link> */}
+          </Link>
 
           {renderNavLinks()}
 
@@ -312,7 +311,7 @@ export default function Navigation() {
             <div className="hidden lg:block">{renderAuthButtons()}</div>
             <button
               className={cn(
-                'lg:hidden p-2 rounded-lg transition-colors',
+                'lg:hidden p-2 rounded-lg transition-colors relative w-9 h-9 flex items-center justify-center',
                 isTransparent
                   ? 'text-white hover:bg-white/10'
                   : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
@@ -320,7 +319,10 @@ export default function Navigation() {
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               aria-label="Toggle menu"
             >
-              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              <div className="relative w-5 h-5 flex-shrink-0">
+                <X className={`w-5 h-5 absolute inset-0 transition-all duration-200 ${mobileMenuOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-75'}`} />
+                <Menu className={`w-5 h-5 absolute inset-0 transition-all duration-200 ${mobileMenuOpen ? 'opacity-0 scale-75' : 'opacity-100 scale-100'}`} />
+              </div>
             </button>
           </div>
         </div>
