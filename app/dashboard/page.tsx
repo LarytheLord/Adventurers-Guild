@@ -43,7 +43,7 @@ export default async function DashboardPage() {
         prisma.questAssignment.findMany({
           where: {
             userId,
-            status: { in: ['assigned', 'started', 'in_progress', 'submitted', 'review'] },
+            status: { in: ['assigned', 'started', 'in_progress', 'submitted', 'pending_admin_review', 'needs_rework', 'review'] },
           },
           include: {
             quest: {
