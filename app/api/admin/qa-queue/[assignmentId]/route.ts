@@ -101,7 +101,7 @@ export async function PATCH(
   const assignment = await prisma.questAssignment.findUnique({
     where: { id: assignmentId },
     include: {
-      quest: { select: { id: true } },
+      quest: { select: { id: true, xpReward: true, skillPointsReward: true, title: true, source: true } },
       submissions: { orderBy: { submittedAt: 'desc' }, take: 1 },
     },
   });
@@ -125,7 +125,7 @@ export async function PATCH(
     await prisma.$transaction(async (tx) => {
       await tx.questAssignment.update({
         where: { id: assignmentId },
-        data: { status: 'review' },
+        data: { status: 'completed', completedAt: new Date() },
       });
       if (latestSubmission && criteriaJson !== undefined) {
         await tx.questSubmission.update({
@@ -133,15 +133,74 @@ export async function PATCH(
           data: { criteriaResults: criteriaJson, reviewerId: adminId, reviewedAt: new Date() },
         });
       }
+
+      await tx.questCompletion.upsert({
+        where: {
+          questId_userId: {
+            questId: assignment.quest.id,
+            userId: assignment.userId,
+          },
+        },
+        create: {
+          questId: assignment.quest.id,
+          userId: assignment.userId,
+          xpEarned: assignment.quest.xpReward ?? 0,
+          skillPointsEarned: assignment.quest.skillPointsReward ?? 0,
+          qualityScore: null,
+        },
+        update: {
+          xpEarned: assignment.quest.xpReward ?? 0,
+          skillPointsEarned: assignment.quest.skillPointsReward ?? 0,
+          qualityScore: null,
+        },
+      });
+
       await syncQuestLifecycleStatus(tx, assignment.quest.id);
     });
-    return NextResponse.json({ message: 'Submission approved — forwarded to client review', success: true });
+
+    // XP, skills, profile, streaks, achievements (outside the tx, per established pattern)
+    const { updateUserXpAndSkills } = await import('@/lib/xp-utils');
+    await updateUserXpAndSkills(
+      assignment.userId,
+      assignment.quest.xpReward ?? 0,
+      assignment.quest.skillPointsReward ?? 0,
+      assignment.quest.id
+    );
+
+    // Bootcamp tutorial tracking (tutorialQuest1Complete / tutorialQuest2Complete + eligibleForRealQuests)
+    const qTitle = assignment.quest.title ?? '';
+    const qSource = assignment.quest.source;
+    if (qSource === 'TUTORIAL' || qTitle.startsWith('Tutorial:')) {
+      const bootcampLink = await prisma.bootcampLink.findUnique({
+        where: { userId: assignment.userId },
+        select: { tutorialQuest1Complete: true, tutorialQuest2Complete: true },
+      });
+      if (bootcampLink) {
+        const updateData: { tutorialQuest1Complete?: boolean; tutorialQuest2Complete?: boolean; eligibleForRealQuests?: boolean } = {};
+        if (qTitle.startsWith('Tutorial: First Blood')) updateData.tutorialQuest1Complete = true;
+        if (qTitle.startsWith('Tutorial: Party Up')) updateData.tutorialQuest2Complete = true;
+        const tq1 = updateData.tutorialQuest1Complete ?? bootcampLink.tutorialQuest1Complete;
+        const tq2 = updateData.tutorialQuest2Complete ?? bootcampLink.tutorialQuest2Complete;
+        if (tq1 && tq2) updateData.eligibleForRealQuests = true;
+        if (Object.keys(updateData).length > 0) {
+          await prisma.bootcampLink.update({
+            where: { userId: assignment.userId },
+            data: updateData,
+          });
+        }
+      }
+    }
+
+    return NextResponse.json({ message: 'Submission approved', success: true });
   }
 
   // reject — append QA note to submission reviewNotes (stored as JSON string) + record criteria
   let existingNotes: Record<string, string>[] = [];
   if (latestSubmission?.reviewNotes) {
-    try { existingNotes = JSON.parse(latestSubmission.reviewNotes); } catch { existingNotes = []; }
+    try {
+      const raw = latestSubmission.reviewNotes;
+      existingNotes = typeof raw === 'string' ? JSON.parse(raw) : [];
+    } catch { existingNotes = []; }
   }
   const newNote: Record<string, string> = {
     id: crypto.randomUUID(),
