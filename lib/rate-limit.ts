@@ -1,67 +1,52 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { Ratelimit } from '@upstash/ratelimit';
+import { Redis } from '@upstash/redis';
+import { env } from './env';
 
-type RateLimitStore = Map<string, { count: number; resetAt: number }>;
+// Upstash Redis rate limiters (persistent across Vercel cold starts / serverless instances).
+// Falls back gracefully (no limiting) in development or if Upstash env vars are not configured.
+// See docs/DEPLOYMENT.md for setup.
 
-// In-memory store (use Upstash Redis in production)
-const globalStore = globalThis as unknown as {
-  rateLimitStore?: RateLimitStore;
-};
+let strictRatelimit: Ratelimit | null = null;
+let apiRatelimit: Ratelimit | null = null;
 
-const store: RateLimitStore = globalStore.rateLimitStore ?? new Map<string, { count: number; resetAt: number }>();
-if (!globalStore.rateLimitStore) {
-  globalStore.rateLimitStore = store;
+if (env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN) {
+  const redis = Redis.fromEnv();
+  strictRatelimit = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(20, '15 m'),
+    analytics: true,
+  });
+  apiRatelimit = new Ratelimit({
+    redis,
+    limiter: Ratelimit.slidingWindow(60, '1 m'),
+    analytics: true,
+  });
 }
 
-export interface RateLimitOptions {
-  windowMs: number;
-  maxRequests: number;
-  keyGenerator?: (req: NextRequest) => string;
+function getIp(request: NextRequest): string {
+  const forwardedFor = request.headers.get('x-forwarded-for');
+  return forwardedFor?.split(',')[0]?.trim() || request.headers.get('x-real-ip') || 'unknown';
 }
 
-export function isRateLimited(
+async function checkRateLimit(
   request: NextRequest,
-  options: RateLimitOptions
-): boolean {
+  ratelimit: Ratelimit | null,
+  identifier?: string
+): Promise<NextResponse | null> {
   if (process.env.NODE_ENV === 'development') {
-    return false;
+    return null;
   }
-  const {
-    windowMs = 60 * 1000,
-    maxRequests = 60,
-    keyGenerator = (req) => {
-      const forwardedFor = req.headers.get('x-forwarded-for');
-      const ip = forwardedFor?.split(',')[0]?.trim() || req.headers.get('x-real-ip') || 'unknown';
-      return ip;
-    },
-  } = options;
-
-  const key = keyGenerator(request);
-  const now = Date.now();
-  const entry = store.get(key);
-
-  if (!entry || now > entry.resetAt) {
-    store.set(key, { count: 1, resetAt: now + windowMs });
-    return false;
+  if (!ratelimit) {
+    // No Redis configured — rate limiting disabled (common in local dev).
+    // In production you must set UPSTASH_REDIS_REST_URL + TOKEN (see DEPLOYMENT.md).
+    return null;
   }
 
-  entry.count += 1;
-  store.set(key, entry);
+  const ip = identifier || getIp(request);
+  const { success } = await ratelimit.limit(ip);
 
-  // Clean up old entries periodically
-  if (store.size > 1000) {
-    for (const [k, v] of store.entries()) {
-      if (now > v.resetAt) store.delete(k);
-    }
-  }
-
-  return entry.count > maxRequests;
-}
-
-export function rateLimitMiddleware(
-  request: NextRequest,
-  options: RateLimitOptions
-): NextResponse | null {
-  if (isRateLimited(request, options)) {
+  if (!success) {
     return NextResponse.json(
       { error: 'Too many requests. Please try again later.' },
       { status: 429 }
@@ -70,12 +55,11 @@ export function rateLimitMiddleware(
   return null;
 }
 
-// Pre-configured limiters for common use cases
-export const authRateLimit = (req: NextRequest) =>
-  rateLimitMiddleware(req, { windowMs: 15 * 60 * 1000, maxRequests: 10 });
+// Public API — now async (required for Upstash Redis calls)
+export const strictRateLimit = (req: NextRequest) => checkRateLimit(req, strictRatelimit);
+export const apiRateLimit = (req: NextRequest) => checkRateLimit(req, apiRatelimit);
 
-export const apiRateLimit = (req: NextRequest) =>
-  rateLimitMiddleware(req, { windowMs: 60 * 1000, maxRequests: 60 });
-
-export const strictRateLimit = (req: NextRequest) =>
-  rateLimitMiddleware(req, { windowMs: 15 * 60 * 1000, maxRequests: 20 });
+// Optional: for custom per-endpoint limits (e.g. very strict on register)
+export async function strictRateLimitForKey(request: NextRequest, key: string) {
+  return checkRateLimit(request, strictRatelimit, key);
+}

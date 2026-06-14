@@ -26,6 +26,7 @@ import {
   type FieldValue,
   type FieldValues,
 } from "@/lib/quest-field-templates";
+import { fetchWithAuth } from "@/lib/fetch-with-auth";
 
 interface QuestSubmissionDialogProps {
   questTitle: string;
@@ -100,7 +101,7 @@ export function QuestSubmissionDialog({ questTitle, assignmentId, questId }: Que
       const structuredText = submissionFields.length > 0 ? fieldValuesToText(submissionFields, values) : "";
       const submissionContent = [structuredText, notes.trim()].filter(Boolean).join("\n\n") || notes.trim();
 
-      const response = await fetch("/api/quests/submissions", {
+      const response = await fetchWithAuth("/api/quests/submissions", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -71,6 +71,7 @@ function parseReviewNotes(value: unknown) {
       const parsed = JSON.parse(value);
       return Array.isArray(parsed) ? parsed : [];
     } catch {
+      console.error('Failed to parse reviewNotes (legacy string value) — history may be incomplete or was corrupted.');
       return [];
     }
   }

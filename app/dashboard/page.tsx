@@ -43,7 +43,7 @@ export default async function DashboardPage() {
         prisma.questAssignment.findMany({
           where: {
             userId,
-            status: { in: ['assigned', 'started', 'in_progress', 'submitted', 'review'] },
+            status: { in: ['assigned', 'started', 'in_progress', 'submitted', 'pending_admin_review', 'needs_rework', 'review'] },
           },
           include: {
             quest: {
@@ -113,8 +113,19 @@ export default async function DashboardPage() {
 
   const completedCount = completedAssignments.length;
 
-  const totalEarned = completedAssignments.reduce(
-    (sum, a) => sum + Number(a.quest.monetaryReward ?? 0),
+  // Calculate Total Earned from actual Transaction records (net after 15% platform fee + daily standup penalties)
+  // instead of gross quest.monetaryReward. This ensures the displayed amount matches what the adventurer actually earns/receives.
+  const transactions = await withDbRetry(() =>
+    prisma.transaction.findMany({
+      where: {
+        toUserId: userId,
+        status: { in: ['pending', 'completed'] }, // include booked (pending payout) + completed
+      },
+      select: { amount: true },
+    })
+  );
+  const totalEarned = transactions.reduce(
+    (sum, t) => sum + Number(t.amount ?? 0),
     0
   );
 
