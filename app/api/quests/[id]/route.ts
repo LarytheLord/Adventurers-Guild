@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { UserRank } from '@prisma/client';
 import { prisma } from '@/lib/db';
 import { getAuthUser } from '@/lib/api-auth';
+import { getQuestAccessStatus } from '@/lib/quest-access';
 
 export async function GET(
   req: NextRequest,
@@ -64,7 +66,6 @@ export async function GET(
                 avatar: true,
                 rank: true,
                 xp: true,
-                email: true,
               },
             },
             submissions: {
@@ -140,10 +141,28 @@ export async function GET(
           }
         : null;
 
+    // Rank-based access gating using fresh DB rank (not stale JWT) so the
+    // detail page can correctly show/disable the claim button after a rank-up.
+    let effectiveRank = user?.rank as UserRank | undefined;
+    if (user?.role === 'adventurer' && user.id) {
+      const dbUser = await prisma.user.findUnique({
+        where: { id: user.id },
+        select: { rank: true },
+      });
+      if (dbUser?.rank) effectiveRank = dbUser.rank;
+    }
+    const accessStatus =
+      effectiveRank
+        ? getQuestAccessStatus(effectiveRank, quest.requiredRank)
+        : { canAccess: true, isVisible: true, lockedUntil: undefined };
+
     const normalizedQuest = {
       ...quest,
       company: sanitizedCompany,
       assignments,
+      canAccess: accessStatus.canAccess,
+      isVisible: accessStatus.isVisible,
+      lockedUntil: accessStatus.lockedUntil,
     };
 
     return NextResponse.json({

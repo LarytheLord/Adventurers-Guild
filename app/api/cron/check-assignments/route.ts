@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
+import { timingSafeEqual } from 'crypto';
 
 export async function GET(req: Request) {
   const authHeader = req.headers.get('authorization');
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const expected = `Bearer ${process.env.CRON_SECRET}`;
+  const safeEqual = (a: string, b: string) =>
+    a.length === b.length && timingSafeEqual(Buffer.from(a), Buffer.from(b));
+  if (!authHeader || !safeEqual(authHeader, expected)) {
     return new Response('Unauthorized', { status: 401 });
   }
 

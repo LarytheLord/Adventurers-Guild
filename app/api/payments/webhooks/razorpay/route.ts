@@ -70,7 +70,10 @@ export async function POST(request: NextRequest) {
     .update(rawBody)
     .digest('hex');
 
-  if (hash !== signature) {
+  const safeEqual = (a: string, b: string) =>
+    a.length === b.length && crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
+
+  if (!safeEqual(hash, signature)) {
     console.error('Invalid webhook signature');
     return NextResponse.json({ error: 'Invalid signature' }, { status: 403 });
   }

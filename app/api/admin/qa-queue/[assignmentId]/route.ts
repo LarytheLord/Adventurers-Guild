@@ -194,8 +194,9 @@ export async function PATCH(
     return NextResponse.json({ message: 'Submission approved', success: true });
   }
 
-  // reject — append QA note to submission reviewNotes (stored as JSON string) + record criteria
-  let existingNotes: Record<string, string>[] = [];
+  // reject — append QA note to submission reviewNotes (now native Json array) + record criteria
+  // Use direct array (Prisma Json) instead of stringify/parse to avoid silent data loss on parse errors.
+  let existingNotes: any[] = [];
   if (latestSubmission?.reviewNotes) {
     try {
       const raw = latestSubmission.reviewNotes;
@@ -208,7 +209,7 @@ export async function PATCH(
     author: `Admin (${adminId})`,
     note: notes!.trim(),
   };
-  const updatedNotes = JSON.stringify([...existingNotes, newNote]);
+  const updatedNotes = [...existingNotes, newNote];
 
   await prisma.$transaction(async (tx) => {
     await tx.questAssignment.update({

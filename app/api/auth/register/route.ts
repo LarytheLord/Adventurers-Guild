@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import { z } from 'zod';
 import { Prisma } from '@prisma/client';
 import { generateReferralCode, REFEREE_SIGNUP_XP } from '@/lib/referral-utils';
+import { strictRateLimit } from '@/lib/rate-limit';
 
 const registerSchema = z.object({
   name: z.string().min(2, 'Name must be at least 2 characters'),
@@ -16,6 +17,10 @@ const registerSchema = z.object({
 });
 
 export async function POST(request: NextRequest) {
+  // Defense-in-depth: rate limit even if middleware is bypassed (direct API calls, etc.)
+  const rateLimitResponse = await strictRateLimit(request);
+  if (rateLimitResponse) return rateLimitResponse;
+
   try {
     const body = await request.json();
 

@@ -40,11 +40,11 @@ export async function middleware(request: NextRequest) {
 
   // Apply strict rate limiting to auth routes only
   if (isAuthRoute) {
-    const rateLimitResponse = strictRateLimit(request);
+    const rateLimitResponse = await strictRateLimit(request);
     if (rateLimitResponse) return rateLimitResponse;
   } else if (pathname.startsWith('/api/')) {
     // Apply general rate limiting to non-auth API routes
-    const rateLimitResponse = apiRateLimit(request);
+    const rateLimitResponse = await apiRateLimit(request);
     if (rateLimitResponse) return rateLimitResponse;
   }
 
@@ -71,21 +71,11 @@ async function checkAuthAndRole(request: NextRequest, requiredRoles: UserRole[])
       throw new Error('NEXTAUTH_SECRET is not configured');
     }
 
-    // Try all common cookie modes to avoid secure-cookie mismatches on Edge.
-    const token =
-      (await getToken({ req: request, secret })) ??
-      (await getToken({ req: request, secret, secureCookie: true })) ??
-      (await getToken({ req: request, secret, secureCookie: false })) ??
-      (await getToken({
-        req: request,
-        secret,
-        cookieName: '__Secure-next-auth.session-token',
-      })) ??
-      (await getToken({
-        req: request,
-        secret,
-        cookieName: 'next-auth.session-token',
-      }));
+    // Determine correct cookie name once (based on scheme + env) and call getToken only once.
+    // Avoids 2-5× JWT decryption cost on Edge per request (was causing CPU regression).
+    const isSecure = process.env.NEXTAUTH_URL?.startsWith('https://') ?? process.env.NODE_ENV === 'production';
+    const cookieName = isSecure ? '__Secure-next-auth.session-token' : 'next-auth.session-token';
+    const token = await getToken({ req: request, secret, cookieName });
 
     if (!token) {
       if (process.env.NODE_ENV === 'development') {
@@ -93,7 +83,10 @@ async function checkAuthAndRole(request: NextRequest, requiredRoles: UserRole[])
       }
       // Redirect to login if not authenticated
       const url = new URL('/login', request.url);
-      url.searchParams.set('callbackUrl', request.url);
+      // Sanitize callbackUrl to pathname+search only to prevent open redirect to external origins (account takeover via phishing).
+      const parsed = new URL(request.url);
+      const safeCallback = parsed.pathname + parsed.search;
+      url.searchParams.set('callbackUrl', safeCallback);
       return NextResponse.redirect(url);
     }
 
@@ -103,7 +96,9 @@ async function checkAuthAndRole(request: NextRequest, requiredRoles: UserRole[])
     if (!userRole) {
       // User role not found in token
       const url = new URL('/login', request.url);
-      url.searchParams.set('callbackUrl', request.url);
+      const parsed = new URL(request.url);
+      const safeCallback = parsed.pathname + parsed.search;
+      url.searchParams.set('callbackUrl', safeCallback);
       return NextResponse.redirect(url);
     }
 
@@ -119,7 +114,9 @@ async function checkAuthAndRole(request: NextRequest, requiredRoles: UserRole[])
     console.error('Auth middleware error:', error);
     // On error, redirect to login
     const url = new URL('/login', request.url);
-    url.searchParams.set('callbackUrl', request.url);
+    const parsed = new URL(request.url);
+    const safeCallback = parsed.pathname + parsed.search;
+    url.searchParams.set('callbackUrl', safeCallback);
     return NextResponse.redirect(url);
   }
 }

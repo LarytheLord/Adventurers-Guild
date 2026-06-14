@@ -31,34 +31,17 @@ function decimalToNumber(value: Prisma.Decimal | number | string) {
   return value instanceof Prisma.Decimal ? value.toNumber() : Number(value);
 }
 
-async function hasBootcampLinksTable() {
-  const [result] = await prisma.$queryRaw<Array<{ exists: boolean }>>`
-    SELECT EXISTS (
-      SELECT 1
-      FROM information_schema.tables
-      WHERE table_schema = 'public'
-        AND table_name = 'bootcamp_links'
-    ) AS "exists"
-  `;
-
-  return Boolean(result?.exists);
-}
-
 async function getTrackMapForUsers(userIds: string[]) {
   if (userIds.length === 0) {
     return new Map<string, UserTrack>();
   }
 
-  if (!(await hasBootcampLinksTable())) {
-    return new Map<string, UserTrack>();
-  }
+  const bootcampLinks = await prisma.bootcampLink.findMany({
+    where: { userId: { in: userIds } },
+    select: { userId: true },
+  });
 
-  const bootcampLinks = await prisma.$queryRaw<Array<{ user_id: string }>>`
-    SELECT user_id FROM bootcamp_links
-    WHERE user_id = ANY(${userIds}::uuid[])
-  `;
-
-  const bootcampUserIds = new Set(bootcampLinks.map((link) => link.user_id));
+  const bootcampUserIds = new Set(bootcampLinks.map((link) => link.userId));
 
   return new Map<string, UserTrack>(
     userIds.map((userId) => [
