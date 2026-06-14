@@ -226,7 +226,7 @@ export default function QuestsPage() {
         });
       })
       .catch(() => {
-        setPlatformStats({ adventurers: 0, companies: 0, completedQuests: 0, openQuests: 0 });
+        // Leave platformStats as null so "—" displays instead of misleading zeros
       });
   }, []);
 
