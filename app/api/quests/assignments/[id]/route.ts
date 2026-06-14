@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { getAuthUser } from '@/lib/api-auth';
 import { AssignmentStatus } from '@prisma/client';
 import { z } from 'zod';
+import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
 
 const VALID_ADVENTURER_TRANSITIONS: Partial<Record<AssignmentStatus, AssignmentStatus[]>> = {
   assigned: ['started'],
@@ -67,7 +68,7 @@ export async function PATCH(
 
   const assignment = await prisma.questAssignment.findUnique({
     where: { id },
-    include: { quest: { select: { companyId: true } } },
+    include: { quest: { select: { companyId: true, id: true } } },
   });
   if (!assignment) return NextResponse.json({ error: 'Assignment not found' }, { status: 404 });
 
@@ -101,6 +102,8 @@ export async function PATCH(
       ...(status === 'completed' && { completedAt: new Date() }),
     },
   });
+
+  await syncQuestLifecycleStatus(prisma, assignment.quest.id);
 
   return NextResponse.json({ assignment: updated, success: true });
 }

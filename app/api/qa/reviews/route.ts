@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAuth } from '@/lib/api-auth';
 import { prisma } from '@/lib/db';
 import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
+import { Prisma } from '@prisma/client';
 
 const VALID_REVIEW_STATUSES = ['pending', 'under_review', 'approved', 'needs_rework', 'rejected'] as const;
 type ReviewStatus = (typeof VALID_REVIEW_STATUSES)[number];
@@ -156,7 +157,7 @@ export async function POST(request: NextRequest) {
         status,
         reviewerId: authUser.id,
         reviewedAt: new Date(),
-        reviewNotes: typeof body.review_notes === 'string' ? body.review_notes : null,
+        reviewNotes: typeof body.review_notes === 'string' ? (body.review_notes as Prisma.InputJsonValue) : undefined,
         qualityScore,
       },
     });

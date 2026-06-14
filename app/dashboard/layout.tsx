@@ -172,8 +172,12 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       {/* Sidebar */}
       <aside
         aria-label="Main navigation"
-        className={`fixed top-0 left-0 z-50 h-full w-72 border-r border-slate-200 bg-white text-slate-900 transform transition-transform duration-200 ease-in-out lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-          }`}
+        className={cn(
+          "fixed top-0 left-0 z-50 h-full border-r border-slate-200 bg-white text-slate-900 transform transition-[width,transform] duration-200 ease-in-out lg:translate-x-0",
+          sidebarOpen ? "translate-x-0" : "-translate-x-full",
+          sidebarCollapsed ? "lg:w-20" : "lg:w-72",
+          "w-72"
+        )}
       >
         <div className="flex flex-col h-full">
           {/* Logo / Header */}
@@ -250,7 +254,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       </aside>
 
       {/* Main content */}
-      <div className="lg:pl-72">
+      <div className={cn("lg:pl-72", sidebarCollapsed && "lg:pl-20")}>
         {/* Top bar */}
         <header className="sticky top-0 z-30 border-b border-slate-200/70 bg-white/80 backdrop-blur-lg">
           <div className="flex items-center justify-between px-4 py-3 lg:px-8">
