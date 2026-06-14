@@ -31,6 +31,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
+    // OAuth users have no password — email change via this endpoint is not supported for them
+    if (!user.passwordHash) {
+      return NextResponse.json(
+        { error: 'Email change is not available for social login accounts. Please contact support.' },
+        { status: 400 }
+      );
+    }
+
     // Require current password re-verification (security fix for account takeover)
     const isValid = await bcrypt.compare(currentPassword, user.passwordHash);
     if (!isValid) {
