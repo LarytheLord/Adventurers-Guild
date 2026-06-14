@@ -209,7 +209,11 @@ export async function PUT(request: NextRequest) {
         }]);
 
       if (completionError) {
-        console.error('Error recording quest completion:', completionError);
+        if (completionError.code === '23505') {
+          console.warn('Quest completion already exists, skipping insert:', completionError.message);
+        } else {
+          throw new Error(`Failed to record quest completion: ${completionError.message}`);
+        }
       }
 
       // Update user's XP and skill points
@@ -220,7 +224,7 @@ export async function PUT(request: NextRequest) {
       });
 
       if (userUpdateError) {
-        console.error('Error updating user XP and skills:', userUpdateError);
+        throw new Error(`Failed to update user XP and skills: ${userUpdateError.message}`);
       }
     }
 

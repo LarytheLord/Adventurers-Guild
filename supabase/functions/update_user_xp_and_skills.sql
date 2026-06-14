@@ -21,8 +21,8 @@ BEGIN
   -- Calculate new XP
   new_xp := current_xp + xp_gained;
 
-  -- Calculate new level based on XP (simple implementation: 1000 XP per level)
-  new_level := current_level + FLOOR((new_xp - current_xp) / 1000);
+  -- Calculate new level based on total XP (simple implementation: 1000 XP per level)
+  new_level := FLOOR(new_xp / 1000) + 1;
 
   -- Update user XP and level
   UPDATE users
@@ -60,11 +60,12 @@ BEGIN
           CASE 
             WHEN COUNT(*) = 0 THEN 0
             ELSE ROUND(
-              (COUNT(CASE WHEN qc.status = 'completed' THEN 1 END) * 100.0 / COUNT(*)), 2
+              (COUNT(qc.id) * 100.0 / COUNT(*)), 2
             )
           END
-        FROM quest_completions qc
-        WHERE qc.user_id = user_id_input
+        FROM quest_assignments qa
+        LEFT JOIN quest_completions qc ON qa.quest_id = qc.quest_id AND qa.user_id = qc.user_id
+        WHERE qa.user_id = user_id_input
       )
   WHERE user_id = user_id_input;
 END;
