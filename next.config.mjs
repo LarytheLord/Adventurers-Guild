@@ -16,7 +16,7 @@ const nextConfig = {
           { key: 'Permissions-Policy', value: 'camera=(), microphone=(), geolocation=()' },
           {
             key: 'Content-Security-Policy',
-            value: [`default-src 'self'`, `img-src 'self' data: https:`, `script-src 'self' 'unsafe-inline'`].join('; '),
+            value: [`default-src 'self'`, `img-src 'self' data: https:`].join('; '),
           },
         ],
       },
