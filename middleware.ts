@@ -71,21 +71,11 @@ async function checkAuthAndRole(request: NextRequest, requiredRoles: UserRole[])
       throw new Error('NEXTAUTH_SECRET is not configured');
     }
 
-    // Try all common cookie modes to avoid secure-cookie mismatches on Edge.
-    const token =
-      (await getToken({ req: request, secret })) ??
-      (await getToken({ req: request, secret, secureCookie: true })) ??
-      (await getToken({ req: request, secret, secureCookie: false })) ??
-      (await getToken({
-        req: request,
-        secret,
-        cookieName: '__Secure-next-auth.session-token',
-      })) ??
-      (await getToken({
-        req: request,
-        secret,
-        cookieName: 'next-auth.session-token',
-      }));
+    // Determine correct cookie name once (based on scheme + env) and call getToken only once.
+    // Avoids 2-5× JWT decryption cost on Edge per request (was causing CPU regression).
+    const isSecure = process.env.NEXTAUTH_URL?.startsWith('https://') ?? process.env.NODE_ENV === 'production';
+    const cookieName = isSecure ? '__Secure-next-auth.session-token' : 'next-auth.session-token';
+    const token = await getToken({ req: request, secret, cookieName });
 
     if (!token) {
       if (process.env.NODE_ENV === 'development') {
