@@ -66,7 +66,6 @@ export async function GET(
                 avatar: true,
                 rank: true,
                 xp: true,
-                email: true,
               },
             },
             submissions: {
