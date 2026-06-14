@@ -106,8 +106,8 @@ export default function QAQueuePage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'approve' }),
     });
+    await fetchQueue();
     setSubmitting(false);
-    fetchQueue();
   };
 
   const handleReject = async () => {
@@ -118,10 +118,10 @@ export default function QAQueuePage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'reject', notes: rejectNotes.trim() }),
     });
+    await fetchQueue();
     setSubmitting(false);
     setRejectTarget(null);
     setRejectNotes('');
-    fetchQueue();
   };
 
   const openPaymentModal = (item: QueueItem) => {
