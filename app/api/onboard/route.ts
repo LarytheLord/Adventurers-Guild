@@ -30,7 +30,9 @@ export async function POST(request: NextRequest) {
     // 1. Validate webhook secret (Authorization: Bearer <secret> only — body fallback removed for security)
     const expectedSecret = process.env.BOOTCAMP_WEBHOOK_SECRET;
     const providedSecret = readBearerToken(request);
-    if (!expectedSecret || !providedSecret || providedSecret !== expectedSecret) {
+    const safeEqual = (a: string, b: string) =>
+      a.length === b.length && crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
+    if (!expectedSecret || !providedSecret || !safeEqual(providedSecret, expectedSecret)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
