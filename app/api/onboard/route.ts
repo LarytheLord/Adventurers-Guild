@@ -12,7 +12,6 @@ interface OnboardPayload {
   cohort?: string;
   bootcampTrack: (typeof VALID_BOOTCAMP_TRACKS)[number];
   bootcampWeek?: number;
-  webhookSecret?: string; // legacy: allow secret in body
   initialPassword?: string; // optional: provided by bootcamp system for initial login
 }
 
@@ -27,9 +26,9 @@ export async function POST(request: NextRequest) {
   try {
     const body: OnboardPayload = await request.json();
 
-    // 1. Validate webhook secret (Authorization: Bearer ... OR body.webhookSecret)
+    // 1. Validate webhook secret (Authorization: Bearer <secret> only — body fallback removed for security)
     const expectedSecret = process.env.BOOTCAMP_WEBHOOK_SECRET;
-    const providedSecret = readBearerToken(request) ?? body.webhookSecret ?? null;
+    const providedSecret = readBearerToken(request);
     if (!expectedSecret || !providedSecret || providedSecret !== expectedSecret) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
