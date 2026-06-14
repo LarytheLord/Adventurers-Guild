@@ -93,7 +93,10 @@ async function checkAuthAndRole(request: NextRequest, requiredRoles: UserRole[])
       }
       // Redirect to login if not authenticated
       const url = new URL('/login', request.url);
-      url.searchParams.set('callbackUrl', request.url);
+      // Sanitize callbackUrl to pathname+search only to prevent open redirect to external origins (account takeover via phishing).
+      const parsed = new URL(request.url);
+      const safeCallback = parsed.pathname + parsed.search;
+      url.searchParams.set('callbackUrl', safeCallback);
       return NextResponse.redirect(url);
     }
 
@@ -103,7 +106,9 @@ async function checkAuthAndRole(request: NextRequest, requiredRoles: UserRole[])
     if (!userRole) {
       // User role not found in token
       const url = new URL('/login', request.url);
-      url.searchParams.set('callbackUrl', request.url);
+      const parsed = new URL(request.url);
+      const safeCallback = parsed.pathname + parsed.search;
+      url.searchParams.set('callbackUrl', safeCallback);
       return NextResponse.redirect(url);
     }
 
@@ -119,7 +124,9 @@ async function checkAuthAndRole(request: NextRequest, requiredRoles: UserRole[])
     console.error('Auth middleware error:', error);
     // On error, redirect to login
     const url = new URL('/login', request.url);
-    url.searchParams.set('callbackUrl', request.url);
+    const parsed = new URL(request.url);
+    const safeCallback = parsed.pathname + parsed.search;
+    url.searchParams.set('callbackUrl', safeCallback);
     return NextResponse.redirect(url);
   }
 }
