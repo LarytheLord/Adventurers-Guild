@@ -3,6 +3,7 @@ import { prisma } from '@/lib/db';
 import { requireAuth } from '@/lib/api-auth';
 import { Prisma } from '@prisma/client';
 import crypto from 'crypto';
+import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
 
 export async function GET(
   request: NextRequest,
@@ -121,18 +122,19 @@ export async function PATCH(
     criteriaResults != null ? (criteriaResults as Prisma.InputJsonValue) : undefined;
 
   if (action === 'approve') {
-    await prisma.$transaction([
-      prisma.questAssignment.update({
+    await prisma.$transaction(async (tx) => {
+      await tx.questAssignment.update({
         where: { id: assignmentId },
         data: { status: 'review' },
-      }),
-      ...(latestSubmission && criteriaJson !== undefined
-        ? [prisma.questSubmission.update({
-            where: { id: latestSubmission.id },
-            data: { criteriaResults: criteriaJson, reviewerId: adminId, reviewedAt: new Date() },
-          })]
-        : []),
-    ]);
+      });
+      if (latestSubmission && criteriaJson !== undefined) {
+        await tx.questSubmission.update({
+          where: { id: latestSubmission.id },
+          data: { criteriaResults: criteriaJson, reviewerId: adminId, reviewedAt: new Date() },
+        });
+      }
+      await syncQuestLifecycleStatus(tx, assignment.quest.id);
+    });
     return NextResponse.json({ message: 'Submission approved — forwarded to client review', success: true });
   }
 
@@ -149,27 +151,28 @@ export async function PATCH(
   };
   const updatedNotes = JSON.stringify([...existingNotes, newNote]);
 
-  await prisma.$transaction([
-    prisma.questAssignment.update({
+  await prisma.$transaction(async (tx) => {
+    await tx.questAssignment.update({
       where: { id: assignmentId },
       data: { status: 'needs_rework' },
-    }),
-    prisma.quest.update({
+    });
+    await tx.quest.update({
       where: { id: assignment.quest.id },
       data: { revisionCount: { increment: 1 } },
-    }),
-    ...(latestSubmission
-      ? [prisma.questSubmission.update({
-          where: { id: latestSubmission.id },
-          data: {
-            reviewNotes: updatedNotes,
-            reviewerId: adminId,
-            reviewedAt: new Date(),
-            ...(criteriaJson !== undefined ? { criteriaResults: criteriaJson } : {}),
-          },
-        })]
-      : []),
-  ]);
+    });
+    if (latestSubmission) {
+      await tx.questSubmission.update({
+        where: { id: latestSubmission.id },
+        data: {
+          reviewNotes: updatedNotes,
+          reviewerId: adminId,
+          reviewedAt: new Date(),
+          ...(criteriaJson !== undefined ? { criteriaResults: criteriaJson } : {}),
+        },
+      });
+    }
+    await syncQuestLifecycleStatus(tx, assignment.quest.id);
+  });
 
   return NextResponse.json({ message: 'Submission rejected — returned to student for revision', success: true });
 }
