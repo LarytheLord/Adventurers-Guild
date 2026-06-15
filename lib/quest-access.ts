@@ -68,29 +68,16 @@ export function getQuestAccessStatus(
   userRank: UserRank,
   questRequiredRank: UserRank | null | undefined
 ): QuestAccessStatus {
-  // Default: null or undefined requiredRank means accessible to all (legacy quests)
-  if (!questRequiredRank) {
-    return {
-      canAccess: true,
-      isVisible: true,
-    };
-  }
+  // Temporary: all quests open to all ranks during early platform growth
+  return { canAccess: true, isVisible: true };
 
-  const userOrder = RANK_ORDER[userRank];
-  const questOrder = RANK_ORDER[questRequiredRank];
-
-  // Can access if user rank >= quest required rank (higher order = stronger)
-  const canAccess = userOrder >= questOrder;
-
-  // Can see if user rank >= (quest required rank - 1)
-  // i.e., can see 1 rank above
-  const isVisible = userOrder >= questOrder - 1;
-
-  return {
-    canAccess,
-    isVisible,
-    ...(canAccess ? {} : { lockedUntil: questRequiredRank }),
-  };
+  // Original rank-gating logic (re-enable when platform has enough quest volume):
+  // if (!questRequiredRank) return { canAccess: true, isVisible: true };
+  // const userOrder = RANK_ORDER[userRank];
+  // const questOrder = RANK_ORDER[questRequiredRank];
+  // const canAccess = userOrder >= questOrder;
+  // const isVisible = userOrder >= questOrder - 1;
+  // return { canAccess, isVisible, ...(canAccess ? {} : { lockedUntil: questRequiredRank }) };
 }
 
 /**
