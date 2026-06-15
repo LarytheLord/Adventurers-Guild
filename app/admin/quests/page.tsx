@@ -61,6 +61,7 @@ interface QuestItem {
   description: string;
   status: string;
   difficulty: string;
+  requiredRank: string | null;
   questType: string;
   questCategory: string;
   xpReward: number;
@@ -91,6 +92,8 @@ export default function AdminQuestsPage() {
   const [newNoteText, setNewNoteText] = useState('');
   const [savingNote, setSavingNote] = useState(false);
   const [changingStatusId, setChangingStatusId] = useState<string | null>(null);
+  const [changingRankId, setChangingRankId] = useState<string | null>(null);
+  const [clearingDeadlineId, setClearingDeadlineId] = useState<string | null>(null);
 
   const shouldFetch = status === 'authenticated' && session?.user?.role === 'admin';
   const questsEndpoint = useMemo(() => {
@@ -170,6 +173,54 @@ export default function AdminQuestsPage() {
       toast.error('Something went wrong');
     } finally {
       setChangingStatusId(null);
+    }
+  };
+
+  const handleRankChange = async (questId: string, newRank: string) => {
+    setChangingRankId(questId);
+    try {
+      const response = await fetchWithAuth('/api/admin/quests', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ questId, requiredRank: newRank }),
+      });
+      const payload = await response.json();
+      if (payload.success) {
+        mutateQuests((current) =>
+          current.map((q) => (q.id === questId ? { ...q, requiredRank: newRank } : q))
+        );
+        toast.success(`Required rank set to ${newRank}`);
+      } else {
+        toast.error(payload.error || 'Failed to update rank');
+      }
+    } catch {
+      toast.error('Something went wrong');
+    } finally {
+      setChangingRankId(null);
+    }
+  };
+
+  const handleClearDeadline = async (questId: string) => {
+    setClearingDeadlineId(questId);
+    try {
+      const response = await fetchWithAuth('/api/admin/quests', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ questId, deadline: null }),
+      });
+      const payload = await response.json();
+      if (payload.success) {
+        mutateQuests((current) =>
+          current.map((q) => (q.id === questId ? { ...q, deadline: null } : q))
+        );
+        toast.success('Deadline cleared');
+      } else {
+        toast.error(payload.error || 'Failed to clear deadline');
+      }
+    } catch {
+      toast.error('Something went wrong');
+    } finally {
+      setClearingDeadlineId(null);
     }
   };
 
@@ -431,18 +482,19 @@ export default function AdminQuestsPage() {
                     </div>
 
                     <div className="flex shrink-0 flex-wrap gap-2 sm:flex-col">
+                      {/* Status */}
                       <Select
                         value={quest.status}
                         onValueChange={(value) => handleStatusChange(quest.id, value)}
                         disabled={changingStatusId === quest.id}
                       >
-                        <SelectTrigger className="h-8 w-[120px] sm:w-[140px] text-xs">
+                        <SelectTrigger className="h-8 w-[130px] text-xs">
                           {changingStatusId === quest.id ? (
                             <Loader2 className="h-3 w-3 animate-spin" />
                           ) : (
                             <>
                               <ChevronDown className="mr-1 h-3 w-3" />
-                              Change status
+                              Status
                             </>
                           )}
                         </SelectTrigger>
@@ -455,6 +507,30 @@ export default function AdminQuestsPage() {
                         </SelectContent>
                       </Select>
 
+                      {/* Required rank */}
+                      <Select
+                        value={quest.requiredRank ?? quest.difficulty ?? 'F'}
+                        onValueChange={(value) => handleRankChange(quest.id, value)}
+                        disabled={changingRankId === quest.id}
+                      >
+                        <SelectTrigger className="h-8 w-[130px] text-xs">
+                          {changingRankId === quest.id ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <>
+                              <ChevronDown className="mr-1 h-3 w-3" />
+                              Min rank: {quest.requiredRank ?? quest.difficulty ?? 'F'}
+                            </>
+                          )}
+                        </SelectTrigger>
+                        <SelectContent>
+                          {['F', 'E', 'D', 'C', 'B', 'A', 'S'].map((r) => (
+                            <SelectItem key={r} value={r}>{r}-Rank</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+
+                      {/* Notes */}
                       <Button
                         variant="outline"
                         size="sm"
@@ -462,16 +538,36 @@ export default function AdminQuestsPage() {
                         onClick={() => openNoteDialog(quest)}
                       >
                         <StickyNote className="h-3 w-3" />
-                        Notes
+                        Notes {quest.adminNotes?.length ? `(${quest.adminNotes.length})` : ''}
                       </Button>
 
+                      {/* Edit */}
                       <Button variant="outline" size="sm" className="h-8 text-xs" asChild>
-                        <Link href={`/dashboard/company/quests/${quest.id}`}>
+                        <Link href={`/dashboard/company/quests/${quest.id}/edit`}>
                           <Edit className="h-3 w-3" />
-                          View
+                          Edit
                         </Link>
                       </Button>
 
+                      {/* Clear deadline */}
+                      {quest.deadline && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 text-xs text-amber-600 hover:border-amber-300 hover:text-amber-700"
+                          onClick={() => handleClearDeadline(quest.id)}
+                          disabled={clearingDeadlineId === quest.id}
+                        >
+                          {clearingDeadlineId === quest.id ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <CalendarClock className="h-3 w-3" />
+                          )}
+                          No Deadline
+                        </Button>
+                      )}
+
+                      {/* Cancel */}
                       {quest.status !== 'cancelled' && quest.status !== 'completed' && (
                         <Button
                           variant="outline"

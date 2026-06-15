@@ -137,6 +137,7 @@ export async function GET(request: NextRequest) {
     const rank = normalizeRank(searchParams.get('rank'));
     const where = {
       role: 'adventurer' as const,
+      isActive: true,
       OR: [
         { xp: { gt: 0 } },
         { skillPoints: { gt: 0 } },
