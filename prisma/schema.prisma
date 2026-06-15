@@ -490,8 +490,10 @@ model QuestAssignment {
   startedAt   DateTime?        @map("started_at") @db.Timestamptz
   completedAt DateTime?        @map("completed_at") @db.Timestamptz
   progress    Decimal          @default(0.00) @db.Decimal(5, 2)
-  completedTasks String[]      @map("completed_tasks") // list of tasks completed by student
-  lastUpdateAt   DateTime?     @map("last_update_at") @db.Timestamptz // track last daily standup
+  submittedAt    DateTime?        @map("submitted_at") @db.Timestamptz
+  notes          String?          @db.Text
+  completedTasks String[]         @map("completed_tasks") // list of tasks completed by student
+  lastUpdateAt   DateTime?        @map("last_update_at") @db.Timestamptz
 
   quest       Quest             @relation(fields: [questId], references: [id], onDelete: Cascade)
   user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)

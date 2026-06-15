@@ -164,13 +164,13 @@ export default function HowItWorks() {
                 <ArrowRight className="h-3.5 w-3.5" strokeWidth={2.5} />
               </Link>
               <a
-                href="https://chat.whatsapp.com/FFR8bOzvsJr3xHDnhGpB95"
+                href="https://chat.whatsapp.com/FFR8bOzvsJr3xHDnhGpB95?s=cl&p=i&ilr=0"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-3 inline-flex h-11 items-center gap-2 rounded-xl border border-slate-200 bg-white px-5 text-[13px] font-semibold text-slate-700 transition-all hover:border-green-300 hover:text-green-700 hover:shadow-sm"
+                className="mt-3 inline-flex h-11 items-center gap-2 rounded-xl border border-green-200 bg-green-50 px-5 text-[13px] font-semibold text-green-700 transition-all hover:bg-green-100 hover:shadow-sm"
               >
-                <MessageCircle className="h-4 w-4 text-green-500" />
-                Join our WhatsApp
+                <MessageCircle className="h-4 w-4 text-green-600" />
+                Join our WhatsApp Community
               </a>
             </div>
           </div>

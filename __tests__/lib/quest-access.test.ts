@@ -23,25 +23,27 @@ describe('Quest Access Control', () => {
       expect(status.isVisible).toBe(true);
     });
 
-    it('should not allow access to quests above user rank', () => {
+    // Rank gating is temporarily bypassed (all quests open during early platform growth).
+    // These tests reflect current behavior; restore original expectations when gating is re-enabled.
+    it('should allow access even to quests above user rank (gating bypassed)', () => {
       const status = getQuestAccessStatus('F', 'D');
-      expect(status.canAccess).toBe(false);
-      expect(status.isVisible).toBe(false);
-      expect(status.lockedUntil).toBe('D');
-    });
-
-    it('should allow visibility 1 rank above', () => {
-      const status = getQuestAccessStatus('F', 'E');
-      expect(status.canAccess).toBe(false);
+      expect(status.canAccess).toBe(true);
       expect(status.isVisible).toBe(true);
-      expect(status.lockedUntil).toBe('E');
+      expect(status.lockedUntil).toBeUndefined();
     });
 
-    it('should hide quests 2+ ranks above', () => {
+    it('should allow access 1 rank above (gating bypassed)', () => {
+      const status = getQuestAccessStatus('F', 'E');
+      expect(status.canAccess).toBe(true);
+      expect(status.isVisible).toBe(true);
+      expect(status.lockedUntil).toBeUndefined();
+    });
+
+    it('should allow access 2+ ranks above (gating bypassed)', () => {
       const status = getQuestAccessStatus('F', 'D');
-      expect(status.canAccess).toBe(false);
-      expect(status.isVisible).toBe(false);
-      expect(status.lockedUntil).toBe('D');
+      expect(status.canAccess).toBe(true);
+      expect(status.isVisible).toBe(true);
+      expect(status.lockedUntil).toBeUndefined();
     });
 
     it('should handle null requiredRank (backward compatible)', () => {
@@ -70,9 +72,10 @@ describe('Quest Access Control', () => {
       expect(canUserAcceptQuest('D', 'D')).toBe(true);
     });
 
-    it('should return false if user cannot accept', () => {
-      expect(canUserAcceptQuest('F', 'D')).toBe(false);
-      expect(canUserAcceptQuest('F', 'E')).toBe(false);
+    // Rank gating bypassed — all ranks can accept any quest during early growth.
+    it('should return true regardless of rank mismatch (gating bypassed)', () => {
+      expect(canUserAcceptQuest('F', 'D')).toBe(true);
+      expect(canUserAcceptQuest('F', 'E')).toBe(true);
     });
 
     it('should return true for null requiredRank', () => {
