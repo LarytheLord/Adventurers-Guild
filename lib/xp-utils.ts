@@ -42,7 +42,7 @@ export async function updateUserXpAndSkills(
 
     const multiplier = profile?.streakMultiplier ?? 1.0;
     const newXp = user.xp + Math.round(xpGained * Number(multiplier));
-    const newLevel = user.level + Math.floor(xpGained / XP_PER_LEVEL);
+    const newLevel = calculateLevelFromXP(newXp);
     const newRank = getRankForXp(newXp) as UserRank;
     const rankChanged = user.rank !== newRank;
 

@@ -173,13 +173,19 @@ export async function PATCH(
       return quest;
     });
 
-    const { updateUserXpAndSkills } = await import('@/lib/xp-utils');
-    await updateUserXpAndSkills(
-      assignment.user.id,
-      questRewards.xpReward,
-      questRewards.skillPointsReward,
-      assignment.quest.id,
-    );
+    let xpAwardFailed = false;
+    try {
+      const { updateUserXpAndSkills } = await import('@/lib/xp-utils');
+      await updateUserXpAndSkills(
+        assignment.user.id,
+        questRewards.xpReward,
+        questRewards.skillPointsReward,
+        assignment.quest.id,
+      );
+    } catch (xpError) {
+      console.error('[qa-queue] XP award failed for assignment', assignmentId, '— quest is marked complete but XP was not granted:', xpError);
+      xpAwardFailed = true;
+    }
 
     // Bootcamp tutorial tracking
     if (questRewards.source === 'TUTORIAL') {
@@ -200,7 +206,13 @@ export async function PATCH(
       }
     }
 
-    return NextResponse.json({ message: 'Quest completed — XP awarded', success: true });
+    return NextResponse.json({
+      message: xpAwardFailed
+        ? 'Quest approved and marked complete, but XP award failed — check server logs'
+        : 'Quest completed — XP awarded',
+      success: true,
+      ...(xpAwardFailed && { xpAwardFailed: true }),
+    });
   }
 
   // reject — append QA note to submission reviewNotes (now native Json array) + record criteria
