@@ -1,7 +1,7 @@
 // lib/xp-utils.ts
 // Replaces Supabase RPC: update_user_xp_and_skills
 import { prisma } from './db';
-import { getRankForXp, XP_PER_LEVEL } from './ranks';
+import { getRankForXp } from './ranks';
 import { UserRank } from '@prisma/client';
 import { logActivity } from './activity-logger';
 import { updateStreak } from './streak-utils';
