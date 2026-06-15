@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Hero from '@/components/ui/animated-shader-hero';
+import AnnouncementBanner from '@/components/landing/AnnouncementBanner';
 import RankJourney from '@/components/landing/RankJourney';
 import TrustStrip from '@/components/landing/LogoMarquee';
 import HowItWorks from '@/components/landing/HowItWorks';
@@ -26,6 +27,9 @@ export default function HomePage() {
 
   return (
     <>
+      {/* Announcement banner — dismissible, auto-expires */}
+      <AnnouncementBanner />
+
       {/* Hero — broader service scope, not just code */}
       <div className="relative">
         <Hero
