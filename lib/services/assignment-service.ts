@@ -91,11 +91,11 @@ export async function applyToQuest(questId: string, user: SessionUser, tx: Prism
           const filledCount = await tx.questAssignment.count({
             where: {
               questId,
-              status: { in: ['started', 'in_progress', 'submitted', 'pending_admin_review', 'review', 'needs_rework', 'completed'] },
+              status: { in: ['assigned', 'started', 'in_progress', 'submitted', 'pending_admin_review', 'review', 'needs_rework', 'completed'] },
             },
           });
           if (filledCount >= quest.maxParticipants) {
-            throw new Error('Maximum participants reached for this quest');
+            throw new Error('This quest is full — all slots have been claimed');
           }
         }
 
@@ -118,7 +118,7 @@ export async function applyToQuest(questId: string, user: SessionUser, tx: Prism
     return { data: assignment, error: null, status: 200 };
   } catch (error) {
     const msg = error instanceof Error ? error.message : '';
-    if (msg === 'Maximum participants reached for this quest') {
+    if (msg === 'This quest is full — all slots have been claimed') {
       return { data: null, error: msg, status: 400 };
     }
     console.error('Error applying to quest:', error);
