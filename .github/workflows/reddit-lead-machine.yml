@@ -1,8 +1,6 @@
 name: Reddit Lead Machine
 
 on:
-  schedule:
-    - cron: '0 6,18 * * *'
   workflow_dispatch:
     inputs:
       dry_run:
