@@ -220,3 +220,48 @@ export async function sendTeamInviteNotification(
     { teamName, inviterName }
   );
 }
+
+// Send email change requested notification
+export async function sendEmailChangeRequestedNotification(
+  userId: string,
+  oldEmail: string,
+  newEmail: string
+): Promise<void> {
+  await createNotification(
+    userId,
+    'Email Change Requested',
+    `A request to change your email from ${oldEmail} to ${newEmail} has been submitted. Check your email to confirm.`,
+    'email_change_requested',
+    { oldEmail, newEmail }
+  );
+}
+
+// Send email change confirmed notification
+export async function sendEmailChangeConfirmedNotification(
+  userId: string,
+  oldEmail: string,
+  newEmail: string
+): Promise<void> {
+  await createNotification(
+    userId,
+    'Email Changed Successfully',
+    `Your email has been changed from ${oldEmail} to ${newEmail}.`,
+    'email_change_confirmed',
+    { oldEmail, newEmail }
+  );
+}
+
+// Send email change cancelled notification
+export async function sendEmailChangeCancelledNotification(
+  userId: string,
+  oldEmail: string,
+  newEmail: string
+): Promise<void> {
+  await createNotification(
+    userId,
+    'Email Change Cancelled',
+    `The pending email change from ${oldEmail} to ${newEmail} has been cancelled.`,
+    'email_change_cancelled',
+    { oldEmail, newEmail }
+  );
+}

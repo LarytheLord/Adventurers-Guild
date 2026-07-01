@@ -12,7 +12,7 @@ create type quest_category as enum ('frontend', 'backend', 'fullstack', 'mobile'
 create type assignment_status as enum ('assigned', 'started', 'in_progress', 'submitted', 'review', 'completed', 'cancelled');
 create type submission_status as enum ('pending', 'under_review', 'approved', 'needs_rework', 'rejected');
 create type team_role as enum ('owner', 'admin', 'member');
-create type notification_type as enum ('quest_assigned', 'quest_updated', 'quest_completed', 'quest_reviewed', 'new_message', 'rank_up', 'skill_unlocked', 'team_invite', 'payment_received', 'system_message');
+create type notification_type as enum ('quest_assigned', 'quest_updated', 'quest_completed', 'quest_reviewed', 'new_message', 'rank_up', 'skill_unlocked', 'team_invite', 'payment_received', 'system_message', 'email_change_requested', 'email_change_confirmed', 'email_change_cancelled');
 create type verification_type as enum ('company', 'identity', 'skill', 'portfolio');
 create type verification_status as enum ('pending', 'approved', 'rejected', 'in_review');
 
@@ -221,6 +221,24 @@ create table if not exists public.quest_completions (
     quality_score integer check (quality_score >= 1 and quality_score <= 10),
     unique(quest_id, user_id)
 );
+
+-- Email change requests for secure email updates
+create table if not exists public.email_change_requests (
+    id uuid default uuid_generate_v4() primary key,
+    user_id uuid references public.users on delete cascade not null,
+    old_email text not null,
+    new_email text not null,
+    current_password_hash text not null,
+    verification_token text not null unique,
+    status text check (status in ('pending', 'confirmed', 'expired', 'cancelled')) default 'pending',
+    expires_at timestamp with time zone not null,
+    created_at timestamp with time zone default timezone('utc'::text, now()),
+    confirmed_at timestamp with time zone
+);
+
+create index if not exists idx_email_change_requests_user_id on public.email_change_requests(user_id);
+create index if not exists idx_email_change_requests_token on public.email_change_requests(verification_token);
+create index if not exists idx_email_change_requests_status on public.email_change_requests(status);
 
 -- Enable Row Level Security (RLS) for all tables
 alter table public.users enable row level security;
