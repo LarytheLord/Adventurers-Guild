@@ -69,6 +69,10 @@ async function upsertOAuthUser(user: User, account?: Account | null) {
       return newUser;
     }
 
+    if (!existingUser.isActive) {
+      return { error: 'user_deactivated' as const };
+    }
+
     if (!existingUser.adventurerProfile) {
       await tx.adventurerProfile.create({
         data: { userId: existingUser.id },
@@ -80,6 +84,10 @@ async function upsertOAuthUser(user: User, account?: Account | null) {
       data: { lastLoginAt: new Date() },
     });
   }));
+
+  if ('error' in dbUser) {
+    return { error: 'user_deactivated' as const };
+  }
 
   (user as unknown as Record<string, unknown>).id = dbUser.id;
   (user as unknown as Record<string, unknown>).role = dbUser.role;
@@ -124,6 +132,11 @@ export const authOptions: AuthOptions = {
           const isValidPassword = await bcrypt.compare(credentials.password, user.passwordHash);
           if (!isValidPassword) {
             if (process.env.NODE_ENV === 'development') console.log('[Auth] Invalid password for:', credentials.email);
+            return null;
+          }
+
+          if (!user.isActive) {
+            if (process.env.NODE_ENV === 'development') console.log('[Auth] Deactivated user attempted login:', user.email);
             return null;
           }
 
@@ -172,10 +185,13 @@ export const authOptions: AuthOptions = {
           const fresh = await withDbRetry(() =>
             prisma.user.findUnique({
               where: { id: token.id as string },
-              select: { rank: true, xp: true, role: true },
+              select: { rank: true, xp: true, role: true, isActive: true },
             })
           );
           if (fresh) {
+            if (!fresh.isActive) {
+              return { ...token, error: 'UserDeactivated' };
+            }
             token.rank = fresh.rank;
             token.xp = fresh.xp;
             token.role = fresh.role as UserRole;
