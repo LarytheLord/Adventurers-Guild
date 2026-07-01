@@ -86,6 +86,11 @@ export default function AdminDashboard() {
   const [questSearch, setQuestSearch] = useState('');
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedQuest, setSelectedQuest] = useState<Quest | null>(null);
+  const [analyticsData, setAnalyticsData] = useState<any>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [editingQuest, setEditingQuest] = useState<Quest | null>(null);
+  const [editForm, setEditForm] = useState({ title: '', description: '', xp_reward: 0, skill_points_reward: 0, monetary_reward: '' });
+  const [roleDropdownUser, setRoleDropdownUser] = useState<string | null>(null);
 
   // Fetch users
   useEffect(() => {
@@ -138,6 +143,107 @@ export default function AdminDashboard() {
       fetchQuests();
     }
   }, [activeTab, questSearch]);
+
+  // Fetch analytics
+  useEffect(() => {
+    const fetchAnalytics = async () => {
+      try {
+        setAnalyticsLoading(true);
+        const response = await fetch('/api/admin/analytics');
+        const data = await response.json();
+        
+        if (data.success) {
+          setAnalyticsData(data.data);
+        } else {
+          toast.error('Failed to fetch analytics');
+        }
+      } catch (error) {
+        console.error('Error fetching analytics:', error);
+        toast.error('Error fetching analytics');
+      } finally {
+        setAnalyticsLoading(false);
+      }
+    };
+
+    if (activeTab === 'analytics') {
+      fetchAnalytics();
+    }
+  }, [activeTab]);
+
+  // Handle role change
+  const handleRoleChange = async (userId: string, newRole: string) => {
+    try {
+      const response = await fetch('/api/admin/users', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, role: newRole }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        toast.success(`User role updated to ${newRole}`);
+        const updatedUsersResponse = await fetch(`/api/admin/users?search=${userSearch}`);
+        const updatedUsersData = await updatedUsersResponse.json();
+        if (updatedUsersData.success) {
+          setUsers(updatedUsersData.users);
+        }
+      } else {
+        toast.error(data.error || 'Failed to update role');
+      }
+    } catch (error) {
+      console.error('Error updating role:', error);
+      toast.error('Error updating role');
+    } finally {
+      setRoleDropdownUser(null);
+    }
+  };
+
+  // Handle quest edit
+  const handleQuestEdit = async (questId: string) => {
+    try {
+      const response = await fetch('/api/admin/quests', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          quest_id: questId,
+          title: editForm.title,
+          description: editForm.description,
+          xp_reward: parseInt(editForm.xp_reward),
+          skill_points_reward: parseInt(editForm.skill_points_reward),
+          monetary_reward: editForm.monetary_reward ? parseFloat(editForm.monetary_reward) : null,
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (data.success) {
+        toast.success('Quest updated successfully');
+        setEditingQuest(null);
+        const updatedQuestsResponse = await fetch(`/api/admin/quests?search=${questSearch}`);
+        const updatedQuestsData = await updatedQuestsResponse.json();
+        if (updatedQuestsData.success) {
+          setQuests(updatedQuestsData.quests);
+        }
+      } else {
+        toast.error(data.error || 'Failed to update quest');
+      }
+    } catch (error) {
+      console.error('Error updating quest:', error);
+      toast.error('Error updating quest');
+    }
+  };
+
+  const openQuestEdit = (quest: Quest) => {
+    setEditingQuest(quest);
+    setEditForm({
+      title: quest.title,
+      description: quest.description,
+      xp_reward: quest.xp_reward,
+      skill_points_reward: quest.skill_points_reward,
+      monetary_reward: quest.monetary_reward?.toString() || '',
+    });
+  };
 
   const handleUserAction = async (userId: string, action: 'verify' | 'deactivate' | 'setRole', role?: string) => {
     try {
@@ -342,7 +448,7 @@ export default function AdminDashboard() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <div className="flex space-x-2">
+                          <div className="flex space-x-2 relative">
                             <Button 
                               variant="outline" 
                               size="sm"
@@ -359,6 +465,17 @@ export default function AdminDashboard() {
                             >
                               Deactivate
                             </Button>
+                            <select
+                              className="text-xs border rounded px-1 py-1 bg-background"
+                              value=""
+                              onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              <option value="">Role</option>
+                              <option value="adventurer">Adventurer</option>
+                              <option value="company">Company</option>
+                              <option value="admin">Admin</option>
+                            </select>
                           </div>
                         </TableCell>
                       </TableRow>
@@ -456,6 +573,13 @@ export default function AdminDashboard() {
                         </TableCell>
                         <TableCell>
                           <div className="flex space-x-2">
+                            <Button 
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => openQuestEdit(quest)}
+                            >
+                              Edit
+                            </Button>
                             <Button 
                               variant="outline" 
                               size="sm"
@@ -572,6 +696,63 @@ export default function AdminDashboard() {
       </Tabs>
 
       {/* Modals for detailed views would go here */}
+
+      {/* Quest Edit Modal */}
+      {editingQuest && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setEditingQuest(null)}>
+          <div className="bg-background rounded-lg p-6 w-full max-w-lg mx-4" onClick={(e) => e.stopPropagation()}>
+            <h2 className="text-xl font-bold mb-4">Edit Quest</h2>
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-medium">Title</label>
+                <Input
+                  value={editForm.title}
+                  onChange={(e) => setEditForm({ ...editForm, title: e.target.value })}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Description</label>
+                <textarea
+                  className="w-full border rounded-md p-2 min-h-[80px]"
+                  value={editForm.description}
+                  onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium">XP Reward</label>
+                  <Input
+                    type="number"
+                    value={editForm.xp_reward}
+                    onChange={(e) => setEditForm({ ...editForm, xp_reward: parseInt(e.target.value) || 0 })}
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium">Skill Points Reward</label>
+                  <Input
+                    type="number"
+                    value={editForm.skill_points_reward}
+                    onChange={(e) => setEditForm({ ...editForm, skill_points_reward: parseInt(e.target.value) || 0 })}
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Monetary Reward ($)</label>
+                <Input
+                  type="number"
+                  value={editForm.monetary_reward}
+                  onChange={(e) => setEditForm({ ...editForm, monetary_reward: e.target.value })}
+                  placeholder="Optional"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2 mt-6">
+              <Button variant="outline" onClick={() => setEditingQuest(null)}>Cancel</Button>
+              <Button onClick={() => handleQuestEdit(editingQuest.id)}>Save Changes</Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

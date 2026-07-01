@@ -1,24 +1,40 @@
 // app/api/admin/users/route.ts
 import { NextRequest } from 'next/server';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth';
 import { createClient } from '@supabase/supabase-js';
+import { env } from '@/lib/env';
 
-// Initialize Supabase client
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  env.NEXT_PUBLIC_SUPABASE_URL,
+  env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 export async function GET(request: NextRequest) {
   try {
-    // Parse query parameters
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+    }
+
+    const { data: userData } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', session.user.id)
+      .single();
+
+    if (!userData || userData.role !== 'admin') {
+      return Response.json({ error: 'Forbidden: Admin access required', success: false }, { status: 403 });
+    }
+
     const { searchParams } = new URL(request.url);
     const role = searchParams.get('role');
     const isVerified = searchParams.get('is_verified');
     const search = searchParams.get('search');
-    const limit = searchParams.get('limit') || '10';
+    const limit = searchParams.get('limit') || '50';
     const offset = searchParams.get('offset') || '0';
 
-    // Build query
     let query = supabase
       .from('users')
       .select(`
@@ -56,7 +72,6 @@ export async function GET(request: NextRequest) {
       .range(parseInt(offset), parseInt(offset) + parseInt(limit) - 1)
       .order('created_at', { ascending: false });
 
-    // Add filters if provided
     if (role) {
       query = query.eq('role', role);
     }
@@ -82,15 +97,29 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+    }
+
+    const { data: userData } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', session.user.id)
+      .single();
+
+    if (!userData || userData.role !== 'admin') {
+      return Response.json({ error: 'Forbidden: Admin access required', success: false }, { status: 403 });
+    }
+
     const body = await request.json();
     const { user_id, role, is_verified, is_active } = body;
 
-    // Validate required fields
     if (!user_id) {
       return Response.json({ error: 'User ID is required', success: false }, { status: 400 });
     }
 
-    // Update the user
     const updateData: any = {};
     if (role !== undefined) updateData.role = role;
     if (is_verified !== undefined) updateData.is_verified = is_verified;
@@ -116,15 +145,29 @@ export async function PUT(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+
+    if (!session?.user?.id) {
+      return Response.json({ error: 'Unauthorized', success: false }, { status: 401 });
+    }
+
+    const { data: userData } = await supabase
+      .from('users')
+      .select('role')
+      .eq('id', session.user.id)
+      .single();
+
+    if (!userData || userData.role !== 'admin') {
+      return Response.json({ error: 'Forbidden: Admin access required', success: false }, { status: 403 });
+    }
+
     const body = await request.json();
     const { user_id } = body;
 
-    // Validate required field
     if (!user_id) {
       return Response.json({ error: 'User ID is required', success: false }, { status: 400 });
     }
 
-    // Delete the user (in reality, you'd want to de-activate rather than hard delete)
     const { error } = await supabase
       .from('users')
       .update({ is_active: false })
