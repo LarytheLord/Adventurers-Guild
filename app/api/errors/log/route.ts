@@ -21,14 +21,12 @@ export async function POST(request: NextRequest) {
   const authHeader = request.headers.get('authorization') || '';
   const providedKey = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
 
-  if (process.env.NODE_ENV === 'production') {
-    if (!env.ERROR_LOG_API_KEY || providedKey !== env.ERROR_LOG_API_KEY) {
+  if (!env.ERROR_LOG_API_KEY || providedKey !== env.ERROR_LOG_API_KEY) {
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
       );
     }
-  }
 
   try {
     const errorLog = await request.json();
