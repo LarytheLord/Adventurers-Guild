@@ -246,27 +246,28 @@ export async function PATCH(
   };
   const updatedNotes = [...existingNotes, newNote];
 
-  await prisma.$transaction([
-    prisma.questAssignment.update({
+  await prisma.$transaction(async (tx) => {
+    await tx.questAssignment.update({
       where: { id: assignmentId },
       data: { status: 'needs_rework' },
-    }),
-    prisma.quest.update({
+    });
+    await tx.quest.update({
       where: { id: assignment.quest.id },
       data: { revisionCount: { increment: 1 } },
-    }),
-    ...(latestSubmission
-      ? [prisma.questSubmission.update({
-          where: { id: latestSubmission.id },
-          data: {
-            reviewNotes: updatedNotes,
-            reviewerId: adminId,
-            reviewedAt: new Date(),
-            ...(criteriaJson !== undefined ? { criteriaResults: criteriaJson } : {}),
-          },
-        })]
-      : []),
-  ]);
+    });
+    if (latestSubmission) {
+      await tx.questSubmission.update({
+        where: { id: latestSubmission.id },
+        data: {
+          reviewNotes: updatedNotes,
+          reviewerId: adminId,
+          reviewedAt: new Date(),
+          ...(criteriaJson !== undefined ? { criteriaResults: criteriaJson } : {}),
+        },
+      });
+    }
+    await syncQuestLifecycleStatus(tx, assignment.quest.id);
+  });
 
   return NextResponse.json({ message: 'Submission rejected — returned to student for revision', success: true });
 }
