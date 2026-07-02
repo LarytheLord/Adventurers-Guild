@@ -50,6 +50,23 @@ export class AuthService {
     })
 
     if (error) throw error
+
+    // Check if user is active after authentication
+    const { data: profile, error: profileError } = await supabase
+      .from('users')
+      .select('is_active')
+      .eq('id', data.user.id)
+      .single()
+
+    if (profileError) {
+      console.error('Error fetching user profile:', profileError)
+      // If we can't verify, allow login but log warning
+    } else if (!profile.is_active) {
+      // User is deactivated - sign them out and throw error
+      await supabase.auth.signOut()
+      throw new Error('ACCOUNT_DEACTIVATED')
+    }
+
     return data
   }
 
@@ -84,11 +101,18 @@ export class AuthService {
     
     if (!user) return null
 
-    const { data: profile } = await supabase
+    const { data: profile, error } = await supabase
       .from('users')
       .select('*')
       .eq('id', user.id)
       .single()
+
+    // Check if user is active on session refresh
+    if (profile && !profile.is_active) {
+      // Sign out the inactive user
+      await supabase.auth.signOut()
+      return null
+    }
 
     return profile
   }

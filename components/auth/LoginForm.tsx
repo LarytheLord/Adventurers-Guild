@@ -36,6 +36,8 @@ export function LoginForm() {
           setError('Please confirm your email address before logging in. Check your inbox for the confirmation email.')
         } else if (err.message.includes('Invalid login credentials')) {
           setError('Invalid email or password. Please check your credentials and try again.')
+        } else if (err.message === 'ACCOUNT_DEACTIVATED') {
+          setError('This account has been deactivated. Please contact support for assistance.')
         } else {
           setError(`Login failed: ${err.message}`)
         }
