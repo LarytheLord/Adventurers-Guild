@@ -119,7 +119,7 @@ export async function PUT(
           const filledCount = await tx.questAssignment.count({
             where: {
               questId: params.id,
-              status: { in: ['started', 'in_progress', 'submitted', 'pending_admin_review', 'review', 'needs_rework', 'completed'] },
+              status: { in: ['assigned', 'started', 'in_progress', 'submitted', 'pending_admin_review', 'review', 'needs_rework', 'completed'] },
             },
           });
           if (filledCount >= quest.maxParticipants) {
