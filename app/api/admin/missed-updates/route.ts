@@ -1,19 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { getAuthUser } from '@/lib/api-auth';
+import { requireAuth } from '@/lib/api-auth';
 
 export async function GET(request: NextRequest) {
-  const user = await getAuthUser(request);
-  if (!user || (user.role !== 'admin' && user.role !== 'company')) {
+  const user = await requireAuth(request, 'admin');
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
   }
 
   try {
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
 
-    // Build the query to find started/in-progress quest assignments that have missed a 24-hour update window.
-    // That means status is in ['started', 'in_progress', 'needs_rework'] and:
-    // (lastUpdateAt < oneDayAgo OR (lastUpdateAt IS NULL AND startedAt < oneDayAgo))
     const where: any = {
       status: { in: ['started', 'in_progress', 'needs_rework'] },
       startedAt: { not: null },
@@ -27,11 +24,6 @@ export async function GET(request: NextRequest) {
         }
       ]
     };
-
-    // If company role, filter assignments by company's quests
-    if (user.role === 'company') {
-      where.quest = { companyId: user.id };
-    }
 
     const assignments = await prisma.questAssignment.findMany({
       where,
@@ -49,7 +41,6 @@ export async function GET(request: NextRequest) {
             email: true,
             adventurerProfile: {
               select: {
-                phoneNumber: true,
                 guildScore: true,
               },
             },
@@ -74,7 +65,6 @@ export async function GET(request: NextRequest) {
         studentId: ass.user.id,
         studentName: ass.user.name || 'Unknown',
         studentEmail: ass.user.email,
-        studentPhone: ass.user.adventurerProfile?.phoneNumber || '',
         guildScore: ass.user.adventurerProfile?.guildScore ?? 100,
         lastUpdateAt: ass.lastUpdateAt,
         startedAt: ass.startedAt,
