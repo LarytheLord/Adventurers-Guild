@@ -4,6 +4,11 @@ import { Database } from '@/types/supabase'
 type UserRank = 'F' | 'D' | 'C' | 'B' | 'A' | 'S'
 type QuestDifficulty = 'F' | 'D' | 'C' | 'B' | 'A' | 'S'
 
+// Type for the safe_complete_quest function result
+interface SafeCompleteQuestResult {
+  success: boolean
+}
+
 export interface XPCalculationResult {
   baseXP: number
   bonusXP: number
@@ -274,25 +279,29 @@ export class BusinessLogicService {
       user.rank as UserRank
     )
     
-    // Update user stats
-    const { error: updateError } = await supabase
-      .from('users')
-      .update({
-        xp: user.xp + xpResult.totalXP,
-        rank: rankResult.newRank,
-        total_earnings: user.total_earnings + paymentResult.adventurerPayment
-      })
-      .eq('id', userId)
-    
-    if (updateError) throw updateError
-    
-    // Mark quest as completed
-    const { error: questUpdateError } = await supabase
-      .from('quests')
-      .update({ status: 'completed' })
-      .eq('id', questId)
-    
-    if (questUpdateError) throw questUpdateError
+    // Store old values for idempotency check
+    const oldXp = user.xp
+    const oldRank = user.rank
+
+    // Use atomic database function to prevent XP loss on failure
+    const { data: atomicResult, error: atomicError } = await supabase.rpc('safe_complete_quest', {
+      p_user_id: userId,
+      p_quest_id: questId,
+      p_xp_amount: xpResult.totalXP,
+      p_new_rank: rankResult.newRank,
+      p_payment_amount: paymentResult.adventurerPayment,
+      p_old_xp: oldXp,
+      p_old_rank: oldRank
+    })
+
+    if (atomicError) {
+      console.error('Atomic quest completion failed:', atomicError)
+      throw new Error('Failed to complete quest. Please try again.')
+    }
+
+    if (!atomicResult) {
+      throw new Error('Quest completion failed - data may have changed. Please try again.')
+    }
     
     // Create notification for rank up
     if (rankResult.rankedUp) {
@@ -409,3 +418,6 @@ export class BusinessLogicService {
     return ranks.indexOf(rank2) - ranks.indexOf(rank1)
   }
 }
+
+// Export alias for backward compatibility
+export const BusinessLogic = BusinessLogicService
