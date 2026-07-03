@@ -472,11 +472,20 @@ export class QuestWorkflowService {
           }
         })
       } else {
+        // When rejected or needs revision, update quest status to reflect the current state
+        // This ensures the quest dashboard shows correct status
+        const newQuestStatus = review.status === 'revision_requested' ? 'in_progress' : 'active'
+        
+        await supabase
+          .from('quests')
+          .update({ status: newQuestStatus, updated_at: new Date().toISOString() })
+          .eq('id', submission.quest_id)
+
         // Add notification for revision or rejection
         notifications.push({
           user_id: submission.user_id,
           title: 'Submission Update',
-          message: `Your submission for "${submission.quest.title}" has been ${review.status}`,
+          message: `Your submission for "${submission.quest.title}" has been ${review.status}${review.feedback ? '. Feedback: ' + review.feedback : ''}`,
           type: `submission_${review.status}`,
           data: {
             quest_id: submission.quest_id,
