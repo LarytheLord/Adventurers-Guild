@@ -20,6 +20,20 @@ This repository contains the codebase for the Adventurers Guild platform, a comm
 
 ---
 
+## 📸 Screenshots
+
+![Adventurers Guild Dashboard](./public/screenshots/dashboard.png)
+
+*The Adventurers Guild dashboard - Track your quests, XP, and rank progression*
+
+![Quest Board](./public/screenshots/quests.png)
+
+*Browse and apply for real-world quests from companies*
+
+---
+
+## 🚀 Quick Start
+
 ## 🎯 The Problem We're Solving: Bridging the Digital Skills Chasm
 
 The current landscape of computer science education often leaves students with a strong theoretical foundation but a critical lack of **hands-on, industry-relevant experience.** This creates a significant gap:
