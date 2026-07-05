@@ -262,6 +262,7 @@ export async function getAssignments(searchParams: URLSearchParams, user: Sessio
       include: {
         quest: {
           select: {
+            id: true,
             title: true,
             description: true,
             questType: true,
@@ -273,6 +274,23 @@ export async function getAssignments(searchParams: URLSearchParams, user: Sessio
             requiredRank: true,
             questCategory: true,
             deadline: true,
+          },
+        },
+        // Include latest submission for rework feedback display
+        questSubmissions: {
+          where: { status: { not: 'superseded' } },
+          orderBy: { submittedAt: 'desc' },
+          take: 1,
+          select: {
+            id: true,
+            status: true,
+            submissionContent: true,
+            submissionNotes: true,
+            reviewNotes: true,
+            criteriaResults: true,
+            qualityScore: true,
+            reviewedAt: true,
+            reviewerId: true,
           },
         },
       },
