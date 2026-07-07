@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { requireAuth } from '@/lib/api-auth';
+import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
 import crypto from 'crypto';
 
 // PATCH /api/admin/qa-queue/[assignmentId] — approve or reject submission
@@ -52,40 +53,37 @@ export async function PATCH(
       where: { id: assignmentId },
       data: { status: 'review' },
     });
+    await syncQuestLifecycleStatus(prisma, assignment.questId);
     return NextResponse.json({ message: 'Submission approved — forwarded to client review', success: true });
   }
 
-  //check tutorial quest completion
+  // Bootcamp tutorial completion tracking (only for TUTORIAL quests with bootcamp links)
   const quest = await prisma.quest.findUnique({
     where: { id: assignment.questId },
   });
-  if (!quest || quest.source !== 'TUTORIAL') return;
-
-  const bootcampLink = await prisma.bootcampLink.findUnique({
-    where: { userId: assignment.userId },
-  });
-  if (!bootcampLink) return;
-
-  //uses completion order to flip tutorial quest
-  const updateData: Record<string, boolean> = {};
-  if (!bootcampLink.tutorialQuest1Complete) {
-    updateData.tutorialQuest1Complete = true;
-  } else if (!bootcampLink.tutorialQuest2Complete) {
-      updateData.tutorialQuest2Complete = true;
-  }
-
-  //eligibleForRealQuests
-  const willHaveQuest1 = bootcampLink.tutorialQuest1Complete || updateData.tutorialQuest1Complete;
-  const willHaveQuest2 = bootcampLink.tutorialQuest2Complete || updateData.tutorialQuest2Complete;
-  if (willHaveQuest1 && willHaveQuest2) {
-    updateData.eligibleForRealQuests = true;
-  }
-
-  if (Object.keys(updateData).length > 0) {
-    await prisma.bootcampLink.update({
+  if (quest?.source === 'TUTORIAL') {
+    const bootcampLink = await prisma.bootcampLink.findUnique({
       where: { userId: assignment.userId },
-      data: updateData,
     });
+    if (bootcampLink) {
+      const updateData: Record<string, boolean> = {};
+      if (!bootcampLink.tutorialQuest1Complete) {
+        updateData.tutorialQuest1Complete = true;
+      } else if (!bootcampLink.tutorialQuest2Complete) {
+        updateData.tutorialQuest2Complete = true;
+      }
+      const willHaveQuest1 = bootcampLink.tutorialQuest1Complete || updateData.tutorialQuest1Complete;
+      const willHaveQuest2 = bootcampLink.tutorialQuest2Complete || updateData.tutorialQuest2Complete;
+      if (willHaveQuest1 && willHaveQuest2) {
+        updateData.eligibleForRealQuests = true;
+      }
+      if (Object.keys(updateData).length > 0) {
+        await prisma.bootcampLink.update({
+          where: { userId: assignment.userId },
+          data: updateData,
+        });
+      }
+    }
   }
 
   // reject — append admin note to submission reviewNotes (stored as JSON string)

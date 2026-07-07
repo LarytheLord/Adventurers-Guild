@@ -18,6 +18,7 @@ interface ApiOptions {
   successMessage?: string;
   errorMessage?: string;
   skip?: boolean;
+  unwrap?: boolean;
 }
 
 interface UseApiFetchReturn<T> extends ApiState<T> {
@@ -58,14 +59,15 @@ export function useApiFetch<T = unknown>(
   });
 
   const fetchData = useCallback(async (options: ApiOptions = {}): Promise<T | null> => {
-    const {
-      method = initialOptions.method || 'GET',
-      body,
-      cache = initialOptions.cache,
-      showToast = true,
-      successMessage,
-      errorMessage,
-    } = options;
+      const {
+        method = initialOptions.method || 'GET',
+        body,
+        cache = initialOptions.cache,
+        showToast = true,
+        successMessage,
+        errorMessage,
+        unwrap = true,
+      } = options;
 
     setState(prev => ({ ...prev, loading: true, error: null }));
 
@@ -101,13 +103,15 @@ export function useApiFetch<T = unknown>(
         toast.success(successMessage);
       }
 
+      const resultData = unwrap ? (data.data ?? data) : data;
+
       setState({
-        data: data.data || data,
+        data: resultData,
         loading: false,
         error: null,
       });
 
-      return data.data || data;
+      return resultData;
     } catch (error) {
       const errorMsg = errorMessage || (error instanceof Error ? error.message : 'Network error occurred');
       if (showToast) {
@@ -116,7 +120,7 @@ export function useApiFetch<T = unknown>(
       setState(prev => ({ ...prev, error: errorMsg, loading: false }));
       return null;
     }
-  }, [endpoint, initialOptions.cache, initialOptions.method]);
+  }, [endpoint, initialOptions.cache, initialOptions.method, unwrap]);
 
   // Auto-fetch on mount if not skipped
   useEffect(() => {

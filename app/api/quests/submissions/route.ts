@@ -324,7 +324,7 @@ export async function PUT(request: NextRequest) {
           select: { tutorialQuest1Complete: true, tutorialQuest2Complete: true },
         });
         if (bootcampLink) {
-         const updateData: { tutorialQuest1Complete?: boolean; tutorialQuest2Complete?: boolean; eligibleForRealQuests?: boolean } = {};
+          const updateData: { tutorialQuest1Complete?: boolean; tutorialQuest2Complete?: boolean; eligibleForRealQuests?: boolean } = {};
           if (questTitle.startsWith('Tutorial: First Blood')) updateData.tutorialQuest1Complete = true;
           if (questTitle.startsWith('Tutorial: Party Up')) updateData.tutorialQuest2Complete = true;
           const tq1 = updateData.tutorialQuest1Complete ?? bootcampLink.tutorialQuest1Complete;
