@@ -19,6 +19,7 @@ import {
 import { Shield, Clock, CheckCircle, XCircle, Loader2, ArrowLeft, ExternalLink, DollarSign, Ban } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { fetchWithAuth } from '@/lib/fetch-with-auth';
+import { toast } from 'sonner';
 
 interface QueueItem {
   id: string;
@@ -101,27 +102,57 @@ export default function QAQueuePage() {
 
   const handleApprove = async (assignmentId: string) => {
     setSubmitting(true);
-    await fetchWithAuth(`/api/admin/qa-queue/${assignmentId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'approve' }),
-    });
-    await fetchQueue();
-    setSubmitting(false);
+    try {
+      const res = await fetchWithAuth(`/api/admin/qa-queue/${assignmentId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'approve' }),
+      });
+      const data = await res.json();
+      
+      if (!res.ok || !data.success) {
+        toast.error(data.error || 'Failed to approve submission');
+        setSubmitting(false);
+        return;
+      }
+      
+      toast.success('Submission approved successfully');
+      await fetchQueue();
+    } catch (error) {
+      console.error('Approve error:', error);
+      toast.error('Failed to approve submission - network error');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const handleReject = async () => {
     if (!rejectTarget || !rejectNotes.trim()) return;
     setSubmitting(true);
-    await fetchWithAuth(`/api/admin/qa-queue/${rejectTarget.id}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'reject', notes: rejectNotes.trim() }),
-    });
-    await fetchQueue();
-    setSubmitting(false);
-    setRejectTarget(null);
-    setRejectNotes('');
+    try {
+      const res = await fetchWithAuth(`/api/admin/qa-queue/${rejectTarget.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reject', notes: rejectNotes.trim() }),
+      });
+      const data = await res.json();
+      
+      if (!res.ok || !data.success) {
+        toast.error(data.error || 'Failed to reject submission');
+        setSubmitting(false);
+        return;
+      }
+      
+      toast.success('Submission rejected - returned to student for revision');
+      await fetchQueue();
+    } catch (error) {
+      console.error('Reject error:', error);
+      toast.error('Failed to reject submission - network error');
+    } finally {
+      setSubmitting(false);
+      setRejectTarget(null);
+      setRejectNotes('');
+    }
   };
 
   const openPaymentModal = (item: QueueItem) => {
