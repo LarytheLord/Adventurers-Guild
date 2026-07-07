@@ -120,7 +120,7 @@ export function useApiFetch<T = unknown>(
       setState(prev => ({ ...prev, error: errorMsg, loading: false }));
       return null;
     }
-  }, [endpoint, initialOptions.cache, initialOptions.method, unwrap]);
+  }, [endpoint, initialOptions.cache, initialOptions.method]);
 
   // Auto-fetch on mount if not skipped
   useEffect(() => {

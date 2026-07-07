@@ -158,13 +158,16 @@ export async function PUT(request: NextRequest) {
       return Response.json({ error: 'Quest ID and Company ID are required', success: false }, { status: 400 });
     }
 
-    // Verify the company owns this quest
+    // Verify the company owns this quest (admins can edit any quest)
     const quest = await prisma.quest.findUnique({
       where: { id: questId },
       select: { companyId: true },
     });
 
-    if (!quest || quest.companyId !== companyId) {
+    const isOwner = quest?.companyId === companyId;
+    const isAdmin = authUser.role === 'admin';
+
+    if (!isOwner && !isAdmin) {
       return Response.json({ error: 'Unauthorized: You do not own this quest', success: false }, { status: 403 });
     }
 
@@ -216,13 +219,16 @@ export async function DELETE(request: NextRequest) {
       return Response.json({ error: 'Quest ID and Company ID are required', success: false }, { status: 400 });
     }
 
-    // Verify the company owns this quest
+    // Verify the company owns this quest (admins can delete any quest)
     const quest = await prisma.quest.findUnique({
       where: { id: questId },
       select: { companyId: true },
     });
 
-    if (!quest || quest.companyId !== companyId) {
+    const isOwner = quest?.companyId === companyId;
+    const isAdmin = authUser.role === 'admin';
+
+    if (!isOwner && !isAdmin) {
       return Response.json({ error: 'Unauthorized: You do not own this quest', success: false }, { status: 403 });
     }
 

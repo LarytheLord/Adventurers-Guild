@@ -32,6 +32,7 @@ export async function PATCH(request: NextRequest) {
     if (typeof body.github === 'string') userUpdate.github = body.github.trim() || null;
     if (typeof body.linkedin === 'string') userUpdate.linkedin = body.linkedin.trim() || null;
     if (typeof body.discord === 'string') userUpdate.discord = body.discord.trim() || null;
+    if (typeof body.phone === 'string') userUpdate.phone = body.phone.trim() || null;
 
     if (Object.keys(userUpdate).length === 0) {
       return Response.json({ error: 'No valid fields to update', success: false }, { status: 400 });

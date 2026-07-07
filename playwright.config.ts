@@ -77,7 +77,9 @@ export default defineConfig({
 
   /* Run your local dev server before starting the tests */
   webServer: {
-    command: `NEXTAUTH_URL=${baseURL} npm run build && NEXTAUTH_URL=${baseURL} npm run start -- -p ${e2ePort}`,
+    command: process.platform === 'win32'
+      ? 'set NEXTAUTH_URL=' + baseURL + ' && npm run build && set NEXTAUTH_URL=' + baseURL + ' && npm run start -- -p ' + e2ePort
+      : `NEXTAUTH_URL=${baseURL} npm run build && NEXTAUTH_URL=${baseURL} npm run start -- -p ${e2ePort}`,
     url: baseURL,
     reuseExistingServer: false,
   },

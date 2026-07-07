@@ -126,10 +126,20 @@ export async function GET(
           }
         : null;
 
+    const sanitizedSubQuests = isAdmin || isOwner
+      ? quest.subQuests
+      : quest.subQuests.map(({ track, difficulty, status, ...rest }) => ({
+          ...rest,
+          track,
+          difficulty,
+          status,
+        }));
+
     const normalizedQuest = {
       ...quest,
       company: sanitizedCompany,
       assignments,
+      subQuests: sanitizedSubQuests,
     };
 
     return NextResponse.json({
