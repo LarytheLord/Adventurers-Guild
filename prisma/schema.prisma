@@ -202,6 +202,7 @@ model User {
   github           String?
   linkedin         String?
   avatar           String?
+  phone            String? @map("phone")
   mentorEligible   Boolean   @default(false) @map("mentor_eligible")
   mentorTier       Int?      @map("mentor_tier") // 1 = junior (D-Rank+), 2 = senior (staff)
   mentorBadgeCount Int       @default(0) @map("mentor_badge_count")
