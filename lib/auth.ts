@@ -168,6 +168,8 @@ export const authOptions: AuthOptions = {
           if (result.error === 'role_not_allowed') {
             return '/login?error=oauth-adventurer-only';
           }
+        } else if (result.dbUser) {
+          (account as any).dbUser = result.dbUser;
         }
       }
       return true;
@@ -175,29 +177,37 @@ export const authOptions: AuthOptions = {
     async jwt({ token, user, account, trigger }: { token: JWT; user?: User; account?: Account | null; trigger?: string }) {
       if (user) {
         if (account?.provider === 'google' || account?.provider === 'github') {
-          const email = user.email?.trim().toLowerCase();
-          if (email) {
-            try {
-              const dbUser = await withDbRetry(() =>
-                prisma.user.findUnique({
-                  where: { email },
-                  select: { id: true, role: true, rank: true, xp: true }
-                })
-              );
-              if (dbUser) {
-                token.id = dbUser.id;
-                token.role = dbUser.role as UserRole;
-                token.rank = dbUser.rank;
-                token.xp = dbUser.xp;
-              } else {
+          const dbUser = (account as any).dbUser;
+          if (dbUser) {
+            token.id = dbUser.id;
+            token.role = dbUser.role as UserRole;
+            token.rank = dbUser.rank;
+            token.xp = dbUser.xp;
+          } else {
+            const email = user.email?.trim().toLowerCase();
+            if (email) {
+              try {
+                const fetchedUser = await withDbRetry(() =>
+                  prisma.user.findUnique({
+                    where: { email },
+                    select: { id: true, role: true, rank: true, xp: true }
+                  })
+                );
+                if (fetchedUser) {
+                  token.id = fetchedUser.id;
+                  token.role = fetchedUser.role as UserRole;
+                  token.rank = fetchedUser.rank;
+                  token.xp = fetchedUser.xp;
+                } else {
+                  token.id = user.id;
+                }
+              } catch (error) {
+                console.error('[Auth] jwt database lookup fallback failed:', error);
                 token.id = user.id;
               }
-            } catch (error) {
-              console.error('[Auth] jwt database lookup failed:', error);
+            } else {
               token.id = user.id;
             }
-          } else {
-            token.id = user.id;
           }
         } else {
           token.id = user.id;
