@@ -37,6 +37,7 @@ export async function GET(
           acceptanceCriteria: true,
           briefData: true,
           fieldTemplate: { select: { briefFields: true, submissionFields: true } },
+          qaCriteria: true,
         },
       },
       user: {
