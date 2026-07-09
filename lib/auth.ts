@@ -172,12 +172,39 @@ export const authOptions: AuthOptions = {
       }
       return true;
     },
-    async jwt({ token, user, trigger }: { token: JWT; user?: User; trigger?: string }) {
+    async jwt({ token, user, account, trigger }: { token: JWT; user?: User; account?: Account | null; trigger?: string }) {
       if (user) {
-        token.id = user.id;
-        token.role = user.role as UserRole;
-        token.rank = user.rank;
-        token.xp = user.xp;
+        if (account?.provider === 'google' || account?.provider === 'github') {
+          const email = user.email?.trim().toLowerCase();
+          if (email) {
+            try {
+              const dbUser = await withDbRetry(() =>
+                prisma.user.findUnique({
+                  where: { email },
+                  select: { id: true, role: true, rank: true, xp: true }
+                })
+              );
+              if (dbUser) {
+                token.id = dbUser.id;
+                token.role = dbUser.role as UserRole;
+                token.rank = dbUser.rank;
+                token.xp = dbUser.xp;
+              } else {
+                token.id = user.id;
+              }
+            } catch (error) {
+              console.error('[Auth] jwt database lookup failed:', error);
+              token.id = user.id;
+            }
+          } else {
+            token.id = user.id;
+          }
+        } else {
+          token.id = user.id;
+          token.role = user.role as UserRole;
+          token.rank = user.rank;
+          token.xp = user.xp;
+        }
       }
       // On session update (e.g. after XP/rank change), refresh from DB
       if (trigger === 'update' && token.id) {
