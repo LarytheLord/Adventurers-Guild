@@ -32,21 +32,27 @@ jobs:
         run: npm ci --ignore-scripts
 
       - name: Backup before migrating (safety net)
+        # Hard-fails the job if the dump fails — a migration must NEVER proceed
+        # without a fresh backup to fall back on. This step failing silently is
+        # exactly what happened before this workflow existed.
         env:
           DATABASE_URL: ${{ secrets.PROD_DATABASE_URL_UNPOOLED }}
           PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
         run: |
+          set -euo pipefail
           sudo sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
           curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo tee /etc/apt/trusted.gpg.d/pgdg.asc > /dev/null
           sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client-17
-          pg_dump "$DATABASE_URL" --no-owner --no-privileges -Fc -f pre-migrate.dump || echo "::warning::pre-migrate dump failed — continuing"
-          if [ -f pre-migrate.dump ]; then
-            openssl enc -aes-256-cbc -pbkdf2 -salt -in pre-migrate.dump -out pre-migrate.dump.enc -pass env:PASSPHRASE
-            rm pre-migrate.dump
-          fi
+          # Ubuntu runners ship an older default pg_dump; installing -17 via apt does
+          # not repoint the `pg_dump` symlink (update-alternatives only migrates some
+          # binaries). Call the versioned binary explicitly — see docs/DATABASE_SAFETY.md.
+          PG_DUMP=/usr/lib/postgresql/17/bin/pg_dump
+          "$PG_DUMP" --version
+          "$PG_DUMP" "$DATABASE_URL" --no-owner --no-privileges -Fc -f pre-migrate.dump
+          openssl enc -aes-256-cbc -pbkdf2 -salt -in pre-migrate.dump -out pre-migrate.dump.enc -pass env:PASSPHRASE
+          rm pre-migrate.dump
 
       - name: Upload pre-migration backup
-        if: hashFiles('pre-migrate.dump.enc') != ''
         uses: actions/upload-artifact@v4
         with:
           name: pre-migrate-backup-${{ github.run_number }}

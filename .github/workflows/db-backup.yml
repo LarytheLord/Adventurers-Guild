@@ -16,12 +16,18 @@ jobs:
           curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo tee /etc/apt/trusted.gpg.d/pgdg.asc > /dev/null
           sudo apt-get update -qq
           sudo apt-get install -y -qq postgresql-client-17
+          # Ubuntu runners ship an older pg_dump by default; `pg_dump` on PATH can still
+          # resolve to it even after installing -17 (update-alternatives only migrates
+          # some binaries). Call the versioned binary explicitly so this never silently
+          # regresses to a client too old for the server (see docs/DATABASE_SAFETY.md).
+          echo "PG_DUMP=/usr/lib/postgresql/17/bin/pg_dump" >> "$GITHUB_ENV"
 
       - name: Dump production database
         env:
           DATABASE_URL: ${{ secrets.PROD_DATABASE_URL_UNPOOLED }}
         run: |
-          pg_dump "$DATABASE_URL" --no-owner --no-privileges -Fc -f backup.dump
+          "$PG_DUMP" --version
+          "$PG_DUMP" "$DATABASE_URL" --no-owner --no-privileges -Fc -f backup.dump
           ls -lh backup.dump
 
       - name: Encrypt dump (AES-256, artifacts on a public repo are readable)
