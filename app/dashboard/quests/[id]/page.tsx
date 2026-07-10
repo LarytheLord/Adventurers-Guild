@@ -25,6 +25,80 @@ import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import 'highlight.js/styles/github.css';
 
+interface Submission {
+  id: string;
+  status: string;
+  submissionContent: string;
+  submissionNotes: string;
+  reviewNotes: unknown;
+  criteriaResults: unknown;
+  qualityScore: number | null;
+  reviewedAt: string | null;
+  reviewerId: string | null;
+}
+
+// Rework feedback panel component
+function ReworkFeedbackPanel({ submission }: { submission: Submission }) {
+  const criteriaResults = submission.criteriaResults as Array<{ criterion: string; met: boolean; note?: string }> | null;
+  const reviewNotes = submission.reviewNotes as string[] | null;
+  const qualityScore = submission.qualityScore;
+
+  // If no feedback data, show fallback message
+  if (!criteriaResults && !reviewNotes && !qualityScore) {
+    return (
+      <div className="rounded-xl border border-orange-200 bg-orange-50 p-4 text-xs text-orange-800">
+        <p className="font-medium">Rework Required</p>
+        <p className="mt-1">Your submission needs revision. Please review the reviewer notes and resubmit.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rounded-xl border border-orange-200 bg-orange-50/80 p-4 space-y-3">
+      <div className="flex items-center gap-2 text-orange-800">
+        <AlertCircle className="h-4 w-4" />
+        <h3 className="font-semibold text-sm">Rework Required</h3>
+      </div>
+
+      {/* Criteria Results */}
+      {criteriaResults && criteriaResults.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-medium text-orange-800">Criteria that need fixing:</p>
+          <ul className="space-y-1.5">
+            {criteriaResults.map((item, index) => (
+              <li key={index} className={`text-xs ${item.met ? 'text-emerald-700' : 'text-orange-800'}`}>
+                <span className="font-medium">{item.met ? '✓' : '✗'}</span> {item.criterion}
+                {item.note && (
+                  <p className="ml-4 mt-0.5 text-orange-700/80 italic">{item.note}</p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Quality Score */}
+      {qualityScore !== null && (
+        <div className="text-xs text-orange-800">
+          <span className="font-medium">Quality Score:</span> {qualityScore}/10
+        </div>
+      )}
+
+      {/* General Review Notes */}
+      {reviewNotes && reviewNotes.length > 0 && (
+        <div className="text-xs text-orange-800">
+          <p className="font-medium">Reviewer Note:</p>
+          <p className="mt-1 italic">{Array.isArray(reviewNotes) ? reviewNotes.join(' ') : reviewNotes}</p>
+        </div>
+      )}
+
+      <p className="text-xs text-orange-700/70 pt-1">
+        Resubmit when you&apos;ve addressed the feedback above.
+      </p>
+    </div>
+  );
+}
+
 interface Quest {
   id: string;
   title: string;
@@ -62,6 +136,18 @@ interface Assignment {
   progress?: number;
   completedTasks?: string[];
   lastUpdateAt?: string;
+  // Added for rework feedback display
+  submissions?: Array<{
+    id: string;
+    status: string;
+    submissionContent: string;
+    submissionNotes: string;
+    reviewNotes: unknown;
+    criteriaResults: unknown;
+    qualityScore: number | null;
+    reviewedAt: string | null;
+    reviewerId: string | null;
+  }>;
 }
 
 function assignmentStatusClass(status: string) {
@@ -505,6 +591,10 @@ export default function QuestDetailPage() {
                           ? 'Quest claimed! Start working to unlock the submission form.'
                           : 'Quest in progress. Submit your work using the form below.'}
                 </div>
+                {/* Rework Feedback Panel */}
+                {assignment.status === 'needs_rework' && assignment.submissions && assignment.submissions.length > 0 && (
+                  <ReworkFeedbackPanel submission={assignment.submissions[0]} />
+                )}
                 {canStart && (
                   <Button
                     className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs"
