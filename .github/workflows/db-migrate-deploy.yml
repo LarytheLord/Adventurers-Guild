@@ -1,0 +1,59 @@
+name: Prisma Migrate Deploy (production)
+
+# The ONLY sanctioned path for production schema changes.
+# `prisma migrate deploy` applies pending committed migrations and NEVER
+# resets or drops data (unlike `prisma migrate dev`, which wiped production
+# on 2026-07-09). See docs/DATABASE_SAFETY.md.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "prisma/migrations/**"
+  workflow_dispatch:
+
+concurrency:
+  group: prod-migrate
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Backup before migrating (safety net)
+        env:
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL_UNPOOLED }}
+          PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          sudo sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo tee /etc/apt/trusted.gpg.d/pgdg.asc > /dev/null
+          sudo apt-get update -qq && sudo apt-get install -y -qq postgresql-client-17
+          pg_dump "$DATABASE_URL" --no-owner --no-privileges -Fc -f pre-migrate.dump || echo "::warning::pre-migrate dump failed — continuing"
+          if [ -f pre-migrate.dump ]; then
+            openssl enc -aes-256-cbc -pbkdf2 -salt -in pre-migrate.dump -out pre-migrate.dump.enc -pass env:PASSPHRASE
+            rm pre-migrate.dump
+          fi
+
+      - name: Upload pre-migration backup
+        if: hashFiles('pre-migrate.dump.enc') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: pre-migrate-backup-${{ github.run_number }}
+          path: pre-migrate.dump.enc
+          retention-days: 30
+
+      - name: Apply pending migrations
+        env:
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL_UNPOOLED }}
+        run: npx prisma migrate deploy

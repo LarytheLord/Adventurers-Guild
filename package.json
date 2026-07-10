@@ -15,8 +15,11 @@
     "test:phase-gate": "npm run type-check && npm run lint && npm run test:e2e",
     "deploy:vercel": "vercel --prod",
     "postinstall": "prisma generate",
-    "db:push": "prisma db push",
-    "db:seed": "npx tsx prisma/seed.ts"
+    "db:push": "node scripts/db-guard.js && prisma db push",
+    "db:seed": "node scripts/db-guard.js && npx tsx prisma/seed.ts",
+    "db:guard": "node scripts/db-guard.js",
+    "db:migrate": "node scripts/db-guard.js && prisma migrate dev",
+    "db:studio": "prisma studio"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
