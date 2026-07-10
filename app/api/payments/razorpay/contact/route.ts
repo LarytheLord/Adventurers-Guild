@@ -74,15 +74,11 @@ export async function POST(req: NextRequest) {
         // Create or retrieve Razorpay Contact
         let contactId = adventurer.razorpayContactId;
         if (!contactId) {
-          // TODO: Add phone field to User model and pass real value from profile.
-          // For now, using a placeholder. This is acceptable for MVP but should be fixed.
-          const placeholderPhone = '9999999999';
-          console.warn(`[Razorpay] Using placeholder phone number for user ${adventurer.userId}. Please implement phone collection.`);
-
+          const phone = adventurer.user.phone || '9999999999';
           const contact = await createRazorpayContact({
             name,
             email: adventurer.user.email,
-            contact: placeholderPhone,
+            contact: phone,
             referenceId: adventurer.userId,
           });
           contactId = contact.id;
