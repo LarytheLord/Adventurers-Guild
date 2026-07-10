@@ -38,6 +38,7 @@ type QueueAssignment = {
     acceptanceCriteria: string[];
     briefData: unknown;
     fieldTemplate: { briefFields: unknown; submissionFields: unknown } | null;
+    qaCriteria: { criteria: Array<{ id: string; text: string; description?: string; weight?: number }> } | null;
   };
   user: {
     id: string;
@@ -55,6 +56,17 @@ type QueueAssignment = {
     reviewNotes: unknown;
     criteriaResults: unknown;
   }>;
+};
+
+type QACriterion = {
+  id: string;
+  text: string;
+  description?: string;
+  weight?: number;
+};
+
+type QACriteriaPayload = {
+  criteria: QACriterion[];
 };
 
 const TRACK_COLORS: Record<string, string> = {
@@ -120,6 +132,12 @@ export default function QAQueueDetailPage() {
         const nextAssignment = payload.assignment as QueueAssignment;
         setAssignment(nextAssignment);
 
+        // Determine criteria source: structured qaCriteria > acceptanceCriteria
+        const structuredCriteria = nextAssignment.quest.qaCriteria?.criteria;
+        const criterionCount = structuredCriteria
+          ? structuredCriteria.length
+          : (nextAssignment.quest.acceptanceCriteria ?? []).length;
+
         const submission = nextAssignment.submissions[0];
         if (
           submission?.criteriaResults &&
@@ -130,9 +148,7 @@ export default function QAQueueDetailPage() {
           );
           setCriteriaState(initialState);
         } else {
-          setCriteriaState(
-            (nextAssignment.quest.acceptanceCriteria ?? []).map(() => false)
-          );
+          setCriteriaState(Array(criterionCount).fill(false));
         }
       } catch (nextError) {
         console.error(nextError);
@@ -149,13 +165,25 @@ export default function QAQueueDetailPage() {
     [latestSubmission?.reviewNotes]
   );
 
+  const structuredCriteria = useMemo<QACriterion[]>(
+    () => assignment?.quest.qaCriteria?.criteria ?? [],
+    [assignment?.quest.qaCriteria]
+  );
+
+  const criteriaTexts = useMemo<string[]>(
+    () => structuredCriteria.length > 0
+      ? structuredCriteria.map((c) => c.text)
+      : (assignment?.quest.acceptanceCriteria ?? []),
+    [structuredCriteria, assignment?.quest.acceptanceCriteria]
+  );
+
   const criteriaResults = useMemo<CriteriaResult[]>(
     () =>
-      (assignment?.quest.acceptanceCriteria ?? []).map((criterion, index) => ({
+      criteriaTexts.map((criterion, index) => ({
         criterion,
         met: criteriaState[index] === true,
       })),
-    [assignment?.quest.acceptanceCriteria, criteriaState]
+    [criteriaTexts, criteriaState]
   );
 
   const toggleCriterion = (index: number) =>
@@ -350,22 +378,39 @@ export default function QAQueueDetailPage() {
 
         <Card className="border-slate-800 bg-slate-900">
           <CardHeader>
-            <CardTitle className="text-base text-slate-100">Acceptance Criteria</CardTitle>
+            <CardTitle className="text-base text-slate-100">
+              {structuredCriteria.length > 0 ? 'QA Criteria Checklist' : 'Acceptance Criteria'}
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {(assignment.quest.acceptanceCriteria ?? []).length === 0 ? (
-              <p className="text-sm text-slate-400">No acceptance criteria configured for this quest.</p>
+            {criteriaTexts.length === 0 ? (
+              <p className="text-sm text-slate-400">No criteria configured for this quest.</p>
             ) : (
-              assignment.quest.acceptanceCriteria.map((criterion, index) => (
-                <label key={criterion + index} className="flex items-start gap-3 rounded-lg bg-slate-950/60 p-3 text-sm text-slate-300">
-                  <Checkbox
-                    checked={criteriaState[index] === true}
-                    onCheckedChange={() => toggleCriterion(index)}
-                    className="mt-0.5 border-slate-600"
-                  />
-                  <span>{criterion}</span>
-                </label>
-              ))
+              criteriaTexts.map((criterion, index) => {
+                const structured = structuredCriteria[index];
+                return (
+                  <label key={criterion + index} className="flex items-start gap-3 rounded-lg bg-slate-950/60 p-3 text-sm text-slate-300">
+                    <Checkbox
+                      checked={criteriaState[index] === true}
+                      onCheckedChange={() => toggleCriterion(index)}
+                      className="mt-0.5 border-slate-600"
+                    />
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2">
+                        <span>{criterion}</span>
+                        {structured?.weight != null && (
+                          <Badge variant="outline" className="border-slate-700 text-xs text-slate-400">
+                            {structured.weight}%
+                          </Badge>
+                        )}
+                      </div>
+                      {structured?.description && (
+                        <p className="mt-1 text-xs text-slate-500">{structured.description}</p>
+                      )}
+                    </div>
+                  </label>
+                );
+              })
             )}
           </CardContent>
         </Card>

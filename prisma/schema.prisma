@@ -133,6 +133,7 @@ enum NotificationType {
   system_message
   mentorship_request
   mentorship_approved
+  stale_update
 }
 
 enum VerificationType {
@@ -356,6 +357,7 @@ model Quest {
   briefData           Json?         @map("brief_data") // { fieldKey: value } answered from template.briefFields
   acceptanceCriteria  String[]      @map("acceptance_criteria") // criteria the submission is evaluated against
   tasks               String[]      @map("tasks") // predefined todo list items
+  qaCriteria          Json?         @map("qa_criteria") // { criteria: [{ id, text, description, weight }] } — structured QA checklist
 
   company          User?               @relation("CompanyQuests", fields: [companyId], references: [id])
   fieldTemplate    QuestFieldTemplate? @relation(fields: [fieldTemplateId], references: [id])

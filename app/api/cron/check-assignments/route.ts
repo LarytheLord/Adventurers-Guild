@@ -44,12 +44,12 @@ export async function GET(req: Request) {
       });
     }
 
-    // 2. Check for stalled active assignments (no updates for > 48 hours)
+    // 2. Check for assignments with stale updates (> 48 hours) and notify
     const fortyEightHoursAgo = new Date(now.getTime() - 48 * 60 * 60 * 1000);
 
-    const stalledAssignments = await prisma.questAssignment.findMany({
+    const staleAssignments = await prisma.questAssignment.findMany({
       where: {
-        status: { in: ['started', 'in_progress'] },
+        status: { in: ['started', 'in_progress', 'pending_admin_review'] },
         OR: [
           {
             lastUpdateAt: { lt: fortyEightHoursAgo },
@@ -57,36 +57,39 @@ export async function GET(req: Request) {
           {
             lastUpdateAt: null,
             startedAt: { lt: fortyEightHoursAgo },
-          }
-        ]
+          },
+        ],
+      },
+      include: {
+        user: { select: { id: true, name: true, email: true } },
+        quest: { select: { id: true, title: true } },
       },
     });
 
-    const stalledIds = stalledAssignments.map(a => a.id);
-    const stalledQuestIds = [...new Set(stalledAssignments.map(a => a.questId))];
-
-    if (stalledIds.length > 0) {
-      await prisma.$transaction(async (tx) => {
-        // Cancel the assignments
-        await tx.questAssignment.updateMany({
-          where: { id: { in: stalledIds } },
-          data: { status: 'cancelled' },
-        });
-
-        // Sync lifecycle for affected quests, which will revert them to available if slots open up
-        for (const questId of stalledQuestIds) {
-          await syncQuestLifecycleStatus(tx, questId);
-        }
+    if (staleAssignments.length > 0) {
+      await prisma.notification.createMany({
+        data: staleAssignments.map((a) => ({
+          userId: a.user.id,
+          type: 'stale_update' as const,
+          title: `Daily update overdue — ${a.quest.title}`,
+          message: `You haven't submitted a daily update for ${a.quest.title} in over 48 hours. Please update your progress or this assignment may be cancelled.`,
+          data: {
+            questId: a.quest.id,
+            assignmentId: a.id,
+            lastUpdateAt: a.lastUpdateAt?.toISOString() ?? null,
+          },
+        })),
       });
+      console.log(`[cron] Created ${staleAssignments.length} stale-update notifications.`);
     }
 
     return NextResponse.json({
       success: true,
-      message: `Processed cron job. Cancelled ${unacceptedIds.length} unaccepted assignments. Cancelled ${stalledIds.length} stalled assignments.`,
+      message: `Processed cron job. Cancelled ${unacceptedIds.length} unaccepted assignments. Created ${staleAssignments.length} stale-update notifications.`,
       details: {
         unaccepted: unacceptedIds,
-        stalled: stalledIds
-      }
+        staleNotifications: staleAssignments.length,
+      },
     });
 
   } catch (error) {
