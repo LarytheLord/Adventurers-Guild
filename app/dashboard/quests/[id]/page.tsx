@@ -137,7 +137,7 @@ interface Assignment {
   completedTasks?: string[];
   lastUpdateAt?: string;
   // Added for rework feedback display
-  questSubmissions?: Array<{
+  submissions?: Array<{
     id: string;
     status: string;
     submissionContent: string;
@@ -592,8 +592,8 @@ export default function QuestDetailPage() {
                           : 'Quest in progress. Submit your work using the form below.'}
                 </div>
                 {/* Rework Feedback Panel */}
-                {assignment.status === 'needs_rework' && assignment.questSubmissions && assignment.questSubmissions.length > 0 && (
-                  <ReworkFeedbackPanel submission={assignment.questSubmissions[0]} />
+                {assignment.status === 'needs_rework' && assignment.submissions && assignment.submissions.length > 0 && (
+                  <ReworkFeedbackPanel submission={assignment.submissions[0]} />
                 )}
                 {canStart && (
                   <Button

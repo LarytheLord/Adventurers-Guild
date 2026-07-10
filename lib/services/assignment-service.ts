@@ -277,7 +277,7 @@ export async function getAssignments(searchParams: URLSearchParams, user: Sessio
           },
         },
         // Include latest submission for rework feedback display
-        questSubmissions: {
+        submissions: {
           where: { status: { not: 'superseded' } },
           orderBy: { submittedAt: 'desc' },
           take: 1,
