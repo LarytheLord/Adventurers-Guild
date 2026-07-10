@@ -1,0 +1,43 @@
+name: DB Backup (nightly)
+
+on:
+  schedule:
+    - cron: "30 21 * * *" # 03:00 IST nightly
+  workflow_dispatch:
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Install PostgreSQL 17 client
+        run: |
+          sudo sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+          curl -fsSL https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo tee /etc/apt/trusted.gpg.d/pgdg.asc > /dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq postgresql-client-17
+
+      - name: Dump production database
+        env:
+          DATABASE_URL: ${{ secrets.PROD_DATABASE_URL_UNPOOLED }}
+        run: |
+          pg_dump "$DATABASE_URL" --no-owner --no-privileges -Fc -f backup.dump
+          ls -lh backup.dump
+
+      - name: Encrypt dump (AES-256, artifacts on a public repo are readable)
+        env:
+          PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          openssl enc -aes-256-cbc -pbkdf2 -salt -in backup.dump -out backup.dump.enc -pass env:PASSPHRASE
+          rm backup.dump
+
+      - name: Upload encrypted backup artifact (30-day retention)
+        uses: actions/upload-artifact@v4
+        with:
+          name: db-backup-${{ github.run_number }}
+          path: backup.dump.enc
+          retention-days: 30
+
+      # Restore procedure (see docs/DATABASE_SAFETY.md):
+      #   openssl enc -d -aes-256-cbc -pbkdf2 -in backup.dump.enc -out backup.dump -pass pass:<BACKUP_PASSPHRASE>
+      #   pg_restore --no-owner --no-privileges -d "$TARGET_DATABASE_URL" backup.dump
