@@ -45,6 +45,8 @@ export async function GET(req: Request) {
     }
 
     // 2. Check for assignments with stale updates (> 48 hours) and notify
+    const fortyEightHoursAgo = new Date(now.getTime() - 48 * 60 * 60 * 1000);
+
     const staleAssignments = await prisma.questAssignment.findMany({
       where: {
         status: { in: ['started', 'in_progress', 'pending_admin_review'] },
@@ -70,7 +72,7 @@ export async function GET(req: Request) {
           userId: a.user.id,
           type: 'stale_update' as const,
           title: `Daily update overdue — ${a.quest.title}`,
-          body: `You haven't submitted a daily update for ${a.quest.title} in over 48 hours. Please update your progress or this assignment may be cancelled.`,
+          message: `You haven't submitted a daily update for ${a.quest.title} in over 48 hours. Please update your progress or this assignment may be cancelled.`,
           data: {
             questId: a.quest.id,
             assignmentId: a.id,
@@ -83,10 +85,9 @@ export async function GET(req: Request) {
 
     return NextResponse.json({
       success: true,
-      message: `Processed cron job. Cancelled ${unacceptedIds.length} unaccepted assignments. Cancelled ${stalledIds.length} stalled assignments. Created ${staleAssignments.length} stale-update notifications.`,
+      message: `Processed cron job. Cancelled ${unacceptedIds.length} unaccepted assignments. Created ${staleAssignments.length} stale-update notifications.`,
       details: {
         unaccepted: unacceptedIds,
-        stalled: stalledIds,
         staleNotifications: staleAssignments.length,
       },
     });
