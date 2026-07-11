@@ -20,6 +20,9 @@ export async function GET(request: NextRequest) {
     const take = Math.min(Math.max(1, parseInt(limitRaw)), 200);
     const offsetRaw = searchParams.get('offset') || '0';
     const offset = isNaN(parseInt(offsetRaw)) ? '0' : offsetRaw;
+    const sort = searchParams.get('sort') || 'createdAt';
+    const order = searchParams.get('order') === 'asc' ? 'asc' : 'desc';
+    const track = searchParams.get('track');
 
     // Build where clause
     const where: Prisma.UserWhereInput = {};
@@ -35,6 +38,20 @@ export async function GET(request: NextRequest) {
         { name: { contains: search, mode: 'insensitive' } },
         { email: { contains: search, mode: 'insensitive' } },
       ];
+    }
+    if (track) {
+      if (track === 'bootcamp') {
+        where.bootcampLink = { isNot: null };
+      } else if (track === 'intern') {
+        where.bootcampLink = { is: null };
+      }
+    }
+
+    const orderBy: Prisma.UserOrderByWithRelationInput = {};
+    if (sort === 'xp') {
+      orderBy.xp = order;
+    } else {
+      orderBy.createdAt = order;
     }
 
     const data = await prisma.user.findMany({
@@ -74,10 +91,17 @@ export async function GET(request: NextRequest) {
             isVerified: true,
           },
         },
+        bootcampLink: {
+          select: {
+            id: true,
+            cohort: true,
+            bootcampTrack: true,
+          },
+        },
       },
       skip: parseInt(offset),
       take,
-      orderBy: { createdAt: 'desc' },
+      orderBy,
     });
 
     return NextResponse.json({ users: data, success: true });
