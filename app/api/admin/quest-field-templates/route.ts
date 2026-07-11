@@ -117,3 +117,25 @@ export async function DELETE(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to delete template', success: false }, { status: 500 });
   }
 }
+
+export async function PATCH(request: NextRequest) {
+  try {
+    const authUser = await requireAuth(request, 'admin');
+    if (!authUser) return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
+
+    const body = await request.json();
+    const { id, isActive } = body;
+    if (!id || typeof isActive !== 'boolean') {
+      return NextResponse.json({ error: 'id and isActive are required', success: false }, { status: 400 });
+    }
+
+    const updated = await prisma.questFieldTemplate.update({
+      where: { id },
+      data: { isActive },
+    });
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error patching template:', error);
+    return NextResponse.json({ error: 'Failed to update template status', success: false }, { status: 500 });
+  }
+}
