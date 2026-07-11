@@ -502,6 +502,7 @@ export default function AdminQuestsPage() {
                           <SelectItem value="draft">Draft</SelectItem>
                           <SelectItem value="available">Available</SelectItem>
                           <SelectItem value="in_progress">In Progress</SelectItem>
+                          <SelectItem value="review">Under Review</SelectItem>
                           <SelectItem value="completed">Completed</SelectItem>
                           <SelectItem value="cancelled">Cancelled</SelectItem>
                         </SelectContent>
