@@ -165,10 +165,7 @@ export async function GET(request: NextRequest) {
           },
         },
       },
-      orderBy: {
-        [sort]: order,
-        id: 'asc',
-      },
+      orderBy: [{ [sort]: order }, { id: 'asc' }],
       take: limit,
     });
 
