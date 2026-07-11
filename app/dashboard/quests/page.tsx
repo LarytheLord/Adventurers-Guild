@@ -111,20 +111,21 @@ export default function QuestsPage() {
   const [partyFilter, setPartyFilter] = useState<PartyFilter>('all');
   const [joiningPartyId, setJoiningPartyId] = useState<string | null>(null);
   const [isBootcamp, setIsBootcamp] = useState(false);
+  const [offset, setOffset] = useState(0);
 
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
   const isAdmin = session?.user?.role === 'admin';
   const shouldFetch = status === 'authenticated' && session?.user?.role !== 'company';
 
   const apiUrl = useMemo(() => {
-    const params = new URLSearchParams({ status: 'available', limit: '60' });
+    const params = new URLSearchParams({ status: 'available', limit: '12', offset: offset.toString() });
     if (debouncedSearchTerm) params.set('search', debouncedSearchTerm);
     if (difficulty !== 'all') params.set('difficulty', difficulty);
     if (track !== 'all') params.set('track', track);
     if (category !== 'all') params.set('category', category);
     if (sort !== 'newest') params.set('sort', sort);
     return `/api/quests?${params.toString()}`;
-  }, [debouncedSearchTerm, difficulty, track, category, sort]);
+  }, [debouncedSearchTerm, difficulty, track, category, sort, offset]);
 
   const { data, loading, error, refetch } = useApiFetch<Quest[]>(apiUrl, { skip: !shouldFetch });
   const quests = (Array.isArray(data) ? data : []) ?? EMPTY_QUESTS;
@@ -155,12 +156,12 @@ export default function QuestsPage() {
   });
 
   const activeFilters: { key: string; label: string; clear: () => void }[] = [
-    ...(searchTerm ? [{ key: 'search', label: `"${searchTerm}"`, clear: () => setSearchTerm('') }] : []),
-    ...(difficulty !== 'all' ? [{ key: 'difficulty', label: `${difficulty}-Rank`, clear: () => setDifficulty('all') }] : []),
-    ...(track !== 'all' ? [{ key: 'track', label: TRACK_OPTIONS.find((t) => t.value === track)?.label ?? track, clear: () => setTrack('all') }] : []),
-    ...(category !== 'all' ? [{ key: 'category', label: QUEST_CATEGORIES.find((c) => c.value === category)?.label ?? category, clear: () => setCategory('all') }] : []),
-    ...(sort !== 'newest' ? [{ key: 'sort', label: SORT_OPTIONS.find((s) => s.value === sort)?.label ?? sort, clear: () => setSort('newest') }] : []),
-    ...(partyFilter !== 'all' ? [{ key: 'party', label: partyFilter === 'solo' ? 'Solo' : 'Squad', clear: () => setPartyFilter('all') }] : []),
+    ...(searchTerm ? [{ key: 'search', label: `"${searchTerm}"`, clear: () => { setSearchTerm(''); setOffset(0); } }] : []),
+    ...(difficulty !== 'all' ? [{ key: 'difficulty', label: `${difficulty}-Rank`, clear: () => { setDifficulty('all'); setOffset(0); } }] : []),
+    ...(track !== 'all' ? [{ key: 'track', label: TRACK_OPTIONS.find((t) => t.value === track)?.label ?? track, clear: () => { setTrack('all'); setOffset(0); } }] : []),
+    ...(category !== 'all' ? [{ key: 'category', label: QUEST_CATEGORIES.find((c) => c.value === category)?.label ?? category, clear: () => { setCategory('all'); setOffset(0); } }] : []),
+    ...(sort !== 'newest' ? [{ key: 'sort', label: SORT_OPTIONS.find((s) => s.value === sort)?.label ?? sort, clear: () => { setSort('newest'); setOffset(0); } }] : []),
+    ...(partyFilter !== 'all' ? [{ key: 'party', label: partyFilter === 'solo' ? 'Solo' : 'Squad', clear: () => { setPartyFilter('all'); setOffset(0); } }] : []),
   ];
 
   function getInitials(name: string | null | undefined) {
@@ -195,7 +196,7 @@ export default function QuestsPage() {
 
   function clearAllFilters() {
     setSearchTerm(''); setDifficulty('all'); setTrack('all');
-    setCategory('all'); setSort('newest'); setPartyFilter('all');
+    setCategory('all'); setSort('newest'); setPartyFilter('all'); setOffset(0);
   }
 
   if (status === 'loading' || loading) {
@@ -246,11 +247,11 @@ export default function QuestsPage() {
             <Input
               placeholder="Search quests, skills, company…"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => { setSearchTerm(e.target.value); setOffset(0); }}
               className="h-8 text-sm flex-1 min-w-[140px] sm:min-w-[180px]"
             />
 
-            <Select value={difficulty} onValueChange={setDifficulty}>
+            <Select value={difficulty} onValueChange={(v) => { setDifficulty(v); setOffset(0); }}>
               <SelectTrigger className="h-8 text-xs w-24 sm:w-32">
                 <SelectValue placeholder="Difficulty" />
               </SelectTrigger>
@@ -262,7 +263,7 @@ export default function QuestsPage() {
               </SelectContent>
             </Select>
 
-            <Select value={track} onValueChange={setTrack}>
+            <Select value={track} onValueChange={(v) => { setTrack(v); setOffset(0); }}>
               <SelectTrigger className="h-8 text-xs w-28">
                 <SelectValue placeholder="Track" />
               </SelectTrigger>
@@ -274,7 +275,7 @@ export default function QuestsPage() {
               </SelectContent>
             </Select>
 
-            <Select value={category} onValueChange={setCategory}>
+            <Select value={category} onValueChange={(v) => { setCategory(v); setOffset(0); }}>
               <SelectTrigger className="h-8 text-xs w-36">
                 <SelectValue placeholder="Category" />
               </SelectTrigger>
@@ -286,7 +287,7 @@ export default function QuestsPage() {
               </SelectContent>
             </Select>
 
-            <Select value={sort} onValueChange={(v) => setSort(v as SortOption)}>
+            <Select value={sort} onValueChange={(v) => { setSort(v as SortOption); setOffset(0); }}>
               <SelectTrigger className="h-8 text-xs w-32">
                 <SelectValue placeholder="Sort" />
               </SelectTrigger>
@@ -305,7 +306,7 @@ export default function QuestsPage() {
                 {(['all', 'solo', 'squad'] as const).map((v) => (
                   <button
                     key={v}
-                    onClick={() => setPartyFilter(v)}
+                    onClick={() => { setPartyFilter(v); setOffset(0); }}
                     className={`rounded-md px-3 py-1 text-xs font-medium transition-colors capitalize ${
                       partyFilter === v
                         ? 'bg-white text-slate-900 shadow-sm'
@@ -344,10 +345,14 @@ export default function QuestsPage() {
         {/* ── Quest grid ── */}
         {filteredQuests.length === 0 ? (
           <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-white/60 py-16 text-center">
-            <p className="text-sm font-medium text-slate-500">No quests found.</p>
-            <Button size="sm" variant="outline" className="mt-4" onClick={clearAllFilters}>
-              Clear Filters
-            </Button>
+            <p className="text-sm font-medium text-slate-500">
+              {offset === 0 ? 'No quests found.' : 'No more quests.'}
+            </p>
+            {offset === 0 && (
+              <Button size="sm" variant="outline" className="mt-4" onClick={clearAllFilters}>
+                Clear Filters
+              </Button>
+            )}
           </div>
         ) : (
           <section className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -365,6 +370,33 @@ export default function QuestsPage() {
               />
             ))}
           </section>
+        )}
+        
+        {(quests.length > 0 || offset > 0) && (
+          <div className="mt-8 flex justify-center gap-4 pb-8">
+            <Button
+              variant="outline"
+              disabled={offset === 0}
+              onClick={() => {
+                setOffset((p) => Math.max(0, p - 12));
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="bg-white"
+            >
+              Previous Page
+            </Button>
+            <Button
+              variant="outline"
+              disabled={quests.length < 12}
+              onClick={() => {
+                setOffset((p) => p + 12);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="bg-white"
+            >
+              Next Page
+            </Button>
+          </div>
         )}
       </div>
     </div>

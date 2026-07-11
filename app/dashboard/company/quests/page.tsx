@@ -53,10 +53,16 @@ export default function CompanyQuestsPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState('');
+  const [offset, setOffset] = useState(0);
   const shouldFetch =
     status === 'authenticated' && (session?.user?.role === 'company' || session?.user?.role === 'admin');
+    
+  const apiUrl = useMemo(() => {
+    return `/api/company/quests?limit=12&offset=${offset}`;
+  }, [offset]);
+
   const { data, loading, error } = useApiFetch<{ quests: Quest[]; success: boolean }>(
-    '/api/company/quests?limit=80',
+    apiUrl,
     { skip: !shouldFetch }
   );
   const quests = (Array.isArray(data) ? data : []) as Quest[];
@@ -179,7 +185,7 @@ export default function CompanyQuestsPage() {
           <Input
             placeholder="Search by title, category, or status"
             value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
+            onChange={(event) => { setSearchTerm(event.target.value); setOffset(0); }}
             className="pl-9"
           />
         </div>
@@ -188,14 +194,18 @@ export default function CompanyQuestsPage() {
       {filteredQuests.length === 0 ? (
         <GuildPanel className="p-12 text-center">
           <Target className="mx-auto mb-4 h-14 w-14 text-slate-400" />
-          <h3 className="text-xl font-semibold text-slate-900">No quests found</h3>
-          <p className="mt-2 text-sm text-slate-500">Create your first quest to start attracting adventurers.</p>
-          <Button className="mt-4" asChild>
-            <Link href="/dashboard/company/create-quest">
-              <Plus className="h-4 w-4" />
-              Create Quest
-            </Link>
-          </Button>
+          <h3 className="text-xl font-semibold text-slate-900">{offset === 0 ? 'No quests found' : 'No more quests'}</h3>
+          <p className="mt-2 text-sm text-slate-500">
+            {offset === 0 ? 'Create your first quest to start attracting adventurers.' : 'You have reached the end of the list.'}
+          </p>
+          {offset === 0 && (
+            <Button className="mt-4" asChild>
+              <Link href="/dashboard/company/create-quest">
+                <Plus className="h-4 w-4" />
+                Create Quest
+              </Link>
+            </Button>
+          )}
         </GuildPanel>
       ) : (
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -257,6 +267,33 @@ export default function CompanyQuestsPage() {
             </GuildCard>
           ))}
         </section>
+      )}
+      
+      {(quests.length > 0 || offset > 0) && (
+        <div className="mt-8 flex justify-center gap-4 pb-8">
+          <Button
+            variant="outline"
+            disabled={offset === 0}
+            onClick={() => {
+              setOffset((p) => Math.max(0, p - 12));
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className="bg-white"
+          >
+            Previous Page
+          </Button>
+          <Button
+            variant="outline"
+            disabled={quests.length < 12}
+            onClick={() => {
+              setOffset((p) => p + 12);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className="bg-white"
+          >
+            Next Page
+          </Button>
+        </div>
       )}
     </GuildPage>
   );
