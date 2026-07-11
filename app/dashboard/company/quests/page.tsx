@@ -59,7 +59,7 @@ export default function CompanyQuestsPage() {
     '/api/company/quests?limit=80',
     { skip: !shouldFetch }
   );
-  const quests = data?.quests ?? EMPTY_QUESTS;
+  const quests = (Array.isArray(data) ? data : []) as Quest[];
 
   useEffect(() => {
     if (status === 'unauthenticated') {

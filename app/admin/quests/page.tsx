@@ -117,7 +117,7 @@ export default function AdminQuestsPage() {
     skip: !shouldFetch,
   });
 
-  const quests = data?.quests ?? EMPTY_QUESTS;
+  const quests = (Array.isArray(data) ? data : []) as QuestItem[];
 
   useEffect(() => {
     if (status === 'unauthenticated') {

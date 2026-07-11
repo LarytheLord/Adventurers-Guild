@@ -17,7 +17,7 @@ export default function CompanyAnalyticsPage() {
   const { data, loading } = useApiFetch<{ success: boolean; stats: CompanyStats; error?: string }>(
     '/api/analytics?type=company'
   );
-  const stats = data?.stats ?? null;
+  const stats = data ? (data as unknown as CompanyStats) : null;
 
   if (loading) {
     return (
