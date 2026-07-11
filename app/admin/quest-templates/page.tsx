@@ -144,6 +144,17 @@ export default function QuestTemplatesPage() {
     else toast.error(data.error || 'Failed');
   };
 
+  const enable = async (id: string) => {
+    const res = await fetchWithAuth(`/api/admin/quest-field-templates`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, isActive: true })
+    });
+    const data = await res.json();
+    if (data.success) { toast.success('Template enabled'); fetchTemplates(); }
+    else toast.error(data.error || 'Failed');
+  };
+
   if (status === 'loading' || loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-950">
@@ -281,9 +292,13 @@ export default function QuestTemplatesPage() {
                 </div>
                 <div className="flex shrink-0 gap-2">
                   <Button size="sm" variant="outline" className="border-slate-700" onClick={() => loadIntoForm(t)}>Edit</Button>
-                  {t.isActive && (
+                  {t.isActive ? (
                     <Button size="sm" variant="ghost" className="text-red-400 hover:bg-red-950/40" onClick={() => disable(t.id)}>
                       Disable
+                    </Button>
+                  ) : (
+                    <Button size="sm" variant="ghost" className="text-emerald-400 hover:bg-emerald-950/40" onClick={() => enable(t.id)}>
+                      Enable
                     </Button>
                   )}
                 </div>
