@@ -74,7 +74,7 @@ export default function CompanyProfilePage() {
     }
   }, [status, session, router, profileData]);
 
-  const quests = data?.quests || [];
+  const quests = (Array.isArray(data) ? data : []) as Array<{ status: string }>;
   const questCount = quests.length;
 
   const completedCount = quests.filter((quest) => quest.status === 'completed').length;
