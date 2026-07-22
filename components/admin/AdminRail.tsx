@@ -81,9 +81,9 @@ export function AdminRail() {
   const { data: session } = useSession();
 
   return (
-    <aside className="w-full shrink-0 lg:sticky lg:top-4 lg:h-fit lg:w-72">
-      <div className="guild-panel overflow-hidden border-slate-900 bg-slate-950 text-slate-100">
-        <div className="border-b border-slate-800 px-5 py-6">
+    <aside className="w-full shrink-0 lg:sticky lg:top-4 lg:h-[calc(100vh-2rem)] lg:w-72">
+      <div className="guild-panel flex h-full flex-col overflow-hidden border-slate-900 bg-slate-950 text-slate-100">
+        <div className="shrink-0 border-b border-slate-800 px-5 py-6">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-500/15 text-orange-300">
               <Shield className="h-5 w-5" />
@@ -100,7 +100,7 @@ export function AdminRail() {
           </p>
         </div>
 
-        <nav className="flex gap-2 overflow-x-auto p-3 lg:flex-col lg:overflow-visible">
+        <nav className="flex gap-2 overflow-x-auto p-3 lg:flex-1 lg:flex-col lg:overflow-y-auto [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-slate-700">
           {adminLinks.map((item) => {
             const active = item.exact
               ? pathname === item.href
@@ -140,7 +140,7 @@ export function AdminRail() {
         </nav>
 
         {/* User info + logout */}
-        <div className="border-t border-slate-800 px-5 py-4">
+        <div className="shrink-0 border-t border-slate-800 px-5 py-4">
           <div className="flex items-center gap-3 mb-3">
             <div className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-800 text-slate-300 text-sm font-bold shrink-0">
               {session?.user?.name?.[0]?.toUpperCase() ?? 'A'}
