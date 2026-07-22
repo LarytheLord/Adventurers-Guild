@@ -117,11 +117,24 @@ export async function GET(request: NextRequest) {
           if (delta !== 0) return delta;
           return a.createdAt.getTime() - b.createdAt.getTime();
         })
-        .slice(0, limit)
-        .map((company, index) => ({
+        .slice(0, limit);
+
+      let currentRank = 1;
+      let lastValue: any = null;
+
+      const rankedWithPosition = ranked.map((company, index) => {
+        // We use type assertion here since sort is guaranteed to be a key that holds a numeric value on the company object
+        const value = company[sort as keyof typeof company];
+        if (lastValue !== null && lastValue !== value) {
+          currentRank = index + 1;
+        }
+        lastValue = value;
+        
+        return {
           ...company,
-          position: index + 1,
-        }));
+          position: currentRank,
+        };
+      });
 
       return NextResponse.json({
         success: true,
@@ -129,7 +142,7 @@ export async function GET(request: NextRequest) {
         sort,
         order,
         total: companies.length,
-        rankings: ranked,
+        rankings: rankedWithPosition,
       });
     }
 
@@ -169,16 +182,26 @@ export async function GET(request: NextRequest) {
       take: limit,
     });
 
-    const rankings = adventurers.map((user, index) => ({
-      id: user.id,
-      name: user.name || user.email,
-      email: user.email,
-      rank: user.rank,
-      xp: user.xp,
-      level: user.level,
-      skillPoints: user.skillPoints,
-      position: index + 1,
-      adventurerProfiles: user.adventurerProfile
+    let currentRank = 1;
+    let lastValue: any = null;
+
+    const rankings = adventurers.map((user, index) => {
+      const value = user[sort as keyof typeof user];
+      if (lastValue !== null && lastValue !== value) {
+        currentRank = index + 1;
+      }
+      lastValue = value;
+
+      return {
+        id: user.id,
+        name: user.name || user.email,
+        email: user.email,
+        rank: user.rank,
+        xp: user.xp,
+        level: user.level,
+        skillPoints: user.skillPoints,
+        position: currentRank,
+        adventurerProfiles: user.adventurerProfile
         ? {
             specialization: user.adventurerProfile.specialization || undefined,
             totalQuestsCompleted: user.adventurerProfile.totalQuestsCompleted,
@@ -192,7 +215,8 @@ export async function GET(request: NextRequest) {
             questCompletionRate: Number(user.adventurerProfile.questCompletionRate),
           }
         : undefined,
-    }));
+      };
+    });
 
     const total = await prisma.user.count({ where });
 
