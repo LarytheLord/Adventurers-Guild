@@ -62,13 +62,15 @@ export async function POST(req: Request) {
       );
     }
 
-    // Update user's email
-    await prisma.user.update({
-      where: { id: session.user.id },
-      data: { email: normalizedEmail },
-    });
+    // Redirect to new secure email change flow
+    return NextResponse.json({ 
+      success: false, 
+      message: 'Please use the new secure email change flow. Redirecting...',
+      redirectTo: '/api/user/request-email-change',
+      // For backward compatibility, we could automatically forward the request
+      // but for now, we'll just inform the client to use the new endpoint
+    }, { status: 400 });
 
-    return NextResponse.json({ success: true, email: normalizedEmail });
   } catch (error) {
     console.error('Failed to update email:', error);
     if (error instanceof z.ZodError) {

@@ -664,6 +664,23 @@ model ErrorLog {
   @@map("error_logs")
 }
 
+model EmailChangeRequest {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  newEmail  String   @map("new_email")
+  token     String   @unique
+  status    String   @default("pending") // pending | confirmed | expired
+  expiresAt DateTime @map("expires_at") @db.Timestamptz
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([token])
+  @@index([status])
+  @@index([expiresAt])
+  @@map("email_change_requests")
+}
+
 model Party {
   id        String     @id @default(uuid()) @db.Uuid
   questId   String     @unique @map("quest_id") @db.Uuid
