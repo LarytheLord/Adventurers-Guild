@@ -63,7 +63,7 @@ async function main() {
     source: 'CLIENT_PORTAL' as const,
     companyId: company.id,
     partnerOrgName: 'Xtream Car Treatment',
-    status: 'in_progress' as const,
+    status: 'available' as const, // public quest feed (getPublicQuests) only returns 'available' quests
   };
 
   const existing = await prisma.quest.findFirst({ where: { title: questData.title, companyId: company.id } });
