@@ -88,6 +88,7 @@ export default function AdminQuestsPage() {
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [offset, setOffset] = useState(0);
   const [noteQuest, setNoteQuest] = useState<QuestItem | null>(null);
   const [newNoteText, setNewNoteText] = useState('');
   const [savingNote, setSavingNote] = useState(false);
@@ -97,7 +98,7 @@ export default function AdminQuestsPage() {
 
   const shouldFetch = status === 'authenticated' && session?.user?.role === 'admin';
   const questsEndpoint = useMemo(() => {
-    const params = new URLSearchParams({ limit: '100' });
+    const params = new URLSearchParams({ limit: '12', offset: offset.toString() });
     if (filterStatus !== 'all') {
       params.set('status', filterStatus);
     }
@@ -105,7 +106,7 @@ export default function AdminQuestsPage() {
       params.set('search', search.trim());
     }
     return `/api/admin/quests?${params.toString()}`;
-  }, [filterStatus, search]);
+  }, [filterStatus, search, offset]);
 
   const {
     data,
@@ -370,7 +371,7 @@ export default function AdminQuestsPage() {
             <Input
               placeholder="Search quests..."
               value={search}
-              onChange={(event) => setSearch(event.target.value)}
+              onChange={(event) => { setSearch(event.target.value); setOffset(0); }}
               onKeyDown={(event) => {
                 if (event.key === 'Enter') {
                   void refetch();
@@ -379,7 +380,7 @@ export default function AdminQuestsPage() {
               className="pl-9"
             />
           </div>
-          <Select value={filterStatus} onValueChange={setFilterStatus}>
+          <Select value={filterStatus} onValueChange={(v) => { setFilterStatus(v); setOffset(0); }}>
             <SelectTrigger className="w-full sm:w-[180px]">
               <Filter className="mr-2 h-4 w-4" />
               <SelectValue />
@@ -415,16 +416,18 @@ export default function AdminQuestsPage() {
         {quests.length === 0 ? (
           <Card className="p-12 text-center">
             <Target className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
-            <h3 className="text-lg font-semibold">No quests found</h3>
+            <h3 className="text-lg font-semibold">{offset === 0 ? 'No quests found' : 'No more quests'}</h3>
             <p className="mb-6 mt-1 text-muted-foreground">
-              Create the first quest for your interns to pick up.
+              {offset === 0 ? 'Create the first quest for your interns to pick up.' : 'You have reached the end of the list.'}
             </p>
-            <Button asChild>
-              <Link href="/dashboard/company/create-quest">
-                <Plus className="h-4 w-4" />
-                Create Quest
-              </Link>
-            </Button>
+            {offset === 0 && (
+              <Button asChild>
+                <Link href="/dashboard/company/create-quest">
+                  <Plus className="h-4 w-4" />
+                  Create Quest
+                </Link>
+              </Button>
+            )}
           </Card>
         ) : (
           <div className="space-y-3">
@@ -585,6 +588,33 @@ export default function AdminQuestsPage() {
                 </CardContent>
               </Card>
             ))}
+          </div>
+        )}
+        
+        {(quests.length > 0 || offset > 0) && (
+          <div className="mt-8 flex justify-center gap-4 pb-8">
+            <Button
+              variant="outline"
+              disabled={offset === 0}
+              onClick={() => {
+                setOffset((p) => Math.max(0, p - 12));
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="bg-white"
+            >
+              Previous Page
+            </Button>
+            <Button
+              variant="outline"
+              disabled={quests.length < 12}
+              onClick={() => {
+                setOffset((p) => p + 12);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="bg-white"
+            >
+              Next Page
+            </Button>
           </div>
         )}
       </div>
