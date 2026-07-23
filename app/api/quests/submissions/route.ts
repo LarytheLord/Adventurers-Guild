@@ -336,21 +336,25 @@ export async function PUT(request: NextRequest) {
           }
         }
 
+        // Process XP and skills INSIDE the transaction to prevent permanent XP loss
+        if (rewardsPayload) {
+          const { updateUserXpAndSkills } = await import('@/lib/xp-utils');
+          await updateUserXpAndSkills(
+            rewardsPayload.userId,
+            rewardsPayload.xpReward,
+            rewardsPayload.skillPointsReward,
+            assignmentData.questId,
+            tx // Pass transaction client to ensure atomic operation
+          );
+        }
+
         return { submission: updatedSubmission, rewardsPayload, paymentInfo };
       },
       { maxWait: 10_000, timeout: 20_000 }
     );
 
-    // Process XP and skills (outside transaction)
+    // Process referral milestone and bootcamp tracking AFTER transaction completes
     if (reviewResult.rewardsPayload) {
-      const { updateUserXpAndSkills } = await import('@/lib/xp-utils');
-      await updateUserXpAndSkills(
-        reviewResult.rewardsPayload.userId,
-        reviewResult.rewardsPayload.xpReward,
-        reviewResult.rewardsPayload.skillPointsReward,
-        assignmentData.questId
-      );
-
       // Referral milestone check — award XP to the referrer if applicable
       const completionCount = await prisma.questCompletion.count({
         where: { userId: reviewResult.rewardsPayload.userId },
