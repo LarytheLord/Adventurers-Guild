@@ -2,7 +2,7 @@
 // Replaces Supabase RPC: update_user_xp_and_skills
 import { prisma } from './db';
 import { getRankForXp } from './ranks';
-import { UserRank } from '@prisma/client';
+import { UserRank, Prisma } from '@prisma/client';
 import { logActivity } from './activity-logger';
 import { updateStreak } from './streak-utils';
 import { checkAchievements } from './achievement-checker';
@@ -19,14 +19,42 @@ export function calculateLevelFromXP(xp: number): number {
 /**
  * Update user XP, level, rank, and skill points in a single transaction.
  * Also updates adventurer_profiles stats (questsCompleted, completionRate).
+ * 
+ * @param userId The user ID to update
+ * @param xpGained XP amount to add
+ * @param skillPointsGained Skill points to add
+ * @param questId Optional quest ID for activity logging
+ * @param tx Optional Prisma transaction client - if provided, uses existing transaction
  */
 export async function updateUserXpAndSkills(
   userId: string,
   xpGained: number,
   skillPointsGained: number,
-  questId?: string
+  questId?: string,
+  tx?: Prisma.TransactionClient
 ): Promise<{ newXp: number; newLevel: number; newRank: string; rankChanged: boolean }> {
-  return prisma.$transaction(async (tx) => {
+  // If transaction client is provided, use it directly
+  if (tx) {
+    return updateUserXpAndSkillsTransaction(userId, xpGained, skillPointsGained, questId, tx);
+  }
+  
+  // Otherwise create a new transaction
+  return prisma.$transaction(async (transaction) => {
+    return updateUserXpAndSkillsTransaction(userId, xpGained, skillPointsGained, questId, transaction);
+  });
+}
+
+/**
+ * Internal helper function that performs the actual update logic.
+ * This can be called from within an existing transaction.
+ */
+async function updateUserXpAndSkillsTransaction(
+  userId: string,
+  xpGained: number,
+  skillPointsGained: number,
+  questId: string | undefined,
+  tx: Prisma.TransactionClient
+): Promise<{ newXp: number; newLevel: number; newRank: string; rankChanged: boolean }> {
     // Get current user stats
     const user = await tx.user.findUnique({
       where: { id: userId },
