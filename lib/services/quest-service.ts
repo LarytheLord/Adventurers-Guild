@@ -160,8 +160,22 @@ export async function createQuest(body: CreateQuestBody, user: SessionUser): Pro
     parentQuestId, deadline, tasks,
   } = body;
 
-  if (!title || !description || !questType || !difficulty || !xpReward) {
+  if (!title || !description || !questType || !difficulty || xpReward === undefined || xpReward === null) {
     return { error: 'Missing required fields', data: null, status: 400 };
+  }
+
+  const MAX_XP = parseInt(process.env.MAX_QUEST_XP || '50000', 10);
+  const MAX_SP = parseInt(process.env.MAX_QUEST_SP || '500', 10);
+  const MAX_MONETARY = parseInt(process.env.MAX_QUEST_MONETARY || '500000', 10);
+
+  if (xpReward < 0 || xpReward > MAX_XP) {
+    return { error: `XP reward must be between 0 and ${MAX_XP}`, data: null, status: 400 };
+  }
+  if (skillPointsReward !== undefined && skillPointsReward !== null && (skillPointsReward < 0 || skillPointsReward > MAX_SP)) {
+    return { error: `Skill points reward must be between 0 and ${MAX_SP}`, data: null, status: 400 };
+  }
+  if (monetaryReward !== undefined && monetaryReward !== null && (monetaryReward < 0 || monetaryReward > MAX_MONETARY)) {
+    return { error: `Monetary reward must be between 0 and ${MAX_MONETARY}`, data: null, status: 400 };
   }
 
   if (deadline && new Date(deadline) < new Date()) {
