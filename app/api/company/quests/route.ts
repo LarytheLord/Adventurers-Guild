@@ -140,6 +140,20 @@ export async function POST(request: NextRequest) {
         briefData: body.briefData ?? Prisma.JsonNull,
         acceptanceCriteria: Array.isArray(body.acceptanceCriteria) ? body.acceptanceCriteria : [],
         tasks: Array.isArray(body.tasks) ? body.tasks : [],
+        
+        // Quest brief structured fields
+        submissionInstructions: body.submissionInstructions || null,
+        expectedDeliverables: body.expectedDeliverables || null,
+        attachments: body.attachments || null,
+        clientResources: body.clientResources || null,
+        
+        // QuestBriefSchema fields (for AI PM integration)
+        problemStatement: body.problemStatement || null,
+        starterRepo: body.starterRepo || null,
+        estimatedHours: body.estimatedHours || null,
+        squadSize: body.squadSize || null,
+        ipTerms: body.ipTerms || null,
+        clientOrg: body.clientOrg || null,
       },
     });
 
@@ -236,6 +250,36 @@ export async function PUT(request: NextRequest) {
     }
     if ('deadline' in body) {
       prismaUpdateFields.deadline = body.deadline ? new Date(body.deadline) : null;
+    }
+    if ('submissionInstructions' in body) {
+      prismaUpdateFields.submissionInstructions = body.submissionInstructions;
+    }
+    if ('expectedDeliverables' in body) {
+      prismaUpdateFields.expectedDeliverables = body.expectedDeliverables;
+    }
+    if ('attachments' in body) {
+      prismaUpdateFields.attachments = body.attachments;
+    }
+    if ('clientResources' in body) {
+      prismaUpdateFields.clientResources = body.clientResources;
+    }
+    if ('problemStatement' in body) {
+      prismaUpdateFields.problemStatement = body.problemStatement;
+    }
+    if ('starterRepo' in body) {
+      prismaUpdateFields.starterRepo = body.starterRepo;
+    }
+    if ('estimatedHours' in body) {
+      prismaUpdateFields.estimatedHours = body.estimatedHours;
+    }
+    if ('squadSize' in body) {
+      prismaUpdateFields.squadSize = body.squadSize;
+    }
+    if ('ipTerms' in body) {
+      prismaUpdateFields.ipTerms = body.ipTerms;
+    }
+    if ('clientOrg' in body) {
+      prismaUpdateFields.clientOrg = body.clientOrg;
     }
 
     if (Object.keys(prismaUpdateFields).length === 0) {
