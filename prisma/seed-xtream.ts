@@ -59,7 +59,7 @@ async function main() {
     monetaryReward: null,
     requiredSkills: ['Digital Marketing', 'WhatsApp Business API', 'SEO/AEO'],
     maxParticipants: 2,
-    track: 'INTERN' as const,
+    track: 'OPEN' as const, // getPublicQuests() defaults to track=OPEN when no track filter is passed — INTERN/BOOTCAMP quests never surface publicly
     source: 'CLIENT_PORTAL' as const,
     companyId: company.id,
     partnerOrgName: 'Xtream Car Treatment',
