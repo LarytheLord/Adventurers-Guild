@@ -12,7 +12,7 @@ interface SearchResult {
 
 // GET /api/users/search?q=query — search users by name or email
 export async function GET(request: NextRequest) {
-  const user = await requireAuth(request, 'adventurer', 'admin');
+  const user = await requireAuth(request, 'admin');
   if (!user) return NextResponse.json({ error: 'Unauthorized', success: false }, { status: 401 });
 
   const { searchParams } = new URL(request.url);
