@@ -14,8 +14,8 @@ import ConditionalFooter from "@/components/ConditionalFooter"
 import { Analytics } from "@vercel/analytics/next"
 
 export const metadata: Metadata = {
-  title: "Guild",
-  description: "Take on real coding quests from companies, earn money and XP, and rank up from F to S.",
+  title: "Guild — your business bottleneck, fixed for a fixed price",
+  description: "Guild scopes your operational bottleneck, builds it with an AI-augmented team under one accountable senior owner, and hands you a working system you own. Fixed scope, fixed price. Book a free AI audit.",
   manifest: "/manifest.json",
   icons: {
     icon: "/pwa/icon-192x192.svg",

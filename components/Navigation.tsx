@@ -98,10 +98,10 @@ export default function Navigation() {
   const isTransparent = isHome && !scrolled && !mobileMenuOpen;
 
   const marketingLinks = [
-    { href: '/', label: 'Home' },
-    { href: '/#ranks', label: 'Ranks' },
+    { href: '/', label: 'For Business' },
     { href: '/#how-it-works', label: 'How It Works' },
-    { href: '/register?tab=company', label: 'For Companies' },
+    { href: '/#pricing', label: 'Pricing' },
+    { href: '/adventurers', label: 'For Talent' },
   ];
 
   const memberLinks =
