@@ -1,273 +1,223 @@
-import Link from 'next/link';
-import {
-  ArrowRight,
-  ShoppingBag,
-  Calculator,
-  BarChart3,
-  Briefcase,
-  MessageSquare,
-  ShieldCheck,
-  Clock,
-  Check,
-  Lock,
-  RotateCcw,
-} from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+'use client';
 
-// CTA targets — kept inline for v1. Swap for a real audit form/API later.
+import Link from 'next/link';
+import { motion } from 'framer-motion';
+import { ArrowRight, MessageSquare, Check } from 'lucide-react';
+import { InfiniteSlider } from '@/components/ui/infinite-slider';
+
+// CTA targets. WHATSAPP: TODO swap to the dedicated Guild client-intake WhatsApp (see to-do).
 const EMAIL = 'abid@guilds.work';
-const AUDIT_MAILTO = `mailto:${EMAIL}?subject=Free%20AI%20Audit%20Request&body=Business%20name%3A%0AWhat%20we%20do%3A%0AThe%20operational%20problem%20we%20want%20fixed%3A%0A`;
+const AUDIT_MAILTO = `mailto:${EMAIL}?subject=Project%20enquiry&body=Business%3A%0AWhat%20we%20do%3A%0AThe%20problem%20to%20fix%3A%0A`;
 const WHATSAPP = 'https://chat.whatsapp.com/FFR8bOzvsJr3xHDnhGpB95?s=cl&p=i&ilr=0';
 
-const buckets = [
-  {
-    icon: ShoppingBag,
-    audience: 'D2C / e-commerce brands',
-    pain: 'Failed COD orders and abandoned carts quietly eat your margins.',
-    solution:
-      'WhatsApp automation for order confirmation, delivery follow-ups, and cart recovery.',
-  },
-  {
-    icon: Calculator,
-    audience: 'Accounting & professional firms',
-    pain: 'Month-end means chasing clients for documents and matching statements by hand.',
-    solution:
-      'Automated document collection, reminders, and reconciliation-ready workflows.',
-  },
-  {
-    icon: BarChart3,
-    audience: 'Growing SMBs',
-    pain: 'You run the business on gut feel because the numbers live in scattered sheets.',
-    solution:
-      'Owner dashboards for sales, inventory, cash flow, and weekly business summaries.',
-  },
-  {
-    icon: Briefcase,
-    audience: 'Agencies & consultants',
-    pain: 'You win the client but lack an affordable team to execute the AI work.',
-    solution:
-      'A white-label execution team — you bring strategy, we build under your brand.',
-  },
+// Concrete things a business can hand Guild. Low text, high specificity (Bounty-style).
+const quests = [
+  'A WhatsApp bot that confirms every COD order',
+  'A dashboard for sales, stock and cash flow',
+  'Recover abandoned carts automatically',
+  'Turn our bills into clean Tally-ready data',
+  'A booking flow that fills the calendar',
+  'An AI assistant trained on our SOPs',
+  'Chase reviews after every job, on autopilot',
+  'A landing page that actually converts',
 ];
 
-// Milestone process (replaces fixed "4-week sprint" framing with a process you can hold us to)
-const steps = [
-  { n: '01', title: 'Scope and sign-off', desc: 'A short call. We pin down the one workflow leaking the most time or money, and write a fixed scope and price you approve before any work starts.' },
-  { n: '02', title: 'Build in the open', desc: 'A team builds in your own repository and accounts. You see progress, not a black box.' },
-  { n: '03', title: 'QA and harden', desc: 'A senior Guild Master reviews and hardens every deliverable. You never see raw, unreviewed output.' },
-  { n: '04', title: 'Ship and hand over', desc: 'You get a working system you own outright, with a handover. We keep fixing it until it meets the scope we both agreed.' },
+// The loop, shown as states (Bounty-style: show, do not tell).
+const flow = [
+  { tag: 'Scope', label: 'You tell us the problem', note: 'Fixed scope and price, signed first.' },
+  { tag: 'Build', label: 'A team builds it', note: 'In your repo, under one senior owner.' },
+  { tag: 'Verify', label: 'QA before you see it', note: 'No raw, unreviewed work reaches you.' },
+  { tag: 'Own', label: 'You own it', note: 'Working system, handed over. Yours.' },
 ];
 
-const pricing = [
-  { service: 'WhatsApp AI automation', agency: '₹2,00,000 – ₹5,50,000', guild: 'from ₹75,000' },
-  { service: 'Business dashboard build', agency: '₹1,00,000+', guild: '₹25,000 – ₹75,000' },
-  { service: 'Social / content, monthly', agency: '₹40,000 – ₹90,000 / mo', guild: '₹8,000 – ₹18,000 / mo' },
-  { service: 'Meta / WhatsApp API markup', agency: '15% – 35% markup', guild: '0% — you pay Meta directly' },
+const stats = [
+  { v: 'Fixed', k: 'price, not hourly' },
+  { v: '100%', k: 'you own the code' },
+  { v: '1', k: 'named owner per project' },
+  { v: '1/5', k: 'of agency cost' },
 ];
 
-const guarantees = [
-  { icon: RotateCcw, title: 'We finish what we scope', desc: 'We keep working until the delivered system meets the scope we both signed. The scope and price are agreed before any work starts, so there are no surprises.' },
-  { icon: Lock, title: 'You own everything', desc: 'Code and accounts are yours from day one. We build in your repository. No lock-in, no rented software.' },
-  { icon: ShieldCheck, title: 'A named owner', desc: 'One senior Guild Master owns your project end to end and is accountable for quality. Not an anonymous freelancer.' },
+const faqs = [
+  { q: 'What if the work is not good enough?', a: 'We agree the scope and price up front, then keep working until the delivered system meets it. You sign off last.' },
+  { q: 'Who actually does the work?', a: 'An AI-augmented team, supervised end to end by a senior Guild Master who owns quality and is accountable to you.' },
+  { q: 'Do I own what you build?', a: 'Yes. Code and accounts are yours from day one. We build in your repository. No lock-in, no rented software.' },
 ];
+
+const fade = {
+  hidden: { opacity: 0, y: 24 },
+  show: (i = 0) => ({ opacity: 1, y: 0, transition: { duration: 0.6, delay: i * 0.08, ease: [0.16, 1, 0.3, 1] } }),
+};
 
 export default function BusinessLanding() {
   return (
     <main className="bg-white text-slate-900">
-      {/* ───────────── Hero ───────────── */}
-      <section className="relative overflow-hidden border-b border-slate-100 bg-gradient-to-b from-orange-50/60 to-white">
-        <div className="mx-auto max-w-5xl px-6 py-24 text-center sm:py-32">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-[12px] font-semibold uppercase tracking-wide text-orange-700">
-            AI automation, delivered and owned
-          </span>
-          <h1 className="mt-6 text-4xl font-bold leading-[1.1] tracking-tight text-slate-900 sm:text-6xl">
-            Your business bottleneck,
+      {/* ───────── Hero ───────── */}
+      <section className="relative flex min-h-[88vh] items-center overflow-hidden">
+        <div className="pointer-events-none absolute inset-0 -z-10">
+          <div className="absolute left-1/2 top-[-10%] h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-orange-200/40 blur-[130px]" />
+        </div>
+        <div className="mx-auto w-full max-w-4xl px-6 text-center">
+          <motion.p
+            initial="hidden" animate="show" variants={fade}
+            className="text-[13px] font-medium uppercase tracking-[0.2em] text-orange-600"
+          >
+            AI work, delivered and owned
+          </motion.p>
+          <motion.h1
+            initial="hidden" animate="show" custom={1} variants={fade}
+            className="mt-5 text-[clamp(2.6rem,7vw,5.5rem)] font-black leading-[0.95] tracking-[-0.03em]"
+          >
+            Get it built.
             <br />
-            <span className="text-orange-600">fixed for a fixed price.</span>
-          </h1>
-          <p className="mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-slate-600">
-            Guild scopes the one workflow costing you the most, builds it with an
-            AI-augmented team under one accountable senior owner, and hands you a working
-            system you own outright. Fixed scope, fixed price, and we keep fixing it until it
-            meets the brief we both signed.
-          </p>
-          <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <a
-              href={AUDIT_MAILTO}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-orange-600 px-6 text-[15px] font-semibold text-white transition-colors hover:bg-orange-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-orange-600"
-            >
-              Book a free AI audit <ArrowRight className="size-4" />
-            </a>
+            <span className="text-slate-400">You own it.</span>
+          </motion.h1>
+          <motion.p
+            initial="hidden" animate="show" custom={2} variants={fade}
+            className="mx-auto mt-6 max-w-xl text-lg text-slate-500"
+          >
+            Tell us the one thing slowing your business down. We scope it, build it, and hand
+            you a working system. Fixed price.
+          </motion.p>
+          <motion.div
+            initial="hidden" animate="show" custom={3} variants={fade}
+            className="mt-9 flex items-center justify-center gap-3"
+          >
             <a
               href={WHATSAPP}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-6 text-[15px] font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+              className="group inline-flex h-12 items-center gap-2 rounded-full bg-slate-900 px-7 text-[15px] font-semibold text-white transition-transform hover:scale-[1.03]"
             >
-              <MessageSquare className="size-4" /> Talk on WhatsApp
+              <MessageSquare className="size-4" /> Send us your problem
             </a>
-          </div>
-          <p className="mt-4 text-[13px] text-slate-500">
-            Free, no obligation. We map the top 3 things AI can fix in your operations.
-          </p>
-        </div>
-      </section>
-
-      {/* ───────────── Pain buckets ───────────── */}
-      <section className="mx-auto max-w-6xl px-6 py-20">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-bold tracking-tight">What we build, by business</h2>
-          <p className="mt-3 text-slate-600">
-            We don&apos;t sell &quot;AI services.&quot; We fix one specific, expensive problem in your operations.
-          </p>
-        </div>
-        <div className="mt-12 grid gap-6 sm:grid-cols-2">
-          {buckets.map(({ icon: Icon, audience, pain, solution }) => (
-            <Card key={audience} className="border-slate-200">
-              <CardContent className="p-6">
-                <div className="flex size-11 items-center justify-center rounded-lg bg-orange-50 text-orange-600">
-                  <Icon className="size-5" />
-                </div>
-                <h3 className="mt-4 text-lg font-bold">{audience}</h3>
-                <p className="mt-2 text-[14px] leading-relaxed text-slate-500">{pain}</p>
-                <p className="mt-3 flex gap-2 text-[14px] font-medium leading-relaxed text-slate-800">
-                  <Check className="mt-0.5 size-4 shrink-0 text-orange-600" />
-                  {solution}
-                </p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      </section>
-
-      {/* ───────────── First client (case story) ───────────── */}
-      <section className="mx-auto max-w-5xl px-6 pb-4">
-        <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-8 sm:p-10">
-          <p className="text-[12px] font-semibold uppercase tracking-wide text-orange-700">
-            Our first client
-          </p>
-          <div className="mt-4 flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
-            <div className="max-w-2xl">
-              <h3 className="text-xl font-bold text-slate-900">Xtream Car Treatment</h3>
-              <p className="mt-1 text-[13px] text-slate-500">
-                Premium doorstep car care, Ahmedabad
-              </p>
-              <p className="mt-4 leading-relaxed text-slate-700">
-                We handled the digital and tech side of Xtream: real, delivered work at a
-                fraction of what an agency quoted, scoped and owned end to end by our founder.
-                A working relationship, not a one-off. Their live site is below.
-              </p>
-            </div>
             <a
-              href="https://xtreamcartreatment.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-5 text-[14px] font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+              href={AUDIT_MAILTO}
+              className="inline-flex h-12 items-center gap-1.5 rounded-full px-5 text-[15px] font-semibold text-slate-600 transition-colors hover:text-slate-900"
             >
-              Visit their site <ArrowRight className="size-4" />
+              or email us <ArrowRight className="size-4" />
             </a>
-          </div>
+          </motion.div>
         </div>
       </section>
 
-      {/* ───────────── How it works (milestone process) ───────────── */}
-      <section id="how-it-works" className="mx-auto max-w-6xl px-6 py-20 scroll-mt-24">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-bold tracking-tight">A process you can hold us to</h2>
-          <p className="mt-3 text-slate-600">From your problem to a working system you own. Milestone by milestone, not open-ended retainers.</p>
+      {/* ───────── Quest marquee ───────── */}
+      <section className="border-y border-slate-100 py-6">
+        <div className="relative mx-auto max-w-6xl">
+          <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-white to-transparent" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-white to-transparent" />
+          <InfiniteSlider gap={16} speed={30} speedOnHover={10}>
+            {quests.map((q) => (
+              <span
+                key={q}
+                className="flex shrink-0 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-[14px] text-slate-600"
+              >
+                <span className="size-1.5 rounded-full bg-orange-400" />
+                {q}
+              </span>
+            ))}
+          </InfiniteSlider>
         </div>
-        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {steps.map(({ n, title, desc }) => (
-            <div key={n} className="rounded-xl border border-slate-200 bg-white p-6">
-              <span className="text-[28px] font-bold text-orange-200">{n}</span>
-              <h3 className="mt-2 text-[15px] font-bold">{title}</h3>
-              <p className="mt-2 text-[14px] leading-relaxed text-slate-500">{desc}</p>
-            </div>
+      </section>
+
+      {/* ───────── How it works (animated states) ───────── */}
+      <section id="how-it-works" className="mx-auto max-w-6xl scroll-mt-24 px-6 py-28">
+        <div className="mb-14 max-w-xl">
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">From problem to owned system.</h2>
+          <p className="mt-3 text-slate-500">Four steps. No retainers, no black box.</p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {flow.map((s, i) => (
+            <motion.div
+              key={s.tag}
+              initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.4 }}
+              custom={i} variants={fade}
+              className="rounded-2xl border border-slate-200 p-6 transition-colors hover:border-orange-300"
+            >
+              <span className="text-[12px] font-semibold uppercase tracking-wider text-orange-600">
+                {String(i + 1).padStart(2, '0')} · {s.tag}
+              </span>
+              <h3 className="mt-3 text-lg font-bold">{s.label}</h3>
+              <p className="mt-2 flex gap-2 text-[14px] leading-relaxed text-slate-500">
+                <Check className="mt-0.5 size-4 shrink-0 text-orange-500" />
+                {s.note}
+              </p>
+            </motion.div>
           ))}
         </div>
       </section>
 
-      {/* ───────────── Guarantees / risk reversal ───────────── */}
-      <section className="border-y border-slate-100 bg-slate-50/60">
-        <div className="mx-auto max-w-6xl px-6 py-20">
-          <div className="mx-auto max-w-2xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight">The risk is ours, not yours</h2>
-            <p className="mt-3 text-slate-600">
-              Hiring an unknown team is a leap of faith. We remove the reasons to say no.
-            </p>
-          </div>
-          <div className="mt-12 grid gap-6 sm:grid-cols-3">
-            {guarantees.map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="rounded-xl border border-slate-200 bg-white p-6">
-                <div className="flex size-11 items-center justify-center rounded-lg bg-orange-50 text-orange-600">
-                  <Icon className="size-5" />
-                </div>
-                <h3 className="mt-4 text-lg font-bold">{title}</h3>
-                <p className="mt-2 text-[14px] leading-relaxed text-slate-500">{desc}</p>
-              </div>
+      {/* ───────── Stats ───────── */}
+      <section id="pricing" className="border-y border-slate-100 bg-slate-50/60 scroll-mt-24">
+        <div className="mx-auto grid max-w-5xl grid-cols-2 gap-8 px-6 py-16 lg:grid-cols-4">
+          {stats.map((s, i) => (
+            <motion.div
+              key={s.k}
+              initial="hidden" whileInView="show" viewport={{ once: true }}
+              custom={i} variants={fade}
+              className="text-center"
+            >
+              <div className="text-4xl font-black tracking-tight sm:text-5xl">{s.v}</div>
+              <div className="mt-1 text-[13px] text-slate-500">{s.k}</div>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* ───────── Proof (Xtream) ───────── */}
+      <section className="mx-auto max-w-3xl px-6 py-28 text-center">
+        <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fade}>
+          <p className="text-[13px] font-semibold uppercase tracking-wider text-orange-600">Our first client</p>
+          <p className="mt-5 text-2xl font-medium leading-snug text-slate-800 sm:text-3xl">
+            We run the digital and tech side of{' '}
+            <a href="https://xtreamcartreatment.com" target="_blank" rel="noopener noreferrer" className="underline decoration-orange-300 underline-offset-4 hover:decoration-orange-500">
+              Xtream Car Treatment
+            </a>
+            {' '}— real work, delivered, owned by our founder end to end.
+          </p>
+          <p className="mt-4 text-[14px] text-slate-400">Premium doorstep car care, Ahmedabad</p>
+        </motion.div>
+      </section>
+
+      {/* ───────── FAQ ───────── */}
+      <section className="border-t border-slate-100 bg-slate-50/60">
+        <div className="mx-auto max-w-3xl px-6 py-24">
+          <h2 className="mb-10 text-center text-3xl font-bold tracking-tight">The questions everyone asks</h2>
+          <div className="space-y-3">
+            {faqs.map((f, i) => (
+              <motion.details
+                key={f.q}
+                initial="hidden" whileInView="show" viewport={{ once: true }} custom={i} variants={fade}
+                className="group rounded-2xl border border-slate-200 bg-white p-5 [&_summary::-webkit-details-marker]:hidden"
+              >
+                <summary className="flex cursor-pointer items-center justify-between gap-4 font-semibold">
+                  {f.q}
+                  <span className="text-orange-500 transition-transform group-open:rotate-45">+</span>
+                </summary>
+                <p className="mt-3 text-[15px] leading-relaxed text-slate-500">{f.a}</p>
+              </motion.details>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ───────────── Pricing ───────────── */}
-      <section id="pricing" className="mx-auto max-w-4xl px-6 py-20 scroll-mt-24">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-3xl font-bold tracking-tight">A fifth of agency cost</h2>
-          <p className="mt-3 text-slate-600">
-            We separate strategy, execution, and QA, so you don&apos;t pay agency overhead.
-            Market figures shown for reference.
-          </p>
-        </div>
-        <div className="mt-10 overflow-x-auto">
-          <table className="w-full min-w-[560px] border-collapse text-left text-[14px]">
-            <thead>
-              <tr className="border-b border-slate-200 text-[12px] uppercase tracking-wide text-slate-500">
-                <th className="py-3 pr-4 font-semibold">Service</th>
-                <th className="py-3 pr-4 font-semibold">Typical agency</th>
-                <th className="py-3 font-semibold text-orange-700">Guild</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pricing.map(({ service, agency, guild }) => (
-                <tr key={service} className="border-b border-slate-100">
-                  <td className="py-4 pr-4 font-medium text-slate-800">{service}</td>
-                  <td className="py-4 pr-4 text-slate-500 line-through decoration-slate-300">{agency}</td>
-                  <td className="py-4 font-bold text-orange-700">{guild}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-        <p className="mt-5 flex items-center justify-center gap-1.5 text-[13px] text-slate-500">
-          <Clock className="size-3.5" /> Final price depends on integrations, data cleanup, and workflow complexity.
-        </p>
-      </section>
-
-      {/* ───────────── Final CTA ───────────── */}
-      <section className="border-t border-slate-100 bg-slate-50/60">
-        <div className="mx-auto max-w-4xl px-6 py-24 text-center">
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl">
-            Find out what AI can fix in your business
-          </h2>
-          <p className="mx-auto mt-4 max-w-xl text-lg text-slate-600">
-            Book a free 20-minute audit. We&apos;ll map the top three workflows worth automating.
-            No pitch, no obligation.
-          </p>
-          <div className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <a
-              href={AUDIT_MAILTO}
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-lg bg-orange-600 px-6 text-[15px] font-semibold text-white transition-colors hover:bg-orange-700"
-            >
-              Book a free AI audit <ArrowRight className="size-4" />
-            </a>
-            <Link
-              href="/adventurers"
-              className="inline-flex h-12 items-center justify-center gap-2 rounded-lg border border-slate-300 bg-white px-6 text-[15px] font-semibold text-slate-700 transition-colors hover:bg-slate-50"
-            >
-              I&apos;m here to do the work
-            </Link>
-          </div>
+      {/* ───────── Final CTA ───────── */}
+      <section className="mx-auto max-w-3xl px-6 py-28 text-center">
+        <h2 className="text-4xl font-black tracking-tight sm:text-5xl">Tell us what to build.</h2>
+        <div className="mt-9 flex items-center justify-center gap-3">
+          <a
+            href={WHATSAPP}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="group inline-flex h-12 items-center gap-2 rounded-full bg-slate-900 px-7 text-[15px] font-semibold text-white transition-transform hover:scale-[1.03]"
+          >
+            <MessageSquare className="size-4" /> Message us on WhatsApp
+          </a>
+          <Link
+            href="/adventurers"
+            className="inline-flex h-12 items-center gap-1.5 rounded-full px-5 text-[15px] font-semibold text-slate-600 transition-colors hover:text-slate-900"
+          >
+            I do the work <ArrowRight className="size-4" />
+          </Link>
         </div>
       </section>
     </main>
