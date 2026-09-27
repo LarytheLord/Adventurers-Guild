@@ -64,22 +64,23 @@ export default function BusinessLanding() {
             initial="hidden" animate="show" variants={fade}
             className="mx-auto flex w-fit items-center gap-2 rounded-full border border-orange-200 bg-orange-50/70 px-4 py-1.5 text-[13px] font-medium text-orange-700"
           >
-            <Swords className="size-3.5" /> A guild for your business
+            <Swords className="size-3.5" /> The agency model is broken. So we built a guild.
           </motion.div>
           <motion.h1
             initial="hidden" animate="show" custom={1} variants={fade}
             className="mt-6 text-[clamp(2.5rem,6.5vw,5.25rem)] font-black leading-[0.98] tracking-[-0.03em]"
           >
-            Custom software, built for you,
+            Hire a guild,
             <br />
-            <span className="text-slate-400">at a fraction of agency cost.</span>
+            <span className="text-slate-400">not an agency.</span>
           </motion.h1>
           <motion.p
             initial="hidden" animate="show" custom={2} variants={fade}
             className="mx-auto mt-6 max-w-xl text-lg text-slate-500"
           >
-            Tell us the one problem slowing your business down. A senior-led, AI-augmented team
-            builds the fix for a fixed price, and you own everything we ship.
+            One named Guild Master takes on your problem, stakes their name on the outcome,
+            proves the work before you ever see it, and hands you a system you own outright.
+            Fixed price. No retainers, no vanishing, no lock-in.
           </motion.p>
           <motion.div
             initial="hidden" animate="show" custom={3} variants={fade}
@@ -137,7 +138,7 @@ export default function BusinessLanding() {
           initial="hidden" whileInView="show" viewport={{ once: true }} variants={fade}
           className="text-3xl font-bold leading-snug tracking-tight sm:text-4xl"
         >
-          Agencies are slow and cost a fortune.
+          Agencies bill you forever and you never own the work.
           <br />
           <span className="text-slate-400">Freelancers vanish. AI tools you still have to run yourself.</span>
         </motion.h2>
@@ -145,9 +146,10 @@ export default function BusinessLanding() {
           initial="hidden" whileInView="show" viewport={{ once: true }} custom={1} variants={fade}
           className="mx-auto mt-6 max-w-xl text-lg text-slate-500"
         >
-          Guild is the third option. Think of it as a guild that takes on your problem, proves
-          the work before you see it, and hands you a system you own outright. You bring the
-          brief. We are accountable for the result.
+          A guild works differently. One named Guild Master is on the hook for your outcome and
+          has a rank to lose. The work is proven before it reaches you, the price is fixed before
+          it starts, and you own everything at the end. Accountability with a name on it, not an
+          account manager who never touches the build.
         </motion.p>
       </section>
 
