@@ -57,56 +57,102 @@ export default function BusinessLanding() {
       {/* ───────── Hero ───────── */}
       <section className="relative flex min-h-[90vh] items-center overflow-hidden">
         <div className="pointer-events-none absolute inset-0 -z-10">
-          <div className="absolute left-1/2 top-[-10%] h-[520px] w-[520px] -translate-x-1/2 rounded-full bg-orange-200/40 blur-[130px]" />
+          <div className="absolute left-[15%] top-[-10%] h-[520px] w-[520px] rounded-full bg-orange-200/40 blur-[130px]" />
+          <div className="absolute right-[5%] bottom-[-10%] h-[420px] w-[420px] rounded-full bg-slate-200/50 blur-[130px]" />
         </div>
-        <div className="mx-auto w-full max-w-4xl px-6 text-center">
-          <motion.div
-            initial="hidden" animate="show" variants={fade}
-            className="mx-auto flex w-fit items-center gap-2 rounded-full border border-orange-200 bg-orange-50/70 px-4 py-1.5 text-[13px] font-medium text-orange-700"
-          >
-            <Swords className="size-3.5" /> The agency model is broken. So we built a guild.
-          </motion.div>
-          <motion.h1
-            initial="hidden" animate="show" custom={1} variants={fade}
-            className="mt-6 text-[clamp(2.5rem,6.5vw,5.25rem)] font-black leading-[0.98] tracking-[-0.03em]"
-          >
-            Hire a guild,
-            <br />
-            <span className="text-slate-400">not an agency.</span>
-          </motion.h1>
-          <motion.p
-            initial="hidden" animate="show" custom={2} variants={fade}
-            className="mx-auto mt-6 max-w-xl text-lg text-slate-500"
-          >
-            One named Guild Master takes on your problem, stakes their name on the outcome,
-            proves the work before you ever see it, and hands you a system you own outright.
-            Fixed price. No retainers, no vanishing, no lock-in.
-          </motion.p>
-          <motion.div
-            initial="hidden" animate="show" custom={3} variants={fade}
-            className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row"
-          >
-            <a
-              href={BOOKING}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="group inline-flex h-12 items-center gap-2 rounded-full bg-slate-900 px-7 text-[15px] font-semibold text-white transition-transform hover:scale-[1.03]"
+        <div className="mx-auto grid w-full max-w-6xl items-center gap-14 px-6 lg:grid-cols-[1.15fr_0.85fr]">
+          {/* Left: copy */}
+          <div className="text-center lg:text-left">
+            <motion.div
+              initial="hidden" animate="show" variants={fade}
+              className="mx-auto flex w-fit items-center gap-2 rounded-full border border-orange-200 bg-orange-50/70 px-4 py-1.5 text-[13px] font-medium text-orange-700 lg:mx-0"
             >
-              <CalendarClock className="size-4" /> Book a 15-min call
-            </a>
-            <a
-              href={EMAIL_MAILTO}
-              className="inline-flex h-12 items-center gap-1.5 rounded-full px-5 text-[15px] font-semibold text-slate-600 transition-colors hover:text-slate-900"
+              <Swords className="size-3.5" /> The agency model is broken. So we built a guild.
+            </motion.div>
+            <motion.h1
+              initial="hidden" animate="show" custom={1} variants={fade}
+              className="mt-6 text-[clamp(2.5rem,6vw,5rem)] font-black leading-[0.98] tracking-[-0.03em]"
             >
-              <Mail className="size-4" /> or email us
-            </a>
-          </motion.div>
-          <motion.p
-            initial="hidden" animate="show" custom={4} variants={fade}
-            className="mt-5 text-[13px] text-slate-400"
+              Hire a guild,
+              <br />
+              <span className="text-slate-400">not an agency.</span>
+            </motion.h1>
+            <motion.p
+              initial="hidden" animate="show" custom={2} variants={fade}
+              className="mx-auto mt-6 max-w-xl text-lg text-slate-500 lg:mx-0"
+            >
+              One named Guild Master takes on your problem, stakes their name on the outcome,
+              proves the work before you ever see it, and hands you a system you own outright.
+              Fixed price. No retainers, no vanishing, no lock-in.
+            </motion.p>
+            <motion.div
+              initial="hidden" animate="show" custom={3} variants={fade}
+              className="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row lg:justify-start"
+            >
+              <a
+                href={BOOKING}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex h-12 items-center gap-2 rounded-full bg-slate-900 px-7 text-[15px] font-semibold text-white transition-transform hover:scale-[1.03]"
+              >
+                <CalendarClock className="size-4" /> Book a 15-min call
+              </a>
+              <a
+                href={EMAIL_MAILTO}
+                className="inline-flex h-12 items-center gap-1.5 rounded-full px-5 text-[15px] font-semibold text-slate-600 transition-colors hover:text-slate-900"
+              >
+                <Mail className="size-4" /> or email us
+              </a>
+            </motion.div>
+            <motion.p
+              initial="hidden" animate="show" custom={4} variants={fade}
+              className="mt-5 text-[13px] text-slate-400"
+            >
+              Fixed price, agreed first. You own everything. We keep going until it works.
+            </motion.p>
+          </div>
+
+          {/* Right: Guild Card visual (fills the space, reinforces the concept) */}
+          <motion.div
+            initial={{ opacity: 0, y: 30, rotate: -2 }}
+            animate={{ opacity: 1, y: 0, rotate: -2 }}
+            transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            className="hidden lg:block"
           >
-            Fixed price, agreed first. You own everything. We keep going until it works.
-          </motion.p>
+            <div className="relative rounded-3xl border border-slate-200 bg-gradient-to-br from-white to-slate-50 p-7 shadow-[0_40px_80px_-40px_rgba(15,23,42,0.35)]">
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-2 text-[12px] font-semibold uppercase tracking-[0.18em] text-orange-600">
+                  <Swords className="size-4" /> Guild Card
+                </span>
+                <span className="rounded-full bg-slate-900 px-3 py-1 text-[11px] font-bold text-white">RANK A</span>
+              </div>
+              <div className="mt-6 flex items-center gap-4">
+                <div className="flex size-14 items-center justify-center rounded-2xl bg-orange-100 text-2xl font-black text-orange-600">G</div>
+                <div>
+                  <div className="text-lg font-bold">Your Guild Master</div>
+                  <div className="text-[13px] text-slate-400">Accountable for your outcome</div>
+                </div>
+              </div>
+              <div className="mt-6 space-y-3">
+                {[
+                  ['Outcome', 'Owned by you, day one'],
+                  ['Work', 'Proven before you see it'],
+                  ['Price', 'Fixed, agreed first'],
+                  ['Name on the line', 'Yes'],
+                ].map(([k, v]) => (
+                  <div key={k} className="flex items-center justify-between border-b border-slate-100 pb-2 text-[14px]">
+                    <span className="text-slate-400">{k}</span>
+                    <span className="flex items-center gap-1.5 font-semibold text-slate-700">
+                      <Check className="size-3.5 text-orange-500" />{v}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-6 rounded-xl bg-slate-900 px-4 py-3 text-center text-[13px] font-medium text-white/90">
+                Proof of work over promises
+              </div>
+            </div>
+          </motion.div>
         </div>
       </section>
 
@@ -133,24 +179,41 @@ export default function BusinessLanding() {
       </section>
 
       {/* ───────── The problem (buyer-first worldview) ───────── */}
-      <section className="mx-auto max-w-3xl px-6 py-28 text-center">
-        <motion.h2
-          initial="hidden" whileInView="show" viewport={{ once: true }} variants={fade}
-          className="text-3xl font-bold leading-snug tracking-tight sm:text-4xl"
-        >
-          Agencies bill you forever and you never own the work.
-          <br />
-          <span className="text-slate-400">Freelancers vanish. AI tools you still have to run yourself.</span>
-        </motion.h2>
-        <motion.p
-          initial="hidden" whileInView="show" viewport={{ once: true }} custom={1} variants={fade}
-          className="mx-auto mt-6 max-w-xl text-lg text-slate-500"
-        >
-          A guild works differently. One named Guild Master is on the hook for your outcome and
-          has a rank to lose. The work is proven before it reaches you, the price is fixed before
-          it starts, and you own everything at the end. Accountability with a name on it, not an
-          account manager who never touches the build.
-        </motion.p>
+      <section className="mx-auto max-w-6xl px-6 py-28">
+        <div className="grid items-center gap-12 lg:grid-cols-2">
+          <motion.div
+            initial="hidden" whileInView="show" viewport={{ once: true }} variants={fade}
+          >
+            <h2 className="text-3xl font-bold leading-snug tracking-tight sm:text-4xl">
+              The old way of buying work is broken.
+            </h2>
+            <p className="mt-6 max-w-lg text-lg text-slate-500">
+              A guild works differently. One named Guild Master is on the hook for your outcome and
+              has a rank to lose. The work is proven before it reaches you, the price is fixed before
+              it starts, and you own everything at the end. Accountability with a name on it, not an
+              account manager who never touches the build.
+            </p>
+          </motion.div>
+          <div className="space-y-4">
+            {[
+              ['Agencies', 'Bill you forever on retainer, and you never actually own the work.'],
+              ['Freelancers', 'Cheap until they vanish mid-project and leave you stranded.'],
+              ['AI tools', 'You still have to figure them out and run them yourself.'],
+            ].map(([k, v], i) => (
+              <motion.div
+                key={k}
+                initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.4 }}
+                custom={i} variants={fade}
+                className="rounded-2xl border border-slate-200 bg-slate-50/50 p-5"
+              >
+                <div className="text-[13px] font-semibold uppercase tracking-wider text-slate-400 line-through decoration-orange-400/60">
+                  {k}
+                </div>
+                <p className="mt-1.5 text-[15px] text-slate-600">{v}</p>
+              </motion.div>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* ───────── How it works ───────── */}
