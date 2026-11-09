@@ -18,7 +18,8 @@ import {
   type Block,
 } from '@/lib/cert-in-explainer/content';
 
-const SITE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://guilds.work';
+// Pinned: the site serves from www.guilds.work; the env var may still hold an old domain.
+const SITE_URL = 'https://www.guilds.work';
 const PAGE_URL = `${SITE_URL}${EXPLAINER_PATH}`;
 
 export const metadata: Metadata = {
