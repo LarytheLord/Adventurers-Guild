@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Fragment } from 'react';
 import { InfoPageAside, InfoPageShell } from '@/components/public/info-page-shell';
+import { JsonLd } from '@/components/seo/json-ld';
+import { buildPageMetadata, explainerJsonLd } from '@/lib/seo';
 import { Button } from '@/components/ui/button';
 import {
   CERTIN_PDF_URL,
@@ -10,22 +12,17 @@ import {
   EXPLAINER_FAQ,
   EXPLAINER_MAILTO,
   EXPLAINER_PATH,
-  EXPLAINER_PUBLISHED,
   EXPLAINER_SECTIONS,
   EXPLAINER_SUMMARY,
   EXPLAINER_TITLE,
-  stripLinks,
   type Block,
 } from '@/lib/cert-in-explainer/content';
 
-// Pinned: the site serves from www.guilds.work; the env var may still hold an old domain.
-const SITE_URL = 'https://www.guilds.work';
-const PAGE_URL = `${SITE_URL}${EXPLAINER_PATH}`;
-
-export const metadata: Metadata = {
-  metadataBase: new URL(SITE_URL),
+export const metadata: Metadata = buildPageMetadata({
+  path: EXPLAINER_PATH,
   title: `${EXPLAINER_TITLE} - Guild`,
   description: EXPLAINER_DESCRIPTION,
+  type: 'article',
   keywords: [
     'CERT-In AI Security Auditing Guidelines',
     'CERT-In AI audit',
@@ -33,17 +30,7 @@ export const metadata: Metadata = {
     'AI risk tier',
     'AI audit readiness India',
   ],
-  alternates: { canonical: EXPLAINER_PATH },
-  openGraph: {
-    title: EXPLAINER_TITLE,
-    description: EXPLAINER_DESCRIPTION,
-    url: EXPLAINER_PATH,
-    siteName: 'Guild',
-    type: 'article',
-    publishedTime: EXPLAINER_PUBLISHED,
-  },
-  twitter: { card: 'summary', title: EXPLAINER_TITLE, description: EXPLAINER_DESCRIPTION },
-};
+});
 
 const linkClass = 'font-semibold text-orange-700 underline underline-offset-4';
 
@@ -133,31 +120,6 @@ function BlockView({ block }: { block: Block }) {
   }
 }
 
-const jsonLd = [
-  {
-    '@context': 'https://schema.org',
-    '@type': 'Article',
-    headline: EXPLAINER_TITLE,
-    description: EXPLAINER_DESCRIPTION,
-    datePublished: EXPLAINER_PUBLISHED,
-    dateModified: EXPLAINER_PUBLISHED,
-    inLanguage: 'en-IN',
-    mainEntityOfPage: PAGE_URL,
-    url: PAGE_URL,
-    author: { '@type': 'Organization', name: 'Guild', url: SITE_URL },
-    publisher: { '@type': 'Organization', name: 'Guild', url: SITE_URL },
-  },
-  {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: EXPLAINER_FAQ.map((f) => ({
-      '@type': 'Question',
-      name: f.q,
-      acceptedAnswer: { '@type': 'Answer', text: stripLinks(f.a) },
-    })),
-  },
-];
-
 const h2Class = 'font-display text-2xl font-bold tracking-[-0.03em] text-slate-950';
 
 export default function CertInExplainerPage() {
@@ -183,7 +145,7 @@ export default function CertInExplainerPage() {
         </InfoPageAside>
       }
     >
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
+      <JsonLd data={explainerJsonLd()} />
       <article className="space-y-12 text-slate-600">
         <section aria-labelledby="summary" className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-5">
           <h2 id="summary" className="font-display text-lg font-bold text-slate-950">

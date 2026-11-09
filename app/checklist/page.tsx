@@ -1,26 +1,20 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { InfoPageShell } from '@/components/public/info-page-shell';
+import { buildPageMetadata } from '@/lib/seo';
 import { Button } from '@/components/ui/button';
 import { CHECKLIST_GROUPS } from '@/lib/audit-offer/content';
 
 const TITLE = 'The AI-built app launch checklist - Guild';
 const DESCRIPTION =
-  'A free checklist of about 25 things to check before you launch an app built with Lovable, Bolt or Replit: database access, keys, login, payments, backups, email, privacy and cost.';
+  'A free checklist of things to check before you launch an app built with Lovable, Bolt or Replit: database access, keys, login, payments, backups, email, privacy and cost.';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
+  path: '/checklist',
   title: TITLE,
   description: DESCRIPTION,
-  alternates: { canonical: '/checklist' },
-  openGraph: {
-    title: TITLE,
-    description: DESCRIPTION,
-    url: '/checklist',
-    siteName: 'Guild',
-    type: 'article',
-  },
-  twitter: { card: 'summary', title: TITLE, description: DESCRIPTION },
-};
+  type: 'article',
+});
 
 export default function ChecklistPage() {
   return (
