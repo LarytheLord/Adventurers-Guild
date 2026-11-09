@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { only, rules, scan } from "./helpers.js";
+import { analyzeSources } from "../src/analyze.js";
 
 describe("R1 table without RLS", () => {
   it("flags a public table that never enables RLS", async () => {
@@ -119,6 +120,50 @@ describe("migration ordering", () => {
     // wrong order would hide nothing here, so also prove a later disable wins
     const disable = { file: "20240103_c.sql", sql: "alter table public.t disable row level security;" };
     expect(rules((await analyzeSources([create, secure, disable])).findings)).toEqual(["R6"]);
+  });
+});
+
+describe("R7 grant without matching RLS policy", () => {
+  it("flags all four commands when the table has no RLS", async () => {
+    const f = only((await scan("r7-no-rls")).findings, "R7");
+    expect(f).toHaveLength(1);
+    expect(f[0].object).toBe("public.notes");
+    expect(f[0].severity).toBe("high");
+    expect(f[0].line).toBe(2);
+    expect(f[0].message).toContain("authenticated");
+    expect(f[0].message).toContain("SELECT, INSERT, UPDATE, DELETE");
+  });
+  it("flags only the commands that have no policy when RLS is on", async () => {
+    const f = only((await scan("r7-no-policy-cmd")).findings, "R7");
+    expect(f).toHaveLength(2);
+    const auth = f.find((x) => x.message.includes("authenticated"))!;
+    const anon = f.find((x) => x.message.includes("anon"))!;
+    expect(auth.message).toContain("INSERT, UPDATE, DELETE");
+    expect(auth.message).not.toContain("SELECT,");
+    expect(auth.severity).toBe("low");
+    expect(anon.message).toContain("SELECT");
+  });
+  it("does not flag when every granted command has a policy for the role", async () => {
+    expect(only((await scan("r7-good")).findings, "R7")).toEqual([]);
+  });
+  it("does not flag a revoked grant", async () => {
+    expect(only((await scan("r7-revoked")).findings, "R7")).toEqual([]);
+  });
+  it("follows ALTER DEFAULT PRIVILEGES for tables created later", async () => {
+    const f = only((await scan("r7-defaults")).findings, "R7");
+    expect(f).toHaveLength(1);
+    expect(f[0].object).toBe("public.later");
+    expect(f[0].message).toContain("SELECT, INSERT");
+  });
+  it("handles GRANT ON ALL TABLES IN SCHEMA and a policy for public", async () => {
+    const f = only((await scan("r7-all-in-schema")).findings, "R7");
+    expect(f.map((x) => x.object)).toEqual(["public.a"]);
+  });
+  it("ignores tables outside the public schema", async () => {
+    const r = await analyzeSources([
+      { file: "a.sql", sql: "create table app.t (id int); grant select on app.t to authenticated;" },
+    ]);
+    expect(only(r.findings, "R7")).toEqual([]);
   });
 });
 
