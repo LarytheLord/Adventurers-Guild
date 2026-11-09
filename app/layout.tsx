@@ -12,10 +12,24 @@ import { Toaster } from "@/components/ui/sonner"
 import { GoToTop } from "@/components/ui/go-to-top"
 import ConditionalFooter from "@/components/ConditionalFooter"
 import { Analytics } from "@vercel/analytics/next"
+import { SITE_URL, SITE_TITLE, SITE_DESCRIPTION } from "@/lib/site-metadata"
 
 export const metadata: Metadata = {
-  title: "Guild — your business bottleneck, fixed for a fixed price",
-  description: "Guild scopes your operational bottleneck, builds it with an AI-augmented team under one accountable senior owner, and hands you a working system you own. Fixed scope, fixed price. Book a free AI audit.",
+  metadataBase: new URL(SITE_URL),
+  title: SITE_TITLE,
+  description: SITE_DESCRIPTION,
+  openGraph: {
+    type: "website",
+    siteName: "Guild",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+    url: SITE_URL,
+  },
+  twitter: {
+    card: "summary",
+    title: SITE_TITLE,
+    description: SITE_DESCRIPTION,
+  },
   manifest: "/manifest.json",
   icons: {
     icon: "/pwa/icon-192x192.svg",
