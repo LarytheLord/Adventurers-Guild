@@ -6,7 +6,7 @@ export function severityRank(s: Severity): number {
   return SEVERITIES.indexOf(s);
 }
 
-export type RuleId = "R1" | "R2" | "R3" | "R4" | "R5" | "R6";
+export type RuleId = "R1" | "R2" | "R3" | "R4" | "R5" | "R6" | "R7";
 
 export interface Finding {
   rule: RuleId;

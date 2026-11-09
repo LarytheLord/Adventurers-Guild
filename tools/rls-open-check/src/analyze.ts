@@ -12,6 +12,41 @@ interface TableState {
   disabledAt: Loc | undefined;
   /** Privileges granted to anon or PUBLIC, with where they were granted. */
   anonGrant: { loc: Loc; privs: Set<string> } | undefined;
+  /** DML privileges (select, insert, update, delete) per API role, for R7. */
+  dml: Map<ApiRole, DmlGrant>;
+}
+
+type ApiRole = "anon" | "authenticated";
+const API_ROLES: ApiRole[] = ["anon", "authenticated"];
+const DML = ["select", "insert", "update", "delete"];
+interface DmlGrant {
+  loc: Loc;
+  privs: Set<string>;
+}
+
+/** API roles a grantee list reaches. PUBLIC reaches both. */
+function apiRolesOf(roles: string[]): ApiRole[] {
+  return API_ROLES.filter((r) => roles.includes(r) || roles.includes("public"));
+}
+
+/** DML privileges named by a privilege list, with ALL expanded. */
+function dmlPrivs(privs: string[]): string[] {
+  return privs.includes("all") ? DML : DML.filter((p) => privs.includes(p));
+}
+
+function applyDml(map: Map<ApiRole, DmlGrant>, role: ApiRole, isGrant: boolean, privs: string[], loc: Loc) {
+  const ps = dmlPrivs(privs);
+  if (ps.length === 0) return;
+  if (isGrant) {
+    const cur = map.get(role) ?? { loc, privs: new Set<string>() };
+    for (const p of ps) cur.privs.add(p);
+    map.set(role, cur);
+  } else {
+    const cur = map.get(role);
+    if (!cur) return;
+    for (const p of ps) cur.privs.delete(p);
+    if (cur.privs.size === 0) map.delete(role);
+  }
 }
 
 interface PolicyState {
@@ -109,11 +144,13 @@ class Analyzer {
   functions = new Map<string, FunctionState>();
   /** Default privileges for anon on future tables, per schema ("*" = all). */
   defaultAnon = new Map<string, { loc: Loc; privs: Set<string> }>();
+  /** Default DML privileges for anon and authenticated, per schema ("*" = all). */
+  defaultDml = new Map<string, Map<ApiRole, DmlGrant>>();
 
   private table(key: string, schema: string, name: string): TableState {
     let t = this.tables.get(key);
     if (!t) {
-      t = { schema, name, created: undefined, rls: false, disabledAt: undefined, anonGrant: undefined };
+      t = { schema, name, created: undefined, rls: false, disabledAt: undefined, anonGrant: undefined, dml: new Map() };
       this.tables.set(key, t);
     }
     return t;
@@ -129,6 +166,8 @@ class Analyzer {
     t.created = loc;
     const d = this.defaultAnon.get(schema) ?? this.defaultAnon.get("*");
     if (d) t.anonGrant = { loc: d.loc, privs: new Set(d.privs) };
+    const dd = this.defaultDml.get(schema) ?? this.defaultDml.get("*");
+    if (dd) for (const [role, g] of dd) t.dml.set(role, { loc: g.loc, privs: new Set(g.privs) });
   }
 
   private dropTable(key: string) {
@@ -145,7 +184,8 @@ class Analyzer {
   private applyGrant(g: Node, loc: Loc) {
     if (g.objtype !== "OBJECT_TABLE") return;
     const grantees = roleNames(g.grantees);
-    if (!isAnonLike(grantees)) return;
+    const apiRoles = apiRolesOf(grantees);
+    if (apiRoles.length === 0) return;
     const privs = this.privNames(g);
     let targets: TableState[] = [];
     if (g.targtype === "ACL_TARGET_OBJECT") {
@@ -158,7 +198,10 @@ class Analyzer {
       const schemas = strings(g.objects);
       targets = [...this.tables.values()].filter((t) => schemas.includes(t.schema));
     } else return;
-    for (const t of targets) this.updateGrant(t, g.is_grant !== false, privs, loc);
+    for (const t of targets) {
+      for (const role of apiRoles) applyDml(t.dml, role, g.is_grant === true, privs, loc);
+      if (isAnonLike(grantees)) this.updateGrant(t, g.is_grant === true, privs, loc);
+    }
   }
 
   private updateGrant(t: TableState, isGrant: boolean, privs: string[], loc: Loc) {
@@ -178,14 +221,20 @@ class Analyzer {
   private applyDefaultPrivileges(s: Node, loc: Loc) {
     const action = s.action;
     if (!action || action.objtype !== "OBJECT_TABLE") return;
-    if (!isAnonLike(roleNames(action.grantees))) return;
+    const grantees = roleNames(action.grantees);
+    const apiRoles = apiRolesOf(grantees);
+    if (apiRoles.length === 0) return;
     let schemas: string[] = ["*"];
     for (const o of s.options ?? []) {
       if (o.DefElem?.defname === "schemas") schemas = strings(o.DefElem.arg?.List?.items);
     }
     const privs = this.privNames(action);
     for (const sc of schemas) {
-      if (action.is_grant === false) {
+      const dm = this.defaultDml.get(sc) ?? new Map<ApiRole, DmlGrant>();
+      for (const role of apiRoles) applyDml(dm, role, action.is_grant === true, privs, loc);
+      this.defaultDml.set(sc, dm);
+      if (!isAnonLike(grantees)) continue;
+      if (action.is_grant !== true) {
         if (sc === "*") this.defaultAnon.clear();
         else this.defaultAnon.delete(sc);
       } else {
@@ -390,6 +439,16 @@ class Analyzer {
     }
   }
 
+  /** True when a permissive policy on the table covers this command for the role. */
+  private hasPolicy(table: string, cmd: string, role: ApiRole): boolean {
+    for (const p of this.policies.values()) {
+      if (p.table !== table || !p.permissive) continue;
+      if (p.cmd !== cmd && p.cmd !== "all") continue;
+      if (p.roles.includes(role) || p.roles.includes("public")) return true;
+    }
+    return false;
+  }
+
   findings(): Finding[] {
     const out: Finding[] = [];
 
@@ -426,6 +485,31 @@ class Analyzer {
           line: t.anonGrant.loc.line,
           message: `anon is granted (${privs}) on ${key}, which has no Row Level Security.`,
           fix: `Enable RLS on ${key}, or run REVOKE ALL ON ${key} FROM anon.`,
+        });
+      }
+    }
+
+    for (const [key, t] of this.tables) {
+      if (t.schema !== DEFAULT_SCHEMA || !(t.created || t.disabledAt)) continue;
+      for (const role of API_ROLES) {
+        const grant = t.dml.get(role);
+        if (!grant) continue;
+        const granted = DML.filter((c) => grant.privs.has(c));
+        const uncovered = t.rls ? granted.filter((c) => !this.hasPolicy(key, c, role)) : granted;
+        if (uncovered.length === 0) continue;
+        const cmds = uncovered.map((c) => c.toUpperCase()).join(", ");
+        out.push({
+          rule: "R7",
+          severity: t.rls ? "low" : "high",
+          object: key,
+          file: grant.loc.file,
+          line: grant.loc.line,
+          message: t.rls
+            ? `${role} is granted ${cmds} on ${key}, but no policy covers that command for ${role}. The grant does nothing, or a policy is missing.`
+            : `${role} is granted ${cmds} on ${key}, which has no Row Level Security, so the API lets ${role} use every row.`,
+          fix: t.rls
+            ? `Add a policy for ${cmds} to ${role} on ${key}, or REVOKE the privilege.`
+            : `Enable RLS on ${key} and add policies, or REVOKE ${cmds} ON ${key} FROM ${role}.`,
         });
       }
     }

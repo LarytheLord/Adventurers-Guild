@@ -1,0 +1,36 @@
+name: rls-open-check
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "tools/rls-open-check/**"
+      - ".github/workflows/rls-open-check.yml"
+  pull_request:
+    paths:
+      - "tools/rls-open-check/**"
+      - ".github/workflows/rls-open-check.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test rls-open-check
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tools/rls-open-check
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: tools/rls-open-check/package-lock.json
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build
