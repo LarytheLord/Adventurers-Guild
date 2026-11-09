@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { InfoPageAside, InfoPageShell } from '@/components/public/info-page-shell';
+import { buildPageMetadata } from '@/lib/seo';
 import { Button } from '@/components/ui/button';
 import {
   AUDIT_CHECKS,
@@ -12,21 +13,9 @@ import {
 
 const TITLE = 'Production Check for apps built with Lovable, Bolt or Replit - Guild';
 const DESCRIPTION =
-  'We check 114 things by hand in your AI-built app, from database access rules to exposed keys, then fix what we find. Check $99, Fix from $800, Care from $150/month.';
+  'A hand check of your AI-built app, from database access rules to exposed keys, then fixes for what we find. For apps made with Lovable, Bolt or Replit. Guild is not a CERT-In empanelled auditor.';
 
-export const metadata: Metadata = {
-  title: TITLE,
-  description: DESCRIPTION,
-  alternates: { canonical: '/audit' },
-  openGraph: {
-    title: TITLE,
-    description: DESCRIPTION,
-    url: '/audit',
-    siteName: 'Guild',
-    type: 'website',
-  },
-  twitter: { card: 'summary', title: TITLE, description: DESCRIPTION },
-};
+export const metadata: Metadata = buildPageMetadata({ path: '/audit', title: TITLE, description: DESCRIPTION });
 
 export default function AuditPage() {
   return (

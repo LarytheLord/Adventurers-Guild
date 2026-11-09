@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { InfoPageAside, InfoPageShell } from '@/components/public/info-page-shell';
 import { RiskTierCalculator } from '@/components/ai-risk-tier/risk-tier-calculator';
+import { JsonLd } from '@/components/seo/json-ld';
+import { buildPageMetadata, softwareApplicationJsonLd } from '@/lib/seo';
 import { Button } from '@/components/ui/button';
 import { AI_RISK_PREPARE, AI_RISK_TIER_MAILTO, CERTIN_PDF_URL } from '@/lib/ai-risk-tier/data';
 
@@ -9,7 +11,8 @@ const TITLE = 'CERT-In AI security audit risk tier calculator - Guild';
 const DESCRIPTION =
   'Free self-check: score an AI system on the eight risk factors in the CERT-In AI Security Auditing Guidelines (v1.0, 4 November 2026) and see its tier and minimum audit requirement. Runs in your browser; nothing is sent.';
 
-export const metadata: Metadata = {
+export const metadata: Metadata = buildPageMetadata({
+  path: '/ai-risk-tier',
   title: TITLE,
   description: DESCRIPTION,
   keywords: [
@@ -18,16 +21,7 @@ export const metadata: Metadata = {
     'AI risk tier',
     'AI audit readiness India',
   ],
-  alternates: { canonical: '/ai-risk-tier' },
-  openGraph: {
-    title: TITLE,
-    description: DESCRIPTION,
-    url: '/ai-risk-tier',
-    siteName: 'Guild',
-    type: 'website',
-  },
-  twitter: { card: 'summary', title: TITLE, description: DESCRIPTION },
-};
+});
 
 export default function AiRiskTierPage() {
   return (
@@ -54,6 +48,7 @@ export default function AiRiskTierPage() {
         </InfoPageAside>
       }
     >
+      <JsonLd data={softwareApplicationJsonLd()} />
       <div className="space-y-12 text-slate-600">
         <section
           aria-labelledby="disclaimer"
