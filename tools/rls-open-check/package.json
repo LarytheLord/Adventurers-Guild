@@ -1,0 +1,42 @@
+{
+  "name": "rls-open-check",
+  "version": "0.1.0",
+  "description": "Static linter for risky Row Level Security setups in Supabase/Postgres SQL migrations",
+  "license": "MIT",
+  "author": "Guild (guilds.work)",
+  "type": "module",
+  "bin": {
+    "rls-open-check": "dist/bin.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "keywords": [
+    "supabase",
+    "postgres",
+    "rls",
+    "row-level-security",
+    "lint",
+    "security"
+  ],
+  "dependencies": {
+    "libpg-query": "^18.2.2"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  }
+}
