@@ -10,6 +10,8 @@ const FOOTER_ROUTES = new Set([
   '/register',
   '/quests',
   '/faq',
+  '/audit',
+  '/checklist',
   '/privacy',
   '/terms',
 ]);
