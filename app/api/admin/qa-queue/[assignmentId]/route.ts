@@ -125,10 +125,13 @@ export async function PATCH(
 
   if (action === 'approve') {
     const questRewards = await prisma.$transaction(async (tx) => {
-      await tx.questAssignment.update({
-        where: { id: assignmentId },
+      // Claim the transition atomically: the status check and the write are one UPDATE,
+      // so only one of several concurrent reviews can win it (#458).
+      const claim = await tx.questAssignment.updateMany({
+        where: { id: assignmentId, status: 'pending_admin_review' },
         data: { status: 'completed', completedAt: new Date() },
       });
+      if (claim.count !== 1) return null;
 
       const submissionUpdateData: Record<string, unknown> = {
         reviewerId: adminId,
@@ -173,6 +176,10 @@ export async function PATCH(
 
       return quest;
     });
+
+    if (!questRewards) {
+      return NextResponse.json({ error: 'Assignment already processed', success: false }, { status: 409 });
+    }
 
     let xpAwardFailed = false;
     try {
@@ -247,11 +254,12 @@ export async function PATCH(
   };
   const updatedNotes = [...existingNotes, newNote];
 
-  await prisma.$transaction(async (tx) => {
-    await tx.questAssignment.update({
-      where: { id: assignmentId },
+  const rejected = await prisma.$transaction(async (tx) => {
+    const claim = await tx.questAssignment.updateMany({
+      where: { id: assignmentId, status: 'pending_admin_review' },
       data: { status: 'needs_rework' },
     });
+    if (claim.count !== 1) return false;
     await tx.quest.update({
       where: { id: assignment.quest.id },
       data: { revisionCount: { increment: 1 } },
@@ -268,7 +276,12 @@ export async function PATCH(
       });
     }
     await syncQuestLifecycleStatus(tx, assignment.quest.id);
+    return true;
   });
+
+  if (!rejected) {
+    return NextResponse.json({ error: 'Assignment already processed', success: false }, { status: 409 });
+  }
 
   return NextResponse.json({ message: 'Submission rejected — returned to student for revision', success: true });
 }
