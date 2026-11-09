@@ -1,24 +1,28 @@
-'use client';
+import type { Metadata } from 'next';
+import AssuranceHome from '@/components/landing/AssuranceHome';
+import HomeRedirect from '@/components/landing/HomeRedirect';
+import { HOME_DESCRIPTION, HOME_TITLE } from '@/lib/home/content';
 
-import { useEffect } from 'react';
-import { useSession } from 'next-auth/react';
-import { useRouter } from 'next/navigation';
-import BusinessLanding from '@/components/landing/BusinessLanding';
+export const metadata: Metadata = {
+  metadataBase: new URL('https://www.guilds.work'),
+  title: HOME_TITLE,
+  description: HOME_DESCRIPTION,
+  alternates: { canonical: '/' },
+  openGraph: {
+    title: HOME_TITLE,
+    description: HOME_DESCRIPTION,
+    url: '/',
+    siteName: 'Guild',
+    type: 'website',
+  },
+  twitter: { card: 'summary', title: HOME_TITLE, description: HOME_DESCRIPTION },
+};
 
 export default function HomePage() {
-  const { data: session, status } = useSession();
-  const router = useRouter();
-
-  // Logged-in users skip the marketing page and go straight to their workspace.
-  useEffect(() => {
-    if (status === 'authenticated' && session?.user) {
-      const userRole = session.user.role;
-      if (userRole === 'company') router.push('/dashboard/company');
-      else if (userRole === 'admin') router.push('/admin');
-      else router.push('/dashboard');
-    }
-  }, [status, session, router]);
-
-  // Default landing for everyone else is the client / business page.
-  return <BusinessLanding />;
+  return (
+    <>
+      <HomeRedirect />
+      <AssuranceHome />
+    </>
+  );
 }
