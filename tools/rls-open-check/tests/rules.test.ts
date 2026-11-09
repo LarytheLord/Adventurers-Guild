@@ -67,7 +67,8 @@ describe("R4 grant to anon on a table without RLS", () => {
     expect(f.find((x) => x.object === "public.logs")?.line).toBe(3);
   });
   it("does not flag grants on tables that have RLS", async () => {
-    expect((await scan("r4-good")).findings).toEqual([]);
+    // the grant has no policy, so R7 (low) applies; this test is about R4
+    expect(only((await scan("r4-good")).findings, "R4")).toEqual([]);
   });
   it("does not flag grants that were revoked", async () => {
     expect((await scan("r4-revoked")).findings).toEqual([]);
@@ -110,7 +111,7 @@ describe("migration ordering", () => {
     expect((await scan("order-replace-fn")).findings).toEqual([]);
   });
   it("enabling RLS after an anon grant removes R4", async () => {
-    expect((await scan("order-grant-before-rls")).findings).toEqual([]);
+    expect(only((await scan("order-grant-before-rls")).findings, "R4")).toEqual([]);
   });
   it("reads files in file name order, not argument order", async () => {
     const { analyzeSources } = await import("../src/analyze.js");
@@ -120,6 +121,15 @@ describe("migration ordering", () => {
     // wrong order would hide nothing here, so also prove a later disable wins
     const disable = { file: "20240103_c.sql", sql: "alter table public.t disable row level security;" };
     expect(rules((await analyzeSources([create, secure, disable])).findings)).toEqual(["R6"]);
+  });
+});
+
+describe("REVOKE handling", () => {
+  it("drops an anon grant on a table that never gets RLS (no R4, no R7)", async () => {
+    const r = await analyzeSources([
+      { file: "a.sql", sql: "create table public.t (id int); grant all on public.t to anon; revoke all on public.t from anon;" },
+    ]);
+    expect(rules(r.findings)).toEqual(["R1"]);
   });
 });
 

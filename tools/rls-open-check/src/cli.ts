@@ -1,6 +1,7 @@
 import { analyzeFiles } from "./analyze.js";
 import { collectSqlFiles } from "./files.js";
 import { formatJson, formatText } from "./report.js";
+import { formatSarif } from "./sarif.js";
 import { SEVERITIES, severityRank, type Severity } from "./types.js";
 
 export const VERSION = "0.1.0";
@@ -15,7 +16,8 @@ Files are read in file name order, like Supabase applies them.
 Options:
   --fail-on <level>  Exit 1 if a finding is at or above this level:
                      low, medium, high, critical (default: high)
-  --json             Print JSON instead of text
+  --format <name>    Output format: text (default), json or sarif
+  --json             Same as --format json
   -h, --help         Show this help
   -v, --version      Show the version
 
@@ -30,13 +32,19 @@ export interface CliResult {
 
 export async function run(argv: string[]): Promise<CliResult> {
   let failOn: Severity = "high";
-  let json = false;
+  let format = "text";
   const paths: string[] = [];
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i];
     if (a === "-h" || a === "--help") return { code: 0, stdout: HELP, stderr: "" };
     if (a === "-v" || a === "--version") return { code: 0, stdout: VERSION + "\n", stderr: "" };
-    if (a === "--json") json = true;
+    if (a === "--json") format = "json";
+    else if (a === "--format" || a.startsWith("--format=")) {
+      const v = a.includes("=") ? a.split("=")[1] : argv[++i];
+      if (!["text", "json", "sarif"].includes(v))
+        return { code: 2, stdout: "", stderr: `Invalid --format value: ${v ?? "(missing)"}\n` };
+      format = v;
+    }
     else if (a === "--fail-on" || a.startsWith("--fail-on=")) {
       const v = a.includes("=") ? a.split("=")[1] : argv[++i];
       if (!SEVERITIES.includes(v as Severity))
@@ -60,7 +68,12 @@ export async function run(argv: string[]): Promise<CliResult> {
   const failing = result.findings.some((f) => severityRank(f.severity) >= severityRank(failOn));
   return {
     code: failing ? 1 : 0,
-    stdout: json ? formatJson(result, failOn) : formatText(result, failOn),
+    stdout:
+      format === "sarif"
+        ? formatSarif(result, VERSION)
+        : format === "json"
+          ? formatJson(result, failOn)
+          : formatText(result, failOn),
     stderr: "",
   };
 }

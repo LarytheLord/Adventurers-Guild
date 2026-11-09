@@ -46,6 +46,7 @@ Each finding has a rule id, a severity and a one-line fix hint.
 | R4 | high | `GRANT ... TO anon` on a table that has no RLS | Enable RLS or `REVOKE` the grant |
 | R5 | medium | A `SECURITY DEFINER` function in `public` with no `SET search_path` | Add `SET search_path = ''` |
 | R6 | critical | `DISABLE ROW LEVEL SECURITY` on a table and no later `ENABLE` | Enable RLS again |
+| R7 | high (RLS off) or low (RLS on) | A `public` table with `GRANT SELECT`, `INSERT`, `UPDATE` or `DELETE` to `anon` or `authenticated`, where RLS is off or no policy covers that command for that role | Enable RLS and add a policy for the command, or `REVOKE` it |
 
 Details:
 
@@ -63,6 +64,20 @@ Details:
   already covers that table.
 - **R4 also looks at** `GRANT ... ON ALL TABLES IN SCHEMA` and
   `ALTER DEFAULT PRIVILEGES ... GRANT ... TO anon`. `PUBLIC` counts like `anon`.
+- **R7 in detail.** Supabase has changed how new tables in `public` get access
+  through the Data API, so more projects now grant `anon` and `authenticated`
+  access to tables by hand, in migrations. See the
+  [Supabase changelog entry](https://supabase.com/changelog/45329-breaking-change-tables-not-exposed-to-data-and-graphql-api-automatically)
+  and the [Securing your API guide](https://supabase.com/docs/guides/database/hardening-data-api).
+  R7 checks each grant against the policies. It reads `GRANT`, `REVOKE`,
+  `GRANT ... ON ALL TABLES IN SCHEMA` and `ALTER DEFAULT PRIVILEGES`. `PUBLIC`
+  counts for both roles, and `ALL` counts as the four commands. A policy covers
+  a command when it is permissive, is for that command or `ALL`, and names the
+  role or `public`. With RLS off the finding is high. With RLS on and no policy
+  the grant does nothing (Postgres denies by default), so it is low: it is
+  usually a missing policy or a leftover grant. R7 can report the same table as
+  R1, R4 or R6; they answer different questions. This tool does not read the
+  dates or defaults of a Supabase project. It only reads your SQL.
 - A statement that does not parse is skipped with a warning. The rest of the
   file is still checked.
 
@@ -90,7 +105,8 @@ rls-open-check [options] [paths...]
 
   --fail-on <level>  Exit 1 if a finding is at or above this level:
                      low, medium, high, critical (default: high)
-  --json             Print JSON instead of text
+  --format <name>    Output format: text (default), json or sarif
+  --json             Same as --format json
   -h, --help
   -v, --version
 ```
@@ -101,6 +117,35 @@ error or no files found. Parse warnings do not change the exit code.
 JSON output has `findings` (each with `rule`, `severity`, `object`, `file`,
 `line`, `message`, `fix`), `summary` (counts by severity), `warnings` and
 `filesScanned`.
+
+## SARIF and GitHub code scanning
+
+`--format sarif` prints a SARIF 2.1.0 log. File paths are relative to the git
+root, so GitHub can show findings on the changed lines. The exit code still
+follows `--fail-on`, so write the file first and upload it even when the check
+fails:
+
+```yaml
+jobs:
+  rls-open-check:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npx rls-open-check supabase/migrations --format sarif > rls.sarif
+        continue-on-error: true
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: rls.sarif
+```
+
+SARIF levels: critical and high are `error`, medium is `warning`, low is
+`note`. Parse warnings go in the run's notifications, not in the results.
 
 ## CI usage
 
