@@ -1,0 +1,20 @@
+title = "Adventurers Guild gitleaks config"
+
+# Start from the upstream default ruleset and only add narrow allowances.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Generated files and known placeholders"
+paths = [
+  '''package-lock\.json(\.bak)?$''',
+  '''\.gitleaks\.toml$''',
+]
+# Obvious placeholder values used in docs and CI fallbacks. Real secrets never
+# match these exact strings.
+regexes = [
+  '''ci_nextauth_secret_minimum_32_characters_long''',
+  '''postgresql://ci_user:ci_password@localhost:5432/ci_db''',
+  '''your-secret-here''',
+  '''dev-secret''',
+]
