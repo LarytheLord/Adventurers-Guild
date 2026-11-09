@@ -151,49 +151,85 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Forbidden', success: false }, { status: 403 });
     }
 
-    const data = await prisma.questSubmission.update({
-      where: { id: submissionId },
-      data: {
-        status,
-        reviewerId: authUser.id,
-        reviewedAt: new Date(),
-        reviewNotes: typeof body.review_notes === 'string' ? (body.review_notes as Prisma.InputJsonValue) : undefined,
-        qualityScore,
-      },
-    });
+    const reviewData = {
+      status,
+      reviewerId: authUser.id,
+      reviewedAt: new Date(),
+      reviewNotes: typeof body.review_notes === 'string' ? (body.review_notes as Prisma.InputJsonValue) : undefined,
+      qualityScore,
+    };
 
-    const wasAlreadyApproved = existingSubmission.status === 'approved';
+    // The status change and the completion record happen in one transaction.
+    // For approvals, the status check is part of the UPDATE itself, so when several
+    // approvals arrive together only one of them can claim it (#458).
+    const outcome = await prisma.$transaction(async (tx) => {
+      let data;
+      if (status === 'approved') {
+        const claim = await tx.questSubmission.updateMany({
+          where: { id: submissionId, status: { notIn: ['approved', 'superseded'] } },
+          data: reviewData,
+        });
+        if (claim.count !== 1) {
+          return { alreadyProcessed: true as const };
+        }
+        data = await tx.questSubmission.findUniqueOrThrow({ where: { id: submissionId } });
 
-    if (status === 'approved' && !wasAlreadyApproved) {
-      await prisma.questAssignment.update({
-        where: { id: existingSubmission.assignmentId },
-        data: { status: 'completed', completedAt: new Date() },
-      });
+        await tx.questAssignment.update({
+          where: { id: existingSubmission.assignmentId },
+          data: { status: 'completed', completedAt: new Date() },
+        });
 
-      const quest = await prisma.quest.findUnique({
-        where: { id: existingSubmission.assignment.questId },
-        select: { xpReward: true, skillPointsReward: true, title: true },
-      });
+        const quest = await tx.quest.findUnique({
+          where: { id: existingSubmission.assignment.questId },
+          select: { xpReward: true, skillPointsReward: true, title: true },
+        });
 
-      if (!quest) {
-        throw new Error('Quest not found');
-      }
+        if (!quest) {
+          throw new Error('Quest not found');
+        }
 
-      // Record quest completion
-      try {
-        await prisma.questCompletion.create({
-          data: {
+        // Record quest completion (upsert so a failed insert cannot abort the transaction)
+        await tx.questCompletion.upsert({
+          where: {
+            questId_userId: {
+              questId: existingSubmission.assignment.questId,
+              userId: existingSubmission.assignment.userId,
+            },
+          },
+          create: {
             questId: existingSubmission.assignment.questId,
             userId: existingSubmission.assignment.userId,
             xpEarned: quest.xpReward,
             skillPointsEarned: quest.skillPointsReward,
             qualityScore,
           },
+          update: {
+            xpEarned: quest.xpReward,
+            skillPointsEarned: quest.skillPointsReward,
+            qualityScore,
+          },
         });
-      } catch (completionError) {
-        console.error('Error recording quest completion:', completionError);
+
+        return { alreadyProcessed: false as const, data, quest };
       }
 
+      data = await tx.questSubmission.update({ where: { id: submissionId }, data: reviewData });
+      if (status === 'needs_rework' || status === 'rejected') {
+        await tx.questAssignment.update({
+          where: { id: existingSubmission.assignmentId },
+          data: { status: 'in_progress' },
+        });
+      }
+      return { alreadyProcessed: false as const, data, quest: null };
+    });
+
+    if (outcome.alreadyProcessed) {
+      return NextResponse.json({ error: 'Submission already processed', success: false }, { status: 409 });
+    }
+
+    const { data, quest } = outcome;
+
+    if (quest) {
       // Update user XP, level, rank, and skill points
       const { updateUserXpAndSkills } = await import('@/lib/xp-utils');
       await updateUserXpAndSkills(
@@ -232,12 +268,6 @@ export async function POST(request: NextRequest) {
           }
         }
       }
-    }
-    else if (status === 'needs_rework' || status === 'rejected') {
-      await prisma.questAssignment.update({
-        where: { id: existingSubmission.assignmentId },
-        data: { status: 'in_progress' },
-      });
     }
 
     await syncQuestLifecycleStatus(prisma, existingSubmission.assignment.questId);

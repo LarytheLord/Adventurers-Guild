@@ -223,22 +223,36 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized to review this submission', success: false }, { status: 403 });
     }
 
-    const wasAlreadyApproved = submission.status === 'approved';
-
     // Transaction for database updates (XP, status, etc.) – NO transaction creation here
     const reviewResult = await prisma.$transaction(
       async (tx) => {
-        const updatedSubmission = await tx.questSubmission.update({
-          where: { id: submissionId },
-          data: {
-            status,
-            reviewNotes: review_notes || undefined,
-            qualityScore: quality_score ?? undefined,
-            criteriaResults: criteria_results ? (criteria_results as Prisma.InputJsonValue) : undefined,
-            reviewerId,
-            reviewedAt: status !== 'pending' ? new Date() : undefined,
-          },
-        });
+        const submissionUpdate = {
+          status,
+          reviewNotes: review_notes || undefined,
+          qualityScore: quality_score ?? undefined,
+          criteriaResults: criteria_results ? (criteria_results as Prisma.InputJsonValue) : undefined,
+          reviewerId,
+          reviewedAt: status !== 'pending' ? new Date() : undefined,
+        };
+
+        let updatedSubmission;
+        if (status === 'approved') {
+          // Claim the approval atomically: the status check and the write are one
+          // UPDATE, so only one of several concurrent approvals can win it (#458).
+          const claim = await tx.questSubmission.updateMany({
+            where: { id: submissionId, status: { notIn: ['approved', 'superseded'] } },
+            data: submissionUpdate,
+          });
+          if (claim.count !== 1) {
+            return { alreadyProcessed: true as const };
+          }
+          updatedSubmission = await tx.questSubmission.findUniqueOrThrow({ where: { id: submissionId } });
+        } else {
+          updatedSubmission = await tx.questSubmission.update({
+            where: { id: submissionId },
+            data: submissionUpdate,
+          });
+        }
 
         let newAssignmentStatus: AssignmentStatus | null = null;
         if (status === 'approved') {
@@ -262,7 +276,7 @@ export async function PUT(request: NextRequest) {
         let rewardsPayload: { userId: string; xpReward: number; skillPointsReward: number; questTitle: string; questSource: string } | null = null;
         let paymentInfo: { questId: string; userId: string; track: string; source: string; monetaryReward: number } | null = null;
 
-        if (status === 'approved' && !wasAlreadyApproved) {
+        if (status === 'approved') {
           const quest = await tx.quest.findUnique({
             where: { id: assignmentData.questId },
             select: { 
@@ -336,10 +350,14 @@ export async function PUT(request: NextRequest) {
           }
         }
 
-        return { submission: updatedSubmission, rewardsPayload, paymentInfo };
+        return { alreadyProcessed: false as const, submission: updatedSubmission, rewardsPayload, paymentInfo };
       },
       { maxWait: 10_000, timeout: 20_000 }
     );
+
+    if (reviewResult.alreadyProcessed) {
+      return NextResponse.json({ error: 'Submission already processed', success: false }, { status: 409 });
+    }
 
     // Process XP and skills (outside transaction)
     if (reviewResult.rewardsPayload) {
