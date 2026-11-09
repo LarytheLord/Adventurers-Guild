@@ -110,12 +110,12 @@ export const EXPLAINER_SECTIONS: ExplainerSection[] = [
           [
             '13-19',
             'Tier 2 (Moderate)',
-            'Documented internal audit with evidence. Independent audit by CERT-In empanelled auditing organisations at least annually.',
+            'Documented internal audit with evidence of control implementation and effectiveness. Independent audit by CERT-In empanelled auditing organisations at least annually.',
           ],
           [
             '20-26',
             'Tier 3 (High)',
-            'Periodic independent third-party audit by CERT-In empanelled auditing organisations.',
+            'Periodic independent third-party audit by CERT-In empanelled auditing organisations; enhanced audit frequency where material changes, incidents or risk conditions warrant.',
           ],
           [
             '27-32',
