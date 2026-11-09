@@ -44,7 +44,7 @@ export default function AiRiskTierPage() {
           <p>
             <a
               href={CERTIN_PDF_URL}
-              className="font-semibold text-orange-600 underline underline-offset-4"
+              className="font-semibold text-orange-700 underline underline-offset-4"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -66,7 +66,7 @@ export default function AiRiskTierPage() {
             This is an unofficial self-check based on the published{' '}
             <a
               href={CERTIN_PDF_URL}
-              className="font-semibold text-orange-600 underline underline-offset-4"
+              className="font-semibold text-orange-700 underline underline-offset-4"
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -114,7 +114,7 @@ export default function AiRiskTierPage() {
             <Button asChild size="lg">
               <a href={AI_RISK_TIER_MAILTO}>Email about AI audit readiness</a>
             </Button>
-            <Link href="/audit" className="font-semibold text-orange-600 underline underline-offset-4">
+            <Link href="/audit" className="font-semibold text-orange-700 underline underline-offset-4">
               Or see our Production Check for AI-built apps
             </Link>
           </div>
