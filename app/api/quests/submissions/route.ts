@@ -232,144 +232,151 @@ export async function PUT(request: NextRequest) {
     // Transaction for database updates (XP, status, etc.) – NO transaction creation here
     let reviewResult;
     try {
-    reviewResult = await prisma.$transaction(
-      async (tx) => {
-        const submissionUpdate = {
-          status,
-          reviewNotes: review_notes || undefined,
-          qualityScore: quality_score ?? undefined,
-          criteriaResults: criteria_results ? (criteria_results as Prisma.InputJsonValue) : undefined,
-          reviewerId,
-          reviewedAt: status !== 'pending' ? new Date() : undefined,
-        };
-
-        // Every transition is claimed atomically: the status check and the write are
-        // one UPDATE, so only one of several concurrent reviews can win it (#458).
-        // Approve may come from any open status; the other transitions are only valid
-        // from the status we read above.
-        const claim = await tx.questSubmission.updateMany({
-          where: {
-            id: submissionId,
-            status: status === 'approved' ? { notIn: ['approved', 'superseded'] } : submission.status,
-          },
-          data: submissionUpdate,
-        });
-        if (claim.count !== 1) {
-          return { alreadyProcessed: true as const };
-        }
-        const updatedSubmission = await tx.questSubmission.findUniqueOrThrow({ where: { id: submissionId } });
-
-        let newAssignmentStatus: AssignmentStatus | null = null;
-        if (status === 'approved') {
-          newAssignmentStatus = 'completed';
-        } else if (status === 'needs_rework' || status === 'rejected') {
-          newAssignmentStatus = 'in_progress';
-        }
-
-        if (status === 'approved') {
-          // The assignment row is the one place every approval path (this route,
-          // /api/qa/reviews, the admin qa-queue) has to go through, so claim it here.
-          // If it is already completed another path got there first: throw so the
-          // submission claim above is rolled back too.
-          const assignmentClaim = await tx.questAssignment.updateMany({
-            where: { id: submission.assignmentId, status: { not: 'completed' } },
-            data: { status: 'completed', completedAt: new Date() },
-          });
-          if (assignmentClaim.count !== 1) {
-            throw new AlreadyProcessedError();
-          }
-        } else if (newAssignmentStatus) {
-          await tx.questAssignment.update({
-            where: { id: submission.assignmentId },
-            data: {
-              status: newAssignmentStatus,
-            },
-          });
-        }
-
-        await syncQuestLifecycleStatus(tx, assignmentData.questId);
-
-        let rewardsPayload: { userId: string; xpReward: number; skillPointsReward: number; questTitle: string; questSource: string } | null = null;
-        let paymentInfo: { questId: string; userId: string; track: string; source: string; monetaryReward: number } | null = null;
-
-        if (status === 'approved') {
-          const quest = await tx.quest.findUnique({
-            where: { id: assignmentData.questId },
-            select: { 
-              xpReward: true, 
-              skillPointsReward: true,
-              track: true,
-              source: true,
-              monetaryReward: true,
-            },
-          });
-          if (!quest) throw new Error('Quest not found for completion recording');
-
-          // Calculate daily standup penalty (5% per missed daily update)
-          const startedTime = assignmentData.startedAt ?? assignmentData.assignedAt;
-          const activeMs = new Date().getTime() - startedTime.getTime();
-          const expectedUpdates = Math.floor(activeMs / (1000 * 60 * 60 * 24));
-          
-          const actualUpdatesCount = await tx.dailyUpdate.count({
-            where: { assignmentId: submission.assignmentId }
-          });
-          
-          let penaltyPercentage = 0;
-          if (expectedUpdates > 0 && actualUpdatesCount < expectedUpdates) {
-            const missedUpdates = expectedUpdates - actualUpdatesCount;
-            penaltyPercentage = Math.min(100, missedUpdates * 5); // 5% per missed update, max 100%
-          }
-          
-          const multiplier = 1 - (penaltyPercentage / 100);
-          const finalXpReward = Math.round(quest.xpReward * multiplier);
-          const finalSkillPointsReward = Math.round(quest.skillPointsReward * multiplier);
-          const finalMonetaryReward = quest.monetaryReward ? Number(quest.monetaryReward) * multiplier : 0;
-
-          await tx.questCompletion.upsert({
-            where: {
-              questId_userId: {
-                questId: assignmentData.questId,
-                userId: assignmentData.userId,
-              },
-            },
-            create: {
-              questId: assignmentData.questId,
-              userId: assignmentData.userId,
-              xpEarned: finalXpReward,
-              skillPointsEarned: finalSkillPointsReward,
-              qualityScore: quality_score ?? null,
-            },
-            update: {
-              xpEarned: finalXpReward,
-              skillPointsEarned: finalSkillPointsReward,
-              qualityScore: quality_score ?? null,
-            },
-          });
-
-          rewardsPayload = {
-            userId: assignmentData.userId,
-            xpReward: finalXpReward,
-            skillPointsReward: finalSkillPointsReward,
-            questTitle: assignmentData.quest?.title ?? '',
-            questSource: quest.source,
+      reviewResult = await prisma.$transaction(
+        async (tx) => {
+          const submissionUpdate = {
+            status,
+            reviewNotes: review_notes || undefined,
+            qualityScore: quality_score ?? undefined,
+            criteriaResults: criteria_results ? (criteria_results as Prisma.InputJsonValue) : undefined,
+            reviewerId,
+            reviewedAt: status !== 'pending' ? new Date() : undefined,
           };
 
-          // Prepare payment info (but do NOT create transaction yet)
-          if (quest.monetaryReward && quest.track !== 'BOOTCAMP' && quest.source !== 'TUTORIAL') {
-            paymentInfo = {
-              questId: assignmentData.questId,
-              userId: assignmentData.userId,
-              track: quest.track,
-              source: quest.source,
-              monetaryReward: finalMonetaryReward,
-            };
+          let newAssignmentStatus: AssignmentStatus | null = null;
+          if (status === 'approved') {
+            newAssignmentStatus = 'completed';
+          } else if (status === 'needs_rework' || status === 'rejected') {
+            newAssignmentStatus = 'in_progress';
           }
-        }
 
-        return { alreadyProcessed: false as const, submission: updatedSubmission, rewardsPayload, paymentInfo };
-      },
-      { maxWait: 10_000, timeout: 20_000 }
-    );
+          // Lock order is assignment row first, then submission row, in every QA
+          // route (this one, /api/qa/reviews, the admin qa-queue). Taking them in
+          // opposite orders in different routes can deadlock (Postgres 40P01).
+          if (status === 'approved') {
+            // The assignment row is the one place every approval path has to go
+            // through, so claim it here. If it is already completed another path
+            // got there first.
+            const assignmentClaim = await tx.questAssignment.updateMany({
+              where: { id: submission.assignmentId, status: { not: 'completed' } },
+              data: { status: 'completed', completedAt: new Date() },
+            });
+            if (assignmentClaim.count !== 1) {
+              return { alreadyProcessed: true as const };
+            }
+          } else if (newAssignmentStatus) {
+            await tx.questAssignment.update({
+              where: { id: submission.assignmentId },
+              data: {
+                status: newAssignmentStatus,
+              },
+            });
+          }
+
+          // Every transition is claimed atomically: the status check and the write are
+          // one UPDATE, so only one of several concurrent reviews can win it (#458).
+          // Approve may come from any open status. The other transitions are only valid
+          // from the status we read above, and never from an already approved (or
+          // superseded) submission. If the claim is lost, throw so the assignment
+          // write above is rolled back too.
+          const claim = await tx.questSubmission.updateMany({
+            where: {
+              id: submissionId,
+              status:
+                status === 'approved'
+                  ? { notIn: ['approved', 'superseded'] }
+                  : { equals: submission.status, notIn: ['approved', 'superseded'] },
+            },
+            data: submissionUpdate,
+          });
+          if (claim.count !== 1) {
+            throw new AlreadyProcessedError();
+          }
+          const updatedSubmission = await tx.questSubmission.findUniqueOrThrow({ where: { id: submissionId } });
+
+          await syncQuestLifecycleStatus(tx, assignmentData.questId);
+
+          let rewardsPayload: { userId: string; xpReward: number; skillPointsReward: number; questTitle: string; questSource: string } | null = null;
+          let paymentInfo: { questId: string; userId: string; track: string; source: string; monetaryReward: number } | null = null;
+
+          if (status === 'approved') {
+            const quest = await tx.quest.findUnique({
+              where: { id: assignmentData.questId },
+              select: { 
+                xpReward: true, 
+                skillPointsReward: true,
+                track: true,
+                source: true,
+                monetaryReward: true,
+              },
+            });
+            if (!quest) throw new Error('Quest not found for completion recording');
+
+            // Calculate daily standup penalty (5% per missed daily update)
+            const startedTime = assignmentData.startedAt ?? assignmentData.assignedAt;
+            const activeMs = new Date().getTime() - startedTime.getTime();
+            const expectedUpdates = Math.floor(activeMs / (1000 * 60 * 60 * 24));
+          
+            const actualUpdatesCount = await tx.dailyUpdate.count({
+              where: { assignmentId: submission.assignmentId }
+            });
+          
+            let penaltyPercentage = 0;
+            if (expectedUpdates > 0 && actualUpdatesCount < expectedUpdates) {
+              const missedUpdates = expectedUpdates - actualUpdatesCount;
+              penaltyPercentage = Math.min(100, missedUpdates * 5); // 5% per missed update, max 100%
+            }
+          
+            const multiplier = 1 - (penaltyPercentage / 100);
+            const finalXpReward = Math.round(quest.xpReward * multiplier);
+            const finalSkillPointsReward = Math.round(quest.skillPointsReward * multiplier);
+            const finalMonetaryReward = quest.monetaryReward ? Number(quest.monetaryReward) * multiplier : 0;
+
+            await tx.questCompletion.upsert({
+              where: {
+                questId_userId: {
+                  questId: assignmentData.questId,
+                  userId: assignmentData.userId,
+                },
+              },
+              create: {
+                questId: assignmentData.questId,
+                userId: assignmentData.userId,
+                xpEarned: finalXpReward,
+                skillPointsEarned: finalSkillPointsReward,
+                qualityScore: quality_score ?? null,
+              },
+              update: {
+                xpEarned: finalXpReward,
+                skillPointsEarned: finalSkillPointsReward,
+                qualityScore: quality_score ?? null,
+              },
+            });
+
+            rewardsPayload = {
+              userId: assignmentData.userId,
+              xpReward: finalXpReward,
+              skillPointsReward: finalSkillPointsReward,
+              questTitle: assignmentData.quest?.title ?? '',
+              questSource: quest.source,
+            };
+
+            // Prepare payment info (but do NOT create transaction yet)
+            if (quest.monetaryReward && quest.track !== 'BOOTCAMP' && quest.source !== 'TUTORIAL') {
+              paymentInfo = {
+                questId: assignmentData.questId,
+                userId: assignmentData.userId,
+                track: quest.track,
+                source: quest.source,
+                monetaryReward: finalMonetaryReward,
+              };
+            }
+          }
+
+          return { alreadyProcessed: false as const, submission: updatedSubmission, rewardsPayload, paymentInfo };
+        },
+        { maxWait: 10_000, timeout: 20_000 }
+      );
     } catch (txError) {
       if (txError instanceof AlreadyProcessedError) {
         return NextResponse.json({ error: 'Submission already processed', success: false }, { status: 409 });
