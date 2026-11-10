@@ -12,6 +12,7 @@ import {
   organizationJsonLd,
   serializeJsonLd,
   softwareApplicationJsonLd,
+  launchCheckJsonLd,
 } from '@/lib/seo';
 import { ANSWER_PAGES } from '@/lib/answer-pages/content';
 import { explainerPlainText, EXPLAINER_FAQ, stripLinks } from '@/lib/cert-in-explainer/content';
@@ -25,6 +26,7 @@ const PAGE_FILES: Record<string, string> = {
   '/audit': 'app/audit/page.tsx',
   '/checklist': 'app/checklist/page.tsx',
   '/ai-risk-tier': 'app/ai-risk-tier/page.tsx',
+  '/launch-check': 'app/launch-check/page.tsx',
   '/guides/cert-in-ai-security-auditing-guidelines': 'app/guides/cert-in-ai-security-auditing-guidelines/page.tsx',
   ...Object.fromEntries(ANSWER_PAGES.map((a) => [a.path, `app${a.path}/page.tsx`])),
 };
@@ -32,13 +34,14 @@ const PAGE_FILES: Record<string, string> = {
 describe('sitemap', () => {
   const urls = sitemap().map((e) => e.url);
 
-  it('lists exactly the eight public pages on www.guilds.work', () => {
+  it('lists exactly the nine public pages on www.guilds.work', () => {
     expect(urls.sort()).toEqual(
       [
         'https://www.guilds.work/',
         'https://www.guilds.work/audit',
         'https://www.guilds.work/checklist',
         'https://www.guilds.work/ai-risk-tier',
+        'https://www.guilds.work/launch-check',
         'https://www.guilds.work/guides/cert-in-ai-security-auditing-guidelines',
         'https://www.guilds.work/guides/does-cert-in-require-an-ai-audit',
         'https://www.guilds.work/guides/check-supabase-rls-lovable-bolt',
@@ -112,6 +115,16 @@ describe('JSON-LD', () => {
     const a = JSON.parse(serializeJsonLd(softwareApplicationJsonLd()));
     expect(a['@type']).toBe('WebApplication');
     expect(a.url).toBe('https://www.guilds.work/ai-risk-tier');
+  });
+
+  it('launch check WebApplication parses, is free and points at /launch-check', () => {
+    const a = JSON.parse(serializeJsonLd(launchCheckJsonLd()));
+    expect(a['@context']).toBe('https://schema.org');
+    expect(a['@type']).toBe('WebApplication');
+    expect(a.url).toBe('https://www.guilds.work/launch-check');
+    expect(a.offers.price).toBe('0');
+    expect(a.name).not.toBe(JSON.parse(serializeJsonLd(softwareApplicationJsonLd())).name);
+    expect(a.description).toMatch(/not an audit/i);
   });
 
   it('FAQPage answers are substrings of the guide content', () => {
