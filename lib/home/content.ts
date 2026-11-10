@@ -1,6 +1,6 @@
 export const HOME_TITLE = 'Guild - independent checks for the AI you ship';
 export const HOME_DESCRIPTION =
-  'Guild tests AI systems and the apps built around them, and writes down what we find. CERT-In AI audit readiness for Indian teams, and a Production Check for apps built with Lovable, Bolt or Replit.';
+  'Guild tests AI systems and the apps built around them, and writes down what we find. CERT-In AI audit readiness for Indian teams, and a Launch Check for apps built with Lovable, Bolt, Replit, v0 or Cursor.';
 
 export const HOME_MAILTO = 'mailto:abid@guilds.work?subject=Guild%20enquiry';
 
@@ -9,7 +9,7 @@ export const HOME_HERO = {
   headline: 'Independent checks for the AI you ship.',
   lead:
     'We test your AI system and the app around it, then give you a written report of what we found and how serious it is. You fix it, or we fix it with you.',
-  primary: { label: 'Production Check for AI-built apps', href: '/audit' },
+  primary: { label: 'Launch Check for AI-built apps', href: '/audit' },
   secondary: { label: 'CERT-In AI readiness', href: '/ai-risk-tier' },
 };
 
@@ -33,14 +33,14 @@ export const HOME_OFFERS = [
   {
     id: 'production-check',
     kicker: 'For founders shipping fast',
-    title: 'Production Check for AI-built apps',
+    title: 'Launch Check for AI-built apps',
     body:
-      'Built your app with Lovable, Bolt or Replit? We check 114 things by hand, such as database access rules, exposed keys, login, payments and backups, and send a report with a severity for every finding.',
+      'Built your app with Lovable, Bolt, Replit, v0 or Cursor? We check it, fix it and help you ship it. We cover four areas equally: payments, deployment and domains, performance and cost, and security and data access.',
     points: [
       'Written report, each finding rated critical, high, medium or low.',
-      'Optional fixes, quoted after the check.',
+      'Optional fixes, at a fixed quote after the check.',
     ],
-    primary: { label: 'See the Production Check', href: '/audit' },
+    primary: { label: 'See the Launch Check', href: '/audit' },
     secondary: null,
   },
 ];
@@ -83,7 +83,7 @@ export const HOME_RESOURCES = [
   },
   {
     label: 'Launch checklist',
-    body: 'A short checklist for the basics before you launch an AI-built app.',
+    body: 'A short checklist for payments, deployment, speed and security before you launch an AI-built app.',
     href: '/checklist',
   },
 ];

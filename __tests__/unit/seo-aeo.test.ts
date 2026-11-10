@@ -150,7 +150,8 @@ describe('page metadata', () => {
       expect(isAscii(src)).toBe(true);
     }
     const auditMeta = read('app/audit/page.tsx').split('export const metadata')[0];
-    expect(auditMeta).not.toMatch(/\d/);
+    // "v0" is a product name, not a figure
+    expect(auditMeta.replace(/\bv0\b/g, '')).not.toMatch(/\d/);
     const checklistMeta = read('app/checklist/page.tsx').split('export const metadata')[0];
     expect(checklistMeta).not.toMatch(/\d/);
   });

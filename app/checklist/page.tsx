@@ -7,7 +7,7 @@ import { CHECKLIST_GROUPS } from '@/lib/audit-offer/content';
 
 const TITLE = 'The AI-built app launch checklist - Guild';
 const DESCRIPTION =
-  'A free checklist of things to check before you launch an app built with Lovable, Bolt or Replit: database access, keys, login, payments, backups, email, privacy and cost.';
+  'A free checklist of things to check before you launch an app built with Lovable, Bolt or Replit: database access, keys, login, payments, deployment, speed, backups, email, privacy and cost.';
 
 export const metadata: Metadata = buildPageMetadata({
   path: '/checklist',
@@ -21,7 +21,7 @@ export default function ChecklistPage() {
     <InfoPageShell
       eyebrow="Free checklist"
       title="The AI-built app launch checklist"
-      description="Things to check before real users put real data into your app. Each item says what to check and why it matters. Only check apps you own."
+      description="Things to check before real users pay you or put real data into your app. Each item says what to check and why it matters. Only check apps you own. This is the short, do-it-yourself version of our Launch Check."
     >
       <div className="space-y-10">
         {CHECKLIST_GROUPS.map((group) => (
@@ -42,13 +42,13 @@ export default function ChecklistPage() {
 
         <section aria-labelledby="want-help" className="space-y-4 rounded-2xl bg-orange-50 p-6">
           <h2 id="want-help" className="font-display text-2xl font-bold tracking-[-0.03em] text-slate-950">
-            Want us to check all 114?
+            Want us to check it for you?
           </h2>
           <p className="text-slate-600">
-            This list is a short version. Our Production Check goes through 114 items by hand and gives you a report with a fixed quote.
+            This list is a short version. Our Launch Check goes through payments, deployment and domains, performance and cost, and security by hand, and gives you a report with a fixed quote for the fixes.
           </p>
           <Button asChild size="lg">
-            <Link href="/audit">See the Production Check</Link>
+            <Link href="/audit">See the Launch Check</Link>
           </Button>
         </section>
       </div>

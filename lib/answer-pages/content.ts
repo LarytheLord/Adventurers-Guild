@@ -169,7 +169,7 @@ const supabaseRls: AnswerPage = {
         },
         {
           kind: 'p',
-          text: 'Want a second pair of eyes on an AI-built app? See the [Production Check](/audit). ' + ANSWER_DISCLAIMER,
+          text: 'Want a second pair of eyes on an AI-built app? See the [Launch Check](/audit). ' + ANSWER_DISCLAIMER,
         },
       ],
     },

@@ -110,7 +110,7 @@ export default function AiRiskTierPage() {
               <a href={AI_RISK_TIER_MAILTO}>Email about AI audit readiness</a>
             </Button>
             <Link href="/audit" className="font-semibold text-orange-700 underline underline-offset-4">
-              Or see our Production Check for AI-built apps
+              Or see our Launch Check for AI-built apps
             </Link>
           </div>
         </section>

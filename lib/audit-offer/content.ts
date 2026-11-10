@@ -1,7 +1,7 @@
 const MAIL_BODY = [
   'Hi,',
   '',
-  'I would like a Production Check.',
+  'I would like a Launch Check.',
   '',
   'App URL:',
   'Stack (for example Lovable + Supabase + Stripe):',
@@ -9,17 +9,58 @@ const MAIL_BODY = [
   'Anything you are worried about:',
 ].join('\n');
 
-export const AUDIT_MAILTO = `mailto:abid@guilds.work?subject=Production%20Check%20request&body=${encodeURIComponent(MAIL_BODY)}`;
+export const AUDIT_MAILTO = `mailto:abid@guilds.work?subject=Launch%20Check%20request&body=${encodeURIComponent(MAIL_BODY)}`;
 
-export const AUDIT_CHECKS = [
-  'Database access rules, such as Supabase row level security (RLS): can one user read or change another user\'s data?',
-  'Exposed API keys and secrets in your code, build and browser.',
-  'Login and sessions: sign-up, password reset, admin pages and logout.',
-  'Payments and Stripe webhooks: does the server decide the price and who gets access?',
-  'Backups: do they exist, and has anyone ever restored one?',
-  'Email setup (SPF, DKIM, DMARC) so your emails reach the inbox and cannot be faked easily.',
-  'Basic privacy and cookie consent: what personal data you keep and whether you tell people.',
-  'Cost blowups on free tiers: limits, spend caps and calls that anyone could run up.',
+export const AUDIT_TOOLS = 'Lovable, Bolt, Replit, v0 or Cursor';
+
+export type AuditArea = { id: string; title: string; summary: string; checks: string[] };
+
+// Four areas, four checks each, so no area outweighs another.
+export const AUDIT_AREAS: AuditArea[] = [
+  {
+    id: 'payments',
+    title: 'Payments work end to end',
+    summary: 'Money comes in, access follows, and refunds undo it.',
+    checks: [
+      'Razorpay and Stripe webhooks are verified by signature, and a repeated webhook does not grant access twice.',
+      'The server decides the price and who gets access, not the browser.',
+      'Refunds and failed payments take access away again, and we run one through.',
+      'Test and live keys are kept apart, and the live webhook endpoint and secret are the ones in use.',
+    ],
+  },
+  {
+    id: 'deployment',
+    title: 'Deployment and domains',
+    summary: 'The app that runs in production is the one you tested.',
+    checks: [
+      'Environment variables are set on the production host, and nothing is missing or left on the builder.',
+      'Your custom domain has HTTPS, redirects work, and login and webhook URLs point to it.',
+      'Email deliverability: SPF, DKIM and DMARC are set so sign-up and receipt emails reach the inbox.',
+      'Backups exist, and someone has restored one into a test copy.',
+    ],
+  },
+  {
+    id: 'performance',
+    title: 'Performance and cost',
+    summary: 'Pages load quickly, and a good week does not become a bad bill.',
+    checks: [
+      'Page speed of your main pages, measured with standard tools, with the slowest causes named.',
+      'Database indexes on the columns your pages filter and sort by.',
+      'Image sizes: large uploads are resized and compressed before they reach visitors.',
+      'A written estimate of your monthly bill at 10,000 visits, and where it would jump.',
+    ],
+  },
+  {
+    id: 'security',
+    title: 'Security and data access',
+    summary: 'One user cannot read or change another user\'s data.',
+    checks: [
+      'Database access rules, such as Supabase row level security (RLS), limit rows to their owner.',
+      'Secrets and API keys are not in your code, build or browser, and old leaked keys are rotated.',
+      'Login and sessions: sign-up, password reset, admin pages and logout are enforced on the server.',
+      'Private files are private, and you can list what personal data you keep.',
+    ],
+  },
 ];
 
 export const AUDIT_PACKAGES = [
@@ -29,7 +70,7 @@ export const AUDIT_PACKAGES = [
     time: '2 working days',
     points: [
       'A report listing each finding with a severity (critical, high, medium, low).',
-      'A fixed quote to fix what we found.',
+      'A fixed quote after the check for fixing what we found.',
       'The $99 is credited to a Fix.',
     ],
   },
@@ -38,7 +79,7 @@ export const AUDIT_PACKAGES = [
     price: 'From $800',
     time: 'Fixed quote after the Check',
     points: [
-      'We fix the critical and high findings.',
+      'We fix the critical and high findings and ship them with you.',
       'We re-check them and tell you what is now closed.',
       'Price depends on the size of your app and what the Check finds.',
     ],
@@ -55,6 +96,9 @@ export const AUDIT_PACKAGES = [
   },
 ];
 
+export const AUDIT_PRICE_NOTE =
+  'Prices are as shown. The Fix is a fixed quote after the check, based on what the check finds.';
+
 export const AUDIT_STEPS = [
   'Send us the link to your app and a few lines on what it does.',
   'Sign a short scope form. We only test your own app, never third-party systems, and we do no load testing.',
@@ -62,7 +106,7 @@ export const AUDIT_STEPS = [
 ];
 
 export const AUDIT_HONEST_NOTE =
-  'A Check is a point-in-time review, not a guarantee that nothing can go wrong.';
+  'A Launch Check is a point-in-time review, not a guarantee that nothing can go wrong. Guild is not a CERT-In empanelled auditor, and a Launch Check is not an audit or a certificate.';
 
 type Item = { check: string; why: string };
 export type ChecklistGroup = { id: string; title: string; items: Item[] };
@@ -154,6 +198,46 @@ export const CHECKLIST_GROUPS: ChecklistGroup[] = [
         check: 'Test and live payment keys are kept apart, and live secrets are not in preview builds.',
         why: 'Mixing them causes real charges during tests, or test orders treated as paid.',
       },
+      {
+        check: 'A webhook that arrives twice (Razorpay and Stripe both retry) does not grant access or send an email twice.',
+        why: 'Retries are normal, so a handler that is not safe to repeat gives away access or double-sends.',
+      },
+      {
+        check: 'A refund or failed payment takes the access away again, and you have tried one with a small real payment.',
+        why: 'Otherwise people keep what they paid for after the money has gone back.',
+      },
+      {
+        check: 'You have made one real live-mode payment end to end, and it reached your database and the buyer\'s inbox.',
+        why: 'Test mode can pass while the live webhook URL or secret is wrong, and you then miss real orders.',
+      },
+    ],
+  },
+  {
+    id: 'deployment',
+    title: 'Deployment and domains',
+    items: [
+      {
+        check: 'Every environment variable is set on the production host, and the app fails loudly when one is missing.',
+        why: 'Values that only exist on your laptop or in the builder preview make features break quietly after launch.',
+      },
+      {
+        check: 'Your custom domain uses HTTPS, and the login, payment and webhook URLs point to it, not a preview address.',
+        why: 'A leftover preview URL breaks logins and sends payment events to the wrong place.',
+      },
+    ],
+  },
+  {
+    id: 'performance',
+    title: 'Speed and database',
+    items: [
+      {
+        check: 'The columns your pages filter, join or sort by have database indexes.',
+        why: 'A page that is fast with 20 rows can crawl with real data, and indexes are the usual fix.',
+      },
+      {
+        check: 'Images are resized and compressed to the size they are shown at.',
+        why: 'Multi-megabyte images slow every page and add to your bandwidth bill.',
+      },
     ],
   },
   {
@@ -213,6 +297,10 @@ export const CHECKLIST_GROUPS: ChecklistGroup[] = [
       {
         check: 'Spend caps and billing alerts are set on every paid service.',
         why: 'A loop or a viral day can cost real money before you notice.',
+      },
+      {
+        check: 'You have worked out what a month of 10,000 visits would cost across hosting, database, email and AI calls.',
+        why: 'The number tells you which plan limit or per-call price will hurt first.',
       },
       {
         check: 'Expensive actions (AI calls, emails, file uploads) have per-user limits.',
