@@ -28,6 +28,7 @@ import {
   Zap
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { formatChartDate } from '@/lib/chart-formatters';
 
 // Types
 interface AnalyticsData {
@@ -287,7 +288,7 @@ export default function AnalyticsDashboard({
                       />
                       <YAxis />
                       <Tooltip 
-                        labelFormatter={(value) => format(new Date(value), 'MMM dd, yyyy')}
+                        labelFormatter={formatChartDate}
                         formatter={(value) => [value, 'Points']}
                       />
                       <Legend />

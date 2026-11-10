@@ -36,6 +36,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { formatChartCurrency as formatCurrency } from '@/lib/chart-formatters';
 import {
   Table,
   TableBody,
@@ -101,14 +102,6 @@ function createDefaultRange() {
     from: formatInputDate(from),
     to: formatInputDate(today),
   };
-}
-
-function formatCurrency(amount: number, currency: string) {
-  return new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency,
-    maximumFractionDigits: 0,
-  }).format(amount);
 }
 
 function formatPercent(value: number) {
@@ -351,7 +344,7 @@ export default function AdminRevenuePage() {
                   tickFormatter={(value) => formatCompactNumber(Number(value))}
                 />
                 <Tooltip
-                  formatter={(value: number) => formatCurrency(value, data.displayCurrency)}
+                  formatter={(value) => formatCurrency(value, data.displayCurrency)}
                   labelFormatter={(value) => `Date: ${value}`}
                 />
                 <Line
@@ -379,10 +372,10 @@ export default function AdminRevenuePage() {
                 <XAxis dataKey="track" stroke="#64748b" />
                 <YAxis stroke="#64748b" />
                 <Tooltip
-                  formatter={(value: number, name: string) =>
-                    name === 'gmv'
+                  formatter={(value, name) =>
+                    name === 'GMV'
                       ? formatCurrency(value, data.displayCurrency)
-                      : value
+                      : typeof value === 'number' ? value : '-'
                   }
                 />
                 <Legend />
