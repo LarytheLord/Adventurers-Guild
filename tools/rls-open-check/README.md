@@ -4,35 +4,78 @@ A free command line tool that reads your Supabase or Postgres SQL migration
 files and flags Row Level Security (RLS) setups that let the wrong people read
 or write your data.
 
-It is made for apps built with AI app builders such as Lovable, Bolt and v0.
-These tools often create tables with RLS turned on, then add a policy like
-`USING (true)` to make an error go away. That policy lets anyone on the
-internet with your public API key read or change every row.
+A common mistake in hurried or generated migrations is to turn RLS on, then add
+a policy like `USING (true)` to make an error go away. That policy lets anyone
+with your public API key read or change every row. This tool looks for that and
+a few related mistakes.
 
 Static check only. It runs on your files. It makes no network calls and needs
 no database connection.
 
 ## Quick start
 
+Needs Node 18 or newer. From the root of a Supabase project:
+
 ```
 npx rls-open-check
 ```
 
-With no arguments it scans `supabase/migrations`. You can pass files or
-directories:
+That scans `supabase/migrations` and exits 1 if it finds anything high or
+critical. No install, no config, no database connection, no network calls.
+
+To scan other files or folders:
 
 ```
-npx rls-open-check supabase/migrations
 npx rls-open-check db/schema.sql
+npx rls-open-check supabase/migrations --fail-on medium
+npx rls-open-check --json
 ```
 
-Example output:
+## Sample output
 
-```
-supabase/migrations/20240101000000_init.sql:4  [critical] R2  public.orders.orders open
-    Policy "orders open" on public.orders allows ALL for public with a condition that is always true, so anyone with the public API key gets access.
+For a migration that opens a table to `anon` and forgets RLS on another:
+
+```text
+supabase/migrations/20240101000000_init.sql:3  [critical] R2  public.orders.orders open
+    Policy "orders open" on public.orders allows ALL for anon with a condition that is always true, so anyone with the public API key gets access.
     Fix: Replace true with a real check such as auth.uid() = user_id, or change the role to authenticated.
+
+supabase/migrations/20240101000000_init.sql:5  [critical] R1  public.notes
+    Table public.notes is in the public schema and never has Row Level Security enabled.
+    Fix: Add ALTER TABLE public.notes ENABLE ROW LEVEL SECURITY and policies for who may read and write.
+
+Scanned 1 file(s). 2 finding(s): 2 critical, 0 high, 0 medium, 0 low.
+2 finding(s) at or above "high": failing.
+Static check of migration files only. A clean result is not proof of safety.
 ```
+
+The sample is checked against the real output by the test suite
+(`tests/launch.test.ts`), so it does not drift.
+
+## GitHub Action
+
+Fail a pull request when a migration adds a high or critical finding:
+
+```yaml
+name: rls-check
+on:
+  pull_request:
+    paths:
+      - "supabase/migrations/**"
+
+jobs:
+  rls-open-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npx rls-open-check supabase/migrations --fail-on high
+```
+
+Pin a version for repeatable builds, for example `npx rls-open-check@0.1.0`.
+To see everything but never fail the build, add `|| true` to the command.
 
 ## What it checks
 
@@ -81,11 +124,15 @@ Details:
 - A statement that does not parse is skipped with a warning. The rest of the
   file is still checked.
 
-## What it does NOT check
+## Limits
+
+Read this before you rely on the tool.
 
 - **It is static.** It cannot see changes made in the Supabase dashboard, in the
   SQL editor, or by other tools. If your live database differs from your
   migration files, this tool does not know.
+- **It is a linter, not a security review.** It is not a penetration test and
+  not a certification of any kind.
 - **A clean result is not proof of safety.** It finds a short list of common
   mistakes. It does not understand what your policies mean.
 - It does not judge policy logic. `USING (user_id IS NOT NULL)` or a policy that
@@ -120,8 +167,11 @@ JSON output has `findings` (each with `rule`, `severity`, `object`, `file`,
 
 ## SARIF and GitHub code scanning
 
-`--format sarif` prints a SARIF 2.1.0 log. File paths are relative to the git
-root, so GitHub can show findings on the changed lines. The exit code still
+To see findings in the Security tab and as annotations on the pull request,
+upload a SARIF file. `--format sarif` prints a SARIF 2.1.0 log. File paths are relative to the git
+root, so GitHub can show findings on the changed lines. Code scanning must be available
+for the repository (public repositories, or private ones with GitHub Code
+Security). The exit code still
 follows `--fail-on`, so write the file first and upload it even when the check
 fails:
 
@@ -147,31 +197,6 @@ jobs:
 SARIF levels: critical and high are `error`, medium is `warning`, low is
 `note`. Parse warnings go in the run's notifications, not in the results.
 
-## CI usage
-
-GitHub Actions. This fails the pull request when a finding is high or critical:
-
-```yaml
-name: rls-check
-on:
-  pull_request:
-    paths:
-      - "supabase/migrations/**"
-
-jobs:
-  rls-open-check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: "20"
-      - run: npx rls-open-check supabase/migrations --fail-on high
-```
-
-Pin a version for repeatable builds, for example `npx rls-open-check@0.1.0`.
-To see everything but never fail the build, add `|| true` to the command.
-
 ## Install
 
 No install is needed with `npx`. To add it to a project:
@@ -181,6 +206,10 @@ npm install --save-dev rls-open-check
 ```
 
 Requires Node 18 or newer.
+
+## Changelog
+
+See [CHANGELOG.md](CHANGELOG.md).
 
 ## Develop
 

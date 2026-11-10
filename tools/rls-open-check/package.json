@@ -1,9 +1,18 @@
 {
   "name": "rls-open-check",
   "version": "0.1.0",
-  "description": "Static linter for risky Row Level Security setups in Supabase/Postgres SQL migrations",
+  "description": "Static linter for risky Row Level Security setups in Supabase/Postgres SQL migrations. Text, JSON and SARIF output.",
   "license": "MIT",
   "author": "Guild (guilds.work)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LarytheLord/Adventurers-Guild.git",
+    "directory": "tools/rls-open-check"
+  },
+  "homepage": "https://github.com/LarytheLord/Adventurers-Guild/tree/main/tools/rls-open-check#readme",
+  "bugs": {
+    "url": "https://github.com/LarytheLord/Adventurers-Guild/issues"
+  },
   "type": "module",
   "bin": {
     "rls-open-check": "dist/bin.js"
@@ -12,7 +21,8 @@
   "files": [
     "dist",
     "README.md",
-    "LICENSE"
+    "LICENSE",
+    "CHANGELOG.md"
   ],
   "engines": {
     "node": ">=18"
@@ -29,7 +39,10 @@
     "rls",
     "row-level-security",
     "lint",
-    "security"
+    "linter",
+    "security",
+    "sarif",
+    "migrations"
   ],
   "dependencies": {
     "libpg-query": "^18.2.2"
@@ -38,5 +51,8 @@
     "@types/node": "^26.6.6",
     "typescript": "^7.0.2",
     "vitest": "^5.1.0"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
