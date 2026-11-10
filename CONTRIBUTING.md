@@ -1,8 +1,10 @@
 # Contributing to Adventurers Guild
 
-This document is the source of truth for how work gets done on this project — whether you're a human developer or an AI agent picking up a GitHub issue.
+This document describes how work gets done on this project. The product runs at [guilds.work](https://guilds.work).
 
-> **NSoC 2026 participants** — Welcome! This project is part of Nexus Spring of Code 2026 (April 15 – May 30). Issues labeled `NSoC-2026` are the active contribution targets. Join our [Discord](https://discord.gg/7hQYkEx5) for help.
+External pull requests are welcome for bug fixes. For anything larger than a bug fix (new features, schema changes, design changes), please open an issue and agree on the approach with a maintainer before writing code.
+
+Security issues are not reported through issues or pull requests. See [SECURITY.md](./SECURITY.md).
 
 ---
 
@@ -31,8 +33,8 @@ Adventurers Guild is a gamified developer marketplace. Adventurers (developers) 
 - Vercel — deployment
 
 **Key docs to read before contributing:**
-- [`CLAUDE.md`](./CLAUDE.md) — full project context, architecture, and rules
 - [`docs/ARCHITECTURE_DECISIONS.md`](./docs/ARCHITECTURE_DECISIONS.md) — why things are the way they are (do not revisit)
+- [`docs/DATABASE_SAFETY.md`](./docs/DATABASE_SAFETY.md) - rules for anything that touches the database
 - [`docs/IMPLEMENTATION_TASKS.md`](./docs/IMPLEMENTATION_TASKS.md) — current task queue
 - [`docs/ISSUE_RESOLUTION_GUIDE.md`](./docs/ISSUE_RESOLUTION_GUIDE.md) — detailed rules for completing issues
 - [`prisma/schema.prisma`](./prisma/schema.prisma) — authoritative database schema
@@ -46,7 +48,7 @@ Adventurers Guild is a gamified developer marketplace. Adventurers (developers) 
 ```bash
 git clone https://github.com/LarytheLord/Adventurers-Guild.git
 cd Adventurers-Guild
-npm install
+npm ci
 ```
 
 ### 2. Configure environment
@@ -60,7 +62,7 @@ cp .env.example .env.local
 Required variables:
 
 ```bash
-# Database — get from Neon dashboard
+# Database - point at a Neon development branch, NEVER production
 DATABASE_URL="postgresql://..."
 DATABASE_URL_UNPOOLED="postgresql://..."
 
@@ -92,7 +94,7 @@ RAZORPAY_KEY_SECRET="..."
 # Generate Prisma client
 npx prisma generate
 
-# Push schema to your Neon database (do NOT use migrate dev — Neon serverless requires db push)
+# Push schema to your own development database (see docs/DATABASE_SAFETY.md)
 npm run db:push
 ```
 
@@ -103,6 +105,8 @@ npm run dev
 ```
 
 Open `http://localhost:3000`.
+
+Never put a production connection string in your local env. The `db:*` scripts refuse to run against production, and `docs/DATABASE_SAFETY.md` explains why.
 
 ---
 
@@ -124,7 +128,7 @@ Every piece of work is a GitHub issue. Issues are labeled by rank:
 
 ### Branches
 
-All work goes to `development` via PR. Never push directly to `main` or `development`.
+All work goes to `main` via pull request. Never push directly to `main`. Fork the repo or branch from `main`, and open the PR against `main`.
 
 Branch naming:
 ```
@@ -173,19 +177,24 @@ Never edit a file you haven't read in the current session. Check the surrounding
 
 ### 5. Schema changes
 
-After editing `prisma/schema.prisma`, push the changes to your Neon database:
+Schema changes need an issue and maintainer agreement first. After editing `prisma/schema.prisma`, push the changes to your own development database:
 
 ```bash
 npm run db:push
 ```
 
-**Do NOT use `prisma migrate dev`** — this project uses Neon serverless PostgreSQL which requires `db push`. Always use `@default()` for new required fields so existing rows aren't broken.
+Always use `@default()` for new required fields so existing rows aren't broken. Do not add or edit files under `prisma/migrations/` unless a maintainer asks you to. Production migrations are applied only by the `db-migrate-deploy` workflow after merge (see `docs/DATABASE_SAFETY.md`).
 
 ### 6. Run checks before opening a PR
 
+These are the same steps CI runs:
+
 ```bash
+npm ci
+npx prisma generate
 npm run lint        # must have 0 errors
 npm run type-check  # must have 0 errors
+npm run test        # must pass
 npm run build       # must pass clean
 ```
 
@@ -227,15 +236,17 @@ Closes #[issue number]
 - [ ] [Edge case to verify]
 - [ ] npm run lint → 0 errors
 - [ ] npm run type-check → 0 errors
+- [ ] npm run test -> passes
 - [ ] npm run build → passes
 ```
 
 ### PR rules
 
-- PR targets `development` branch, not `main`
-- One issue per PR (unless explicitly linked)
-- No PR merges without all 3 checks passing (lint + type-check + build)
-- Reference the issue: "Closes #N" so it auto-closes on merge
+- PR targets `main`
+- **One purpose per PR.** A bug fix is one PR. Do not mix in refactors, formatting changes, dependency bumps, or unrelated fixes; send those separately.
+- Keep the diff small and limited to what the change needs
+- No PR merges without CI passing (lint, type-check, test, build)
+- Link the issue with "Closes #N" in the PR body so it auto-closes on merge. The "Require closing issue reference" check passes if the body has "Closes #N", if a maintainer applied the `no-issue` label, or if the author is the repository owner. If your PR has no issue, say so in the description and a maintainer will decide.
 
 ---
 
@@ -276,6 +287,7 @@ A task is done when:
 1. All acceptance criteria in the issue are checked off
 2. `npm run lint` passes with 0 errors
 3. `npm run type-check` passes with 0 errors
-4. `npm run build` passes clean
-5. PR is open targeting `development` with a description that matches the template above
-6. No unrelated files are modified
+4. `npm run test` passes
+5. `npm run build` passes clean
+6. PR is open targeting `main` with a description that matches the template above
+7. No unrelated files are modified
