@@ -13,6 +13,7 @@ import {
   serializeJsonLd,
   softwareApplicationJsonLd,
 } from '@/lib/seo';
+import { ANSWER_PAGES } from '@/lib/answer-pages/content';
 import { explainerPlainText, EXPLAINER_FAQ, stripLinks } from '@/lib/cert-in-explainer/content';
 
 const root = join(__dirname, '..', '..');
@@ -25,12 +26,13 @@ const PAGE_FILES: Record<string, string> = {
   '/checklist': 'app/checklist/page.tsx',
   '/ai-risk-tier': 'app/ai-risk-tier/page.tsx',
   '/guides/cert-in-ai-security-auditing-guidelines': 'app/guides/cert-in-ai-security-auditing-guidelines/page.tsx',
+  ...Object.fromEntries(ANSWER_PAGES.map((a) => [a.path, `app${a.path}/page.tsx`])),
 };
 
 describe('sitemap', () => {
   const urls = sitemap().map((e) => e.url);
 
-  it('lists exactly the five public pages on www.guilds.work', () => {
+  it('lists exactly the eight public pages on www.guilds.work', () => {
     expect(urls.sort()).toEqual(
       [
         'https://www.guilds.work/',
@@ -38,6 +40,9 @@ describe('sitemap', () => {
         'https://www.guilds.work/checklist',
         'https://www.guilds.work/ai-risk-tier',
         'https://www.guilds.work/guides/cert-in-ai-security-auditing-guidelines',
+        'https://www.guilds.work/guides/does-cert-in-require-an-ai-audit',
+        'https://www.guilds.work/guides/check-supabase-rls-lovable-bolt',
+        'https://www.guilds.work/guides/what-is-an-ai-risk-tier-cert-in',
       ].sort(),
     );
   });
@@ -141,7 +146,7 @@ describe('page metadata', () => {
     for (const p of PUBLIC_PAGES) {
       const src = read(PAGE_FILES[p.path]);
       expect(src).toContain('buildPageMetadata');
-      expect(src).toContain(p.path === '/' ? "path: '/'" : p.path === '/guides/cert-in-ai-security-auditing-guidelines' ? 'path: EXPLAINER_PATH' : `path: '${p.path}'`);
+      expect(src).toContain(p.path === '/' ? "path: '/'" : p.path === '/guides/cert-in-ai-security-auditing-guidelines' ? 'path: EXPLAINER_PATH' : ANSWER_PAGES.some((a) => a.path === p.path) ? 'path: PAGE.path' : `path: '${p.path}'`);
       expect(isAscii(src)).toBe(true);
     }
     const auditMeta = read('app/audit/page.tsx').split('export const metadata')[0];
@@ -155,7 +160,7 @@ describe('page metadata', () => {
     const descs = new Set<string>();
     for (const p of PUBLIC_PAGES) {
       const src = read(PAGE_FILES[p.path]);
-      const t = src.match(/const TITLE = '([^']+)'/)?.[1] ?? (p.path === '/' ? 'HOME' : 'EXPLAINER');
+      const t = src.match(/const TITLE = '([^']+)'/)?.[1] ?? (p.path === '/' ? 'HOME' : ANSWER_PAGES.some((a) => a.path === p.path) ? p.path : 'EXPLAINER');
       titles.add(t);
       const d = src.match(/const DESCRIPTION =\s*'([^']+)'/)?.[1] ?? p.path;
       descs.add(d);

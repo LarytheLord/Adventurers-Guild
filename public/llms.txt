@@ -9,6 +9,9 @@
 - [Launch checklist](https://www.guilds.work/checklist): a free checklist to run before real users put real data into an AI-built app.
 - [CERT-In AI risk tier calculator](https://www.guilds.work/ai-risk-tier): a free, in-browser self-check that scores an AI system on the eight risk factors in the CERT-In guideline. Unofficial; not an audit.
 - [CERT-In AI Security Auditing Guidelines, explained](https://www.guilds.work/guides/cert-in-ai-security-auditing-guidelines): who the guideline covers, the risk tiers and a preparation plan, with section numbers. Unofficial guide.
+- [Does CERT-In require an AI audit?](https://www.guilds.work/guides/does-cert-in-require-an-ai-audit): short answer from the guideline PDF; it states no effective date and no penalty in v1.0.
+- [How to check Supabase RLS on an app built with Lovable or Bolt](https://www.guilds.work/guides/check-supabase-rls-lovable-bolt): dashboard policy list and an anon-key test on your own project.
+- [What is an AI risk tier under CERT-In?](https://www.guilds.work/guides/what-is-an-ai-risk-tier-cert-in): the 1 to 4 tier, the eight factors and where to score your own system.
 
 ## Source
 

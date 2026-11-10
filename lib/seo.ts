@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { ANSWER_PUBLISHED, type AnswerPage } from '@/lib/answer-pages/content';
 import {
   EXPLAINER_DESCRIPTION,
   EXPLAINER_FAQ,
@@ -23,6 +24,9 @@ export const PUBLIC_PAGES = [
   { path: '/checklist', priority: 0.8 },
   { path: '/ai-risk-tier', priority: 0.9 },
   { path: '/guides/cert-in-ai-security-auditing-guidelines', priority: 0.9 },
+  { path: '/guides/does-cert-in-require-an-ai-audit', priority: 0.7 },
+  { path: '/guides/check-supabase-rls-lovable-bolt', priority: 0.7 },
+  { path: '/guides/what-is-an-ai-risk-tier-cert-in', priority: 0.7 },
 ] as const;
 
 /** Paths crawlers must not fetch. */
@@ -124,4 +128,28 @@ export function explainerJsonLd() {
       })),
     },
   ];
+}
+
+/** Article JSON-LD for the short answer pages under /guides/. Sources go in as citations. */
+export function answerPageJsonLd(page: AnswerPage) {
+  const pageUrl = absoluteUrl(page.path);
+  const org = { '@type': 'Organization', name: SITE_NAME, url: SITE_URL };
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: page.title,
+    description: page.description,
+    datePublished: ANSWER_PUBLISHED,
+    dateModified: ANSWER_PUBLISHED,
+    inLanguage: 'en-IN',
+    mainEntityOfPage: pageUrl,
+    url: pageUrl,
+    author: org,
+    publisher: org,
+    citation: page.sources.map((s) => ({
+      '@type': 'CreativeWork',
+      name: s.label,
+      url: s.href.startsWith('/') ? absoluteUrl(s.href) : s.href,
+    })),
+  };
 }
