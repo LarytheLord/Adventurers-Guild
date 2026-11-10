@@ -1,4 +1,6 @@
 import { describe, it, expect } from '@jest/globals';
+jest.mock('@/lib/db', () => ({ prisma: {} }));
+
 import { calculateLevelFromXP } from '@/lib/xp-utils';
 import { getRankForXp, RANK_THRESHOLDS } from '@/lib/ranks';
 
@@ -62,5 +64,15 @@ describe('XP/Rank Utilities', () => {
     it('should return level 17 for 1600 XP', () => {
       expect(calculateLevelFromXP(1600)).toBe(17);
     });
+  });
+});
+
+describe('calculateLevelFromXP boundaries', () => {
+  it.each([
+    [-101, -1], [-100, 0], [-0.5, 0], [0, 1], [0.5, 1], [99, 1],
+    [99.99, 1], [100, 2], [100.01, 2], [199.99, 2], [200, 3], [1000000, 10001],
+    [Infinity, Infinity], [-Infinity, -Infinity], [NaN, NaN],
+  ])('preserves the level calculation for %s XP', (xp, level) => {
+    expect(calculateLevelFromXP(xp)).toBe(level);
   });
 });

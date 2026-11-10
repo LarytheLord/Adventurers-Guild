@@ -7,6 +7,7 @@ import {
   CERTIN_PDF_URL,
   tierForScore,
   compositeScore,
+  type FactorId,
 } from '@/lib/ai-risk-tier/data';
 
 describe('AI risk tier data (CERT-In AI Security Auditing Guidelines v1.0, Section 5)', () => {
@@ -108,4 +109,50 @@ describe('AI risk tier data (CERT-In AI Security Auditing Guidelines v1.0, Secti
     expect(body).toMatch(/AI systems/);
     expect(body).toMatch(/tier/i);
   });
+});
+
+describe('risk score validation', () => {
+  const complete: Record<FactorId, number> = {
+    F1: 1, F2: 2, F3: 3, F4: 4, F5: 1, F6: 2, F7: 3, F8: 4,
+  };
+
+  it.each<FactorId>(['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8'])(
+    'requires a valid score for %s even when the other factors are complete',
+    (factor) => {
+      for (const invalid of [undefined, null, '2', NaN, Infinity, -Infinity, 0, -1, 5, 1.5]) {
+        const scores = { ...complete, [factor]: invalid };
+        expect(compositeScore(scores as Record<FactorId, number>)).toBeNull();
+      }
+      const missing: Partial<Record<FactorId, number>> = { ...complete };
+      delete missing[factor];
+      expect(compositeScore(missing)).toBeNull();
+    },
+  );
+
+  it.each([[1, 8], [2, 16], [3, 24], [4, 32]])(
+    'sums eight scores of %s to %s', (value, total) => {
+      expect(compositeScore({ F1: value, F2: value, F3: value, F4: value,
+        F5: value, F6: value, F7: value, F8: value })).toBe(total);
+    },
+  );
+
+  it('ignores unrelated keys and leaves the supplied scores unchanged', () => {
+    const scores = Object.freeze({ ...complete, extra: 99 });
+    expect(compositeScore(scores)).toBe(20);
+    expect(scores).toEqual({ ...complete, extra: 99 });
+    expect(compositeScore({})).toBeNull();
+  });
+
+  it.each([NaN, Infinity, -Infinity, -1, 0, 7.99, 12.5, 19.5, 26.5, 32.01])(
+    'returns no tier for an unmatched score %s', (score) => {
+      expect(tierForScore(score)).toBeNull();
+    },
+  );
+
+  it.each([[8, 1], [10, 1], [12, 1], [13, 2], [16, 2], [19, 2],
+    [20, 3], [23, 3], [26, 3], [27, 4], [30, 4], [32, 4], [8.5, 1]])(
+    'maps score %s to tier %s without rounding', (score, tier) => {
+      expect(tierForScore(score)).toEqual(expect.objectContaining({ tier }));
+    },
+  );
 });
