@@ -1,0 +1,15 @@
+#!/bin/sh
+# Optional local guardrail. Enable with: npm run hooks:install
+# Scans only staged changes. Bypass once with: git commit --no-verify
+
+set -e
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT"
+
+node scripts/check-pii.mjs --staged
+
+if command -v gitleaks >/dev/null 2>&1; then
+  gitleaks git --staged --config .gitleaks.toml --redact --no-banner
+else
+  echo "pre-commit: gitleaks not installed, skipping secret scan (CI still runs it)." >&2
+fi

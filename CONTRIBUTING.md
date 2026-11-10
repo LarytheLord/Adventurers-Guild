@@ -200,6 +200,24 @@ npm run build       # must pass clean
 
 Warnings are OK. Errors are not.
 
+### 7. Secret and PII guardrails
+
+CI runs `.github/workflows/secret-scan.yml` on every PR and on pushes to `main`. It does two things, and both look only at the change being submitted, never at the full history:
+
+- **gitleaks** (config: `.gitleaks.toml`) scans the commits in the PR for secrets.
+- **`scripts/check-pii.mjs`** fails if an added line contains an email address or an Indian mobile number that is not on the allow-list. The allow-list lives in `scripts/lib/pii-core.cjs` (the team address, `example.com`/`.org`/`.net`, and `noreply` style addresses).
+
+If a hit is intentional, put `pii-allow` in a comment on that line. If a secret was committed, rotate it first, then remove it.
+
+Optional local pre-commit hook (runs both checks on staged changes only):
+
+```bash
+npm run hooks:install     # sets core.hooksPath to .githooks
+npm run hooks:uninstall   # undo
+```
+
+The PII check needs only Node. The gitleaks step runs if you have [gitleaks](https://github.com/gitleaks/gitleaks) installed and is skipped with a notice otherwise. To check your branch by hand: `npm run check:pii` (compares against `origin/main`). Bypass once with `git commit --no-verify`; CI will still run.
+
 ---
 
 ## Branch and PR Conventions
