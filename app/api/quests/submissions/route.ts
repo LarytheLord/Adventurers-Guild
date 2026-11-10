@@ -6,6 +6,12 @@ import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
 import { getAuthUser } from '@/lib/api-auth';
 import { logActivity } from '@/lib/activity-logger';
 
+class AlreadyProcessedError extends Error {
+  constructor() {
+    super('Already processed');
+  }
+}
+
 export async function GET(request: NextRequest) {
   // Check authentication
   const user = await getAuthUser(request);
@@ -224,7 +230,9 @@ export async function PUT(request: NextRequest) {
     }
 
     // Transaction for database updates (XP, status, etc.) – NO transaction creation here
-    const reviewResult = await prisma.$transaction(
+    let reviewResult;
+    try {
+    reviewResult = await prisma.$transaction(
       async (tx) => {
         const submissionUpdate = {
           status,
@@ -235,24 +243,21 @@ export async function PUT(request: NextRequest) {
           reviewedAt: status !== 'pending' ? new Date() : undefined,
         };
 
-        let updatedSubmission;
-        if (status === 'approved') {
-          // Claim the approval atomically: the status check and the write are one
-          // UPDATE, so only one of several concurrent approvals can win it (#458).
-          const claim = await tx.questSubmission.updateMany({
-            where: { id: submissionId, status: { notIn: ['approved', 'superseded'] } },
-            data: submissionUpdate,
-          });
-          if (claim.count !== 1) {
-            return { alreadyProcessed: true as const };
-          }
-          updatedSubmission = await tx.questSubmission.findUniqueOrThrow({ where: { id: submissionId } });
-        } else {
-          updatedSubmission = await tx.questSubmission.update({
-            where: { id: submissionId },
-            data: submissionUpdate,
-          });
+        // Every transition is claimed atomically: the status check and the write are
+        // one UPDATE, so only one of several concurrent reviews can win it (#458).
+        // Approve may come from any open status; the other transitions are only valid
+        // from the status we read above.
+        const claim = await tx.questSubmission.updateMany({
+          where: {
+            id: submissionId,
+            status: status === 'approved' ? { notIn: ['approved', 'superseded'] } : submission.status,
+          },
+          data: submissionUpdate,
+        });
+        if (claim.count !== 1) {
+          return { alreadyProcessed: true as const };
         }
+        const updatedSubmission = await tx.questSubmission.findUniqueOrThrow({ where: { id: submissionId } });
 
         let newAssignmentStatus: AssignmentStatus | null = null;
         if (status === 'approved') {
@@ -261,12 +266,23 @@ export async function PUT(request: NextRequest) {
           newAssignmentStatus = 'in_progress';
         }
 
-        if (newAssignmentStatus) {
+        if (status === 'approved') {
+          // The assignment row is the one place every approval path (this route,
+          // /api/qa/reviews, the admin qa-queue) has to go through, so claim it here.
+          // If it is already completed another path got there first: throw so the
+          // submission claim above is rolled back too.
+          const assignmentClaim = await tx.questAssignment.updateMany({
+            where: { id: submission.assignmentId, status: { not: 'completed' } },
+            data: { status: 'completed', completedAt: new Date() },
+          });
+          if (assignmentClaim.count !== 1) {
+            throw new AlreadyProcessedError();
+          }
+        } else if (newAssignmentStatus) {
           await tx.questAssignment.update({
             where: { id: submission.assignmentId },
             data: {
               status: newAssignmentStatus,
-              ...(newAssignmentStatus === 'completed' ? { completedAt: new Date() } : {}),
             },
           });
         }
@@ -354,6 +370,12 @@ export async function PUT(request: NextRequest) {
       },
       { maxWait: 10_000, timeout: 20_000 }
     );
+    } catch (txError) {
+      if (txError instanceof AlreadyProcessedError) {
+        return NextResponse.json({ error: 'Submission already processed', success: false }, { status: 409 });
+      }
+      throw txError;
+    }
 
     if (reviewResult.alreadyProcessed) {
       return NextResponse.json({ error: 'Submission already processed', success: false }, { status: 409 });

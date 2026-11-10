@@ -134,6 +134,7 @@ export async function PATCH(
       if (claim.count !== 1) return null;
 
       const submissionUpdateData: Record<string, unknown> = {
+        status: 'approved',
         reviewerId: adminId,
         reviewedAt: new Date(),
       };

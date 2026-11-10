@@ -7,6 +7,12 @@ import { Prisma } from '@prisma/client';
 const VALID_REVIEW_STATUSES = ['pending', 'under_review', 'approved', 'needs_rework', 'rejected'] as const;
 type ReviewStatus = (typeof VALID_REVIEW_STATUSES)[number];
 
+class AlreadyProcessedError extends Error {
+  constructor() {
+    super('Already processed');
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     const authUser = await requireAuth(request, 'company', 'admin');
@@ -162,7 +168,9 @@ export async function POST(request: NextRequest) {
     // The status change and the completion record happen in one transaction.
     // For approvals, the status check is part of the UPDATE itself, so when several
     // approvals arrive together only one of them can claim it (#458).
-    const outcome = await prisma.$transaction(async (tx) => {
+    let outcome;
+    try {
+    outcome = await prisma.$transaction(async (tx) => {
       let data;
       if (status === 'approved') {
         const claim = await tx.questSubmission.updateMany({
@@ -174,10 +182,16 @@ export async function POST(request: NextRequest) {
         }
         data = await tx.questSubmission.findUniqueOrThrow({ where: { id: submissionId } });
 
-        await tx.questAssignment.update({
-          where: { id: existingSubmission.assignmentId },
+        // Claim the assignment too: it is shared with the other approval paths
+        // (/api/quests/submissions, the admin qa-queue). If it is already completed,
+        // throw so the submission claim above is rolled back.
+        const assignmentClaim = await tx.questAssignment.updateMany({
+          where: { id: existingSubmission.assignmentId, status: { not: 'completed' } },
           data: { status: 'completed', completedAt: new Date() },
         });
+        if (assignmentClaim.count !== 1) {
+          throw new AlreadyProcessedError();
+        }
 
         const quest = await tx.quest.findUnique({
           where: { id: existingSubmission.assignment.questId },
@@ -213,7 +227,15 @@ export async function POST(request: NextRequest) {
         return { alreadyProcessed: false as const, data, quest };
       }
 
-      data = await tx.questSubmission.update({ where: { id: submissionId }, data: reviewData });
+      // Only valid from the status we read above; if another review moved it, lose with a 409.
+      const claim = await tx.questSubmission.updateMany({
+        where: { id: submissionId, status: existingSubmission.status },
+        data: reviewData,
+      });
+      if (claim.count !== 1) {
+        return { alreadyProcessed: true as const };
+      }
+      data = await tx.questSubmission.findUniqueOrThrow({ where: { id: submissionId } });
       if (status === 'needs_rework' || status === 'rejected') {
         await tx.questAssignment.update({
           where: { id: existingSubmission.assignmentId },
@@ -222,6 +244,12 @@ export async function POST(request: NextRequest) {
       }
       return { alreadyProcessed: false as const, data, quest: null };
     });
+    } catch (txError) {
+      if (txError instanceof AlreadyProcessedError) {
+        return NextResponse.json({ error: 'Submission already processed', success: false }, { status: 409 });
+      }
+      throw txError;
+    }
 
     if (outcome.alreadyProcessed) {
       return NextResponse.json({ error: 'Submission already processed', success: false }, { status: 409 });

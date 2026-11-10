@@ -256,4 +256,128 @@ describe('QA approval race (#458)', () => {
       expect([a.status, b.status].sort()).toEqual([200, 409]);
     });
   });
+  describe('reject vs approve on POST /api/qa/reviews', () => {
+    beforeEach(() => resetState('submitted'));
+
+    it.each(['rejected', 'needs_rework'])('lets only one of an approve and a %s win', async (other) => {
+      const { POST } = await import('@/app/api/qa/reviews/route');
+
+      const [a, b] = await Promise.all([
+        POST(jsonRequest('POST', { submissionId: 's1', status: 'approved', quality_score: 90 })),
+        POST(jsonRequest('POST', { submissionId: 's1', status: other, quality_score: 40 })),
+      ]);
+
+      expect([a.status, b.status].sort()).toEqual([200, 409]);
+      if (state.submission.status === 'approved') {
+        expect(state.assignment.status).toBe('completed');
+        expect(xpAwards).toHaveLength(1);
+        expect(state.completions).toHaveLength(1);
+      } else {
+        expect(state.submission.status).toBe(other);
+        expect(state.assignment.status).toBe('in_progress');
+        expect(xpAwards).toHaveLength(0);
+        expect(state.completions).toHaveLength(0);
+      }
+    });
+
+    it('lets only one of two rejects win', async () => {
+      const { POST } = await import('@/app/api/qa/reviews/route');
+      const body = { submissionId: 's1', status: 'rejected', quality_score: 40 };
+
+      const [a, b] = await Promise.all([POST(jsonRequest('POST', body)), POST(jsonRequest('POST', body))]);
+
+      expect([a.status, b.status].sort()).toEqual([200, 409]);
+    });
+  });
+
+  describe('reject vs approve on PUT /api/quests/submissions', () => {
+    beforeEach(() => resetState('submitted'));
+
+    it.each(['rejected', 'needs_rework'])('lets only one of an approve and a %s win', async (other) => {
+      const { PUT } = await import('@/app/api/quests/submissions/route');
+
+      const [a, b] = await Promise.all([
+        PUT(jsonRequest('PUT', { submissionId: 's1', status: 'approved', quality_score: 90 })),
+        PUT(jsonRequest('PUT', { submissionId: 's1', status: other, quality_score: 40 })),
+      ]);
+
+      expect([a.status, b.status].sort()).toEqual([200, 409]);
+      if (state.submission.status === 'approved') {
+        expect(state.assignment.status).toBe('completed');
+        expect(xpAwards).toHaveLength(1);
+      } else {
+        expect(state.submission.status).toBe(other);
+        expect(state.assignment.status).toBe('in_progress');
+        expect(xpAwards).toHaveLength(0);
+      }
+    });
+  });
+
+  describe('cross-route double award (qa-queue approve, then submissions approve)', () => {
+    beforeEach(() => resetState('pending_admin_review'));
+    const ctx = { params: Promise.resolve({ assignmentId: 'a1' }) };
+
+    it('qa-queue approve marks the submission approved', async () => {
+      const { PATCH } = await import('@/app/api/admin/qa-queue/[assignmentId]/route');
+      const res = await PATCH(jsonRequest('PATCH', { action: 'approve' }), ctx);
+      expect(res.status).toBe(200);
+      expect(state.submission.status).toBe('approved');
+      expect(state.assignment.status).toBe('completed');
+    });
+
+    it('PUT /api/quests/submissions cannot approve afterwards', async () => {
+      const { PATCH } = await import('@/app/api/admin/qa-queue/[assignmentId]/route');
+      const { PUT } = await import('@/app/api/quests/submissions/route');
+
+      expect((await PATCH(jsonRequest('PATCH', { action: 'approve' }), ctx)).status).toBe(200);
+      const res = await PUT(jsonRequest('PUT', { submissionId: 's1', status: 'approved', quality_score: 90 }));
+
+      expect(res.status).toBe(409);
+      expect(xpAwards).toHaveLength(1);
+      expect(state.completions).toHaveLength(1);
+      expect(state.transactions).toHaveLength(0);
+    });
+
+    it('POST /api/qa/reviews cannot approve afterwards', async () => {
+      const { PATCH } = await import('@/app/api/admin/qa-queue/[assignmentId]/route');
+      const { POST } = await import('@/app/api/qa/reviews/route');
+
+      expect((await PATCH(jsonRequest('PATCH', { action: 'approve' }), ctx)).status).toBe(200);
+      const res = await POST(jsonRequest('POST', { submissionId: 's1', status: 'approved', quality_score: 90 }));
+
+      expect(res.status).toBe(409);
+      expect(xpAwards).toHaveLength(1);
+      expect(state.completions).toHaveLength(1);
+    });
+
+    it('the submission routes refuse a completed assignment even if the submission is still pending', async () => {
+      // Rows approved before the qa-queue fix can have a completed assignment
+      // and a submission that never left pending.
+      state.assignment.status = 'completed';
+      const { PUT } = await import('@/app/api/quests/submissions/route');
+      const { POST } = await import('@/app/api/qa/reviews/route');
+
+      const a = await PUT(jsonRequest('PUT', { submissionId: 's1', status: 'approved', quality_score: 90 }));
+      const b = await POST(jsonRequest('POST', { submissionId: 's1', status: 'approved', quality_score: 90 }));
+
+      expect([a.status, b.status]).toEqual([409, 409]);
+      expect(xpAwards).toHaveLength(0);
+      expect(state.completions).toHaveLength(0);
+      expect(state.transactions).toHaveLength(0);
+    });
+
+    it('qa-queue approve and a submissions approve at the same time award once', async () => {
+      const { PATCH } = await import('@/app/api/admin/qa-queue/[assignmentId]/route');
+      const { PUT } = await import('@/app/api/quests/submissions/route');
+
+      const [a, b] = await Promise.all([
+        PATCH(jsonRequest('PATCH', { action: 'approve' }), ctx),
+        PUT(jsonRequest('PUT', { submissionId: 's1', status: 'approved', quality_score: 90 })),
+      ]);
+
+      expect([a.status, b.status].sort()).toEqual([200, 409]);
+      expect(xpAwards).toHaveLength(1);
+      expect(state.completions).toHaveLength(1);
+    });
+  });
 });
