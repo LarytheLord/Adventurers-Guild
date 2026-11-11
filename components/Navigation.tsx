@@ -101,7 +101,7 @@ export default function Navigation() {
     { href: '/', label: 'For Business' },
     { href: '/#how-it-works', label: 'How It Works' },
     { href: '/#pricing', label: 'Pricing' },
-    { href: '/audit', label: 'Production Check' },
+    { href: '/audit', label: 'Launch Check' },
     { href: '/adventurers', label: 'For Talent' },
   ];
 

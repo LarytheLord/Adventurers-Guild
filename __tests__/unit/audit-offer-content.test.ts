@@ -18,13 +18,13 @@ describe('audit offer content', () => {
   });
 
   it('mailto points to the right address and subject', () => {
-    expect(AUDIT_MAILTO.startsWith('mailto:abid@guilds.work?subject=Production%20Check%20request&body=')).toBe(true);
+    expect(AUDIT_MAILTO.startsWith('mailto:abid@guilds.work?subject=Launch%20Check%20request&body=')).toBe(true);
   });
 
-  it('checklist has about 25 items, each with check and why', () => {
+  it('checklist has 30 to 36 items, each with check and why', () => {
     const items = CHECKLIST_GROUPS.flatMap((g) => g.items);
-    expect(items.length).toBeGreaterThanOrEqual(22);
-    expect(items.length).toBeLessThanOrEqual(28);
+    expect(items.length).toBeGreaterThanOrEqual(30);
+    expect(items.length).toBeLessThanOrEqual(36);
     for (const i of items) {
       expect(i.check.length).toBeGreaterThan(10);
       expect(i.why.length).toBeGreaterThan(10);

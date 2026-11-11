@@ -1,11 +1,11 @@
 # Guild
 
-> Guild tests AI systems and the apps built around them, and writes down what we find. Two services: CERT-In AI audit readiness for teams in India, and a Production Check for apps built with Lovable, Bolt or Replit. Guild is not a CERT-In empanelled auditor, and nothing here is an audit certificate or legal advice.
+> Guild tests AI systems and the apps built around them, and writes down what we find. Two services: CERT-In AI audit readiness for teams in India, and a Launch Check for apps built with Lovable, Bolt, Replit, v0 or Cursor. Guild is not a CERT-In empanelled auditor, and nothing here is an audit certificate or legal advice.
 
 ## Pages
 
 - [Home](https://www.guilds.work/): what Guild does and who it is for.
-- [Production Check](https://www.guilds.work/audit): a hand check of an AI-built app (database access rules, exposed keys, login, payments), then fixes.
+- [Launch Check](https://www.guilds.work/audit): a hand check of an AI-built app across payments, deployment and domains, performance and cost, and security and data access, then fixes.
 - [Launch checklist](https://www.guilds.work/checklist): a free checklist to run before real users put real data into an AI-built app.
 - [CERT-In AI risk tier calculator](https://www.guilds.work/ai-risk-tier): a free, in-browser self-check that scores an AI system on the eight risk factors in the CERT-In guideline. Unofficial; not an audit.
 - [CERT-In AI Security Auditing Guidelines, explained](https://www.guilds.work/guides/cert-in-ai-security-auditing-guidelines): who the guideline covers, the risk tiers and a preparation plan, with section numbers. Unofficial guide.

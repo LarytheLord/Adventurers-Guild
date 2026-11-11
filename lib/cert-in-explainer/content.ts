@@ -244,7 +244,7 @@ export const EXPLAINER_FAQ: FaqItem[] = [
   },
   {
     q: 'Can Guild audit us?',
-    a: 'No. Guild is not a CERT-In empanelled auditor, and the guideline reserves independent audits at Tier 2 and above to empanelled organisations (5.4). Guild can help you prepare: inventory, scoring rationale and evidence. For a technical review of an AI-built app, see the [Production Check](/audit).',
+    a: 'No. Guild is not a CERT-In empanelled auditor, and the guideline reserves independent audits at Tier 2 and above to empanelled organisations (5.4). Guild can help you prepare: inventory, scoring rationale and evidence. For a technical review of an AI-built app, see the [Launch Check](/audit).',
   },
 ];
 
