@@ -12,7 +12,12 @@ def select_rows(rows, per_language: int, seed: int, min_chars: int = 20, max_cha
     language then index. `row_index` is the position in `rows`, so pass the full
     split in its native order."""
     chosen = []
+    seen = sorted({r.get("language_code") for r in rows} - {None})
     for code in LANGS:
+        if code not in seen:
+            raise ValueError(
+                f"language_code {code!r} not found in data; codes present: {seen[:60]}"
+            )
         cand = [
             i for i, r in enumerate(rows)
             if r.get("language_code") == code

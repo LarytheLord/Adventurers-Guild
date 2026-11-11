@@ -26,6 +26,8 @@ def main(argv=None) -> int:
     if unknown:
         print(f"warning: ratings for unknown item ids ignored: {unknown[:5]}", file=sys.stderr)
     rep = build_report(items, human, get_judge(a.judge, a.seed), a.repeats, a.n_boot, a.seed)
+    for w in rep["warnings"]:
+        print(f"warning: {w}", file=sys.stderr)
     text = json.dumps(rep, indent=2, ensure_ascii=False)
     if a.out:
         with open(a.out, "w", encoding="utf-8") as f:

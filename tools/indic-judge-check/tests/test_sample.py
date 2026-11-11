@@ -57,3 +57,9 @@ def test_shipped_sample_if_present_is_valid():
         assert r["source"]["dataset"] == "CohereLabs/aya_dataset"
         assert r["source"]["license"] == "Apache-2.0"
         assert "row_index" in r["source"] and r["source"]["revision"]
+
+
+def test_unknown_language_code_lists_codes_present():
+    rows = [r for r in fake_rows() if r["language_code"] == "hin"]
+    with pytest.raises(ValueError, match="guj.*hin"):
+        sample.select_rows(rows, per_language=2, seed=1)

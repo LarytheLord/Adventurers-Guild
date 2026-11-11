@@ -44,7 +44,8 @@ def build_report(items, human, judge, repeats=3, n_boot=1000, seed=0) -> dict:
     by_lang: dict[str, list[Item]] = defaultdict(list)
     for it in items:
         by_lang[it.language].append(it)
-    out = {"settings": {"repeats": repeats, "n_boot": n_boot, "seed": seed}, "languages": {}}
+    out = {"settings": {"repeats": repeats, "n_boot": n_boot, "seed": seed},
+           "warnings": [], "languages": {}}
     for lang in sorted(by_lang):
         its = by_lang[lang]
         # --- human-human (pooled over rater pairs per item) ---
@@ -85,6 +86,15 @@ def build_report(items, human, judge, repeats=3, n_boot=1000, seed=0) -> dict:
             verdicts.append(v)
             swapped.append(s)
             runs.append(r)
+        # --- label vocabulary check ---
+        h_vocab = {l for it in its for l in human.get(it.id, {}).values()}
+        j_vocab = set(verdicts)
+        if h_vocab and h_vocab != j_vocab:
+            out["warnings"].append(
+                f"{lang}: label vocabularies differ; human-only={sorted(h_vocab - j_vocab)} "
+                f"judge-only={sorted(j_vocab - h_vocab)}. Judge-human agreement may be "
+                "understated or meaningless unless both use the same labels."
+            )
         # --- judge-human (vs unique plurality human label) ---
         jh = [(verdicts[i], _consensus(human.get(it.id, {}))) for i, it in enumerate(its)]
         jh = [(j, h) for j, h in jh if h is not None]

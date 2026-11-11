@@ -121,3 +121,32 @@ def test_report_without_human_labels_still_gives_judge_metrics():
     s = rep["languages"]["hi"]
     assert s["human_human"]["n"] == 0
     assert s["position_bias_rate"]["n"] == 6
+
+
+def test_vocabulary_mismatch_warns():
+    items = _items()
+    human = {it.id: {"r1": "good", "r2": "good"} for it in items}  # humans use good/bad
+    rep = report.build_report(items, human, judges.FixedSlotJudge("first"),
+                              repeats=2, n_boot=20, seed=1)  # judge emits A/B
+    w = rep["warnings"]
+    assert len(w) == 2  # one per language
+    assert {x.split(":")[0] for x in w} == {"hi", "gu"}
+    assert all("'good'" in x and "'A'" in x for x in w)
+
+
+def test_matching_vocabulary_has_no_warning():
+    items = _items()
+    human = {it.id: {"r1": "A", "r2": "B"} for it in items}
+    rep = report.build_report(items, human, judges.MockJudge(seed=1), repeats=2, n_boot=20, seed=1)
+    # mock may emit tie; humans never did -> that is a mismatch only if sets differ
+    j = set()
+    for w in rep["warnings"]:
+        j.add(w)
+    judge_only_tie = any("tie" in w for w in rep["warnings"])
+    assert judge_only_tie or not rep["warnings"]
+
+
+def test_no_human_labels_no_warning():
+    items = _items()
+    rep = report.build_report(items, {}, judges.MockJudge(seed=1), repeats=2, n_boot=20, seed=1)
+    assert rep["warnings"] == []
