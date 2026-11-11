@@ -15,31 +15,36 @@ responsible for your own notice wording, purposes, retention, security, deadline
 and breach duties. Have a lawyer review your use. Nobody involved in this kit is
 a regulator, a lawyer or a certified auditor.
 
-## STATUS OF THE LEGAL MAPPING: UNVERIFIED
+## STATUS OF THE LEGAL MAPPING: NOT YET VERIFIED
 
-The mapping below is meant to be sourced only from the official MeitY / Gazette
-of India text. The environment this kit was written in could not reach those
-official sites, so the section numbers below were written from memory and have
-NOT been checked against the official text. Treat every row as "to be verified".
-The DPDP Rules are not cited by rule number at all for the same reason. Do not
-quote this table in a notice, contract or filing. A maintainer must verify each
-row against the official PDF (MeitY website / eGazette) and then remove this banner.
-There are also no quotations of the law here, on purpose.
+Source to check against: the official Digital Personal Data Protection Act, 2023
+as published by MeitY:
+https://www.meity.gov.in/static/uploads/2024/06/2bf1f0e9f04e6fb4f8fef35e82c42aa5.pdf
 
-## What is in the box
+The author of this table could not open that PDF (the host was not reachable from
+the environment used), so no row below has been checked against it. Each row names
+the sub-section it is meant to support; read the section in the PDF before you rely
+on the row. The "Verified" column is "No" for every row. A maintainer who has read
+the PDF should flip a row to "Yes" only after checking it, and remove this paragraph
+only when every row is "Yes". This table quotes no text from the law.
 
-| Piece | Where | Provision it is meant to support (UNVERIFIED) |
-|-------|-------|-----------------------------------------------|
-| Itemised notice with plain-language purposes | `src/consent/ConsentNotice.tsx`, `NoticeConfig` | Act s.5 (notice) |
-| Consent record: per purpose, notice version, language, timestamp, append-only history | `src/consent/service.ts` | Act s.6 (consent), and being able to show consent was given |
-| Language selection in the notice | `ConsentNotice` language select, `language` stored on each record | Act s.5 / s.6 (notice and consent in clear language, language choice) |
-| Withdraw as easy as give: same checkbox, same API shape | `ConsentNotice`, `ConsentService.withdraw`, `DELETE` in the handler | Act s.6 (withdrawal) |
-| Right of access request | `kind: 'access'` | Act s.11 |
-| Correction and erasure requests | `kind: 'correction'`, `kind: 'erasure'` | Act s.12 |
-| Grievance | `kind: 'grievance'`, grievance contact shown in the notice | Act s.8 (grievance redressal) and s.13 |
-| Request deadline tracking and overdue flag | `dueAt`, `listOverdue`, `RequestsAdminTable` | Supports meeting response times; the window is YOUR setting, see below |
-| Audit log of who did what to each request | `src/requests/audit.ts` (hash chained) | Supports accountability under s.8 and showing handling of requests |
-| Breach runbook template | `templates/breach-runbook.md` | Act s.8 (breach intimation) and s.8 (security safeguards); regulator-facing duties are left as blanks to fill from the official text |
+DPDP Rules: no rule numbers are cited anywhere in this kit. None of the Rules have
+been verified, because the Gazette text could not be opened either. Rules that are
+therefore NOT verified and not mapped: all of them. Once someone can open the
+Gazette notification of the Rules, add rule numbers per row from that text only.
+
+| Piece | Where | DPDP Act 2023 provision it is meant to support | Verified |
+|-------|-------|-----------------------------------------------|----------|
+| Itemised notice with plain-language purposes | `src/consent/ConsentNotice.tsx`, `NoticeConfig` | s.5 (notice) | No |
+| Consent record: per purpose, notice version, language, timestamp, append-only history | `src/consent/service.ts` | s.6 (consent) | No |
+| Language selection in the notice, language stored on each record | `ConsentNotice` language select | s.5, s.6 (notice and consent in clear language, language choice) | No |
+| Withdraw as easy as give: same checkbox, same API shape | `ConsentNotice`, `ConsentService.withdraw`, `DELETE` in the handler | s.6 (withdrawal of consent) | No |
+| Access request | `kind: 'access'` | s.11 | No |
+| Correction and erasure requests | `kind: 'correction'`, `kind: 'erasure'` | s.12 | No |
+| Grievance request, grievance contact shown in the notice | `kind: 'grievance'`, `NoticeConfig.grievanceContact` | s.8(10), s.13 | No |
+| Request deadline tracking and overdue flag | `dueAt`, `listOverdue`, `RequestsAdminTable` | Supports handling requests under s.11, s.12, s.13; the window itself is YOUR setting, see below | No |
+| Audit log of who did what to each request (hash chained, no request text) | `src/requests/audit.ts` | s.8(5) (reasonable security safeguards), as supporting evidence | No |
+| Breach runbook template | `templates/breach-runbook.md` | s.8(5), s.8(6); regulator and data principal duties are blanks to fill from the official text | No |
 
 Not covered: children's data and verifiable parental consent, significant data
 fiduciary duties, consent managers, cross-border transfer, retention and
@@ -49,14 +54,18 @@ automatic erasure jobs, nomination by a data principal. Do not assume these are 
 
 Copy `src/` into your app (or import it), then:
 
+There are two entry points. Client components import from `client` (no `node:`
+modules). Route handlers and server code import from `server` (uses `node:crypto`).
+Never import `server` from a client component.
+
 ```ts
-// lib/dpdp.ts
+// lib/dpdp.ts (server only)
 import { ConsentService, MemoryConsentStore, RequestService, MemoryRequestStore,
-         AuditLog, MemoryAuditStore } from '@/vendor/dpdp-kit'
+         AuditLog, MemoryAuditStore } from '@/vendor/dpdp-kit/server'
 // Replace the Memory* classes with your own implementations of
 // ConsentStore, RequestStore, AuditStore. The in-memory ones lose data on restart.
 
-// app/api/consent/route.ts
+// app/api/consent/route.ts (also server only)
 const handler = createConsentHandler({ service, getPrincipalId: (req) => userIdFromSession(req) })
 export { handler as GET, handler as POST, handler as DELETE }
 
@@ -83,10 +92,16 @@ Design choices you should know about:
 
 ```bash
 cd tools/dpdp-kit
-npm install
+npm ci
 npm test
 npm run type-check
 ```
 
 This directory is excluded from the app's tsconfig and eslint and is not part of
-the app build.
+the app build. It has its own lockfile and its own CI workflow
+(`.github/workflows/dpdp-kit.yml`).
+
+```tsx
+// a client component
+import { ConsentNotice } from '@/vendor/dpdp-kit/client'
+```
