@@ -5,6 +5,12 @@ import { Prisma } from '@prisma/client';
 import crypto from 'crypto';
 import { syncQuestLifecycleStatus } from '@/lib/quest-lifecycle';
 
+class AlreadyProcessedError extends Error {
+  constructor() {
+    super('Already processed');
+  }
+}
+
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ assignmentId: string }> }
@@ -255,30 +261,46 @@ export async function PATCH(
   };
   const updatedNotes = [...existingNotes, newNote];
 
-  const rejected = await prisma.$transaction(async (tx) => {
-    const claim = await tx.questAssignment.updateMany({
-      where: { id: assignmentId, status: 'pending_admin_review' },
-      data: { status: 'needs_rework' },
-    });
-    if (claim.count !== 1) return false;
-    await tx.quest.update({
-      where: { id: assignment.quest.id },
-      data: { revisionCount: { increment: 1 } },
-    });
-    if (latestSubmission) {
-      await tx.questSubmission.update({
-        where: { id: latestSubmission.id },
-        data: {
-          reviewNotes: updatedNotes,
-          reviewerId: adminId,
-          reviewedAt: new Date(),
-          ...(criteriaJson !== undefined ? { criteriaResults: criteriaJson } : {}),
-        },
+  let rejected: boolean;
+  try {
+    rejected = await prisma.$transaction(async (tx) => {
+      // Lock order is assignment row, then submission row, then quest row, the same
+      // as the other QA routes. Taking them in different orders can deadlock
+      // (Postgres 40P01).
+      const claim = await tx.questAssignment.updateMany({
+        where: { id: assignmentId, status: 'pending_admin_review' },
+        data: { status: 'needs_rework' },
       });
+      if (claim.count !== 1) return false;
+      if (latestSubmission) {
+        // Never send back a submission that is already approved. If the claim is
+        // lost, throw so the assignment claim above is rolled back.
+        const submissionClaim = await tx.questSubmission.updateMany({
+          where: { id: latestSubmission.id, status: { notIn: ['approved', 'superseded'] } },
+          data: {
+            reviewNotes: updatedNotes,
+            reviewerId: adminId,
+            reviewedAt: new Date(),
+            ...(criteriaJson !== undefined ? { criteriaResults: criteriaJson } : {}),
+          },
+        });
+        if (submissionClaim.count !== 1) {
+          throw new AlreadyProcessedError();
+        }
+      }
+      await tx.quest.update({
+        where: { id: assignment.quest.id },
+        data: { revisionCount: { increment: 1 } },
+      });
+      await syncQuestLifecycleStatus(tx, assignment.quest.id);
+      return true;
+    });
+  } catch (txError) {
+    if (txError instanceof AlreadyProcessedError) {
+      return NextResponse.json({ error: 'Assignment already processed', success: false }, { status: 409 });
     }
-    await syncQuestLifecycleStatus(tx, assignment.quest.id);
-    return true;
-  });
+    throw txError;
+  }
 
   if (!rejected) {
     return NextResponse.json({ error: 'Assignment already processed', success: false }, { status: 409 });

@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/dialog';
 import { Shield, Clock, CheckCircle, XCircle, Loader2, ArrowLeft, ExternalLink, DollarSign, Ban } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
+import { toast } from 'sonner';
 import { fetchWithAuth } from '@/lib/fetch-with-auth';
 
 interface QueueItem {
@@ -99,13 +100,21 @@ export default function QAQueuePage() {
 
   useEffect(() => { fetchQueue(); }, [fetchQueue]);
 
+  // 409 means another review already handled this assignment.
+  const notifyConflict = (res: Response) => {
+    if (res.status === 409) {
+      toast.error('This submission was already reviewed by someone else. The queue has been refreshed.');
+    }
+  };
+
   const handleApprove = async (assignmentId: string) => {
     setSubmitting(true);
-    await fetchWithAuth(`/api/admin/qa-queue/${assignmentId}`, {
+    const res = await fetchWithAuth(`/api/admin/qa-queue/${assignmentId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'approve' }),
     });
+    notifyConflict(res);
     await fetchQueue();
     setSubmitting(false);
   };
@@ -113,11 +122,12 @@ export default function QAQueuePage() {
   const handleReject = async () => {
     if (!rejectTarget || !rejectNotes.trim()) return;
     setSubmitting(true);
-    await fetchWithAuth(`/api/admin/qa-queue/${rejectTarget.id}`, {
+    const res = await fetchWithAuth(`/api/admin/qa-queue/${rejectTarget.id}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ action: 'reject', notes: rejectNotes.trim() }),
     });
+    notifyConflict(res);
     await fetchQueue();
     setSubmitting(false);
     setRejectTarget(null);

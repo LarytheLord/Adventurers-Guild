@@ -170,80 +170,86 @@ export async function POST(request: NextRequest) {
     // approvals arrive together only one of them can claim it (#458).
     let outcome;
     try {
-    outcome = await prisma.$transaction(async (tx) => {
-      let data;
-      if (status === 'approved') {
+      outcome = await prisma.$transaction(async (tx) => {
+        // Lock order is assignment row first, then submission row, in every QA route
+        // (this one, /api/quests/submissions, the admin qa-queue). Taking them in
+        // opposite orders in different routes can deadlock (Postgres 40P01).
+        if (status === 'approved') {
+          // The assignment row is shared with the other approval paths. If it is
+          // already completed, another path got there first.
+          const assignmentClaim = await tx.questAssignment.updateMany({
+            where: { id: existingSubmission.assignmentId, status: { not: 'completed' } },
+            data: { status: 'completed', completedAt: new Date() },
+          });
+          if (assignmentClaim.count !== 1) {
+            return { alreadyProcessed: true as const };
+          }
+
+          // If the submission claim is lost, throw so the assignment claim above is
+          // rolled back.
+          const claim = await tx.questSubmission.updateMany({
+            where: { id: submissionId, status: { notIn: ['approved', 'superseded'] } },
+            data: reviewData,
+          });
+          if (claim.count !== 1) {
+            throw new AlreadyProcessedError();
+          }
+          const data = await tx.questSubmission.findUniqueOrThrow({ where: { id: submissionId } });
+
+          const quest = await tx.quest.findUnique({
+            where: { id: existingSubmission.assignment.questId },
+            select: { xpReward: true, skillPointsReward: true, title: true },
+          });
+
+          if (!quest) {
+            throw new Error('Quest not found');
+          }
+
+          // Record quest completion (upsert so a failed insert cannot abort the transaction)
+          await tx.questCompletion.upsert({
+            where: {
+              questId_userId: {
+                questId: existingSubmission.assignment.questId,
+                userId: existingSubmission.assignment.userId,
+              },
+            },
+            create: {
+              questId: existingSubmission.assignment.questId,
+              userId: existingSubmission.assignment.userId,
+              xpEarned: quest.xpReward,
+              skillPointsEarned: quest.skillPointsReward,
+              qualityScore,
+            },
+            update: {
+              xpEarned: quest.xpReward,
+              skillPointsEarned: quest.skillPointsReward,
+              qualityScore,
+            },
+          });
+
+          return { alreadyProcessed: false as const, data, quest };
+        }
+
+        if (status === 'needs_rework' || status === 'rejected') {
+          await tx.questAssignment.update({
+            where: { id: existingSubmission.assignmentId },
+            data: { status: 'in_progress' },
+          });
+        }
+
+        // Only valid from the status we read above, and never from an already approved
+        // (or superseded) submission. If the claim is lost, throw so the assignment
+        // write above is rolled back.
         const claim = await tx.questSubmission.updateMany({
-          where: { id: submissionId, status: { notIn: ['approved', 'superseded'] } },
+          where: { id: submissionId, status: { equals: existingSubmission.status, notIn: ['approved', 'superseded'] } },
           data: reviewData,
         });
         if (claim.count !== 1) {
-          return { alreadyProcessed: true as const };
-        }
-        data = await tx.questSubmission.findUniqueOrThrow({ where: { id: submissionId } });
-
-        // Claim the assignment too: it is shared with the other approval paths
-        // (/api/quests/submissions, the admin qa-queue). If it is already completed,
-        // throw so the submission claim above is rolled back.
-        const assignmentClaim = await tx.questAssignment.updateMany({
-          where: { id: existingSubmission.assignmentId, status: { not: 'completed' } },
-          data: { status: 'completed', completedAt: new Date() },
-        });
-        if (assignmentClaim.count !== 1) {
           throw new AlreadyProcessedError();
         }
-
-        const quest = await tx.quest.findUnique({
-          where: { id: existingSubmission.assignment.questId },
-          select: { xpReward: true, skillPointsReward: true, title: true },
-        });
-
-        if (!quest) {
-          throw new Error('Quest not found');
-        }
-
-        // Record quest completion (upsert so a failed insert cannot abort the transaction)
-        await tx.questCompletion.upsert({
-          where: {
-            questId_userId: {
-              questId: existingSubmission.assignment.questId,
-              userId: existingSubmission.assignment.userId,
-            },
-          },
-          create: {
-            questId: existingSubmission.assignment.questId,
-            userId: existingSubmission.assignment.userId,
-            xpEarned: quest.xpReward,
-            skillPointsEarned: quest.skillPointsReward,
-            qualityScore,
-          },
-          update: {
-            xpEarned: quest.xpReward,
-            skillPointsEarned: quest.skillPointsReward,
-            qualityScore,
-          },
-        });
-
-        return { alreadyProcessed: false as const, data, quest };
-      }
-
-      // Only valid from the status we read above; if another review moved it, lose with a 409.
-      const claim = await tx.questSubmission.updateMany({
-        where: { id: submissionId, status: existingSubmission.status },
-        data: reviewData,
+        const data = await tx.questSubmission.findUniqueOrThrow({ where: { id: submissionId } });
+        return { alreadyProcessed: false as const, data, quest: null };
       });
-      if (claim.count !== 1) {
-        return { alreadyProcessed: true as const };
-      }
-      data = await tx.questSubmission.findUniqueOrThrow({ where: { id: submissionId } });
-      if (status === 'needs_rework' || status === 'rejected') {
-        await tx.questAssignment.update({
-          where: { id: existingSubmission.assignmentId },
-          data: { status: 'in_progress' },
-        });
-      }
-      return { alreadyProcessed: false as const, data, quest: null };
-    });
     } catch (txError) {
       if (txError instanceof AlreadyProcessedError) {
         return NextResponse.json({ error: 'Submission already processed', success: false }, { status: 409 });
