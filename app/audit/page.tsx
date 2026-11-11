@@ -12,6 +12,7 @@ import {
   AUDIT_TOOLS,
   AUDIT_STEPS,
 } from '@/lib/audit-offer/content';
+import { SAMPLE_REPORT_PATH } from '@/lib/audit-offer/sample-report';
 
 const TITLE = 'Launch Check for apps built with Lovable, Bolt, Replit, v0 or Cursor - Guild';
 const DESCRIPTION =
@@ -86,6 +87,13 @@ export default function AuditPage() {
               <li key={s}>{s}</li>
             ))}
           </ol>
+          <p className="leading-7">
+            Want to see the result first?{' '}
+            <Link href={SAMPLE_REPORT_PATH} className="font-semibold text-orange-600 underline underline-offset-4">
+              Read a sample report on a fictional app
+            </Link>
+            .
+          </p>
         </section>
 
         <section aria-labelledby="honest-note" className="space-y-2">
