@@ -12,7 +12,6 @@ Every issue assumes you've read the following. Read them before starting any tas
 
 | File | Why |
 |------|-----|
-| `CLAUDE.md` | Full project context, architecture, role system, key rules |
 | `docs/ARCHITECTURE_DECISIONS.md` | Decisions that are final — do not revisit or work around them |
 | `docs/contributor-onboarding.md` | Setup, conventions, auth patterns, DB patterns |
 | `prisma/schema.prisma` | The database. Authoritative. Read this before touching models. |

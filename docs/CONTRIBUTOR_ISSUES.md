@@ -55,21 +55,6 @@
 
 ---
 
-## 🟡 P4: Reddit Lead Machine — Setup & Deploy
-
-**Files**: `scripts/reddit_lead_machine.py`, `scripts/.env.example`
-
-**What**: Python script to monitor Reddit for potential users. Needs:
-- Create Reddit API credentials (reddit.com/prefs/apps)
-- Set up a cron job / GitHub Actions scheduled workflow
-- Configure SMTP for daily digest emails (`send_digest_email` needs refactoring to work with any SMTP provider)
-- Add tests for intent classification
-- Add support for monitoring additional Indian dev communities
-
-**Effort**: ~2 hours (setup) + ongoing maintenance
-
----
-
 ## 🟡 P5: OG Image Generation for Quest Pages
 
 **Files**: Create `app/api/og/quests/[id]/route.ts`
