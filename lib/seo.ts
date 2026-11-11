@@ -100,7 +100,7 @@ export function launchCheckJsonLd() {
   return {
     '@context': 'https://schema.org',
     '@type': 'WebApplication',
-    name: 'Launch check for AI-built apps',
+    name: 'Launch self-check for AI-built apps',
     url: absoluteUrl('/launch-check'),
     applicationCategory: 'BusinessApplication',
     operatingSystem: 'Any (web browser)',

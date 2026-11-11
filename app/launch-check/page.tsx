@@ -6,7 +6,7 @@ import { JsonLd } from '@/components/seo/json-ld';
 import { buildPageMetadata, launchCheckJsonLd } from '@/lib/seo';
 import { Button } from '@/components/ui/button';
 
-const TITLE = 'Launch check for apps built with Lovable, Bolt, Replit, v0 or Cursor - Guild';
+const TITLE = 'Launch self-check for apps built with Lovable, Bolt, Replit, v0 or Cursor - Guild';
 const DESCRIPTION =
   'Free 20-question self-check for founders of AI-built apps: payments, deployment, performance and cost, and security. See your gaps, a one-line fix for each, and a link to the matching checklist item. Runs in your browser; nothing is sent.';
 

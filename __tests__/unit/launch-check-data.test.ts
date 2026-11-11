@@ -47,6 +47,55 @@ describe('launch check data', () => {
     }
   });
 
+  it('every question is linked to an exact checklist item (none fall back to a group)', () => {
+    for (const q of LAUNCH_QUESTIONS) expect(q.checklistCheck).toBeTruthy();
+  });
+
+  it('relinks the questions to the items added with the Launch Check rename', () => {
+    const byId = (id: string) => LAUNCH_QUESTIONS.find((q) => q.id === id)!;
+    expect([byId('dep-env-vars').checklistGroup, byId('dep-env-vars').checklistCheck]).toEqual([
+      'deployment',
+      'Every environment variable is set on the production host, and the app fails loudly when one is missing.',
+    ]);
+    expect([byId('dep-domain').checklistGroup, byId('dep-domain').checklistCheck]).toEqual([
+      'deployment',
+      'Your custom domain uses HTTPS, and the login, payment and webhook URLs point to it, not a preview address.',
+    ]);
+    expect(byId('perf-bill-10k').checklistCheck).toContain('10,000 visits');
+    expect(byId('pay-webhook-retries').checklistGroup).toBe('payments');
+    expect(byId('pay-refunds').checklistGroup).toBe('payments');
+    expect(byId('perf-indexes').checklistGroup).toBe('performance');
+    expect(byId('perf-images').checklistGroup).toBe('performance');
+  });
+
+  it('each linked item shares a keyword with its question', () => {
+    const STOP = new Set(['your', 'that', 'with', 'from', 'have', 'does', 'they', 'them', 'this', 'what', 'when', 'into', 'than', 'were', 'will', 'been', 'each', 'every', 'only', 'not', 'the', 'and', 'for', 'are']);
+    const words = (t: string) =>
+      new Set(
+        t
+          .toLowerCase()
+          .replace(/(\d),(\d)/g, '$1$2')
+          .match(/[a-z0-9]+/g)!
+          .filter((w) => w.length >= 4 && !STOP.has(w))
+          .map((w) => w.replace(/s$/, '')),
+      );
+    for (const q of LAUNCH_QUESTIONS) {
+      const qw = words(q.text);
+      const shared = [...words(q.checklistCheck!)].filter((w) => qw.has(w));
+      expect({ id: q.id, shared: shared.length > 0 }).toEqual({ id: q.id, shared: true });
+    }
+  });
+
+  it('is named "Launch self-check" so it does not collide with the paid Launch Check', () => {
+    const footer = read('components/ui/footer-taped-design.tsx');
+    expect(footer).toContain('href="/launch-check">Launch self-check</Link>');
+    expect(footer).toContain('href="/audit">Launch Check</Link>');
+    expect(read('app/launch-check/page.tsx')).toContain("const TITLE = 'Launch self-check");
+    expect(read('lib/seo.ts')).toContain("name: 'Launch self-check");
+    expect(read('public/llms.txt')).toContain('[Launch self-check](https://www.guilds.work/launch-check)');
+    expect(read('public/llms.txt')).toContain('[Launch Check](https://www.guilds.work/audit)');
+  });
+
   it('covers the topics the page promises', () => {
     const all = LAUNCH_QUESTIONS.map((q) => q.text.toLowerCase()).join(' | ');
     for (const term of [

@@ -69,6 +69,8 @@ export const LAUNCH_QUESTIONS: LaunchQuestion[] = [
     text: 'If the same webhook arrives twice, or arrives late or out of order, does your app still end up with the right result?',
     fix: 'Store the event id and ignore ones you have already handled, and make each handler safe to run twice.',
     checklistGroup: 'payments',
+    checklistCheck:
+      'A webhook that arrives twice (Razorpay and Stripe both retry) does not grant access or send an email twice.',
   },
   {
     id: 'pay-server-price',
@@ -92,6 +94,8 @@ export const LAUNCH_QUESTIONS: LaunchQuestion[] = [
     text: 'Do you know how to refund a customer, and what happens to their access in your app when you do?',
     fix: 'Write down the refund steps, handle the refund webhook, and test one refund end to end.',
     checklistGroup: 'payments',
+    checklistCheck:
+      'A refund or failed payment takes the access away again, and you have tried one with a small real payment.',
   },
 
   // Deployment
@@ -100,17 +104,18 @@ export const LAUNCH_QUESTIONS: LaunchQuestion[] = [
     area: 'deployment',
     text: 'Are all environment variables set on your production host, with a startup check that fails loudly when one is missing?',
     fix: 'List every variable your app reads, set each one on the host, and make the app stop at boot if one is absent.',
-    checklistGroup: 'secrets',
+    checklistGroup: 'deployment',
     checklistCheck:
-      'No .env file is committed, and variables with a public prefix (NEXT_PUBLIC_, VITE_) hold nothing secret.',
+      'Every environment variable is set on the production host, and the app fails loudly when one is missing.',
   },
   {
     id: 'dep-domain',
     area: 'deployment',
     text: 'Does your own domain work over HTTPS, and do the login and payment callback URLs point at that domain and not at a preview address?',
     fix: 'Update the allowed redirect and callback URLs in your auth and payment dashboards to the live domain only.',
-    checklistGroup: 'login',
-    checklistCheck: 'Redirect URLs for login are limited to your own domains, with no wildcards.',
+    checklistGroup: 'deployment',
+    checklistCheck:
+      'Your custom domain uses HTTPS, and the login, payment and webhook URLs point to it, not a preview address.',
   },
   {
     id: 'dep-email',
@@ -143,14 +148,18 @@ export const LAUNCH_QUESTIONS: LaunchQuestion[] = [
     area: 'performance',
     text: 'Do the database columns you filter, sort or join on have indexes, and do your list pages load a page of rows rather than the whole table?',
     fix: 'Add an index on each column used in a where, order by or join, and add pagination to every list.',
-    checklistGroup: 'cost',
+    checklistGroup: 'performance',
+    checklistCheck:
+      'The columns your pages filter, join or sort by have database indexes.',
   },
   {
     id: 'perf-images',
     area: 'performance',
     text: 'Are your images resized and compressed, and served through an image optimiser or CDN instead of as full-size originals?',
     fix: 'Serve images through your framework\'s image component or a CDN, with width limits and modern formats.',
-    checklistGroup: 'cost',
+    checklistGroup: 'performance',
+    checklistCheck:
+      'Images are resized and compressed to the size they are shown at.',
   },
   {
     id: 'perf-bill-10k',
@@ -158,7 +167,8 @@ export const LAUNCH_QUESTIONS: LaunchQuestion[] = [
     text: 'Have you worked out what your monthly bill would be at 10,000 visits, across every service you pay for?',
     fix: 'List each service with its plan and limits, then multiply its per-use price by 10,000 visits to get a rough figure.',
     checklistGroup: 'cost',
-    checklistCheck: 'You know every service you use, its plan, its limits, and who pays when a limit is hit.',
+    checklistCheck:
+      'You have worked out what a month of 10,000 visits would cost across hosting, database, email and AI calls.',
   },
   {
     id: 'perf-spend-caps',
