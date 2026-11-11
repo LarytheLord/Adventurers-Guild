@@ -38,5 +38,8 @@ First public version. Not yet published to npm.
 
 - Static check of migration files only. It cannot see changes made in the
   dashboard or SQL editor.
+- `SET search_path` and `DO $$ ... EXECUTE` blocks are not tracked. This can
+  cause false R1 findings, and tables created inside `EXECUTE` are not checked.
+- SARIF paths outside the git root are written as absolute `file:///` URIs.
 - It does not judge policy logic, and a clean result is not proof of safety.
   See "Limits" in the README.

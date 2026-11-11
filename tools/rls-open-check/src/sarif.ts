@@ -1,5 +1,6 @@
 import { existsSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
+import { pathToFileURL } from "node:url";
 import { RULES } from "./rules.js";
 import type { AnalysisResult, Severity } from "./types.js";
 
@@ -20,11 +21,16 @@ function repoRoot(from: string): string {
   }
 }
 
-/** Repo-relative uri with forward slashes, as code scanning expects. */
+/**
+ * Repo-relative uri with forward slashes, as code scanning expects.
+ * A file outside the git root has no repo-relative path, so it falls back to
+ * an absolute file:// URI instead of a "../" path that GitHub cannot resolve.
+ */
 export function toUri(file: string, root: string): string {
-  let p = isAbsolute(file) ? relative(root, file) : relative(root, resolve(file));
-  p = p.split(sep).join("/");
-  return p.split("/").map(encodeURIComponent).join("/");
+  const abs = resolve(file);
+  const rel = relative(resolve(root), abs);
+  if (rel === "" || rel === ".." || rel.startsWith(".." + sep) || isAbsolute(rel)) return pathToFileURL(abs).href;
+  return rel.split(sep).map(encodeURIComponent).join("/");
 }
 
 export function formatSarif(r: AnalysisResult, version: string, cwd: string = process.cwd()): string {

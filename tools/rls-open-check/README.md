@@ -142,6 +142,15 @@ Read this before you rely on the tool.
   `security_invoker` is set), or `service_role` use.
 - It does not check `FORCE ROW LEVEL SECURITY`, column privileges, or roles
   other than `anon`, `public` and `authenticated`.
+- **Not tracked: `SET search_path` and dynamic SQL.** The tool does not follow
+  `SET search_path`. It treats a table name with no schema as being in
+  `public`, so a table created after `SET search_path = private` can get a false
+  R1. It also does not look inside `DO $$ ... $$` blocks or `EXECUTE` strings.
+  A table created or `ENABLE ROW LEVEL SECURITY` run inside such a block is not
+  seen: a table that is created normally and has RLS enabled only inside
+  `DO $$ ... EXECUTE ... $$` is reported as R1 (a false R1), and a table created
+  inside `EXECUTE` is never checked. If you do this, review those tables by hand
+  or move the statements out of the dynamic block.
 - It does not connect to a database. To check the live state, query
   `pg_policies` and `pg_class.relrowsecurity` on the real project.
 
@@ -169,7 +178,10 @@ JSON output has `findings` (each with `rule`, `severity`, `object`, `file`,
 
 To see findings in the Security tab and as annotations on the pull request,
 upload a SARIF file. `--format sarif` prints a SARIF 2.1.0 log. File paths are relative to the git
-root, so GitHub can show findings on the changed lines. Code scanning must be available
+root, so GitHub can show findings on the changed lines. A file outside the git root
+(for example a path passed from another directory) has no repo-relative path, so
+it is written as an absolute `file:///` URI. GitHub cannot place those on a
+changed line, so run the tool from inside the repository. Code scanning must be available
 for the repository (public repositories, or private ones with GitHub Code
 Security). The exit code still
 follows `--fail-on`, so write the file first and upload it even when the check
