@@ -1,5 +1,6 @@
 {
   "root": true,
+  "ignorePatterns": ["tools/**"],
   "extends": [
     "next/core-web-vitals",
     "next/typescript"
