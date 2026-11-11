@@ -6,9 +6,9 @@ import {
   MemoryConsentStore,
   ConsentError,
   createConsentHandler,
-  ConsentNotice,
   type NoticeConfig,
-} from '../src/consent'
+} from '../src/consent/server'
+import { ConsentNotice } from '../src/consent/client'
 
 const notice: NoticeConfig = {
   version: '2026-01',
@@ -127,6 +127,9 @@ describe('createConsentHandler', () => {
 
   it('400 on bad input and 405 on other methods', async () => {
     const { handler } = setup()
+    for (const body of ['null', '5', '"s"', '[]', 'true']) {
+      expect((await handler(new Request(url, { method: 'POST', body }))).status).toBe(400)
+    }
     expect((await handler(new Request(url, { method: 'POST', body: 'not json' }))).status).toBe(400)
     expect(
       (await handler(new Request(url, { method: 'POST', body: JSON.stringify({ purposeId: 'zzz', language: 'en' }) })))

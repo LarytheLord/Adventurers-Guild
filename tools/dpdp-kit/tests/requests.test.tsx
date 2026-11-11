@@ -8,8 +8,8 @@ import {
   AuditLog,
   RequestError,
   createRequestHandlers,
-  RequestsAdminTable,
-} from '../src/requests'
+} from '../src/requests/server'
+import { RequestsAdminTable } from '../src/requests/client'
 
 function setup(days = 30) {
   let n = 0
@@ -137,12 +137,22 @@ describe('createRequestHandlers', () => {
 
   it('principal endpoint rejects bad input with 400', async () => {
     const b = build('u1', null)
+    for (const body of ['null', '5', '[]', 'true']) {
+      expect((await b.principal(new Request(url, { method: 'POST', body }))).status).toBe(400)
+    }
     expect((await b.principal(post({ kind: 'bogus', details: 'x', language: 'en' }))).status).toBe(400)
   })
 
   it('admin endpoint denies by default and for normal users', async () => {
     const b = build('u1', null)
     expect((await b.admin(new Request(`${url}/admin`))).status).toBe(403)
+  })
+
+  it('admin PATCH with a non-object JSON body is 400', async () => {
+    const b = build('u1', 'a1')
+    for (const body of ['null', '5', '[]', 'true']) {
+      expect((await b.admin(new Request(`${url}/admin`, { method: 'PATCH', body }))).status).toBe(400)
+    }
   })
 
   it('admin can list, verify identity and transition; audit records the admin', async () => {
