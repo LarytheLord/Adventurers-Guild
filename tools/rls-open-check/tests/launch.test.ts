@@ -56,6 +56,16 @@ describe("README", () => {
     const actual = r.stdout.split(join(FIXTURES, "readme-sample")).join("supabase/migrations");
     expect(m![1].trimEnd()).toBe(actual.trimEnd());
   });
+  it("Limits section names the untracked SQL that can cause false R1 findings", () => {
+    const limits = readme().split("## Limits")[1].split("\n## ")[0];
+    expect(limits).toContain("SET search_path");
+    expect(limits).toMatch(/DO \$\$/);
+    expect(limits).toContain("EXECUTE");
+    expect(limits).toContain("false R1");
+  });
+  it("documents the SARIF path fallback", () => {
+    expect(readme()).toMatch(/outside the git root[\s\S]*file:\/\/\//);
+  });
   it("does not claim certification or audit status", () => {
     expect(readme()).not.toMatch(/CERT-In|empanel|certified|audit(ed|or)/i);
   });

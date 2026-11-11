@@ -82,3 +82,19 @@ describe("--format sarif", () => {
     expect(JSON.parse((await run(["--format", "json", fx("r1-good")])).stdout).tool).toBe("rls-open-check");
   });
 });
+
+describe("sarif toUri", () => {
+  it("keeps paths inside the root relative with forward slashes", async () => {
+    const { toUri } = await import("../src/sarif.js");
+    expect(toUri("/repo/supabase/migrations/001 a.sql", "/repo")).toBe("supabase/migrations/001%20a.sql");
+  });
+  it("falls back to an absolute file URI for paths outside the root", async () => {
+    const { toUri } = await import("../src/sarif.js");
+    expect(toUri("/other/db/001.sql", "/repo/app")).toBe("file:///other/db/001.sql");
+    expect(toUri("/repo/other/001.sql", "/repo/app")).toBe("file:///repo/other/001.sql");
+  });
+  it("does not treat a sibling folder with the same prefix as inside the root", async () => {
+    const { toUri } = await import("../src/sarif.js");
+    expect(toUri("/repo2/001.sql", "/repo")).toBe("file:///repo2/001.sql");
+  });
+});
