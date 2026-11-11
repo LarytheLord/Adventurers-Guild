@@ -1,10 +1,18 @@
+import { execFileSync } from 'child_process';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 import {
   assertSafeSeedTarget,
   isSafeSeedTarget,
   generateSeedPassword,
 } from '../../prisma/seed-safety';
+
+const savedBlocked = process.env.SEED_BLOCKED_HOSTS;
+afterEach(() => {
+  if (savedBlocked === undefined) delete process.env.SEED_BLOCKED_HOSTS;
+  else process.env.SEED_BLOCKED_HOSTS = savedBlocked;
+});
 
 describe('isSafeSeedTarget', () => {
   it.each([
@@ -14,6 +22,7 @@ describe('isSafeSeedTarget', () => {
     'postgresql://u:p@db.internal:5432/guild_test',
     'postgresql://u:p@db.internal:5432/guild_dev',
     'postgresql://u:p@ep-dev-branch.example.com/neondb',
+    'postgresql://u:p@db.example.com/guild-dev',
   ])('accepts %s', (url) => {
     expect(isSafeSeedTarget(url)).toBe(true);
   });
@@ -26,10 +35,47 @@ describe('isSafeSeedTarget', () => {
     'postgresql://u:p@prod.example.com:5432/guild',
     // "dev" or "test" only in the credentials must not count
     'postgresql://devuser:testpass@ep-cool-name-123.example.com/neondb',
-    // the known production endpoint is always refused
-    'postgresql://u:p@ep-dry-dew-a11hidob.example.com/dev',
+    // "dev" and "test" must be whole words, not substrings
+    'postgresql://u:p@devops-prod.example.com/guild',
+    'postgresql://u:p@db.example.com/contest',
+    'postgresql://u:p@latest.example.com/guild',
   ])('refuses %s', (url) => {
     expect(isSafeSeedTarget(url as string | undefined)).toBe(false);
+  });
+});
+
+describe('SEED_BLOCKED_HOSTS', () => {
+  const url = 'postgresql://u:p@blocked-host.example.com/guild-dev';
+
+  it('allows the host when the variable is unset', () => {
+    delete process.env.SEED_BLOCKED_HOSTS;
+    expect(isSafeSeedTarget(url)).toBe(true);
+  });
+
+  it('refuses a listed host even if the name looks like dev', () => {
+    process.env.SEED_BLOCKED_HOSTS = 'other.example.com, blocked-host';
+    expect(isSafeSeedTarget(url)).toBe(false);
+  });
+
+  it('refuses a listed host even on localhost', () => {
+    process.env.SEED_BLOCKED_HOSTS = 'localhost';
+    expect(isSafeSeedTarget('postgresql://u:p@localhost:5432/guild')).toBe(false);
+  });
+});
+
+describe('.env loading', () => {
+  it('reads DATABASE_URL from a .env file when it is not in the environment', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'seed-env-'));
+    fs.writeFileSync(path.join(dir, '.env'), 'DATABASE_URL=postgresql://u:p@localhost:5432/from_dotenv\n');
+    const script = path.join(dir, 'probe.ts');
+    const mod = path.join(__dirname, '..', '..', 'prisma', 'seed-safety.ts');
+    fs.writeFileSync(script, `import ${JSON.stringify(mod)};\nconsole.log(process.env.DATABASE_URL);\n`);
+    const env = { ...process.env };
+    delete env.DATABASE_URL;
+    const tsx = path.join(__dirname, '..', '..', 'node_modules', '.bin', 'tsx');
+    const out = execFileSync(tsx, [script], { cwd: dir, env, encoding: 'utf8' });
+    expect(out.trim()).toBe('postgresql://u:p@localhost:5432/from_dotenv');
+    fs.rmSync(dir, { recursive: true, force: true });
   });
 });
 
@@ -77,5 +123,6 @@ describe('prisma seed files', () => {
     expect(src).not.toMatch(/ChangeMe-/);
     expect(src).not.toMatch(/@gmail\.com/);
     expect(src).not.toMatch(/incident/i);
+    expect(src).not.toMatch(/ep-[a-z]+-[a-z]+-[a-z0-9]{8}/);
   });
 });

@@ -2,8 +2,7 @@ name: Prisma Migrate Deploy (production)
 
 # The ONLY sanctioned path for production schema changes.
 # `prisma migrate deploy` applies pending committed migrations and NEVER
-# resets or drops data (unlike `prisma migrate dev`, which wiped production
-# on 2026-07-09). See docs/DATABASE_SAFETY.md.
+# resets or drops data (unlike `prisma migrate dev`). See docs/DATABASE_SAFETY.md.
 
 on:
   push:

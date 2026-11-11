@@ -5,8 +5,16 @@
  * Production schema changes must go through CI (`prisma migrate deploy` in
  * .github/workflows/db-migrate-deploy.yml). Local development uses the Neon
  * "development" branch. See docs/DATABASE_SAFETY.md.
+ *
+ * Set SEED_BLOCKED_HOSTS to a comma-separated list of host fragments that must
+ * never be targeted (for example the production endpoint id). It can live in .env.
  */
-const PROD_ENDPOINT = "ep-dry-dew-a11hidob";
+require("dotenv/config");
+
+const blocked = (process.env.SEED_BLOCKED_HOSTS || "")
+  .split(",")
+  .map((h) => h.trim().toLowerCase())
+  .filter(Boolean);
 
 const urls = [
   process.env.DATABASE_URL,
@@ -14,18 +22,17 @@ const urls = [
   process.env.DIRECT_URL,
 ].filter(Boolean);
 
-const offending = urls.find((u) => u.includes(PROD_ENDPOINT));
+const offending = urls.find((u) => blocked.some((b) => u.toLowerCase().includes(b)));
 
 if (offending) {
   console.error("");
-  console.error("🚫 BLOCKED: your DATABASE_URL points at the PRODUCTION database.");
+  console.error("BLOCKED: your DATABASE_URL points at a blocked (production) database.");
   console.error("");
   console.error("   `prisma migrate dev`, `db push`, `migrate reset`, and `db seed`");
-  console.error("   must NEVER run against production. On 2026-07-09 this exact");
-  console.error("   mistake wiped all production data.");
+  console.error("   must never run against production.");
   console.error("");
-  console.error("   → Local dev: point DATABASE_URL at the Neon 'development' branch.");
-  console.error("   → Prod schema changes: merge a migration to main; CI runs");
+  console.error("   - Local dev: point DATABASE_URL at the Neon 'development' branch.");
+  console.error("   - Prod schema changes: merge a migration to main; CI runs");
   console.error("     `prisma migrate deploy` (which never resets data).");
   console.error("");
   console.error("   See docs/DATABASE_SAFETY.md");
