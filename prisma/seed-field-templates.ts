@@ -1,14 +1,16 @@
 // prisma/seed-field-templates.ts
 // Idempotently seeds the canonical default QuestFieldTemplates into the DB.
-// Safe to run multiple times — matches existing templates by name.
+// Safe to run multiple times - matches existing templates by name.
 //   Run: npx tsx prisma/seed-field-templates.ts
 import { PrismaClient, Prisma } from '@prisma/client';
 import { DEFAULT_FIELD_TEMPLATES } from '../lib/quest-field-templates';
+import { assertSafeSeedTarget } from './seed-safety';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Seeding quest field templates…');
+  assertSafeSeedTarget();
+  console.log('Seeding quest field templates...');
   for (const t of DEFAULT_FIELD_TEMPLATES) {
     const existing = await prisma.questFieldTemplate.findFirst({ where: { name: t.name } });
     const data = {
@@ -24,14 +26,14 @@ async function main() {
     };
     if (existing) {
       await prisma.questFieldTemplate.update({ where: { id: existing.id }, data });
-      console.log(`  ↻ updated: ${t.name}`);
+      console.log(`  ~ updated: ${t.name}`);
     } else {
       await prisma.questFieldTemplate.create({ data });
-      console.log(`  ＋ created: ${t.name}`);
+      console.log(`  + created: ${t.name}`);
     }
   }
   const count = await prisma.questFieldTemplate.count();
-  console.log(`✅ Done. ${count} templates in DB.`);
+  console.log(`Done. ${count} templates in DB.`);
 }
 
 main()

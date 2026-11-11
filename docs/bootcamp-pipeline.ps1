@@ -34,7 +34,7 @@ param(
   [string]$BootcampTrack = 'beginner',
 
   [Parameter(Mandatory = $false)]
-  [string]$InitialPassword = 'password123',
+  [string]$InitialPassword = '',
 
   [Parameter(Mandatory = $false)]
   [int]$StudentCount = 5,
@@ -45,8 +45,8 @@ param(
   [Parameter(Mandatory = $false)]
   [string]$CompanyEmail = 'contact@knightmedicare.com',
 
-  [Parameter(Mandatory = $false)]
-  [string]$SeedPassword = 'password123'
+  [Parameter(Mandatory = $true)]
+  [string]$SeedPassword
 )
 
 Set-StrictMode -Version Latest
@@ -59,6 +59,13 @@ function Normalize-BaseUrl([string]$u) {
 }
 
 $BaseUrl = Normalize-BaseUrl $BaseUrl
+
+if (-not $InitialPassword) {
+  $bytes = New-Object byte[] 18
+  [System.Security.Cryptography.RandomNumberGenerator]::Fill($bytes)
+  $InitialPassword = [Convert]::ToBase64String($bytes).Replace('+','-').Replace('/','_')
+  Write-Host "Generated InitialPassword: $InitialPassword"
+}
 
 function Write-Step([string]$title) {
   Write-Host "\n=== $title ===" -ForegroundColor Cyan
