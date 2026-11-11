@@ -16,6 +16,10 @@ const blocked = (process.env.SEED_BLOCKED_HOSTS || "")
   .map((h) => h.trim().toLowerCase())
   .filter(Boolean);
 
+if (blocked.length === 0) {
+  console.warn("db-guard: SEED_BLOCKED_HOSTS is empty, so no hosts are blocked by name. Set it in .env (see docs/DATABASE_SAFETY.md).");
+}
+
 const urls = [
   process.env.DATABASE_URL,
   process.env.DATABASE_URL_UNPOOLED,
