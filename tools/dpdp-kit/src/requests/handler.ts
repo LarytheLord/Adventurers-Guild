@@ -1,3 +1,4 @@
+import { json, readJsonObject } from '../http'
 import type { AuditLog } from './audit'
 import { RequestError, type RequestService } from './service'
 import type { RequestStatus } from './types'
@@ -9,10 +10,6 @@ export interface RequestHandlersOptions {
   getPrincipalId: (req: Request) => string | null | Promise<string | null>
   /** Admin id if (and only if) the caller is an admin. Anything else must return null. */
   getAdminId: (req: Request) => string | null | Promise<string | null>
-}
-
-function json(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
 }
 
 /**
@@ -29,12 +26,8 @@ export function createRequestHandlers(opts: RequestHandlersOptions) {
     try {
       if (req.method === 'GET') return json({ requests: await service.listForPrincipal(principalId) })
       if (req.method === 'POST') {
-        let body: { kind?: never; details?: unknown; language?: unknown }
-        try {
-          body = await req.json()
-        } catch {
-          return json({ error: 'invalid json' }, 400)
-        }
+        const body = await readJsonObject(req)
+        if (!body) return json({ error: 'body must be a JSON object' }, 400)
         const r = await service.submit(principalId, {
           kind: body.kind as never,
           details: body.details as string,
@@ -62,12 +55,8 @@ export function createRequestHandlers(opts: RequestHandlersOptions) {
         return json({ requests: await service.listAll(), overdue: (await service.listOverdue()).map((r) => r.id) })
       }
       if (req.method === 'PATCH') {
-        let body: { id?: unknown; status?: unknown; note?: unknown; verifyIdentity?: unknown }
-        try {
-          body = await req.json()
-        } catch {
-          return json({ error: 'invalid json' }, 400)
-        }
+        const body = await readJsonObject(req)
+        if (!body) return json({ error: 'body must be a JSON object' }, 400)
         if (typeof body.id !== 'string') return json({ error: 'id is required' }, 400)
         if (body.verifyIdentity === true) return json({ request: await service.verifyIdentity(body.id, actor) })
         if (typeof body.status !== 'string') return json({ error: 'status is required' }, 400)

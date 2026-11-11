@@ -5,6 +5,10 @@
   "license": "MIT",
   "private": true,
   "type": "module",
+  "exports": {
+    "./client": "./src/client.ts",
+    "./server": "./src/server.ts"
+  },
   "scripts": {
     "test": "vitest run",
     "type-check": "tsc --noEmit -p tsconfig.json"

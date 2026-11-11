@@ -1,13 +1,10 @@
+import { json, readJsonObject } from '../http'
 import { ConsentError, type ConsentService } from './service'
 
 export interface ConsentHandlerOptions {
   service: ConsentService
   /** Return the id of the authenticated user from your session, or null. Never read it from the body. */
   getPrincipalId: (req: Request) => string | null | Promise<string | null>
-}
-
-function json(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } })
 }
 
 /**
@@ -28,12 +25,8 @@ export function createConsentHandler({ service, getPrincipalId }: ConsentHandler
         })
       }
       if (req.method === 'POST') {
-        let body: { purposeId?: unknown; language?: unknown }
-        try {
-          body = await req.json()
-        } catch {
-          return json({ error: 'invalid json' }, 400)
-        }
+        const body = await readJsonObject(req)
+        if (!body) return json({ error: 'body must be a JSON object' }, 400)
         if (typeof body.purposeId !== 'string' || typeof body.language !== 'string') {
           return json({ error: 'purposeId and language are required' }, 400)
         }
