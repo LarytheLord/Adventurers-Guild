@@ -19,8 +19,8 @@ describe('isSafeSeedTarget', () => {
     'postgresql://u:p@localhost:5432/guild',
     'postgresql://u:p@127.0.0.1:5432/guild',
     'postgresql://u:p@[::1]:5432/guild',
-    'postgresql://u:p@db.internal:5432/guild_test',
-    'postgresql://u:p@db.internal:5432/guild_dev',
+    'postgresql://u:p@db.internal.example.com:5432/guild_test',
+    'postgresql://u:p@db.internal.example.com:5432/guild_dev',
     'postgresql://u:p@ep-dev-branch.example.com/neondb',
     'postgresql://u:p@db.example.com/guild-dev',
   ])('accepts %s', (url) => {
