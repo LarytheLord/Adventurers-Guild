@@ -15,6 +15,7 @@
 - [Does CERT-In require an AI audit?](https://www.guilds.work/guides/does-cert-in-require-an-ai-audit): short answer from the guideline PDF; it states no effective date and no penalty in v1.0.
 - [How to check Supabase RLS on an app built with Lovable or Bolt](https://www.guilds.work/guides/check-supabase-rls-lovable-bolt): dashboard policy list and an anon-key test on your own project.
 - [What is an AI risk tier under CERT-In?](https://www.guilds.work/guides/what-is-an-ai-risk-tier-cert-in): the 1 to 4 tier, the eight factors and where to score your own system.
+- [CERT-In AI audit evidence checklist](https://www.guilds.work/guides/cert-in-ai-audit-evidence-checklist): evidence to prepare per audit domain, with a section number on every item. Partial: only some sections are covered. Unofficial.
 
 ## Source
 

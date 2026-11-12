@@ -38,6 +38,7 @@ export const GUIDE_GROUPS: GuideGroup[] = [
       { path: '/guides/cert-in-ai-security-auditing-guidelines', kind: 'guide' },
       { path: '/guides/does-cert-in-require-an-ai-audit', kind: 'guide' },
       { path: '/guides/what-is-an-ai-risk-tier-cert-in', kind: 'guide' },
+      { path: '/guides/cert-in-ai-audit-evidence-checklist', kind: 'guide' },
       { path: '/ai-risk-tier', kind: 'tool' },
     ],
   },

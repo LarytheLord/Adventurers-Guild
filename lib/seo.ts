@@ -16,6 +16,12 @@ import {
   EXPLAINER_TITLE,
   stripLinks,
 } from '@/lib/cert-in-explainer/content';
+import {
+  CHECKLIST_DESCRIPTION,
+  CHECKLIST_PATH,
+  CHECKLIST_PUBLISHED,
+  CHECKLIST_TITLE,
+} from '@/lib/cert-in-explainer/evidence-checklist';
 
 /** Pinned: production serves from www.guilds.work; env vars may hold an old domain. */
 export const SITE_URL = 'https://www.guilds.work';
@@ -38,6 +44,7 @@ export const PUBLIC_PAGES = [
   { path: '/guides/does-cert-in-require-an-ai-audit', priority: 0.7 },
   { path: '/guides/check-supabase-rls-lovable-bolt', priority: 0.7 },
   { path: '/guides/what-is-an-ai-risk-tier-cert-in', priority: 0.7 },
+  { path: CHECKLIST_PATH, priority: 0.8 },
 ] as const;
 
 /** Paths crawlers must not fetch. */
@@ -239,5 +246,24 @@ export function guidesHubJsonLd(entries: { name: string; description: string; pa
         url: absoluteUrl(e.path),
       })),
     },
+  };
+}
+
+/** Article JSON-LD for the evidence checklist. */
+export function checklistJsonLd() {
+  const pageUrl = absoluteUrl(CHECKLIST_PATH);
+  const org = { '@type': 'Organization', name: SITE_NAME, url: SITE_URL };
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: CHECKLIST_TITLE,
+    description: CHECKLIST_DESCRIPTION,
+    datePublished: CHECKLIST_PUBLISHED,
+    dateModified: CHECKLIST_PUBLISHED,
+    inLanguage: 'en-IN',
+    mainEntityOfPage: pageUrl,
+    url: pageUrl,
+    author: org,
+    publisher: org,
   };
 }
