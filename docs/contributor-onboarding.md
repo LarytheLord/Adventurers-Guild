@@ -120,9 +120,9 @@ npm run dev
 ```
 
 Visit `http://localhost:3000`. The seed creates:
-- `admin@guild.com` / `password123` (admin)
-- `company@test.com` / `password123` (company)
-- `adventurer@test.com` / `password123` (adventurer)
+Seed accounts (admin, company and adventurer, see `prisma/seed.ts`) share a random password.
+The seed prints it once when it finishes. It also refuses to run unless `DATABASE_URL`
+points at localhost, or its host or database name contains `test` or `dev`.
 
 ---
 

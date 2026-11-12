@@ -1,16 +1,17 @@
 // prisma/seed.ts
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { assertSafeSeedTarget, generateSeedPassword } from './seed-safety';
 
 const prisma = new PrismaClient();
 
-const DEFAULT_PASSWORD = 'password123';
-
 async function main() {
-  console.log('🌱 Seeding database...');
+  assertSafeSeedTarget();
+  console.log('Seeding database...');
 
-  // Hash the default password
-  const passwordHash = await bcrypt.hash(DEFAULT_PASSWORD, 12);
+  // Random per run; printed at the end of the seed.
+  const demoPassword = generateSeedPassword();
+  const passwordHash = await bcrypt.hash(demoPassword, 12);
 
   // Clear existing data
   await prisma.notification.deleteMany();
@@ -30,7 +31,7 @@ async function main() {
 
   console.log('  Cleared existing data');
 
-  // ── Users ────────────────────────────────────────────────
+  // -- Users ------------------------------------------------
   const users = await Promise.all([
     // Companies
     prisma.user.create({
@@ -250,7 +251,7 @@ async function main() {
   ]);
   console.log(`  Created ${users.length} users`);
 
-  // ── Company Profiles ──────────────────────────────────────
+  // -- Company Profiles --------------------------------------
   await prisma.companyProfile.createMany({
     data: [
       {
@@ -290,7 +291,7 @@ async function main() {
   });
   console.log('  Created company profiles');
 
-  // ── Adventurer Profiles ───────────────────────────────────
+  // -- Adventurer Profiles -----------------------------------
   await prisma.adventurerProfile.createMany({
     data: [
       { userId: 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', specialization: 'Full-Stack Development', primarySkills: ['React', 'Node.js', 'PostgreSQL', 'TypeScript'], availabilityStatus: 'available', questCompletionRate: 95.5, totalQuestsCompleted: 28, currentStreak: 7 },
@@ -305,7 +306,7 @@ async function main() {
   });
   console.log('  Created adventurer profiles');
 
-  // ── Skill Categories ──────────────────────────────────────
+  // -- Skill Categories --------------------------------------
   await prisma.skillCategory.createMany({
     data: [
       { id: 'ca100000-1111-1111-1111-111111111111', name: 'Frontend Development', description: 'Client-side web development skills', icon: '🎨' },
@@ -317,7 +318,7 @@ async function main() {
   });
   console.log('  Created skill categories');
 
-  // ── Skills ────────────────────────────────────────────────
+  // -- Skills ------------------------------------------------
   await prisma.skill.createMany({
     data: [
       { id: '00000001-0000-0000-0000-000000000001', name: 'React', description: 'Modern JavaScript library for building user interfaces', categoryId: 'ca100000-1111-1111-1111-111111111111' },
@@ -338,7 +339,7 @@ async function main() {
   });
   console.log('  Created skills');
 
-  // ── Quests ────────────────────────────────────────────────
+  // -- Quests ------------------------------------------------
   const now = new Date();
   const daysFromNow = (d: number) => new Date(now.getTime() + d * 86400000);
   const daysAgo = (d: number) => new Date(now.getTime() - d * 86400000);
@@ -359,7 +360,7 @@ async function main() {
   });
   console.log('  Created 10 quests');
 
-  // ── Quest Assignments ─────────────────────────────────────
+  // -- Quest Assignments -------------------------------------
   await prisma.questAssignment.createMany({
     data: [
       { id: 'b0000001-0000-0000-0000-de00de00de00', questId: 'a0000006-0000-0000-0000-000000000006', userId: 'de00de00-de00-de00-de00-de00de00de00', status: 'in_progress', assignedAt: daysAgo(3), startedAt: daysAgo(2), progress: 65 },
@@ -371,7 +372,7 @@ async function main() {
   });
   console.log('  Created quest assignments');
 
-  // ── Quest Completions ─────────────────────────────────────
+  // -- Quest Completions -------------------------------------
   await prisma.questCompletion.createMany({
     data: [
       { id: 'c0000001-0000-0000-0000-de00de00de00', questId: 'a0000009-0000-0000-0000-000000000009', userId: 'de00de00-de00-de00-de00-de00de00de00', completionDate: daysAgo(12), xpEarned: 800, skillPointsEarned: 10, qualityScore: 9 },
@@ -382,7 +383,7 @@ async function main() {
   });
   console.log('  Created quest completions');
 
-  // ── Notifications ─────────────────────────────────────────
+  // -- Notifications -----------------------------------------
   await prisma.notification.createMany({
     data: [
       { userId: 'de00de00-de00-de00-de00-de00de00de00', title: 'New Quest Available!', message: 'A new quest matching your skills has been posted: "Build Task Management API"', type: 'quest_assigned', data: { questId: 'a0000004-0000-0000-0000-000000000004' }, createdAt: daysAgo(2) },
@@ -392,7 +393,7 @@ async function main() {
   });
   console.log('  Created notifications');
 
-  // ── Transactions ──────────────────────────────────────────
+  // -- Transactions ------------------------------------------
   await prisma.transaction.createMany({
     data: [
       { fromUserId: '11111111-1111-1111-1111-111111111111', toUserId: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb', questId: 'a0000008-0000-0000-0000-000000000008', amount: 16000, currency: 'INR', status: 'completed', paymentMethod: 'stripe', transactionId: 'txn_abc123def456', description: 'Payment for Setup CI/CD Pipeline quest', createdAt: daysAgo(5), completedAt: daysAgo(5) },
@@ -402,8 +403,9 @@ async function main() {
   });
   console.log('  Created transactions');
 
-  console.log('\n✅ Seed complete!');
-  console.log('\n📋 Test accounts (all use password: password123):');
+  console.log('\nSeed complete!');
+  console.log('\nTest accounts (all use the same generated password):');
+  console.log(`  Password:   ${demoPassword}`);
   console.log('  Admin:      admin@adventurersguild.com');
   console.log('  Demo:       demo@adventurersguild.com');
   console.log('  Company:    contact@knightmedicare.com');
@@ -412,7 +414,7 @@ async function main() {
 
 main()
   .catch((e) => {
-    console.error('❌ Seed failed:', e);
+    console.error('Seed failed:', e);
     process.exit(1);
   })
   .finally(async () => {

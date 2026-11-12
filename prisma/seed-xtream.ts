@@ -7,15 +7,19 @@
 //   Run: npx tsx prisma/seed-xtream.ts
 import { PrismaClient, Prisma } from '@prisma/client';
 import bcrypt from 'bcryptjs';
+import { assertSafeSeedTarget, generateSeedPassword } from './seed-safety';
 
 const prisma = new PrismaClient();
 
 const COMPANY_ID = 'cccccccc-cccc-4ccc-8ccc-cccccccccccc';
 
 async function main() {
-  console.log('🌱 Seeding Xtream Car Treatment company + engagement…');
+  assertSafeSeedTarget();
+  console.log('Seeding Xtream Car Treatment company + engagement...');
 
-  const passwordHash = await bcrypt.hash(process.env.XTREAM_PASSWORD || 'ChangeMe-Xtream-2026', 12);
+  const providedPassword = process.env.XTREAM_PASSWORD;
+  const password = providedPassword || generateSeedPassword();
+  const passwordHash = await bcrypt.hash(password, 12);
   const company = await prisma.user.upsert({
     where: { id: COMPANY_ID },
     update: {},
@@ -23,7 +27,7 @@ async function main() {
       id: COMPANY_ID,
       name: 'Xtream Car Treatment',
       username: 'xtream-car-treatment',
-      email: 'vinay.xtreamcartreatment@gmail.com',
+      email: 'xtream-car-treatment@example.com',
       passwordHash,
       role: 'company',
       rank: 'B',
@@ -44,7 +48,7 @@ async function main() {
       isVerified: true,
     },
   });
-  console.log(`  ✓ company: ${company.email}`);
+  console.log(`  + company: ${company.email}`);
 
   const questData = {
     title: 'Digital Growth & Automation Strategy',
@@ -59,7 +63,7 @@ async function main() {
     monetaryReward: null,
     requiredSkills: ['Digital Marketing', 'WhatsApp Business API', 'SEO/AEO'],
     maxParticipants: 2,
-    track: 'OPEN' as const, // getPublicQuests() defaults to track=OPEN when no track filter is passed — INTERN/BOOTCAMP quests never surface publicly
+    track: 'OPEN' as const, // getPublicQuests() defaults to track=OPEN when no track filter is passed - INTERN/BOOTCAMP quests never surface publicly
     source: 'CLIENT_PORTAL' as const,
     companyId: company.id,
     partnerOrgName: 'Xtream Car Treatment',
@@ -69,14 +73,18 @@ async function main() {
   const existing = await prisma.quest.findFirst({ where: { title: questData.title, companyId: company.id } });
   if (existing) {
     await prisma.quest.update({ where: { id: existing.id }, data: questData });
-    console.log('  ↻ updated quest: Digital Growth & Automation Strategy');
+    console.log('  ~ updated quest: Digital Growth & Automation Strategy');
   } else {
     await prisma.quest.create({ data: questData });
-    console.log('  ＋ created quest: Digital Growth & Automation Strategy');
+    console.log('  + created quest: Digital Growth & Automation Strategy');
   }
 
-  console.log('✅ Done. Xtream Car Treatment will now appear in the landing page trusted-companies section.');
-  console.log('   ⚠️  Company login password = $XTREAM_PASSWORD or "ChangeMe-Xtream-2026" — rotate before real use.');
+  console.log('Done. Xtream Car Treatment will now appear in the landing page trusted-companies section.');
+  if (providedPassword) {
+    console.log('   Company login password = $XTREAM_PASSWORD (as provided).');
+  } else {
+    console.log(`   Company login password (generated, shown once): ${password}`);
+  }
 }
 
 main()

@@ -2,7 +2,7 @@
 
 ## Reading Order
 
-1. Read `CLAUDE.md` first for full project context
+1. Read `docs/contributor-onboarding.md` for setup and conventions
 2. Read `prisma/schema.prisma` to understand current data model
 3. Read this file for what to build and how
 4. Read `QUEST_BRIEF_SCHEMA.md` for the quest data format
