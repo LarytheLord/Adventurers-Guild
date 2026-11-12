@@ -24,6 +24,7 @@ const isAscii = (s: string) => /^[\x00-\x7F]*$/.test(s);
 
 const PAGE_FILES: Record<string, string> = {
   '/': 'app/page.tsx',
+  '/guides': 'app/guides/page.tsx',
   '/audit': 'app/audit/page.tsx',
   '/checklist': 'app/checklist/page.tsx',
   '/ai-risk-tier': 'app/ai-risk-tier/page.tsx',
@@ -40,6 +41,7 @@ describe('sitemap', () => {
     expect(urls.sort()).toEqual(
       [
         'https://www.guilds.work/',
+        'https://www.guilds.work/guides',
         'https://www.guilds.work/audit',
         'https://www.guilds.work/checklist',
         'https://www.guilds.work/ai-risk-tier',

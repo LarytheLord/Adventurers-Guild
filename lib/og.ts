@@ -37,6 +37,10 @@ const FIXED: Record<string, { path: string; card: OgCard }> = {
     path: INDIC_QA_PATH,
     card: { title: 'AI quality checks for Hindi, Gujarati and Hinglish', subtitle: 'Two-week pilot' },
   },
+  guides: {
+    path: '/guides',
+    card: { title: 'Guides and free tools', subtitle: 'Guides' },
+  },
   'cert-in-guide': {
     path: EXPLAINER_PATH,
     card: { title: EXPLAINER_TITLE, subtitle: 'Guide' },

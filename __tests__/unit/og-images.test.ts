@@ -17,6 +17,7 @@ const PATHS = [
   '/launch-check',
   '/checklist',
   '/ai-risk-tier',
+  '/guides',
   INDIC_QA_PATH,
   EXPLAINER_PATH,
   ...ANSWER_PAGES.map((a) => a.path),

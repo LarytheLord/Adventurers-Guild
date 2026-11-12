@@ -86,7 +86,7 @@ export default function AssuranceHome() {
 
       <section aria-labelledby="resources" className="mx-auto max-w-5xl px-6 py-16">
         <h2 id="resources" className="text-3xl font-bold tracking-tight">{HOME_RESOURCES_TITLE}</h2>
-        <ul className="mt-8 grid gap-6 sm:grid-cols-3">
+        <ul className="mt-8 grid gap-6 sm:grid-cols-2">
           {HOME_RESOURCES.map((r) => (
             <li key={r.href} className="rounded-xl border border-slate-200 p-5">
               <Link href={r.href} className={textLink}>{r.label}</Link>

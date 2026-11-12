@@ -99,6 +99,11 @@ export const HOME_RESOURCES = [
     body: 'A short checklist for payments, deployment, speed and security before you launch an AI-built app.',
     href: '/checklist',
   },
+  {
+    label: 'All guides and free tools',
+    body: 'Every guide and self-check on this site in one place, grouped by topic.',
+    href: '/guides',
+  },
 ];
 
 export const HOME_CONTACT = {

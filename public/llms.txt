@@ -5,6 +5,7 @@
 ## Pages
 
 - [Home](https://www.guilds.work/): what Guild does and who it is for.
+- [Guides and free tools](https://www.guilds.work/guides): index of every guide and free self-check on this site, grouped by topic. Descriptions come from each page's own metadata.
 - [Launch Check](https://www.guilds.work/audit): a hand check of an AI-built app across payments, deployment and domains, performance and cost, and security and data access, then fixes.
 - [Launch checklist](https://www.guilds.work/checklist): a free checklist to run before real users put real data into an AI-built app.
 - [Launch self-check](https://www.guilds.work/launch-check): a free, in-browser 20-question self-assessment (payments, deployment, performance and cost, security) with a list of gaps, each linked to the matching checklist item. Not an audit.
