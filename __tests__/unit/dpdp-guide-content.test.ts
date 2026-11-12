@@ -1,0 +1,111 @@
+import { readFileSync } from 'fs';
+import { join } from 'path';
+import sitemap from '@/app/sitemap';
+import {
+  DPDP_GUIDE_CHECK_NOTE,
+  DPDP_GUIDE_DESCRIPTION,
+  DPDP_GUIDE_DISCLAIMER,
+  DPDP_GUIDE_FAQ,
+  DPDP_GUIDE_PATH,
+  DPDP_GUIDE_SECTIONS,
+  DPDP_GUIDE_SUMMARY,
+  DPDP_GUIDE_TITLE,
+  dpdpGuidePlainText,
+} from '@/lib/dpdp-explainer/content';
+import { PUBLIC_PAGES, dpdpGuideJsonLd, dpdpToolJsonLd, serializeJsonLd } from '@/lib/seo';
+
+const root = join(__dirname, '..', '..');
+const read = (p: string) => readFileSync(join(root, p), 'utf8');
+// eslint-disable-next-line no-control-regex
+const isAscii = (s: string) => /^[\x00-\x7F]*$/.test(s);
+
+describe('DPDP guide content', () => {
+  const text = dpdpGuidePlainText();
+
+  it('is ASCII', () => {
+    expect(isAscii(text)).toBe(true);
+    expect(isAscii(JSON.stringify({ DPDP_GUIDE_SECTIONS, DPDP_GUIDE_FAQ, DPDP_GUIDE_SUMMARY }))).toBe(true);
+  });
+
+  it('uses the required route and has a disclaimer that is not legal advice', () => {
+    expect(DPDP_GUIDE_PATH).toBe('/guides/dpdp-rules-what-startups-must-do');
+    expect(DPDP_GUIDE_DISCLAIMER).toMatch(/not legal advice/i);
+    expect(text).toMatch(/not legal advice/i);
+  });
+
+  it('never claims Guild is an empanelled auditor', () => {
+    expect(text).not.toMatch(/Guild is (a|an) (CERT-In )?empanelled/i);
+    expect(text).toMatch(/Guild is not a CERT-In empanelled auditor/);
+  });
+
+  it('cites the Rules only as G.S.R. 846(E), with no invented rule numbers', () => {
+    expect(text).toContain('G.S.R. 846(E)');
+    expect(text).not.toMatch(/\bRule\s+\d/);
+    expect(text).not.toMatch(/\brules?\s+\d+\(/i);
+  });
+
+  it('attributes phase dates to the named secondary sources and keeps a check-the-Gazette note', () => {
+    expect(text).toMatch(/as reported by Bar & Bench and Mondaq/);
+    expect(DPDP_GUIDE_CHECK_NOTE).toMatch(/Check the Gazette/);
+    expect(text).toMatch(/dates per the notified Rules/i);
+  });
+
+  it('has 5 to 6 FAQ entries with a question and an answer', () => {
+    expect(DPDP_GUIDE_FAQ.length).toBeGreaterThanOrEqual(5);
+    expect(DPDP_GUIDE_FAQ.length).toBeLessThanOrEqual(6);
+    for (const f of DPDP_GUIDE_FAQ) {
+      expect(f.q.length).toBeGreaterThan(10);
+      expect(f.a.length).toBeGreaterThan(40);
+    }
+  });
+
+  it('links to the readiness tool', () => {
+    expect(text).toContain('/dpdp-readiness');
+  });
+});
+
+describe('DPDP SEO wiring', () => {
+  it('Article and FAQPage JSON-LD parse and match the guide', () => {
+    const [article, faq] = JSON.parse(serializeJsonLd(dpdpGuideJsonLd()));
+    expect(article['@type']).toBe('Article');
+    expect(article.headline).toBe(DPDP_GUIDE_TITLE);
+    expect(article.description).toBe(DPDP_GUIDE_DESCRIPTION);
+    expect(article.url).toBe('https://www.guilds.work/guides/dpdp-rules-what-startups-must-do');
+    expect(faq['@type']).toBe('FAQPage');
+    expect(faq.mainEntity).toHaveLength(DPDP_GUIDE_FAQ.length);
+    const text = dpdpGuidePlainText();
+    for (const q of faq.mainEntity) expect(text).toContain(q.acceptedAnswer.text);
+  });
+
+  it('tool JSON-LD is a free WebApplication at /dpdp-readiness', () => {
+    const a = JSON.parse(serializeJsonLd(dpdpToolJsonLd()));
+    expect(a['@type']).toBe('WebApplication');
+    expect(a.url).toBe('https://www.guilds.work/dpdp-readiness');
+    expect(a.offers.price).toBe('0');
+  });
+
+  it('both pages are in PUBLIC_PAGES, the sitemap and llms.txt', () => {
+    const urls = sitemap().map((e) => e.url);
+    const llms = read('public/llms.txt');
+    expect(isAscii(llms)).toBe(true);
+    for (const path of ['/dpdp-readiness', '/guides/dpdp-rules-what-startups-must-do']) {
+      expect(PUBLIC_PAGES.map((p) => p.path)).toContain(path);
+      expect(urls).toContain(`https://www.guilds.work${path}`);
+      expect(llms).toContain(`(https://www.guilds.work${path})`);
+    }
+    expect(llms).toMatch(/G\.S\.R\. 846\(E\)/);
+  });
+
+  it('route files pin metadata and render JSON-LD', () => {
+    const tool = read('app/dpdp-readiness/page.tsx');
+    const guide = read('app/guides/dpdp-rules-what-startups-must-do/page.tsx');
+    for (const src of [tool, guide]) {
+      expect(src).toContain('buildPageMetadata');
+      expect(src).toContain('JsonLd');
+      expect(isAscii(src)).toBe(true);
+    }
+    expect(tool).toContain("path: '/dpdp-readiness'");
+    expect(guide).toContain('path: DPDP_GUIDE_PATH');
+    expect(guide).toContain('dpdpGuideJsonLd');
+  });
+});

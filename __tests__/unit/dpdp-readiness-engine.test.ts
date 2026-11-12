@@ -4,7 +4,12 @@ import {
   validateQuestions,
   type DpdpQuestion,
 } from '@/lib/dpdp-readiness/engine';
-import { DPDP_QUESTIONS } from '@/lib/dpdp-readiness/data';
+import {
+  DPDP_PHASE_DATES,
+  DPDP_PHASE_DATES_NOTE,
+  DPDP_QUESTIONS,
+  DPDP_RULES_NOTIFICATION,
+} from '@/lib/dpdp-readiness/data';
 
 function q(id: string, over: Partial<DpdpQuestion> = {}): DpdpQuestion {
   return {
@@ -97,11 +102,59 @@ describe('DPDP_QUESTIONS (shipped content)', () => {
     expect(validateQuestions(DPDP_QUESTIONS)).toEqual([]);
   });
 
-  // Content is blocked on reading the Gazette text of the Act and the Rules.
-  // Switch this to a normal test once the verified questions are added.
-  it.todo('has exactly DPDP_QUESTION_COUNT (20) questions, each citing a section or rule');
-
-  it('keeps the target count at 20', () => {
+  it('has exactly 20 questions', () => {
+    expect(DPDP_QUESTIONS).toHaveLength(DPDP_QUESTION_COUNT);
     expect(DPDP_QUESTION_COUNT).toBe(20);
+  });
+
+  it('every question cites a section of the Act in a plausible form', () => {
+    for (const x of DPDP_QUESTIONS) {
+      expect(x.provision.kind).toBe('section');
+      expect(x.provision.ref).toMatch(/^\d{1,2}(\([0-9a-z]{1,3}\))*$/);
+    }
+  });
+
+  it('cites no rule numbers: the Rules text was not read, so none may be invented', () => {
+    expect(DPDP_QUESTIONS.filter((x) => x.provision.kind === 'rule')).toEqual([]);
+  });
+
+  it('covers all ten required topics', () => {
+    const topics = new Set(DPDP_QUESTIONS.map((x) => x.topic));
+    for (const t of [
+      'notice',
+      'consent',
+      'purpose-limitation',
+      'children',
+      'security',
+      'breach',
+      'retention-erasure',
+      'grievance',
+      'significant-data-fiduciary',
+      'processors',
+    ]) {
+      expect(topics.has(t as never)).toBe(true);
+    }
+  });
+
+  it('phrases every question as a yes/no question and gives a fix of a full sentence', () => {
+    for (const x of DPDP_QUESTIONS) {
+      expect(x.question).toContain('?');
+      expect(x.fix.length).toBeGreaterThan(40);
+    }
+  });
+});
+
+describe('DPDP source note and dates', () => {
+  it('names the Rules only by G.S.R. 846(E) and attributes phase dates to secondary sources', () => {
+    expect(DPDP_RULES_NOTIFICATION).toMatch(/G\.S\.R\. 846\(E\)/);
+    expect(DPDP_PHASE_DATES_NOTE).toMatch(/as reported by/i);
+    expect(DPDP_PHASE_DATES_NOTE).toMatch(/check the Gazette/i);
+    expect(DPDP_PHASE_DATES.map((d) => d.date)).toEqual(['14 November 2025', '14 November 2026', '14 May 2027']);
+  });
+
+  it('is ASCII', () => {
+    const all = JSON.stringify({ DPDP_RULES_NOTIFICATION, DPDP_PHASE_DATES_NOTE, DPDP_PHASE_DATES });
+    // eslint-disable-next-line no-control-regex
+    expect(/^[\x00-\x7F]*$/.test(all)).toBe(true);
   });
 });
