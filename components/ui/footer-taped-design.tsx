@@ -51,6 +51,7 @@ export const Component = () => {
                 <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="/faq">FAQ</Link>
                 <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="/audit">Launch Check</Link>
                 <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="/ai-risk-tier">AI Risk Tier Check</Link>
+                <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="/launch-check">Launch self-check</Link>
                 <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="https://github.com/LarytheLord/Adventurers-Guild" target="_blank" rel="noopener noreferrer">Open Source (MIT)</Link>
                 <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="/register?tab=company">Post a Quest</Link>
                 <span className="flex items-center gap-1.5 text-[13px] font-medium text-slate-400 whitespace-nowrap">

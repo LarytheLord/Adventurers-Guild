@@ -4,6 +4,7 @@ import { InfoPageShell } from '@/components/public/info-page-shell';
 import { buildPageMetadata } from '@/lib/seo';
 import { Button } from '@/components/ui/button';
 import { CHECKLIST_GROUPS } from '@/lib/audit-offer/content';
+import { slugify } from '@/lib/launch-check/data';
 
 const TITLE = 'The AI-built app launch checklist - Guild';
 const DESCRIPTION =
@@ -31,7 +32,7 @@ export default function ChecklistPage() {
             </h2>
             <ul className="space-y-4">
               {group.items.map((item) => (
-                <li key={item.check} className="rounded-2xl border border-slate-200 bg-white p-4 leading-7">
+                <li key={item.check} id={slugify(item.check)} className="scroll-mt-24 rounded-2xl border border-slate-200 bg-white p-4 leading-7">
                   <p className="font-semibold text-slate-900">{item.check}</p>
                   <p className="mt-1 text-slate-600">Why it matters: {item.why}</p>
                 </li>

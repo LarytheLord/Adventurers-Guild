@@ -23,6 +23,7 @@ export const PUBLIC_PAGES = [
   { path: '/audit', priority: 0.9 },
   { path: '/checklist', priority: 0.8 },
   { path: '/ai-risk-tier', priority: 0.9 },
+  { path: '/launch-check', priority: 0.9 },
   { path: '/guides/cert-in-ai-security-auditing-guidelines', priority: 0.9 },
   { path: '/guides/does-cert-in-require-an-ai-audit', priority: 0.7 },
   { path: '/guides/check-supabase-rls-lovable-bolt', priority: 0.7 },
@@ -90,6 +91,21 @@ export function softwareApplicationJsonLd() {
     operatingSystem: 'Any (web browser)',
     description:
       'Free self-check: score an AI system on the eight risk factors in the CERT-In AI Security Auditing Guidelines and see its tier. Runs in your browser. Unofficial; not an audit.',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' },
+    publisher: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
+  };
+}
+
+export function launchCheckJsonLd() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'Launch self-check for AI-built apps',
+    url: absoluteUrl('/launch-check'),
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Any (web browser)',
+    description:
+      'Free 20-question self-assessment for founders who built an app with Lovable, Bolt, Replit, v0 or Cursor. Covers payments, deployment, performance and cost, and security. Runs in your browser. Not an audit.',
     offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' },
     publisher: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
   };

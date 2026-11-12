@@ -7,6 +7,7 @@
 - [Home](https://www.guilds.work/): what Guild does and who it is for.
 - [Launch Check](https://www.guilds.work/audit): a hand check of an AI-built app across payments, deployment and domains, performance and cost, and security and data access, then fixes.
 - [Launch checklist](https://www.guilds.work/checklist): a free checklist to run before real users put real data into an AI-built app.
+- [Launch self-check](https://www.guilds.work/launch-check): a free, in-browser 20-question self-assessment (payments, deployment, performance and cost, security) with a list of gaps, each linked to the matching checklist item. Not an audit.
 - [CERT-In AI risk tier calculator](https://www.guilds.work/ai-risk-tier): a free, in-browser self-check that scores an AI system on the eight risk factors in the CERT-In guideline. Unofficial; not an audit.
 - [CERT-In AI Security Auditing Guidelines, explained](https://www.guilds.work/guides/cert-in-ai-security-auditing-guidelines): who the guideline covers, the risk tiers and a preparation plan, with section numbers. Unofficial guide.
 - [Does CERT-In require an AI audit?](https://www.guilds.work/guides/does-cert-in-require-an-ai-audit): short answer from the guideline PDF; it states no effective date and no penalty in v1.0.

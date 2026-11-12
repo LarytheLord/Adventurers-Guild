@@ -12,6 +12,7 @@ const FOOTER_ROUTES = new Set([
   '/audit',
   '/checklist',
   '/ai-risk-tier',
+  '/launch-check',
   '/privacy',
   '/terms',
 ]);
