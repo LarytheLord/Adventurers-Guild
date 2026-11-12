@@ -14,6 +14,7 @@ const FOOTER_ROUTES = new Set([
   '/checklist',
   '/ai-risk-tier',
   '/launch-check',
+  '/indic-ai-qa',
   '/privacy',
   '/terms',
 ]);

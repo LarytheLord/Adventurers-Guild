@@ -36,7 +36,7 @@ const PAGE_FILES: Record<string, string> = {
 describe('sitemap', () => {
   const urls = sitemap().map((e) => e.url);
 
-  it('lists exactly the nine public pages on www.guilds.work', () => {
+  it('lists exactly the ten public pages on www.guilds.work', () => {
     expect(urls.sort()).toEqual(
       [
         'https://www.guilds.work/',

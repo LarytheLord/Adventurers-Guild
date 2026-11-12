@@ -30,7 +30,7 @@ export const INDIC_QA_CHECKS = [
     id: 'register-politeness',
     title: 'Register and politeness',
     body:
-      'Hindi and Gujarati mark respect in the pronoun and the verb. We check that the system uses the right level for your users, and does not switch between formal and casual inside one conversation.',
+      'We check that the system speaks at a level of formality that suits your users, and that it does not switch between formal and casual inside one conversation.',
   },
   {
     id: 'code-mixing',
@@ -48,7 +48,7 @@ export const INDIC_QA_CHECKS = [
     id: 'refusals',
     title: 'Refusals',
     body:
-      'We check two failures: refusing a harmless request because the wording is unfamiliar, and going along with a harmful request because the same wording slipped past the safeguards that work in English.',
+      'We test two things in each language, including Roman-script input: whether the system refuses a harmless request, and whether it goes along with a harmful one.',
   },
   {
     id: 'policy-hallucination',

@@ -47,7 +47,7 @@ export default function IndicAiQaPage() {
           <InfoPageAside title="Talk to us">
             <p>Shipping in Hindi, Gujarati or Hinglish? Tell us what you run.</p>
             <p>
-              <a href={INDIC_QA_MAILTO} className="font-semibold text-orange-600 underline underline-offset-4">
+              <a href={INDIC_QA_MAILTO} className="font-semibold text-orange-700 underline underline-offset-4">
                 {INDIC_QA_CONTACT.label}
               </a>
             </p>
@@ -104,7 +104,7 @@ export default function IndicAiQaPage() {
               <a
                 href={INDIC_QA_CITATION.href}
                 rel="noopener noreferrer"
-                className="font-semibold text-orange-600 underline underline-offset-4"
+                className="font-semibold text-orange-700 underline underline-offset-4"
               >
                 {INDIC_QA_CITATION.label}
               </a>
@@ -119,7 +119,7 @@ export default function IndicAiQaPage() {
               <Button asChild size="lg">
                 <a href={INDIC_QA_MAILTO}>{INDIC_QA_CONTACT.label}</a>
               </Button>
-              <Link href="/" className="font-semibold text-orange-600 underline underline-offset-4">
+              <Link href="/" className="font-semibold text-orange-700 underline underline-offset-4">
                 Back to the Guild home page
               </Link>
             </div>
