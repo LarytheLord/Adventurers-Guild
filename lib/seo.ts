@@ -2,6 +2,13 @@ import type { Metadata } from 'next';
 import { ogImageUrl, OG_SIZE } from '@/lib/og';
 import { ANSWER_PUBLISHED, type AnswerPage } from '@/lib/answer-pages/content';
 import {
+  INDIC_QA_CITATION,
+  INDIC_QA_DESCRIPTION,
+  INDIC_QA_PATH,
+  INDIC_QA_PUBLISHED,
+  INDIC_QA_TITLE,
+} from '@/lib/indic-ai-qa/content';
+import {
   EXPLAINER_DESCRIPTION,
   EXPLAINER_FAQ,
   EXPLAINER_PATH,
@@ -25,6 +32,7 @@ export const PUBLIC_PAGES = [
   { path: '/checklist', priority: 0.8 },
   { path: '/ai-risk-tier', priority: 0.9 },
   { path: '/launch-check', priority: 0.9 },
+  { path: '/indic-ai-qa', priority: 0.8 },
   { path: '/guides/cert-in-ai-security-auditing-guidelines', priority: 0.9 },
   { path: '/guides/does-cert-in-require-an-ai-audit', priority: 0.7 },
   { path: '/guides/check-supabase-rls-lovable-bolt', priority: 0.7 },
@@ -174,4 +182,36 @@ export function answerPageJsonLd(page: AnswerPage) {
       url: s.href.startsWith('/') ? absoluteUrl(s.href) : s.href,
     })),
   };
+}
+
+/** Article and Service for /indic-ai-qa. No price, offer, rating or review. */
+export function indicQaJsonLd() {
+  const pageUrl = absoluteUrl(INDIC_QA_PATH);
+  const org = { '@type': 'Organization', name: SITE_NAME, url: SITE_URL };
+  return [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: INDIC_QA_TITLE,
+      description: INDIC_QA_DESCRIPTION,
+      datePublished: INDIC_QA_PUBLISHED,
+      dateModified: INDIC_QA_PUBLISHED,
+      inLanguage: 'en-IN',
+      mainEntityOfPage: pageUrl,
+      url: pageUrl,
+      author: org,
+      publisher: org,
+      citation: [{ '@type': 'CreativeWork', name: INDIC_QA_CITATION.label, url: INDIC_QA_CITATION.href }],
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Service',
+      name: 'Hindi, Gujarati and Hinglish AI quality pilot',
+      serviceType: 'AI quality checks for Hindi, Gujarati and Hinglish chatbots, voice agents and LLM features',
+      description: INDIC_QA_DESCRIPTION,
+      url: pageUrl,
+      areaServed: 'IN',
+      provider: org,
+    },
+  ];
 }
