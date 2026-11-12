@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { ogImageUrl, OG_SIZE } from '@/lib/og';
 import { ANSWER_PUBLISHED, type AnswerPage } from '@/lib/answer-pages/content';
 import {
   EXPLAINER_DESCRIPTION,
@@ -49,7 +50,12 @@ interface PageMetaInput {
 
 export function buildPageMetadata({ path, title, description, type = 'website', keywords }: PageMetaInput): Metadata {
   const url = absoluteUrl(path);
-  const image = absoluteUrl(LOGO_PATH);
+  const card = ogImageUrl(path);
+  const image = card ?? absoluteUrl(LOGO_PATH);
+  // Pages with a generated card get a 1200x630 image; others keep the square logo.
+  const ogImages = card
+    ? [{ url: card, width: OG_SIZE.width, height: OG_SIZE.height, alt: title }]
+    : [{ url: image, width: 1254, height: 1254, alt: 'Guild logo' }];
   return {
     title,
     description,
@@ -62,9 +68,9 @@ export function buildPageMetadata({ path, title, description, type = 'website', 
       siteName: SITE_NAME,
       type,
       locale: 'en_IN',
-      images: [{ url: image, width: 1254, height: 1254, alt: 'Guild logo' }],
+      images: ogImages,
     },
-    twitter: { card: 'summary', title, description, images: [image] },
+    twitter: { card: card ? 'summary_large_image' : 'summary', title, description, images: [image] },
   };
 }
 
