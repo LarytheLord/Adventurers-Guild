@@ -1,7 +1,7 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import { Component as GuildFooter } from '@/components/ui/footer-taped-design';
+import type { ReactNode } from 'react';
 
 const FOOTER_ROUTES = new Set([
   '/',
@@ -20,7 +20,9 @@ const FOOTER_ROUTES = new Set([
 
 const FOOTER_ROUTE_PREFIXES = ['/legal'];
 
-export default function ConditionalFooter() {
+// The footer is passed in as children so it stays a server-rendered tree and
+// only this pathname check ships as client JS.
+export default function ConditionalFooter({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   const shouldShowFooter = pathname
@@ -32,5 +34,5 @@ export default function ConditionalFooter() {
     return null;
   }
 
-  return <GuildFooter />;
+  return <>{children}</>;
 }
