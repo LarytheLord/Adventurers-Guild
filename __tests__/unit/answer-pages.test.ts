@@ -34,6 +34,16 @@ describe('answer pages content', () => {
     expect(words(text)).toBeLessThan(700);
   });
 
+  it('every external source is https on an official host (guards new guides)', () => {
+    const official = ['cert-in.org.in', 'supabase.com', 'razorpay.com', 'stripe.com', 'lovable.dev', 'bolt.new'];
+    for (const page of ANSWER_PAGES) {
+      for (const s of page.sources.filter((x) => !x.href.startsWith('/'))) {
+        const host = new URL(s.href).hostname;
+        expect(official.some((h) => host === h || host.endsWith(`.${h}`))).toBe(true);
+      }
+    }
+  });
+
   it('never claims Guild is an auditor, and says it is not empanelled', () => {
     for (const page of ANSWER_PAGES) {
       const text = answerPagePlainText(page);
