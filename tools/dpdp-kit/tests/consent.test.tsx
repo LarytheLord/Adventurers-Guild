@@ -14,7 +14,7 @@ const notice: NoticeConfig = {
   version: '2026-01',
   defaultLanguage: 'en',
   languages: ['en', 'hi'],
-  grievanceContact: 'grievance@example.test',
+  grievanceContact: 'grievance@example.com',
   purposes: [
     {
       id: 'marketing_email',
@@ -173,6 +173,6 @@ describe('ConsentNotice component', () => {
     const html = render('en', { analytics: true })
     expect(html).toContain('checked')
     expect(html.toLowerCase()).toContain('withdraw')
-    expect(html).toContain('grievance@example.test')
+    expect(html).toContain('grievance@example.com')
   })
 })

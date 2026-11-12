@@ -33,18 +33,18 @@ been verified, because the Gazette text could not be opened either. Rules that a
 therefore NOT verified and not mapped: all of them. Once someone can open the
 Gazette notification of the Rules, add rule numbers per row from that text only.
 
-| Piece | Where | DPDP Act 2023 provision it is meant to support | Verified |
-|-------|-------|-----------------------------------------------|----------|
-| Itemised notice with plain-language purposes | `src/consent/ConsentNotice.tsx`, `NoticeConfig` | s.5 (notice) | No |
-| Consent record: per purpose, notice version, language, timestamp, append-only history | `src/consent/service.ts` | s.6 (consent) | No |
-| Language selection in the notice, language stored on each record | `ConsentNotice` language select | s.5, s.6 (notice and consent in clear language, language choice) | No |
-| Withdraw as easy as give: same checkbox, same API shape | `ConsentNotice`, `ConsentService.withdraw`, `DELETE` in the handler | s.6 (withdrawal of consent) | No |
-| Access request | `kind: 'access'` | s.11 | No |
-| Correction and erasure requests | `kind: 'correction'`, `kind: 'erasure'` | s.12 | No |
-| Grievance request, grievance contact shown in the notice | `kind: 'grievance'`, `NoticeConfig.grievanceContact` | s.8(10), s.13 | No |
-| Request deadline tracking and overdue flag | `dueAt`, `listOverdue`, `RequestsAdminTable` | Supports handling requests under s.11, s.12, s.13; the window itself is YOUR setting, see below | No |
-| Audit log of who did what to each request (hash chained, no request text) | `src/requests/audit.ts` | s.8(5) (reasonable security safeguards), as supporting evidence | No |
-| Breach runbook template | `templates/breach-runbook.md` | s.8(5), s.8(6); regulator and data principal duties are blanks to fill from the official text | No |
+| Piece | Where | DPDP Act 2023 provision it is meant to support | Source | Verified |
+|-------|-------|-----------------------------------------------|--------|----------|
+| Itemised notice with plain-language purposes | `src/consent/ConsentNotice.tsx`, `NoticeConfig` | s.5 (notice) | [DPDP Act 2023, MeitY PDF](https://www.meity.gov.in/static/uploads/2024/06/2bf1f0e9f04e6fb4f8fef35e82c42aa5.pdf) | No |
+| Consent record: per purpose, notice version, language, timestamp, append-only history | `src/consent/service.ts` | s.6 (consent) | [DPDP Act 2023, MeitY PDF](https://www.meity.gov.in/static/uploads/2024/06/2bf1f0e9f04e6fb4f8fef35e82c42aa5.pdf) | No |
+| Language selection in the notice, language stored on each record | `ConsentNotice` language select | s.5, s.6 (notice and consent in clear language, language choice) | [DPDP Act 2023, MeitY PDF](https://www.meity.gov.in/static/uploads/2024/06/2bf1f0e9f04e6fb4f8fef35e82c42aa5.pdf) | No |
+| Withdraw as easy as give: same checkbox, same API shape | `ConsentNotice`, `ConsentService.withdraw`, `DELETE` in the handler | s.6 (withdrawal of consent) | [DPDP Act 2023, MeitY PDF](https://www.meity.gov.in/static/uploads/2024/06/2bf1f0e9f04e6fb4f8fef35e82c42aa5.pdf) | No |
+| Access request | `kind: 'access'` | s.11 | [DPDP Act 2023, MeitY PDF](https://www.meity.gov.in/static/uploads/2024/06/2bf1f0e9f04e6fb4f8fef35e82c42aa5.pdf) | No |
+| Correction and erasure requests | `kind: 'correction'`, `kind: 'erasure'` | s.12 | [DPDP Act 2023, MeitY PDF](https://www.meity.gov.in/static/uploads/2024/06/2bf1f0e9f04e6fb4f8fef35e82c42aa5.pdf) | No |
+| Grievance request, grievance contact shown in the notice | `kind: 'grievance'`, `NoticeConfig.grievanceContact` | s.8(10), s.13 | [DPDP Act 2023, MeitY PDF](https://www.meity.gov.in/static/uploads/2024/06/2bf1f0e9f04e6fb4f8fef35e82c42aa5.pdf) | No |
+| Request deadline tracking and overdue flag | `dueAt`, `listOverdue`, `RequestsAdminTable` | Supports handling requests under s.11, s.12, s.13; the window itself is YOUR setting, see below | [DPDP Act 2023, MeitY PDF](https://www.meity.gov.in/static/uploads/2024/06/2bf1f0e9f04e6fb4f8fef35e82c42aa5.pdf) | No |
+| Audit log of who did what to each request (hash chained, no request text) | `src/requests/audit.ts` | s.8(5) (reasonable security safeguards), as supporting evidence | [DPDP Act 2023, MeitY PDF](https://www.meity.gov.in/static/uploads/2024/06/2bf1f0e9f04e6fb4f8fef35e82c42aa5.pdf) | No |
+| Breach runbook template | `templates/breach-runbook.md` | s.8(5), s.8(6); regulator and data principal duties are blanks to fill from the official text | [DPDP Act 2023, MeitY PDF](https://www.meity.gov.in/static/uploads/2024/06/2bf1f0e9f04e6fb4f8fef35e82c42aa5.pdf) | No |
 
 Not covered: children's data and verifiable parental consent, significant data
 fiduciary duties, consent managers, cross-border transfer, retention and

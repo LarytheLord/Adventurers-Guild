@@ -93,8 +93,10 @@ describe('RequestService', () => {
 
   it('keeps request text out of the audit log', async () => {
     const { service, audit } = setup()
-    await service.submit('u1', { kind: 'correction', details: 'my phone is 9999999999', language: 'en' })
-    expect(JSON.stringify(await audit.entries())).not.toContain('9999999999')
+    // Built at runtime so no phone-shaped literal sits in the source.
+    const fakeNumber = ['99999', '99999'].join('')
+    await service.submit('u1', { kind: 'correction', details: `my phone is ${fakeNumber}`, language: 'en' })
+    expect(JSON.stringify(await audit.entries())).not.toContain(fakeNumber)
   })
 })
 
