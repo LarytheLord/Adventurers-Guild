@@ -10,6 +10,7 @@ const FOOTER_ROUTES = new Set([
   '/quests',
   '/faq',
   '/audit',
+  '/audit/sample-report',
   '/checklist',
   '/ai-risk-tier',
   '/launch-check',
