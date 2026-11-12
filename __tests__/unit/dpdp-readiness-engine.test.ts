@@ -1,0 +1,107 @@
+import {
+  DPDP_QUESTION_COUNT,
+  assessReadiness,
+  validateQuestions,
+  type DpdpQuestion,
+} from '@/lib/dpdp-readiness/engine';
+import { DPDP_QUESTIONS } from '@/lib/dpdp-readiness/data';
+
+function q(id: string, over: Partial<DpdpQuestion> = {}): DpdpQuestion {
+  return {
+    id,
+    topic: 'notice',
+    question: 'Do you do the thing?',
+    provision: { kind: 'section', ref: 'PLACEHOLDER' },
+    fix: 'Do the thing.',
+    ...over,
+  };
+}
+
+describe('assessReadiness (scoring logic)', () => {
+  const qs = [q('a'), q('b'), q('c'), q('d')];
+
+  it('returns null until every question is answered', () => {
+    expect(assessReadiness(qs, { a: 'yes', b: 'no' })).toBeNull();
+    expect(assessReadiness(qs, {})).toBeNull();
+  });
+
+  it('counts yes answers and lists every no answer as a gap, in question order', () => {
+    const r = assessReadiness(qs, { a: 'yes', b: 'no', c: 'yes', d: 'no' });
+    expect(r).not.toBeNull();
+    expect(r!.yes).toBe(2);
+    expect(r!.total).toBe(4);
+    expect(r!.percent).toBe(50);
+    expect(r!.gaps.map((g) => g.id)).toEqual(['b', 'd']);
+  });
+
+  it('has no gaps and 100 percent when everything is yes', () => {
+    const r = assessReadiness(qs, { a: 'yes', b: 'yes', c: 'yes', d: 'yes' });
+    expect(r!.gaps).toEqual([]);
+    expect(r!.percent).toBe(100);
+  });
+
+  it('has 0 percent when everything is no', () => {
+    const r = assessReadiness(qs, { a: 'no', b: 'no', c: 'no', d: 'no' });
+    expect(r!.percent).toBe(0);
+    expect(r!.gaps).toHaveLength(4);
+  });
+
+  it('rounds the percentage to a whole number', () => {
+    const three = [q('a'), q('b'), q('c')];
+    expect(assessReadiness(three, { a: 'yes', b: 'no', c: 'no' })!.percent).toBe(33);
+    expect(assessReadiness(three, { a: 'yes', b: 'yes', c: 'no' })!.percent).toBe(67);
+  });
+
+  it('ignores answers for ids that are not questions', () => {
+    const r = assessReadiness(qs, { a: 'yes', b: 'yes', c: 'yes', d: 'yes', zzz: 'no' });
+    expect(r!.gaps).toEqual([]);
+  });
+
+  it('returns null for an empty question list rather than dividing by zero', () => {
+    expect(assessReadiness([], {})).toBeNull();
+  });
+
+  it('carries the provision and fix of each gap through to the result', () => {
+    const r = assessReadiness([q('a', { fix: 'Fix A.' })], { a: 'no' });
+    expect(r!.gaps[0].provision).toEqual({ kind: 'section', ref: 'PLACEHOLDER' });
+    expect(r!.gaps[0].fix).toBe('Fix A.');
+  });
+});
+
+describe('validateQuestions (content rules)', () => {
+  it('passes a well-formed list', () => {
+    expect(validateQuestions([q('a'), q('b')])).toEqual([]);
+  });
+
+  it('flags a question with no provision reference', () => {
+    const errs = validateQuestions([q('a', { provision: { kind: 'rule', ref: '' } })]);
+    expect(errs.join(' ')).toMatch(/a.*provision/i);
+  });
+
+  it('flags duplicate ids', () => {
+    expect(validateQuestions([q('a'), q('a')]).join(' ')).toMatch(/duplicate/i);
+  });
+
+  it('flags non-ASCII text', () => {
+    expect(validateQuestions([q('a', { fix: 'Don’t.' })]).join(' ')).toMatch(/ascii/i);
+  });
+
+  it('flags a missing fix or question', () => {
+    expect(validateQuestions([q('a', { fix: '' })]).length).toBeGreaterThan(0);
+    expect(validateQuestions([q('a', { question: ' ' })]).length).toBeGreaterThan(0);
+  });
+});
+
+describe('DPDP_QUESTIONS (shipped content)', () => {
+  it('has no validation errors', () => {
+    expect(validateQuestions(DPDP_QUESTIONS)).toEqual([]);
+  });
+
+  // Content is blocked on reading the Gazette text of the Act and the Rules.
+  // Switch this to a normal test once the verified questions are added.
+  it.todo('has exactly DPDP_QUESTION_COUNT (20) questions, each citing a section or rule');
+
+  it('keeps the target count at 20', () => {
+    expect(DPDP_QUESTION_COUNT).toBe(20);
+  });
+});
