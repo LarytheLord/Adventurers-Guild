@@ -152,7 +152,7 @@ describe('page metadata', () => {
     const m = buildPageMetadata({ path: '/audit', title: 'T', description: 'D' });
     expect(m.alternates?.canonical).toBe('https://www.guilds.work/audit');
     expect((m.openGraph as { url: string }).url).toBe('https://www.guilds.work/audit');
-    expect((m.twitter as { card: string }).card).toBe('summary');
+    expect((m.twitter as { card: string }).card).toBe('summary_large_image');
   });
 
   it('each public page uses the builder with its own path, ASCII only, and no stray numbers', () => {
