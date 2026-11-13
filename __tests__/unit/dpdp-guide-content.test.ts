@@ -12,6 +12,8 @@ import {
   DPDP_GUIDE_TITLE,
   dpdpGuidePlainText,
 } from '@/lib/dpdp-explainer/content';
+import { allGuideItems } from '@/lib/guides-hub/registry';
+import { OG_PAGES, ogImageUrl, ogSlugForPath } from '@/lib/og';
 import { PUBLIC_PAGES, dpdpGuideJsonLd, dpdpToolJsonLd, serializeJsonLd } from '@/lib/seo';
 
 const root = join(__dirname, '..', '..');
@@ -133,5 +135,34 @@ describe('DPDP SEO wiring', () => {
     expect(tool).toContain("path: '/dpdp-readiness'");
     expect(guide).toContain('path: DPDP_GUIDE_PATH');
     expect(guide).toContain('dpdpGuideJsonLd');
+  });
+});
+
+describe('DPDP pages on the guides hub and social cards', () => {
+  const hub = read('app/guides/page.tsx');
+
+  it('are listed in the guides registry, the guide as a guide and the check as a tool', () => {
+    const items = allGuideItems();
+    expect(items).toContainEqual({ path: '/guides/dpdp-rules-what-startups-must-do', kind: 'guide' });
+    expect(items).toContainEqual({ path: '/dpdp-readiness', kind: 'tool' });
+  });
+
+  it('are imported by the hub page so titles and descriptions come from their own metadata', () => {
+    expect(hub).toContain("from '@/app/dpdp-readiness/page'");
+    expect(hub).toContain("from '@/app/guides/dpdp-rules-what-startups-must-do/page'");
+  });
+
+  it('have an OG card each, ASCII, with the same title as the page and no empanelment claim', () => {
+    for (const path of ['/dpdp-readiness', '/guides/dpdp-rules-what-startups-must-do']) {
+      const slug = ogSlugForPath(path);
+      expect(slug).not.toBeNull();
+      expect(ogImageUrl(path)).toBe(`https://www.guilds.work/og/${slug}`);
+      const card = OG_PAGES[slug as string];
+      expect(isAscii(`${card.title} ${card.subtitle}`)).toBe(true);
+      expect(`${card.title} ${card.subtitle}`).not.toMatch(/empanel|legal advice is|certif/i);
+    }
+    expect(OG_PAGES[ogSlugForPath('/guides/dpdp-rules-what-startups-must-do') as string].title).toBe(DPDP_GUIDE_TITLE);
+    const toolTitle = /const TITLE = '([^']+)'/.exec(read('app/dpdp-readiness/page.tsx'))?.[1].replace(/ - Guild$/, '');
+    expect(OG_PAGES[ogSlugForPath('/dpdp-readiness') as string].title).toBe(toolTitle);
   });
 });
