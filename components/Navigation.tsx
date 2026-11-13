@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useSession, signOut } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -299,9 +300,13 @@ export default function Navigation() {
       >
         <div className="flex h-14 items-center justify-between px-3 sm:px-5">
           <Link href="/" className="flex items-center gap-2 group">
-            <img
-              src="/logo/guild-logo.png"
+            <Image
+              src="/logo/guild-logo-sm.png"
               alt="Guild"
+              width={40}
+              height={40}
+              sizes="40px"
+              priority
               className="h-10 w-10 flex-shrink-0 object-contain"
             />
           </Link>

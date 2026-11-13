@@ -11,6 +11,7 @@ import ErrorBoundary from "../components/ErrorBoundary"
 import { Toaster } from "@/components/ui/sonner"
 import { GoToTop } from "@/components/ui/go-to-top"
 import ConditionalFooter from "@/components/ConditionalFooter"
+import { Component as GuildFooter } from "@/components/ui/footer-taped-design"
 import { Analytics } from "@vercel/analytics/next"
 import { SITE_URL, SITE_TITLE, SITE_DESCRIPTION } from "@/lib/site-metadata"
 
@@ -84,7 +85,9 @@ export default function RootLayout({
               <ErrorBoundary>
                 {children}
               </ErrorBoundary>
-              <ConditionalFooter />
+              <ConditionalFooter>
+                <GuildFooter />
+              </ConditionalFooter>
             </div>
             <Toaster />
             <GoToTop />

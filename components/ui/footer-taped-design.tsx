@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { Github, Twitter } from 'lucide-react';
 import { FeedbackButton } from '@/components/ui/feedback-button';
 
@@ -24,7 +25,7 @@ export const Component = () => {
           {/* Brand */}
           <div className="flex flex-col items-start gap-3 max-w-[220px]">
             <Link href="/" className="flex items-center gap-2">
-              <img src="/logo/guild-logo.png" alt="Guild" className="h-8 w-8 object-contain" />
+              <Image src="/logo/guild-logo-sm.png" alt="Guild" width={32} height={32} sizes="32px" className="h-8 w-8 object-contain" />
               <span className="text-[20px] font-extrabold text-slate-900 tracking-tight">Guild</span>
             </Link>
             <p className="text-[13px] font-medium leading-relaxed text-slate-500">
