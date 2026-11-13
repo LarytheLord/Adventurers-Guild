@@ -1,0 +1,13 @@
+[project]
+name = "indic-judge-check"
+version = "0.1.0"
+description = "Agreement harness for LLM judges on Indic-language items"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+dependencies = []
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
