@@ -5,6 +5,7 @@ import { LaunchCheckQuiz } from '@/components/launch-check/launch-check-quiz';
 import { JsonLd } from '@/components/seo/json-ld';
 import { buildPageMetadata, launchCheckJsonLd } from '@/lib/seo';
 import { Button } from '@/components/ui/button';
+import { RequestLaunchCheck } from '@/components/launch-check/request-launch-check';
 
 const TITLE = 'Launch self-check for apps built with Lovable, Bolt, Replit, v0 or Cursor - Guild';
 const DESCRIPTION =
@@ -77,6 +78,8 @@ export default function LaunchCheckPage() {
             <Link href="/audit">See how we check your app</Link>
           </Button>
         </section>
+
+        <RequestLaunchCheck headingId="request-launch-check" />
       </div>
     </InfoPageShell>
   );
