@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { ArrowRight, Mail } from 'lucide-react';
 import {
   HOME_CONTACT,
+  HOME_FEATURED_OFFER,
   HOME_HERO,
   HOME_HOW,
   HOME_HOW_TITLE,
@@ -10,6 +11,7 @@ import {
   HOME_RESOURCES,
   HOME_RESOURCES_TITLE,
   HOME_TALENT,
+  HOME_UMBRELLA,
 } from '@/lib/home/content';
 
 const textLink =
@@ -21,7 +23,8 @@ export default function AssuranceHome() {
       <section className="mx-auto max-w-4xl px-6 pb-16 pt-20 sm:pt-28">
         <p className="text-sm font-semibold uppercase tracking-[0.16em] text-orange-700">{HOME_HERO.eyebrow}</p>
         <h1 className="mt-4 text-4xl font-black leading-[1.05] tracking-tight sm:text-6xl">{HOME_HERO.headline}</h1>
-        <p className="mt-6 max-w-2xl text-lg text-slate-700">{HOME_HERO.lead}</p>
+        <p className="mt-6 max-w-2xl text-xl font-semibold text-slate-900">{HOME_UMBRELLA}</p>
+        <p className="mt-3 max-w-2xl text-lg text-slate-700">{HOME_HERO.lead}</p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">
           <Link
             href={HOME_HERO.primary.href}
@@ -40,12 +43,45 @@ export default function AssuranceHome() {
 
       <section aria-labelledby="offers" className="mx-auto max-w-5xl px-6 pb-16">
         <h2 id="offers" className="sr-only">What we offer</h2>
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <article
+          aria-labelledby="offer-launch-check"
+          className="flex flex-col rounded-3xl border-2 border-slate-900 bg-white p-8 sm:p-10"
+        >
+          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-orange-700">{HOME_FEATURED_OFFER.kicker}</p>
+          <h3 id="offer-launch-check" className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">
+            {HOME_FEATURED_OFFER.title}
+          </h3>
+          <p className="mt-4 text-3xl font-bold text-slate-950">
+            {HOME_FEATURED_OFFER.price}{' '}
+            <span className="text-base font-medium text-slate-600">{HOME_FEATURED_OFFER.priceNote}</span>
+          </p>
+          <p className="mt-4 max-w-2xl text-lg text-slate-700">{HOME_FEATURED_OFFER.body}</p>
+          <ul className="mt-4 list-disc space-y-1 pl-5 text-slate-700">
+            {HOME_FEATURED_OFFER.points.map((p) => (
+              <li key={p}>{p}</li>
+            ))}
+          </ul>
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Link
+              href={HOME_FEATURED_OFFER.primary.href}
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full bg-slate-900 px-7 text-[15px] font-semibold text-white hover:bg-slate-800"
+            >
+              {HOME_FEATURED_OFFER.primary.label} <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
+            <Link
+              href={HOME_FEATURED_OFFER.secondary.href}
+              className="inline-flex min-h-12 items-center justify-center gap-2 rounded-full border border-slate-300 px-7 text-[15px] font-semibold text-slate-900 hover:bg-slate-50"
+            >
+              {HOME_FEATURED_OFFER.secondary.label}
+            </Link>
+          </div>
+        </article>
+        <div className="mt-6 grid gap-6 md:grid-cols-2">
           {HOME_OFFERS.map((o) => (
-            <article key={o.id} className="flex flex-col rounded-2xl border border-slate-200 bg-slate-50/60 p-7">
+            <article key={o.id} className="flex flex-col rounded-2xl border border-slate-200 bg-slate-50/60 p-5">
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-orange-700">{o.kicker}</p>
-              <h3 className="mt-2 text-2xl font-bold tracking-tight">{o.title}</h3>
-              <p className="mt-3 text-slate-700">{o.body}</p>
+              <h3 className="mt-2 text-xl font-bold tracking-tight">{o.title}</h3>
+              <p className="mt-3 text-[15px] text-slate-700">{o.body}</p>
               <ul className="mt-4 list-disc space-y-1 pl-5 text-slate-700">
                 {o.points.map((p) => (
                   <li key={p}>{p}</li>
