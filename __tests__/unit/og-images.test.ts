@@ -2,6 +2,7 @@ import { readFileSync } from 'fs';
 import { join } from 'path';
 import { buildPageMetadata, SITE_URL } from '@/lib/seo';
 import { OG_PAGES, ogImageUrl, ogSlugForPath } from '@/lib/og';
+import { INDIC_QA_PATH, INDIC_QA_TITLE } from '@/lib/indic-ai-qa/content';
 import { ANSWER_PAGES } from '@/lib/answer-pages/content';
 import { EXPLAINER_PATH, EXPLAINER_TITLE } from '@/lib/cert-in-explainer/content';
 import { PUBLIC_PAGES } from '@/lib/seo';
@@ -16,6 +17,7 @@ const PATHS = [
   '/launch-check',
   '/checklist',
   '/ai-risk-tier',
+  INDIC_QA_PATH,
   EXPLAINER_PATH,
   ...ANSWER_PAGES.map((a) => a.path),
 ];
@@ -61,6 +63,7 @@ describe('og card registry', () => {
 
   it('uses the same title as the page', () => {
     expect(OG_PAGES[ogSlugForPath(EXPLAINER_PATH) as string].title).toBe(EXPLAINER_TITLE);
+    expect(OG_PAGES[ogSlugForPath(INDIC_QA_PATH) as string].title).toBe(INDIC_QA_TITLE.replace(/ - Guild$/, ''));
     for (const a of ANSWER_PAGES) expect(OG_PAGES[ogSlugForPath(a.path) as string].title).toBe(a.title);
     const fromSource = (file: string) =>
       /const TITLE =\s*'([^']+)'/.exec(readFileSync(join(root, file), 'utf8'))?.[1].replace(/ - Guild$/, '');

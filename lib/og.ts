@@ -1,5 +1,6 @@
 import { ANSWER_PAGES } from '@/lib/answer-pages/content';
 import { EXPLAINER_PATH, EXPLAINER_TITLE } from '@/lib/cert-in-explainer/content';
+import { INDIC_QA_PATH } from '@/lib/indic-ai-qa/content';
 import { SITE_URL } from '@/lib/site-metadata';
 
 /**
@@ -31,6 +32,10 @@ const FIXED: Record<string, { path: string; card: OgCard }> = {
   'ai-risk-tier': {
     path: '/ai-risk-tier',
     card: { title: 'CERT-In AI security audit risk tier calculator', subtitle: 'Free self-check. Unofficial.' },
+  },
+  'indic-ai-qa': {
+    path: INDIC_QA_PATH,
+    card: { title: 'AI quality checks for Hindi, Gujarati and Hinglish', subtitle: 'Two-week pilot' },
   },
   'cert-in-guide': {
     path: EXPLAINER_PATH,
