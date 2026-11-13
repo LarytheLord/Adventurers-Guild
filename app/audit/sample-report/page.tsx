@@ -105,7 +105,7 @@ export default function SampleReportPage() {
               <ol className="mt-3 list-decimal space-y-2 pl-5 text-sm leading-6">
                 {SAMPLE_SUMMARY.fixFirst.map((id) => (
                   <li key={id}>
-                    <a href={`#finding-${id}`} className="font-semibold text-orange-600 underline underline-offset-4">
+                    <a href={`#finding-${id}`} className="font-semibold text-orange-700 underline underline-offset-4">
                       {id}
                     </a>{' '}
                     {findingById.get(id)?.title}
@@ -306,7 +306,7 @@ export default function SampleReportPage() {
                 <div className="flex flex-wrap items-center gap-3">
                   <a
                     href={`#finding-${r.findingId}`}
-                    className="font-bold text-orange-600 underline underline-offset-4"
+                    className="font-bold text-orange-700 underline underline-offset-4"
                   >
                     {r.findingId}
                   </a>
@@ -345,7 +345,7 @@ export default function SampleReportPage() {
             <Button asChild size="lg">
               <a href={AUDIT_MAILTO}>Request a Launch Check</a>
             </Button>
-            <Link href="/audit" className="font-semibold text-orange-600 underline underline-offset-4">
+            <Link href="/audit" className="font-semibold text-orange-700 underline underline-offset-4">
               Back to the offer and prices
             </Link>
           </div>

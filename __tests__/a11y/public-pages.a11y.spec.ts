@@ -5,6 +5,7 @@ import AxeBuilder from '@axe-core/playwright';
 const PAGES = [
   '/',
   '/audit',
+  '/audit/sample-report',
   '/checklist',
   '/ai-risk-tier',
   '/guides/cert-in-ai-security-auditing-guidelines',
@@ -17,7 +18,8 @@ const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'];
 
 for (const path of PAGES) {
   test(`axe: ${path} has no violations`, async ({ page }) => {
-    await page.goto(path, { waitUntil: 'networkidle' });
+    await page.goto(path);
+    await page.locator('main h1').first().waitFor();
     const results = await new AxeBuilder({ page }).withTags(TAGS).analyze();
     const summary = results.violations.map((v) => ({
       id: v.id,
@@ -28,17 +30,21 @@ for (const path of PAGES) {
   });
 }
 
-test('keyboard focus is visible on the first tab stop of /', async ({ page }) => {
-  await page.goto('/', { waitUntil: 'networkidle' });
+test('first tab stop on / shows a visible focus indicator', async ({ page }) => {
+  await page.goto('/');
+  await page.locator('main h1').first().waitFor();
   await page.keyboard.press('Tab');
-  const outline = await page.evaluate(() => {
-    const el = document.activeElement as HTMLElement | null;
-    if (!el || el === document.body) return null;
+  const focus = page.locator(':focus');
+  await expect(focus).toBeVisible();
+  const style = await focus.evaluate((el) => {
     const s = getComputedStyle(el);
-    const r = el.getBoundingClientRect();
-    return { w: r.width, h: r.height, outline: s.outlineStyle, shadow: s.boxShadow };
+    return {
+      outlineStyle: s.outlineStyle,
+      outlineWidth: parseFloat(s.outlineWidth),
+      boxShadow: s.boxShadow,
+    };
   });
-  expect(outline).not.toBeNull();
-  expect(outline!.w).toBeGreaterThan(0);
-  expect(outline!.h).toBeGreaterThan(0);
+  const hasOutline = style.outlineStyle !== 'none' && style.outlineWidth > 0;
+  const hasShadow = style.boxShadow !== 'none';
+  expect(hasOutline || hasShadow, JSON.stringify(style)).toBe(true);
 });

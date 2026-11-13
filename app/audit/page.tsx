@@ -89,7 +89,7 @@ export default function AuditPage() {
           </ol>
           <p className="leading-7">
             Want to see the result first?{' '}
-            <Link href={SAMPLE_REPORT_PATH} className="font-semibold text-orange-600 underline underline-offset-4">
+            <Link href={SAMPLE_REPORT_PATH} className="font-semibold text-orange-700 underline underline-offset-4">
               Read a sample report on a fictional app
             </Link>
             .
