@@ -28,6 +28,7 @@ export const SAME_AS = ['https://github.com/LarytheLord/Adventurers-Guild', 'htt
 /** The public marketing pages. Sitemap and llms.txt are checked against this list. */
 export const PUBLIC_PAGES = [
   { path: '/', priority: 1 },
+  { path: '/guides', priority: 0.8 },
   { path: '/audit', priority: 0.9 },
   { path: '/checklist', priority: 0.8 },
   { path: '/ai-risk-tier', priority: 0.9 },
@@ -214,4 +215,29 @@ export function indicQaJsonLd() {
       provider: org,
     },
   ];
+}
+
+/** CollectionPage for the /guides index. Names and descriptions are the pages' own metadata. */
+export function guidesHubJsonLd(entries: { name: string; description: string; path: string }[]) {
+  const pageUrl = absoluteUrl('/guides');
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Guides and free tools',
+    url: pageUrl,
+    inLanguage: 'en-IN',
+    isPartOf: { '@type': 'WebSite', name: SITE_NAME, url: SITE_URL },
+    publisher: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
+    mainEntity: {
+      '@type': 'ItemList',
+      numberOfItems: entries.length,
+      itemListElement: entries.map((e, i) => ({
+        '@type': 'ListItem',
+        position: i + 1,
+        name: e.name,
+        description: e.description,
+        url: absoluteUrl(e.path),
+      })),
+    },
+  };
 }
