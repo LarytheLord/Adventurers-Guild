@@ -13,8 +13,7 @@ Status: draft for the founder to review. Nothing here has been posted.
       structure, but an upload to GitHub has not been tried yet.
 - [ ] Read the Supabase changelog page linked in the README yourself before
       anyone states a date about Supabase's Data API defaults.
-- [ ] Decide whether the repo link points at this monorepo folder or a
-      separate repo.
+- [x] Repo link: the tool lives in its own repo, `https://github.com/LarytheLord/rls-open-check`.
 - [ ] Confirm the "Why we built it" paragraph is true in your words (it was
       drafted without knowing your real motivation, including whether Guild
       runs its own migrations through this tool).
@@ -30,7 +29,7 @@ Show HN: A CLI that flags open Row Level Security policies in SQL migrations
 
 ## URL
 
-https://github.com/LarytheLord/Adventurers-Guild/tree/main/tools/rls-open-check
+https://github.com/LarytheLord/rls-open-check
 
 ## First comment
 
@@ -41,6 +40,16 @@ read or write data.
 Try it from a project root:
 
     npx rls-open-check
+
+Or from source (Node 18 or newer):
+
+    git clone https://github.com/LarytheLord/rls-open-check.git
+    cd rls-open-check
+    npm ci
+    npm run build
+    node dist/bin.js path/to/your/supabase/migrations
+
+Source and issues: https://github.com/LarytheLord/rls-open-check
 
 It scans supabase/migrations, prints findings with a one-line fix hint, and
 exits 1 on high or critical findings, so it can run in CI. It can also write
