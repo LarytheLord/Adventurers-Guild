@@ -25,8 +25,8 @@ describe('home page content', () => {
     expect(home.HOME_MAILTO).toBe('mailto:abid@guilds.work?subject=Guild%20enquiry');
   });
 
-  it('has exactly two offers, each with a title, text and a primary link', () => {
-    expect(home.HOME_OFFERS).toHaveLength(2);
+  it('has exactly three offers, each with a title, text and a primary link', () => {
+    expect(home.HOME_OFFERS).toHaveLength(3);
     for (const o of home.HOME_OFFERS) {
       expect(o.title.length).toBeGreaterThan(5);
       expect(o.body.length).toBeGreaterThan(20);

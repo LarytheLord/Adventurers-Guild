@@ -43,6 +43,19 @@ export const HOME_OFFERS = [
     primary: { label: 'See the Launch Check', href: '/audit' },
     secondary: null,
   },
+  {
+    id: 'indic-ai-qa',
+    kicker: 'For teams shipping in Indian languages',
+    title: 'AI quality checks for Hindi, Gujarati and Hinglish',
+    body:
+      'Shipping a chatbot, a voice agent or an LLM feature in Hindi, Gujarati or Hinglish? Native speakers test it in a two-week pilot and we write down what we find.',
+    points: [
+      'Meaning errors, politeness, code-mixing, refusals and made-up policy.',
+      'Whether your LLM judge agrees with native-speaker raters.',
+    ],
+    primary: { label: 'See the Indic AI QA pilot', href: '/indic-ai-qa' },
+    secondary: null,
+  },
 ];
 
 export const HOME_PARTNER_NOTE =

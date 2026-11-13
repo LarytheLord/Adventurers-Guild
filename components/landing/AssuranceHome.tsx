@@ -40,7 +40,7 @@ export default function AssuranceHome() {
 
       <section aria-labelledby="offers" className="mx-auto max-w-5xl px-6 pb-16">
         <h2 id="offers" className="sr-only">What we offer</h2>
-        <div className="grid gap-6 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {HOME_OFFERS.map((o) => (
             <article key={o.id} className="flex flex-col rounded-2xl border border-slate-200 bg-slate-50/60 p-7">
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-orange-700">{o.kicker}</p>
