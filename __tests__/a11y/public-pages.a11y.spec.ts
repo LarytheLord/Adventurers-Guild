@@ -6,6 +6,7 @@ const PAGES = [
   '/',
   '/audit',
   '/audit/sample-report',
+  '/launch-check',
   '/checklist',
   '/ai-risk-tier',
   '/guides/cert-in-ai-security-auditing-guidelines',
