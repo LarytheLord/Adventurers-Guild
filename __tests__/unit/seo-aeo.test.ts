@@ -100,6 +100,16 @@ describe('llms.txt', () => {
       expect(txt).toContain(p.path === '/' ? '(https://www.guilds.work/)' : `(https://www.guilds.work${p.path})`);
     }
   });
+  it('lists each public page on its own line that starts with "- ["', () => {
+    const lines = txt.split('\n');
+    for (const p of PUBLIC_PAGES) {
+      const url = p.path === '/' ? '](https://www.guilds.work/)' : `](https://www.guilds.work${p.path})`;
+      const hits = lines.filter((l) => l.includes(url));
+      expect(hits).toHaveLength(1);
+      expect(hits[0].startsWith('- [')).toBe(true);
+    }
+    for (const l of lines) expect(l.split('- [').length - 1).toBeLessThanOrEqual(1);
+  });
   it('does not claim empanelment', () => {
     expect(txt).toMatch(/not a CERT-In empanelled auditor/);
   });

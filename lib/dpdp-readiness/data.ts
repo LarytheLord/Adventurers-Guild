@@ -4,8 +4,8 @@ import type { DpdpQuestion } from './engine';
 // - The Digital Personal Data Protection Act, 2023 (Act 22 of 2023), official PDF on meity.gov.in.
 //   Section numbers below are Act section numbers.
 // - The Digital Personal Data Protection Rules, 2025: Gazette notification G.S.R. 846(E),
-//   notified 13 November 2025, published in the Gazette of India (Extraordinary) on
-//   14 November 2025, with companion notifications G.S.R. 843(E) to 845(E).
+//   notified 13 November 2025 and published in the Gazette of India (Extraordinary) on
+//   14 November 2025, as reported by Bar & Bench and Mondaq (not read by us in the Gazette).
 //
 // The Rules text could not be opened when this was written, so no rule number is cited
 // anywhere. Where the Rules fix a detail (timelines, forms, manner), the fix text says
@@ -19,7 +19,7 @@ export const DPDP_ACT_PDF_URL =
 export const DPDP_RULES_PAGE_URL =
   'https://www.meity.gov.in/documents/act-and-policies/digital-personal-data-protection-rules-2025';
 export const DPDP_RULES_NOTIFICATION =
-  'G.S.R. 846(E), notified 13 November 2025 and published in the Gazette of India (Extraordinary) on 14 November 2025, with companion notifications G.S.R. 843(E) to 845(E)';
+  'G.S.R. 846(E), notified 13 November 2025 and published in the Gazette of India (Extraordinary) on 14 November 2025, as reported by Bar & Bench and Mondaq';
 
 export interface PhaseDate {
   date: string;
@@ -74,9 +74,9 @@ export const DPDP_QUESTIONS: DpdpQuestion[] = [
     id: 'notice-language',
     topic: 'notice',
     question:
-      'Is the notice in clear, plain language, available in English or a language in the Eighth Schedule to the Constitution, with the contact details of your Data Protection Officer or the person who answers questions?',
+      'Can each person choose to read the notice in English or in any language in the Eighth Schedule to the Constitution?',
     provision: sec('5(3)'),
-    fix: 'Rewrite the notice in plain language, offer it in English and the languages your users read, and put a named contact (Data Protection Officer or an authorised person) on it.',
+    fix: 'Offer the notice in English and in the Eighth Schedule languages your users read, and let the person pick the language when they see it.',
   },
   {
     id: 'consent-quality',

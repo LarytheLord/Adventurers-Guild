@@ -25,7 +25,7 @@ export const DPDP_GUIDE_CHECK_NOTE =
   'Check the Gazette. We cite Act section numbers only. We did not read the Rules text when writing this, so it cites no rule number, and the phase dates are as reported by Bar & Bench and Mondaq.';
 
 export const DPDP_GUIDE_SUMMARY: string[] = [
-  'The Act is the Digital Personal Data Protection Act, 2023. The Rules are Gazette notification G.S.R. 846(E), notified 13 November 2025 and published in the Gazette of India (Extraordinary) on 14 November 2025.',
+  'The Act is the Digital Personal Data Protection Act, 2023. The Rules are Gazette notification G.S.R. 846(E), notified 13 November 2025 and published in the Gazette of India (Extraordinary) on 14 November 2025, as reported by Bar & Bench and Mondaq.',
   'If you process digital personal data in India, or offer goods or services to people in India from abroad, the Act applies to you (section 3). A startup is not exempt by default.',
   'The core duties are a notice (5), valid consent or a listed legitimate use (4, 6, 7), security safeguards (8(5)), breach reporting (8(6)), erasure (8(7)), a grievance channel (8(10)) and extra care for children (9).',
   'Phase dates are as reported by secondary sources and are per the notified Rules. Read the [Rules page on MeitY](' + DPDP_RULES_PAGE_URL + ') and the Gazette before you rely on a date.',
@@ -42,7 +42,7 @@ export const DPDP_GUIDE_SECTIONS: ExplainerSection[] = [
       },
       {
         kind: 'p',
-        text: 'The Rules fill in the detail the Act leaves to rules, such as forms, timelines and manner. They were notified as G.S.R. 846(E) on 13 November 2025 and published in the Gazette of India (Extraordinary) on 14 November 2025, with companion notifications G.S.R. 843(E) to 845(E). The [MeitY page](' + DPDP_RULES_PAGE_URL + ') carries them.',
+        text: 'The Rules fill in the detail the Act leaves to rules, such as forms, timelines and manner. They were notified as G.S.R. 846(E) on 13 November 2025 and published in the Gazette of India (Extraordinary) on 14 November 2025, as reported by Bar & Bench and Mondaq. The [MeitY page](' + DPDP_RULES_PAGE_URL + ') carries them.',
       },
     ],
   },
@@ -69,7 +69,7 @@ export const DPDP_GUIDE_SECTIONS: ExplainerSection[] = [
         items: [
           'Processing of digital personal data within India, including data collected on paper and later digitised (section 3).',
           'Processing outside India if it is connected with offering goods or services to people in India (section 3).',
-          'Personal or domestic use by an individual is outside the Act (section 17).',
+          'Processing by an individual for a personal or domestic purpose is outside the Act (section 3(c)(i)).',
           'Section 17(3) lets the Central Government exempt classes of Data Fiduciary, startups among them, from some provisions by notification. Check whether a notification covers you. Do not assume one does.',
         ],
       },
@@ -88,7 +88,7 @@ export const DPDP_GUIDE_SECTIONS: ExplainerSection[] = [
         head: ['Duty', 'Act section', 'What it means in practice'],
         rows: [
           ['Lawful purpose', '4(1)', 'Process only with consent or for a listed legitimate use.'],
-          ['Notice', '5(1), 5(3)', 'Tell people what you collect, why, how to use their rights and how to complain. Plain language, English or an Eighth Schedule language, with a contact.'],
+          ['Notice', '5(1), 5(3)', 'Tell people what you collect, why, how to use their rights and how to complain (5(1)). Offer it in English or an Eighth Schedule language (5(3)).'],
           ['Consent', '6(1), 6(4)', 'Free, specific, informed, unconditional, unambiguous, by clear action, limited to what is necessary. Withdrawal as easy as giving.'],
           ['Legitimate uses', '7', 'A closed list of uses that do not need consent. Read the list.'],
           ['Technical and organisational measures', '8(4)', 'Policies, training and an owner, to show compliance.'],
@@ -96,7 +96,7 @@ export const DPDP_GUIDE_SECTIONS: ExplainerSection[] = [
           ['Breach notification', '8(6)', 'Tell the Data Protection Board and each affected person, in the form and time set in the Rules.'],
           ['Erasure', '8(7)', 'Erase when consent is withdrawn or the purpose is served, unless a law requires retention. Make processors do the same.'],
           ['Processors', '8(2)', 'Engage a processor only under a valid contract.'],
-          ['Contact and grievance', '8(9), 8(10)', 'Publish a contact for questions and run a grievance system.'],
+          ['Contact and grievance', '8(9), 8(10)', 'Publish the business contact of a Data Protection Officer or another person who answers questions (8(9)) and run a grievance system (8(10)).'],
           ['Children', '9(1), 9(2), 9(3)', 'Verifiable parent or guardian consent, no harmful processing, no tracking, behavioural monitoring or targeted ads aimed at children.'],
           ['Significant Data Fiduciary', '10', 'Extra duties for those the Central Government notifies.'],
           ['Rights requests', '12', 'People can ask you to correct or erase their data.'],
@@ -172,7 +172,7 @@ export const DPDP_GUIDE_FAQ: FaqItem[] = [
   },
   {
     q: 'What is the date the DPDP Rules 2025 start?',
-    a: 'The Rules are G.S.R. 846(E), notified 13 November 2025 and published on 14 November 2025. Phase dates of 14 November 2025, 14 November 2026 and 14 May 2027 are as reported by Bar & Bench and Mondaq. Which obligation starts when is per the notified Rules, so check the Gazette.',
+    a: 'The Rules are G.S.R. 846(E), notified 13 November 2025 and published on 14 November 2025, as reported by Bar & Bench and Mondaq. Phase dates of 14 November 2025, 14 November 2026 and 14 May 2027 are as reported by Bar & Bench and Mondaq. Which obligation starts when is per the notified Rules, so check the Gazette.',
   },
   {
     q: 'Do I need a Data Protection Officer?',

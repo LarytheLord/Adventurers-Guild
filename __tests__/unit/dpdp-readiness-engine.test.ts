@@ -88,7 +88,7 @@ describe('validateQuestions (content rules)', () => {
   });
 
   it('flags non-ASCII text', () => {
-    expect(validateQuestions([q('a', { fix: 'Don’t.' })]).join(' ')).toMatch(/ascii/i);
+    expect(validateQuestions([q('a', { fix: 'Don' + String.fromCharCode(0x2019) + 't.' })]).join(' ')).toMatch(/ascii/i);
   });
 
   it('flags a missing fix or question', () => {
@@ -144,9 +144,29 @@ describe('DPDP_QUESTIONS (shipped content)', () => {
   });
 });
 
+describe('notice questions cite what each provision covers', () => {
+  const byId = (id: string) => DPDP_QUESTIONS.find((x) => x.id === id)!;
+
+  it('notice-language is about language only and cites 5(3)', () => {
+    const x = byId('notice-language');
+    expect(x.provision.ref).toBe('5(3)');
+    expect(x.question).toMatch(/English|Eighth Schedule/);
+    expect(x.question).not.toMatch(/plain language|contact|Data Protection Officer/i);
+    expect(x.fix).not.toMatch(/plain language|contact/i);
+  });
+
+  it('the contact person is a separate question citing 8(9)', () => {
+    const x = byId('grievance-contact');
+    expect(x.provision.ref).toBe('8(9)');
+    expect(x.question).toMatch(/contact/i);
+  });
+});
+
 describe('DPDP source note and dates', () => {
   it('names the Rules only by G.S.R. 846(E) and attributes phase dates to secondary sources', () => {
     expect(DPDP_RULES_NOTIFICATION).toMatch(/G\.S\.R\. 846\(E\)/);
+    expect(DPDP_RULES_NOTIFICATION).toMatch(/as reported by Bar & Bench and Mondaq/);
+    expect(DPDP_RULES_NOTIFICATION).not.toMatch(/84[345]\(E\)/);
     expect(DPDP_PHASE_DATES_NOTE).toMatch(/as reported by/i);
     expect(DPDP_PHASE_DATES_NOTE).toMatch(/check the Gazette/i);
     expect(DPDP_PHASE_DATES.map((d) => d.date)).toEqual(['14 November 2025', '14 November 2026', '14 May 2027']);

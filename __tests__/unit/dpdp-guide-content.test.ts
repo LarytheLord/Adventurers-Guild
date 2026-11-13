@@ -59,6 +59,18 @@ describe('DPDP guide content', () => {
     }
   });
 
+  it('places personal or domestic use in section 3(c)(i), not section 17', () => {
+    expect(text).toContain('3(c)(i)');
+    expect(text).not.toMatch(/personal or domestic[^.]*\(section 17\)/i);
+  });
+
+  it('does not list companion G.S.R. numbers and dates the notification as reported', () => {
+    expect(text).not.toMatch(/84[345]\(E\)/);
+    expect(text).toMatch(/13 November 2025/);
+    expect(text).toMatch(/14 November 2025/);
+    expect(text).toMatch(/as reported by Bar & Bench and Mondaq/);
+  });
+
   it('links to the readiness tool', () => {
     expect(text).toContain('/dpdp-readiness');
   });
@@ -94,6 +106,20 @@ describe('DPDP SEO wiring', () => {
       expect(llms).toContain(`(https://www.guilds.work${path})`);
     }
     expect(llms).toMatch(/G\.S\.R\. 846\(E\)/);
+  });
+
+  it('llms.txt has one entry per line: each page URL sits on a line that starts with "- ["', () => {
+    const lines = read('public/llms.txt').split('\n');
+    for (const path of ['/dpdp-readiness', '/guides/dpdp-rules-what-startups-must-do']) {
+      const hits = lines.filter((l) => l.includes(`](https://www.guilds.work${path})`));
+      expect(hits).toHaveLength(1);
+      expect(hits[0].startsWith('- [')).toBe(true);
+    }
+    for (const l of lines) expect(l.split('- [').length - 1).toBeLessThanOrEqual(1);
+  });
+
+  it('the footer shows on /dpdp-readiness', () => {
+    expect(read('components/ConditionalFooter.tsx')).toContain("'/dpdp-readiness'");
   });
 
   it('route files pin metadata and render JSON-LD', () => {
