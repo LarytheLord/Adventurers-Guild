@@ -1,8 +1,12 @@
+import { AUDIT_PACKAGES } from '@/lib/audit-offer/content';
+
 export const HOME_TITLE = 'Guild - independent checks for the AI you ship';
 export const HOME_DESCRIPTION =
   'Guild tests AI systems and the apps built around them, and writes down what we find. CERT-In AI audit readiness for Indian teams, and a Launch Check for apps built with Lovable, Bolt, Replit, v0 or Cursor.';
 
 export const HOME_MAILTO = 'mailto:abid@guilds.work?subject=Guild%20enquiry';
+
+export const HOME_UMBRELLA = 'We check AI-built work before people rely on it.';
 
 export const HOME_HERO = {
   eyebrow: 'Independent AI assurance',
@@ -13,6 +17,27 @@ export const HOME_HERO = {
   secondary: { label: 'CERT-In AI readiness', href: '/ai-risk-tier' },
 };
 
+const CHECK_PACKAGE = AUDIT_PACKAGES.find((p) => p.name === 'Check') ?? AUDIT_PACKAGES[0];
+
+// The first and largest offer. Price and turnaround are read from the same
+// data /audit renders, so the two pages cannot drift apart.
+export const HOME_FEATURED_OFFER = {
+  id: 'launch-check',
+  kicker: 'For founders shipping fast',
+  title: 'Launch Check',
+  body:
+    'Built your app with Lovable, Bolt, Replit, v0 or Cursor? We check it, fix it and help you ship it. We cover four areas equally: payments, deployment and domains, performance and cost, and security and data access.',
+  price: CHECK_PACKAGE.price,
+  priceNote: `Check: ${CHECK_PACKAGE.time}`,
+  points: [
+    'Written report, each finding rated critical, high, medium or low.',
+    `The ${CHECK_PACKAGE.price} is credited to a Fix, which is a fixed quote after the check.`,
+  ],
+  primary: { label: 'Run the free launch self-check', href: '/launch-check' },
+  secondary: { label: 'See the Launch Check and packages', href: '/audit' },
+};
+
+// Smaller cards, shown below the Launch Check.
 export const HOME_OFFERS = [
   {
     id: 'cert-in',
@@ -29,19 +54,6 @@ export const HOME_OFFERS = [
       label: 'Read the guideline explainer',
       href: '/guides/cert-in-ai-security-auditing-guidelines',
     },
-  },
-  {
-    id: 'production-check',
-    kicker: 'For founders shipping fast',
-    title: 'Launch Check for AI-built apps',
-    body:
-      'Built your app with Lovable, Bolt, Replit, v0 or Cursor? We check it, fix it and help you ship it. We cover four areas equally: payments, deployment and domains, performance and cost, and security and data access.',
-    points: [
-      'Written report, each finding rated critical, high, medium or low.',
-      'Optional fixes, at a fixed quote after the check.',
-    ],
-    primary: { label: 'See the Launch Check', href: '/audit' },
-    secondary: null,
   },
   {
     id: 'indic-ai-qa',

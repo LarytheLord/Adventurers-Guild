@@ -50,7 +50,7 @@ describe('Launch Check: four areas', () => {
   });
 
   it('home offer card and nav use the new name', () => {
-    const offerCard = home.HOME_OFFERS.find((o) => o.id === 'production-check')!;
+    const offerCard = home.HOME_FEATURED_OFFER;
     const t = JSON.stringify(offerCard) + JSON.stringify(home.HOME_HERO);
     expect(t).toContain('Launch Check');
     expect(t).not.toContain('Production Check');
