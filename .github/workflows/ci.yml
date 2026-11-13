@@ -42,3 +42,9 @@ jobs:
 
       - name: Build application
         run: npm run build
+
+      - name: Install Chromium for accessibility tests
+        run: npx playwright install --with-deps chromium
+
+      - name: Run accessibility tests (axe)
+        run: npm run test:a11y

@@ -25,7 +25,7 @@ export const Component = () => {
           {/* Brand */}
           <div className="flex flex-col items-start gap-3 max-w-[220px]">
             <Link href="/" className="flex items-center gap-2">
-              <Image src="/logo/guild-logo-sm.png" alt="Guild" width={32} height={32} sizes="32px" className="h-8 w-8 object-contain" />
+              <Image src="/logo/guild-logo-sm.png" alt="" width={32} height={32} sizes="32px" className="h-8 w-8 object-contain" />
               <span className="text-[20px] font-extrabold text-slate-900 tracking-tight">Guild</span>
             </Link>
             <p className="text-[13px] font-medium leading-relaxed text-slate-500">
@@ -36,7 +36,7 @@ export const Component = () => {
           <div className="flex flex-col md:flex-row gap-8 md:gap-16 items-start">
             {/* Platform */}
             <div className="flex flex-col gap-3">
-              <h4 className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-400">Platform</h4>
+              <h2 className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-600">Platform</h2>
               <div className="flex flex-wrap md:flex-col gap-2 items-start">
                 <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="/quests">Browse Quests</Link>
                 <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="/#how-it-works">How It Works</Link>
@@ -47,7 +47,7 @@ export const Component = () => {
 
             {/* Company */}
             <div className="hidden md:flex flex-col gap-3">
-              <h4 className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-400">Company</h4>
+              <h2 className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-600">Company</h2>
               <div className="flex flex-col gap-2 items-start">
                 <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="/faq">FAQ</Link>
                 <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="/audit">Launch Check</Link>
@@ -56,7 +56,7 @@ export const Component = () => {
                 <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="/guides">Guides and free tools</Link>
                 <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="https://github.com/LarytheLord/Adventurers-Guild" target="_blank" rel="noopener noreferrer">Open Source (MIT)</Link>
                 <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="/register?tab=company">Post a Quest</Link>
-                <span className="flex items-center gap-1.5 text-[13px] font-medium text-slate-400 whitespace-nowrap">
+                <span className="flex items-center gap-1.5 text-[13px] font-medium text-slate-600 whitespace-nowrap">
                   Blog
                   <span className="inline-flex py-0.5 px-2 bg-slate-100 text-[10px] rounded-full -rotate-2">soon</span>
                 </span>
@@ -65,7 +65,7 @@ export const Component = () => {
 
             {/* Legal */}
             <div className="hidden md:flex flex-col gap-3">
-              <h4 className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-400">Legal</h4>
+              <h2 className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-600">Legal</h2>
               <div className="flex flex-col gap-2 items-start">
                 <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="/privacy">Privacy Policy</Link>
                 <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="/terms">Terms of Service</Link>
@@ -79,12 +79,12 @@ export const Component = () => {
       {/* Bottom bar */}
       <div className="mt-4 max-w-5xl mx-auto px-4 md:px-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 items-start sm:items-center">
-          <p className="text-[12px] text-slate-400 whitespace-nowrap">
+          <p className="text-[12px] text-slate-600 whitespace-nowrap">
             ©{currentYear} Guild. Open source under MIT.
           </p>
           <div className="flex gap-4">
-            <Link className="text-[12px] text-slate-400 hover:text-slate-700 transition-colors" href="/privacy">Privacy</Link>
-            <Link className="text-[12px] text-slate-400 hover:text-slate-700 transition-colors" href="/terms">Terms</Link>
+            <Link className="text-[12px] text-slate-600 hover:text-slate-900 transition-colors" href="/privacy">Privacy</Link>
+            <Link className="text-[12px] text-slate-600 hover:text-slate-900 transition-colors" href="/terms">Terms</Link>
           </div>
         </div>
 
@@ -95,7 +95,7 @@ export const Component = () => {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Guild on GitHub"
-            className="text-slate-400 hover:text-slate-700 transition-colors"
+            className="text-slate-600 hover:text-slate-900 transition-colors"
           >
             <Github className="w-4 h-4" />
           </a>
@@ -104,7 +104,7 @@ export const Component = () => {
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Guild on X (Twitter)"
-            className="text-slate-400 hover:text-slate-700 transition-colors"
+            className="text-slate-600 hover:text-slate-900 transition-colors"
           >
             <Twitter className="w-4 h-4" />
           </a>

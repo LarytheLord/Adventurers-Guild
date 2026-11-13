@@ -30,7 +30,7 @@ export default function AuditPage() {
         <InfoPageAside title="Free checklist">
           <p>Want to look yourself first? Our free launch checklist covers the basics.</p>
           <p>
-            <Link href="/checklist" className="font-semibold text-orange-600 underline underline-offset-4">
+            <Link href="/checklist" className="font-semibold text-orange-700 underline underline-offset-4">
               Read the checklist
             </Link>
           </p>
@@ -112,7 +112,7 @@ export default function AuditPage() {
             <Button asChild size="lg">
               <a href={AUDIT_MAILTO}>Request a Launch Check</a>
             </Button>
-            <Link href="/checklist" className="font-semibold text-orange-600 underline underline-offset-4">
+            <Link href="/checklist" className="font-semibold text-orange-700 underline underline-offset-4">
               Or read the free checklist first
             </Link>
           </div>

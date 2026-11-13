@@ -63,7 +63,7 @@ export function FeedbackButton() {
     <>
       <button
         onClick={handleOpen}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 border border-slate-200 hover:border-slate-300 rounded-lg transition-all"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium text-slate-700 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 border border-slate-200 hover:border-slate-300 rounded-lg transition-all"
       >
         <MessageSquare className="w-3 h-3" />
         Send Feedback

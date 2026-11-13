@@ -24,7 +24,6 @@ export default function Navigation() {
   const { data: session, status } = useSession();
   const [mounted, setMounted] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState<'home' | 'ranks' | 'how-it-works' | 'quests' | 'join'>('home');
   const pathname = usePathname();
   const normalizedPath = pathname ? pathname.replace(/\/+$/, '') || '/' : null;
@@ -36,13 +35,6 @@ export default function Navigation() {
 
   useEffect(() => {
     setMounted(true);
-  }, []);
-
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 40);
-    handleScroll();
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   useEffect(() => {
@@ -95,8 +87,9 @@ export default function Navigation() {
 
   const userRole = session?.user?.role;
 
-  // Keep the header translucent over hero before scroll.
-  const isTransparent = isHome && !scrolled && !mobileMenuOpen;
+  // The home hero is light, so white header text on it fails contrast.
+  // Keep the header on its solid, dark-text style on every page.
+  const isTransparent = false;
 
   const marketingLinks = [
     { href: '/', label: 'For Business' },
