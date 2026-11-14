@@ -176,7 +176,7 @@ export const LAUNCH_QUESTIONS: LaunchQuestion[] = [
     text: 'Are spend caps and billing alerts set on every paid service, including hosting, database, email and AI model providers?',
     fix: 'Set a monthly cap or an alert at a figure you can afford in each provider\'s billing settings.',
     checklistGroup: 'cost',
-    checklistCheck: 'Spend caps and billing alerts are set on every paid service.',
+    checklistCheck: 'Each paid provider that offers one (OpenAI, Anthropic, email, SMS) has a hard spend limit set, not only an alert.',
   },
   {
     id: 'perf-user-limits',
@@ -184,7 +184,7 @@ export const LAUNCH_QUESTIONS: LaunchQuestion[] = [
     text: 'Do expensive actions, such as AI calls, emails and file uploads, have per-user limits that a script cannot get around?',
     fix: 'Add a per-user and per-IP rate limit on the server for each action that costs you money.',
     checklistGroup: 'cost',
-    checklistCheck: 'Expensive actions (AI calls, emails, file uploads) have per-user limits.',
+    checklistCheck: 'Expensive actions (AI calls, emails, file uploads) have per-user and per-IP limits that the server enforces.',
   },
 
   // Security
