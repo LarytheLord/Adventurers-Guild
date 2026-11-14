@@ -136,6 +136,18 @@ export const CHECKLIST_GROUPS: ChecklistGroup[] = [
         check: 'Plan, subscription status, credits, usage counters and rate-limit values are not on any table or column that users can update through RLS.',
         why: 'Users can give themselves premium by editing their own row. Keep these values in a table with no insert or update policy for users, and change them only from the server or a webhook.',
       },
+      {
+        check: 'Table permissions (GRANTs) are set on purpose: the anon role has no access to tables that do not need it, and nobody was given access before RLS was on.',
+        why: 'RLS and GRANTs are two separate gates. Newer Supabase projects need explicit GRANTs on new tables, and old defaults can leave the anon role with broad rights on every table. Grant only what each role needs, and only after RLS is enabled.',
+      },
+      {
+        check: 'Views are created as security invoker, and every SECURITY DEFINER function pins its search_path and is not executable by anon unless it must be.',
+        why: 'A view or definer function runs with its owner\'s rights and skips RLS, so it can hand out rows your policies protect. Use security_invoker views, set search_path on definer functions, and check who is calling inside them.',
+      },
+      {
+        check: 'No policy on a sensitive table says USING (true) or WITH CHECK (true) for anon or for all logged-in users.',
+        why: 'A policy like that turns RLS on in name only and lets anyone read, or overwrite, every row. Replace it with a check against the row\'s owner or tenant, including on UPDATE.',
+      },
     ],
   },
   {
@@ -175,6 +187,10 @@ export const CHECKLIST_GROUPS: ChecklistGroup[] = [
       {
         check: 'Admin and role information comes from data users cannot edit.',
         why: 'If a role is stored where the user can change it, anyone can make themselves an admin.',
+      },
+      {
+        check: 'API routes that update or create rows pick the fields they accept, instead of passing the whole request body into the database call.',
+        why: 'This is called mass assignment. If the body is passed straight through, a user can add fields such as role, plan or status and set them on themselves. Allow-list the fields, or validate with a schema.',
       },
       {
         check: 'Password reset shows the same message whether or not the email exists, and links expire.',
@@ -231,6 +247,18 @@ export const CHECKLIST_GROUPS: ChecklistGroup[] = [
       {
         check: 'Your custom domain uses HTTPS, and the login, payment and webhook URLs point to it, not a preview address.',
         why: 'A leftover preview URL breaks logins and sends payment events to the wrong place.',
+      },
+      {
+        check: 'The production domain sends security headers: Content-Security-Policy, frame-ancestors (or X-Frame-Options), X-Content-Type-Options: nosniff, a Referrer-Policy and HSTS.',
+        why: 'They limit what an injected script or a hostile page can do to your visitors. Check the headers on the live domain, not on localhost, because your host or proxy can add or drop them.',
+      },
+      {
+        check: 'Next.js and your other dependencies are on patched versions, and something (npm audit on production dependencies, or Dependabot) warns you about new security advisories.',
+        why: 'Framework flaws are published openly and attackers scan for apps still running old versions. A known advisory on an unpatched framework can be enough for a takeover.',
+      },
+      {
+        check: 'The main branch is protected, required checks must pass before merge, and CI workflows have only the permissions they need.',
+        why: 'Without branch protection one bad push goes straight to production. Use branch protection on main, deploy only from main, pin third-party actions, and give workflows read-only tokens unless a job needs more.',
       },
     ],
   },
@@ -313,6 +341,10 @@ export const CHECKLIST_GROUPS: ChecklistGroup[] = [
       {
         check: 'Expensive actions (AI calls, emails, file uploads) have per-user and per-IP limits that the server enforces.',
         why: 'One person, or one script, can otherwise use up your whole budget, and a limit that only exists in the frontend can be bypassed.',
+      },
+      {
+        check: 'Rate limiting is tested on the live app, and it fails closed: if its store or environment variable is missing, requests are limited or refused, not let through.',
+        why: 'A limiter that keeps counts in server memory does little on serverless hosts, and one that quietly does nothing when Redis is not configured protects nothing. Send a burst of requests to the live app and confirm the limit actually triggers.',
       },
       {
         check: 'Each paid provider that offers one (OpenAI, Anthropic, email, SMS) has a hard spend limit set, not only an alert.',

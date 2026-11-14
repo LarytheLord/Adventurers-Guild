@@ -22,9 +22,9 @@ describe('audit offer content', () => {
     expect(AUDIT_MAILTO.startsWith('mailto:abid@guilds.work?subject=Launch%20Check%20request&body=')).toBe(true);
   });
 
-  it('checklist has 40 items, each with check and why', () => {
+  it('checklist has 48 items, each with check and why', () => {
     const items = CHECKLIST_GROUPS.flatMap((g) => g.items);
-    expect(items.length).toBe(40);
+    expect(items.length).toBe(48);
     for (const i of items) {
       expect(i.check.length).toBeGreaterThan(10);
       expect(i.why.length).toBeGreaterThan(10);
@@ -37,6 +37,19 @@ describe('audit offer content', () => {
     expect(group('cost').some((c) => c.includes('per-user and per-ip limits') && c.includes('server'))).toBe(true);
     expect(group('cost').some((c) => c.includes('hard spend limit'))).toBe(true);
     expect(group('secrets').some((c) => c.includes('stripe secret key') && c.includes('only used in server code'))).toBe(true);
+  });
+
+  it('checklist covers failure classes seen in real audits', () => {
+    const all = CHECKLIST_GROUPS.flatMap((g) => g.items.map((i) => (i.check + ' ' + i.why).toLowerCase()));
+    const has = (...words: string[]) => all.some((t) => words.every((w) => t.includes(w)));
+    expect(has('grant', 'anon')).toBe(true);
+    expect(has('security definer', 'search_path')).toBe(true);
+    expect(has('using (true)')).toBe(true);
+    expect(has('mass assignment')).toBe(true);
+    expect(has('content-security-policy', 'hsts')).toBe(true);
+    expect(has('rate limit', 'closed')).toBe(true);
+    expect(has('security advisories', 'npm audit')).toBe(true);
+    expect(has('branch protection', 'workflow')).toBe(true);
   });
 
   it('checklist has an AI behaviour section with three checks', () => {
