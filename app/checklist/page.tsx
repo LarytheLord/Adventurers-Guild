@@ -8,7 +8,7 @@ import { slugify } from '@/lib/launch-check/data';
 
 const TITLE = 'The AI-built app launch checklist - Guild';
 const DESCRIPTION =
-  'A free checklist of things to check before you launch an app built with Lovable, Bolt or Replit: database access, keys, login, payments, deployment, speed, backups, email, privacy and cost.';
+  'A free checklist of things to check before you launch an app built with Lovable, Bolt or Replit: database access, keys, login, payments, deployment, speed, backups, email, privacy, cost and AI behaviour.';
 
 export const metadata: Metadata = buildPageMetadata({
   path: '/checklist',
@@ -22,7 +22,7 @@ export default function ChecklistPage() {
     <InfoPageShell
       eyebrow="Free checklist"
       title="The AI-built app launch checklist"
-      description="Things to check before real users pay you or put real data into your app. Each item says what to check and why it matters. Only check apps you own. This is the short, do-it-yourself version of our Launch Check."
+      description="Things to check before real users pay you or put real data into your app. Each item says what to check and why it matters, and most say how to fix it. Only check apps you own. This is the short, do-it-yourself version of our Launch Check."
     >
       <div className="space-y-10">
         {CHECKLIST_GROUPS.map((group) => (

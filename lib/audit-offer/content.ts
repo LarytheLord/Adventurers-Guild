@@ -132,6 +132,10 @@ export const CHECKLIST_GROUPS: ChecklistGroup[] = [
         check: 'Storage buckets that hold private files (invoices, IDs, uploads) are private.',
         why: 'A public bucket makes every file reachable by anyone who has the link.',
       },
+      {
+        check: 'Plan, subscription status, credits, usage counters and rate-limit values are not on any table or column that users can update through RLS.',
+        why: 'Users can give themselves premium by editing their own row. Keep these values in a table with no insert or update policy for users, and change them only from the server or a webhook.',
+      },
     ],
   },
   {
@@ -151,8 +155,12 @@ export const CHECKLIST_GROUPS: ChecklistGroup[] = [
         why: 'Those prefixes mean "send to every visitor".',
       },
       {
-        check: 'Calls to paid services (AI models, maps, email) go through your own server, not straight from the browser.',
+        check: 'Calls to paid AI models and map services go through your own server, not straight from the browser.',
         why: 'A key in the browser can be copied and used to run up your bill.',
+      },
+      {
+        check: 'The Stripe secret key, and keys for services such as SendGrid, S3 or R2, are only used in server code, never sent to the browser.',
+        why: 'Anyone can copy a key from the browser and use it as you, so keep these keys in server-side environment variables, not in code the browser downloads.',
       },
     ],
   },
@@ -295,7 +303,7 @@ export const CHECKLIST_GROUPS: ChecklistGroup[] = [
         why: 'Surprise bills and surprise shutdowns both come from limits nobody wrote down.',
       },
       {
-        check: 'Spend caps and billing alerts are set on every paid service.',
+        check: 'Billing alerts are set on every paid service, so you hear about a spike early.',
         why: 'A loop or a viral day can cost real money before you notice.',
       },
       {
@@ -303,8 +311,30 @@ export const CHECKLIST_GROUPS: ChecklistGroup[] = [
         why: 'The number tells you which plan limit or per-call price will hurt first.',
       },
       {
-        check: 'Expensive actions (AI calls, emails, file uploads) have per-user limits.',
-        why: 'One person, or one script, can otherwise use up your whole budget.',
+        check: 'Expensive actions (AI calls, emails, file uploads) have per-user and per-IP limits that the server enforces.',
+        why: 'One person, or one script, can otherwise use up your whole budget, and a limit that only exists in the frontend can be bypassed.',
+      },
+      {
+        check: 'Each paid provider that offers one (OpenAI, Anthropic, email, SMS) has a hard spend limit set, not only an alert.',
+        why: 'An alert tells you after the money is gone. Where a provider has no hard limit, also enforce a budget in your own server code.',
+      },
+    ],
+  },
+  {
+    id: 'ai',
+    title: 'AI behaviour',
+    items: [
+      {
+        check: 'Prompt injection: text typed by a user, or content your app fetches, cannot trick the model into leaking data or calling tools it should not.',
+        why: 'No prompt fully stops this, so limit what a tricked model can do: keep secrets out of the prompt, give it few tools, and test with lines such as "ignore the rules above".',
+      },
+      {
+        check: 'The AI can only use the tools and data it needs, and the server checks who is asking before each tool runs.',
+        why: 'Give the model only the tools and data it needs, with read-only access where possible, and have the server check who is asking.',
+      },
+      {
+        check: 'AI output is never run or shown as raw SQL or HTML.',
+        why: 'Pass model output through prepared queries with parameters, an allow-list or an HTML sanitizer first, as you would any user input.',
       },
     ],
   },
