@@ -35,10 +35,10 @@ export const DPDP_PHASE_DATES: PhaseDate[] = [
 ];
 
 export const DPDP_PHASE_DATES_NOTE =
-  'Phase dates as reported by Bar & Bench and Mondaq, not read by us in the Gazette. Which rule starts on which date, including for consent managers and the main obligations, is per the notified Rules. Check the Gazette (G.S.R. 846(E)) before you rely on any date.';
+  'Phase dates as reported by Bar & Bench and Mondaq, not read by us in the Gazette. Which rule starts on which date, including for consent managers and the main obligations, is set by the Rules, which we have not checked. Check the Gazette (G.S.R. 846(E)) before you rely on any date.';
 
 export const DPDP_DISCLAIMER =
-  'This tool is an unofficial self-check. It is not legal advice and not an audit. Guild is not a CERT-In empanelled auditor.';
+  'This tool is an unofficial self-check. It is not legal advice and not an audit. Guild is not a law firm or a regulator.';
 
 export const DPDP_SOURCE_NOTE =
   'Section numbers are those of the Act as published by MeitY. The Rules add details by rule number that this tool does not cite. Check the Gazette text of both before you act.';

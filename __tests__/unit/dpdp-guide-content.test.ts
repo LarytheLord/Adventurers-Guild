@@ -37,7 +37,7 @@ describe('DPDP guide content', () => {
 
   it('never claims Guild is an empanelled auditor', () => {
     expect(text).not.toMatch(/Guild is (a|an) (CERT-In )?empanelled/i);
-    expect(text).toMatch(/Guild is not a CERT-In empanelled auditor/);
+    expect(text).toMatch(/Guild is not a law firm or a regulator/);
   });
 
   it('cites the Rules only as G.S.R. 846(E), with no invented rule numbers', () => {
@@ -49,7 +49,7 @@ describe('DPDP guide content', () => {
   it('attributes phase dates to the named secondary sources and keeps a check-the-Gazette note', () => {
     expect(text).toMatch(/as reported by Bar & Bench and Mondaq/);
     expect(DPDP_GUIDE_CHECK_NOTE).toMatch(/Check the Gazette/);
-    expect(text).toMatch(/dates per the notified Rules/i);
+    expect(text).toMatch(/dates as reported/i);
   });
 
   it('has 5 to 6 FAQ entries with a question and an answer', () => {

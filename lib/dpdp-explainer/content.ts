@@ -26,9 +26,9 @@ export const DPDP_GUIDE_CHECK_NOTE =
 
 export const DPDP_GUIDE_SUMMARY: string[] = [
   'The Act is the Digital Personal Data Protection Act, 2023. The Rules are Gazette notification G.S.R. 846(E), notified 13 November 2025 and published in the Gazette of India (Extraordinary) on 14 November 2025, as reported by Bar & Bench and Mondaq.',
-  'If you process digital personal data in India, or offer goods or services to people in India from abroad, the Act applies to you (section 3). A startup is not exempt by default.',
+  'If you process digital personal data in India, or offer goods or services to people in India from abroad, the Act applies to you (section 3). A startup is not exempt by default. Reports say most duties start on 14 May 2027; check the Gazette for the date that applies to you.',
   'The core duties are a notice (5), valid consent or a listed legitimate use (4, 6, 7), security safeguards (8(5)), breach reporting (8(6)), erasure (8(7)), a grievance channel (8(10)) and extra care for children (9).',
-  'Phase dates are as reported by secondary sources and are per the notified Rules. Read the [Rules page on MeitY](' + DPDP_RULES_PAGE_URL + ') and the Gazette before you rely on a date.',
+  'Phase dates are as reported by Bar & Bench and Mondaq. Read the [Rules page on MeitY](' + DPDP_RULES_PAGE_URL + ') and the Gazette before you rely on a date.',
 ];
 
 export const DPDP_GUIDE_SECTIONS: ExplainerSection[] = [
@@ -48,7 +48,7 @@ export const DPDP_GUIDE_SECTIONS: ExplainerSection[] = [
   },
   {
     id: 'phase-in',
-    heading: 'When it applies: dates per the notified Rules',
+    heading: 'When it applies: dates as reported',
     blocks: [
       {
         kind: 'p',
@@ -56,7 +56,7 @@ export const DPDP_GUIDE_SECTIONS: ExplainerSection[] = [
       },
       {
         kind: 'p',
-        text: 'We do not say which obligation starts on which date. That is per the notified Rules, including for consent managers and the main obligations. The Gazette text is the only source to rely on.',
+        text: 'We do not say which obligation starts on which date. That is set by the Rules, which we have not checked, including for consent managers and the main obligations. The Gazette text is the only source to rely on.',
       },
     ],
   },
@@ -114,7 +114,7 @@ export const DPDP_GUIDE_SECTIONS: ExplainerSection[] = [
     blocks: [
       {
         kind: 'p',
-        text: 'Under the Act a child is a person under 18. You need verifiable consent from a parent or lawful guardian before processing a child\'s data (section 9(1)), and you must not process it in a way likely to harm the child\'s well-being (section 9(2)). Tracking, behavioural monitoring and targeted advertising directed at children are barred (section 9(3)). How verification works, and any exemptions, are per the notified Rules.',
+        text: 'Under the Act a child is a person under 18. You need verifiable consent from a parent or lawful guardian before processing a child\'s data (section 9(1)), and you must not process it in a way likely to harm the child\'s well-being (section 9(2)). Tracking, behavioural monitoring and targeted advertising directed at children are barred (section 9(3)). How verification works, and any exemptions, are as the Rules may set.',
       },
       {
         kind: 'p',
@@ -156,7 +156,7 @@ export const DPDP_GUIDE_SECTIONS: ExplainerSection[] = [
       {
         kind: 'ul',
         items: [
-          'We did not read the Rules text. Timelines for breach reports, the verification method for children and the minimum security measures are per the notified Rules.',
+          'We did not read the Rules text. Timelines for breach reports, the verification method for children and the minimum security measures are set by the Rules, which we have not checked.',
           'We do not know which rule starts on which phase date.',
           'Notifications under section 17(3), and any notification of Significant Data Fiduciaries, change who must do what. Check for them.',
         ],
@@ -168,11 +168,11 @@ export const DPDP_GUIDE_SECTIONS: ExplainerSection[] = [
 export const DPDP_GUIDE_FAQ: FaqItem[] = [
   {
     q: 'Does the DPDP Act apply to a small startup?',
-    a: 'Yes, in general. Section 3 applies to processing of digital personal data in India and to offering goods or services to people in India from abroad. Section 17(3) lets the Central Government exempt classes of Data Fiduciary, startups among them, from some provisions by notification, so check whether one covers you.',
+    a: 'Yes, in general. Section 3 applies to processing of digital personal data in India and to offering goods or services to people in India from abroad. Section 17(3) lets the Central Government exempt classes of Data Fiduciary, startups among them, from some provisions by notification, so check whether one covers you. Reports say most duties start on 14 May 2027; check the Gazette for the date that applies to you.',
   },
   {
     q: 'What is the date the DPDP Rules 2025 start?',
-    a: 'The Rules are G.S.R. 846(E), notified 13 November 2025 and published on 14 November 2025, as reported by Bar & Bench and Mondaq. Phase dates of 14 November 2025, 14 November 2026 and 14 May 2027 are as reported by Bar & Bench and Mondaq. Which obligation starts when is per the notified Rules, so check the Gazette.',
+    a: 'The Rules are G.S.R. 846(E), notified 13 November 2025 and published on 14 November 2025, as reported by Bar & Bench and Mondaq. Phase dates of 14 November 2025, 14 November 2026 and 14 May 2027 are as reported by Bar & Bench and Mondaq. Which obligation starts when is set by the Rules, which we have not checked, so check the Gazette.',
   },
   {
     q: 'Do I need a Data Protection Officer?',
@@ -184,11 +184,11 @@ export const DPDP_GUIDE_FAQ: FaqItem[] = [
   },
   {
     q: 'What do I do if there is a data breach?',
-    a: 'Section 8(6) requires you to tell the Data Protection Board and each affected person. The form and the time limit are per the notified Rules, so read them in the Gazette and keep a written incident plan ready.',
+    a: 'Section 8(6) requires you to tell the Data Protection Board and each affected person. The form and the time limit are as the Rules may set, so read them in the Gazette and keep a written incident plan ready.',
   },
   {
     q: 'Can Guild certify that we comply?',
-    a: 'No. Guild is not a CERT-In empanelled auditor, and this guide and the readiness check are not legal advice. They help you find gaps to take to a lawyer.',
+    a: 'No. Guild is not a law firm or a regulator, and this guide and the readiness check are not legal advice. They help you find gaps to take to a lawyer.',
   },
 ];
 

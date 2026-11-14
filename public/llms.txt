@@ -16,7 +16,7 @@
 - [How to check Supabase RLS on an app built with Lovable or Bolt](https://www.guilds.work/guides/check-supabase-rls-lovable-bolt): dashboard policy list and an anon-key test on your own project.
 - [What is an AI risk tier under CERT-In?](https://www.guilds.work/guides/what-is-an-ai-risk-tier-cert-in): the 1 to 4 tier, the eight factors and where to score your own system.
 - [DPDP readiness check](https://www.guilds.work/dpdp-readiness): a free, in-browser self-check with 20 yes/no questions, each tied to a section of the Digital Personal Data Protection Act 2023, with a plain-English fix for each gap. Unofficial; not legal advice.
-- [DPDP Rules 2025: what Indian startups must do](https://www.guilds.work/guides/dpdp-rules-what-startups-must-do): the Act and the Rules (G.S.R. 846(E)) in plain English, with Act section numbers. Phase dates are per the notified Rules; check the Gazette.
+- [DPDP Rules 2025: what Indian startups must do](https://www.guilds.work/guides/dpdp-rules-what-startups-must-do): the Act and the Rules (G.S.R. 846(E)) in plain English, with Act section numbers. Phase dates are as reported by Bar & Bench and Mondaq; check the Gazette.
 
 ## Source
 
