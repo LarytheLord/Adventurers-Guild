@@ -40,7 +40,7 @@ export function InfoPageShell({
           </Link>
 
           <div className="mt-8 max-w-4xl">
-            <div className="inline-flex items-center rounded-full border border-orange-200 bg-white/80 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-600 shadow-[0_1px_2px_rgba(0,0,0,0.04)] backdrop-blur">
+            <div className="inline-flex items-center rounded-full border border-orange-200 bg-white/80 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-orange-700 shadow-[0_1px_2px_rgba(0,0,0,0.04)] backdrop-blur">
               {eyebrow}
             </div>
             <h1 className="ds-display mt-6 font-display text-[2.6rem] text-slate-950 md:text-[4rem]">
@@ -50,7 +50,7 @@ export function InfoPageShell({
               {description}
             </p>
             {updatedAt ? (
-              <p className="mt-6 text-sm font-medium text-slate-400">Last updated: {updatedAt}</p>
+              <p className="mt-6 text-sm font-medium text-slate-600">Last updated: {updatedAt}</p>
             ) : null}
           </div>
         </div>
@@ -61,7 +61,7 @@ export function InfoPageShell({
           <div className="rounded-[32px] border border-white/80 bg-white/92 p-6 shadow-[0_20px_50px_rgba(15,23,42,0.05)] md:p-10">
             {children}
           </div>
-          {aside ? <aside className="space-y-4">{aside}</aside> : null}
+          {aside ? <div className="space-y-4">{aside}</div> : null}
         </div>
       </section>
     </main>

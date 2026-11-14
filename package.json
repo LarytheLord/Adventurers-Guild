@@ -15,6 +15,7 @@
     "test:unit": "jest -- __tests__/unit",
     "test:api": "jest -- __tests__/api",
     "test:e2e": "playwright test",
+    "test:a11y": "playwright test -c playwright.a11y.config.ts",
     "test:e2e:smoke": "playwright test -c playwright.smoke.config.ts",
     "test:phase-gate": "npm run type-check && npm run lint && npm run test:e2e",
     "deploy:vercel": "vercel --prod",
@@ -101,6 +102,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.11.3",
     "@playwright/test": "^1.56.1",
     "@types/bcryptjs": "^2.4.6",
     "@types/exceljs": "^0.5.3",

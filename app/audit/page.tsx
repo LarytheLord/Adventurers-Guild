@@ -29,7 +29,7 @@ export default function AuditPage() {
         <InfoPageAside title="Free checklist">
           <p>Want to look yourself first? Our free launch checklist covers the basics.</p>
           <p>
-            <Link href="/checklist" className="font-semibold text-orange-600 underline underline-offset-4">
+            <Link href="/checklist" className="font-semibold text-orange-700 underline underline-offset-4">
               Read the checklist
             </Link>
           </p>
@@ -88,7 +88,7 @@ export default function AuditPage() {
           </ol>
           <p className="leading-7">
             Want to see the result first?{' '}
-            <Link href={SAMPLE_REPORT_PATH} className="font-semibold text-orange-600 underline underline-offset-4">
+            <Link href={SAMPLE_REPORT_PATH} className="font-semibold text-orange-700 underline underline-offset-4">
               Read a sample report on a fictional app
             </Link>
             .
@@ -104,7 +104,7 @@ export default function AuditPage() {
 
         <RequestLaunchCheck />
         <p>
-          <Link href="/checklist" className="font-semibold text-orange-600 underline underline-offset-4">
+          <Link href="/checklist" className="font-semibold text-orange-700 underline underline-offset-4">
             Or read the free checklist first
           </Link>
         </p>

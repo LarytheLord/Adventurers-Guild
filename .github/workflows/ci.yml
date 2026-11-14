@@ -49,6 +49,9 @@ jobs:
       - name: Run public page smoke tests (chromium)
         run: npm run test:e2e:smoke
 
+      - name: Run accessibility tests (axe)
+        run: npm run test:a11y
+
       - name: Upload Playwright report
         if: failure()
         uses: actions/upload-artifact@v4
