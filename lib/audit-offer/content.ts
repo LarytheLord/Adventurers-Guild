@@ -132,6 +132,10 @@ export const CHECKLIST_GROUPS: ChecklistGroup[] = [
         check: 'Storage buckets that hold private files (invoices, IDs, uploads) are private.',
         why: 'A public bucket makes every file reachable by anyone who has the link.',
       },
+      {
+        check: 'Plan, subscription status, credits, usage counters and rate-limit values are not on any table or column that users can update through RLS.',
+        why: 'Users can give themselves premium by editing their own row, so keep these in a separate table with no user write policy, or write them only from the server or a webhook.',
+      },
     ],
   },
   {
@@ -153,6 +157,10 @@ export const CHECKLIST_GROUPS: ChecklistGroup[] = [
       {
         check: 'Calls to paid services (AI models, maps, email) go through your own server, not straight from the browser.',
         why: 'A key in the browser can be copied and used to run up your bill.',
+      },
+      {
+        check: 'The Stripe secret key, and keys for services such as SendGrid, S3 or R2, are never called from the client.',
+        why: 'Anyone can copy a key from the browser and use it as you, so make these calls only from server code and keep the keys in server-only settings.',
       },
     ],
   },
@@ -305,6 +313,32 @@ export const CHECKLIST_GROUPS: ChecklistGroup[] = [
       {
         check: 'Expensive actions (AI calls, emails, file uploads) have per-user limits.',
         why: 'One person, or one script, can otherwise use up your whole budget.',
+      },
+      {
+        check: 'Rate limits on AI calls and other paid API calls are enforced on the server, per user and per IP.',
+        why: 'A limit that only exists in the frontend can be bypassed, so count and refuse calls in server code.',
+      },
+      {
+        check: 'Each paid provider (OpenAI, Anthropic, email, SMS) has a hard spend cap that shuts the service off, not only an alert.',
+        why: 'An alert tells you after the money is gone, so set a hard cap in each provider\'s billing settings.',
+      },
+    ],
+  },
+  {
+    id: 'ai',
+    title: 'AI behaviour',
+    items: [
+      {
+        check: 'Prompt injection: text typed by a user, or content your app fetches, cannot override the system prompt to leak data or call tools.',
+        why: 'Treat all user and fetched text as data, keep secrets out of the prompt, and test with instructions such as "ignore the rules above".',
+      },
+      {
+        check: 'The model\'s tool access is least-privilege.',
+        why: 'Give the model only the tools and data it needs, with read-only access where possible, and have the server check who is asking.',
+      },
+      {
+        check: 'AI output is never trusted as SQL or HTML without validation.',
+        why: 'Run model output through parameterised queries, an allow-list or an HTML sanitiser first, as you would for any user input.',
       },
     ],
   },
