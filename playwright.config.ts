@@ -15,6 +15,8 @@ const baseURL = process.env.BASE_URL ?? `http://127.0.0.1:${e2ePort}`;
  */
 export default defineConfig({
   testDir: './__tests__/e2e',
+  /* Public-page smoke tests have their own config: playwright.smoke.config.ts */
+  testIgnore: '**/smoke/**',
   /* Keep runs deterministic: core flows mutate shared auth/database state. */
   fullyParallel: false,
   timeout: 90_000,
