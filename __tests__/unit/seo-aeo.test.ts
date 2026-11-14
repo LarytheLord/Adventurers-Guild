@@ -31,13 +31,15 @@ const PAGE_FILES: Record<string, string> = {
   '/launch-check': 'app/launch-check/page.tsx',
   '/indic-ai-qa': 'app/indic-ai-qa/page.tsx',
   '/guides/cert-in-ai-security-auditing-guidelines': 'app/guides/cert-in-ai-security-auditing-guidelines/page.tsx',
+  '/dpdp-readiness': 'app/dpdp-readiness/page.tsx',
+  '/guides/dpdp-rules-what-startups-must-do': 'app/guides/dpdp-rules-what-startups-must-do/page.tsx',
   ...Object.fromEntries(ANSWER_PAGES.map((a) => [a.path, `app${a.path}/page.tsx`])),
 };
 
 describe('sitemap', () => {
   const urls = sitemap().map((e) => e.url);
 
-  it('lists exactly the eleven public pages on www.guilds.work', () => {
+  it('lists exactly the thirteen public pages on www.guilds.work', () => {
     expect(urls.sort()).toEqual(
       [
         'https://www.guilds.work/',
@@ -51,6 +53,8 @@ describe('sitemap', () => {
         'https://www.guilds.work/guides/does-cert-in-require-an-ai-audit',
         'https://www.guilds.work/guides/check-supabase-rls-lovable-bolt',
         'https://www.guilds.work/guides/what-is-an-ai-risk-tier-cert-in',
+        'https://www.guilds.work/dpdp-readiness',
+        'https://www.guilds.work/guides/dpdp-rules-what-startups-must-do',
       ].sort(),
     );
   });
@@ -95,6 +99,16 @@ describe('llms.txt', () => {
     for (const p of PUBLIC_PAGES) {
       expect(txt).toContain(p.path === '/' ? '(https://www.guilds.work/)' : `(https://www.guilds.work${p.path})`);
     }
+  });
+  it('lists each public page on its own line that starts with "- ["', () => {
+    const lines = txt.split('\n');
+    for (const p of PUBLIC_PAGES) {
+      const url = p.path === '/' ? '](https://www.guilds.work/)' : `](https://www.guilds.work${p.path})`;
+      const hits = lines.filter((l) => l.includes(url));
+      expect(hits).toHaveLength(1);
+      expect(hits[0].startsWith('- [')).toBe(true);
+    }
+    for (const l of lines) expect(l.split('- [').length - 1).toBeLessThanOrEqual(1);
   });
   it('does not claim empanelment', () => {
     expect(txt).toMatch(/not a CERT-In empanelled auditor/);
@@ -164,7 +178,7 @@ describe('page metadata', () => {
     for (const p of PUBLIC_PAGES) {
       const src = read(PAGE_FILES[p.path]);
       expect(src).toContain('buildPageMetadata');
-      expect(src).toContain(p.path === '/' ? "path: '/'" : p.path === '/indic-ai-qa' ? 'path: INDIC_QA_PATH' : p.path === '/guides/cert-in-ai-security-auditing-guidelines' ? 'path: EXPLAINER_PATH' : ANSWER_PAGES.some((a) => a.path === p.path) ? 'path: PAGE.path' : `path: '${p.path}'`);
+      expect(src).toContain(p.path === '/' ? "path: '/'" : p.path === '/indic-ai-qa' ? 'path: INDIC_QA_PATH' : p.path === '/guides/cert-in-ai-security-auditing-guidelines' ? 'path: EXPLAINER_PATH' : p.path === '/guides/dpdp-rules-what-startups-must-do' ? 'path: DPDP_GUIDE_PATH' : ANSWER_PAGES.some((a) => a.path === p.path) ? 'path: PAGE.path' : `path: '${p.path}'`);
       expect(isAscii(src)).toBe(true);
     }
     const auditMeta = read('app/audit/page.tsx').split('export const metadata')[0];
@@ -179,7 +193,7 @@ describe('page metadata', () => {
     const descs = new Set<string>();
     for (const p of PUBLIC_PAGES) {
       const src = read(PAGE_FILES[p.path]);
-      const t = src.match(/const TITLE = '([^']+)'/)?.[1] ?? (p.path === '/indic-ai-qa' ? INDIC_QA_TITLE : p.path === '/' ? 'HOME' : ANSWER_PAGES.some((a) => a.path === p.path) ? p.path : 'EXPLAINER');
+      const t = src.match(/const TITLE = '([^']+)'/)?.[1] ?? (p.path === '/indic-ai-qa' ? INDIC_QA_TITLE : p.path === '/' ? 'HOME' : ANSWER_PAGES.some((a) => a.path === p.path) ? p.path : p.path === '/guides/dpdp-rules-what-startups-must-do' ? p.path : 'EXPLAINER');
       titles.add(t);
       const d = src.match(/const DESCRIPTION =\s*'([^']+)'/)?.[1] ?? (p.path === '/indic-ai-qa' ? INDIC_QA_DESCRIPTION : p.path);
       descs.add(d);

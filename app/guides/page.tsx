@@ -13,10 +13,12 @@ import { metadata as riskTierTool } from '@/app/ai-risk-tier/page';
 import { metadata as launchCheck } from '@/app/launch-check/page';
 import { metadata as checklist } from '@/app/checklist/page';
 import { metadata as indicQa } from '@/app/indic-ai-qa/page';
+import { metadata as dpdpGuide } from '@/app/guides/dpdp-rules-what-startups-must-do/page';
+import { metadata as dpdpTool } from '@/app/dpdp-readiness/page';
 
 const TITLE = 'Guides and free tools - Guild';
 const DESCRIPTION =
-  'Every guide and free self-check on Guild, grouped by topic: launching apps built with AI tools, the CERT-In AI Security Auditing Guidelines, and Indian-language AI. Unofficial; not an audit.';
+  'Every guide and free self-check on Guild, grouped by topic: launching apps built with AI tools, the CERT-In AI Security Auditing Guidelines, data protection under the DPDP Act, and Indian-language AI. Unofficial; not an audit.';
 
 const DISCLAIMER =
   'These are unofficial guides and self-checks. They are not audits or legal advice. Guild is not a CERT-In empanelled auditor.';
@@ -32,6 +34,8 @@ const PAGE_METADATA: Record<string, Metadata> = {
   '/launch-check': launchCheck,
   '/checklist': checklist,
   '/indic-ai-qa': indicQa,
+  '/guides/dpdp-rules-what-startups-must-do': dpdpGuide,
+  '/dpdp-readiness': dpdpTool,
 };
 
 function entryFor(item: GuideItem) {
