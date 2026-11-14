@@ -4,7 +4,6 @@ import { InfoPageAside, InfoPageShell } from '@/components/public/info-page-shel
 import { LaunchCheckQuiz } from '@/components/launch-check/launch-check-quiz';
 import { JsonLd } from '@/components/seo/json-ld';
 import { buildPageMetadata, launchCheckJsonLd } from '@/lib/seo';
-import { Button } from '@/components/ui/button';
 import { RequestLaunchCheck } from '@/components/launch-check/request-launch-check';
 
 const TITLE = 'Launch self-check for apps built with Lovable, Bolt, Replit, v0 or Cursor - Guild';
@@ -64,19 +63,6 @@ export default function LaunchCheckPage() {
             Answer 20 questions
           </h2>
           <LaunchCheckQuiz />
-        </section>
-
-        <section aria-labelledby="get-started" className="space-y-4 rounded-2xl bg-orange-50 p-6">
-          <h2 id="get-started" className="font-display text-2xl font-bold tracking-[-0.03em] text-slate-950">
-            Want someone else to look?
-          </h2>
-          <p>
-            A self-check only finds what you know to look for. We check your app by hand, write down each
-            finding with a severity, and give you a fixed quote to fix what we found.
-          </p>
-          <Button asChild size="lg">
-            <Link href="/audit">See how we check your app</Link>
-          </Button>
         </section>
 
         <RequestLaunchCheck headingId="request-launch-check" />

@@ -62,6 +62,7 @@ export function RequestLaunchCheck({ headingId = 'request-launch-check' }: { hea
           App URL
           <input
             type="url"
+            maxLength={300}
             className={FIELD}
             value={values.appUrl}
             onChange={(e) => set('appUrl', e.target.value)}
@@ -96,6 +97,7 @@ export function RequestLaunchCheck({ headingId = 'request-launch-check' }: { hea
           <textarea
             className={FIELD}
             rows={3}
+            maxLength={500}
             value={values.whatItDoes}
             onChange={(e) => set('whatItDoes', e.target.value)}
             aria-invalid={!!errors.whatItDoes}
@@ -157,8 +159,11 @@ export function RequestLaunchCheck({ headingId = 'request-launch-check' }: { hea
         </Button>
         {opened ? (
           <p role="status" className="text-sm text-slate-700">
-            Your email app should now be open. If nothing opened, email us at {REQUEST_MAIL_TO} with the same
-            details.
+            Your email app should now be open. If nothing opened, email us at{' '}
+            <a href={`mailto:${REQUEST_MAIL_TO}`} className="font-semibold text-orange-700 underline underline-offset-4">
+              {REQUEST_MAIL_TO}
+            </a>{' '}
+            with the same details.
           </p>
         ) : null}
       </form>
