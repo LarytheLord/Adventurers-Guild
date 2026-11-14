@@ -9,6 +9,7 @@ import { metadata as certInGuide } from '@/app/guides/cert-in-ai-security-auditi
 import { metadata as certInRequired } from '@/app/guides/does-cert-in-require-an-ai-audit/page';
 import { metadata as supabaseRls } from '@/app/guides/check-supabase-rls-lovable-bolt/page';
 import { metadata as riskTierGuide } from '@/app/guides/what-is-an-ai-risk-tier-cert-in/page';
+import { metadata as evidenceChecklist } from '@/app/guides/cert-in-ai-audit-evidence-checklist/page';
 import { metadata as riskTierTool } from '@/app/ai-risk-tier/page';
 import { metadata as launchCheck } from '@/app/launch-check/page';
 import { metadata as checklist } from '@/app/checklist/page';
@@ -30,6 +31,7 @@ const PAGE_METADATA: Record<string, Metadata> = {
   '/guides/does-cert-in-require-an-ai-audit': certInRequired,
   '/guides/check-supabase-rls-lovable-bolt': supabaseRls,
   '/guides/what-is-an-ai-risk-tier-cert-in': riskTierGuide,
+  '/guides/cert-in-ai-audit-evidence-checklist': evidenceChecklist,
   '/ai-risk-tier': riskTierTool,
   '/launch-check': launchCheck,
   '/checklist': checklist,

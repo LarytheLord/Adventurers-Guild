@@ -1,5 +1,6 @@
 import { ANSWER_PAGES } from '@/lib/answer-pages/content';
 import { EXPLAINER_PATH, EXPLAINER_TITLE } from '@/lib/cert-in-explainer/content';
+import { CHECKLIST_PATH, CHECKLIST_TITLE } from '@/lib/cert-in-explainer/evidence-checklist';
 import { DPDP_GUIDE_PATH, DPDP_GUIDE_TITLE } from '@/lib/dpdp-explainer/content';
 import { INDIC_QA_PATH } from '@/lib/indic-ai-qa/content';
 import { SITE_URL } from '@/lib/site-metadata';
@@ -53,6 +54,10 @@ const FIXED: Record<string, { path: string; card: OgCard }> = {
   'cert-in-guide': {
     path: EXPLAINER_PATH,
     card: { title: EXPLAINER_TITLE, subtitle: 'Guide' },
+  },
+  'cert-in-evidence-checklist': {
+    path: CHECKLIST_PATH,
+    card: { title: CHECKLIST_TITLE, subtitle: 'Checklist. Partial and unofficial.' },
   },
 };
 
