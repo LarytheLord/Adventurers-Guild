@@ -7,9 +7,9 @@
 import { CERTIN_PDF_URL, EXPLAINER_DISCLAIMER, EXPLAINER_PATH, stripLinks } from '@/lib/cert-in-explainer/content';
 
 export const CHECKLIST_PATH = '/guides/cert-in-ai-audit-evidence-checklist';
-export const CHECKLIST_TITLE = 'CERT-In AI audit evidence checklist: what to prepare, by audit domain';
+export const CHECKLIST_TITLE = 'CERT-In AI audit evidence checklist (partial): what to prepare';
 export const CHECKLIST_DESCRIPTION =
-  'Plain-English evidence checklist drawn from the CERT-In AI Security Auditing Guidelines (v1.0). Every item cites its section number.';
+  'Partial, unofficial evidence checklist drawn from the CERT-In AI Security Auditing Guidelines (v1.0). Each listed item cites its section number.';
 export const CHECKLIST_PUBLISHED = '2026-11-12';
 export { CERTIN_PDF_URL, EXPLAINER_DISCLAIMER, EXPLAINER_PATH };
 

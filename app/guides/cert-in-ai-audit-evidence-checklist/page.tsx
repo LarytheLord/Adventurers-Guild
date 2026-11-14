@@ -33,7 +33,7 @@ export default function EvidenceChecklistPage() {
     <InfoPageShell
       eyebrow="Guide"
       title={CHECKLIST_TITLE}
-      description="Evidence to prepare for each CERT-In AI audit domain, with the section number for every item."
+      description="A partial list of evidence to prepare across the CERT-In AI audit domains, with the section number for each listed item."
       updatedAt="12 November 2026"
       backHref={EXPLAINER_PATH}
       backLabel="Back to the guide"
