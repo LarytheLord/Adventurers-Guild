@@ -232,17 +232,8 @@ export default function Navigation() {
               : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
           )}
         >
-          Sign In
+          Log in
         </Link>
-        <Button
-          asChild
-          size="sm"
-          className="h-9 rounded-full px-5"
-        >
-          <Link href="/register" className="inline-flex items-center gap-1.5">
-            Join Guild
-          </Link>
-        </Button>
       </div>
     );
   };
@@ -373,15 +364,8 @@ export default function Navigation() {
                     </MobileNavLink>
                   ))}
                   <MobileNavLink href="/login" onClick={() => setMobileMenuOpen(false)} transparent={isTransparent}>
-                    Sign In
+                    Log in
                   </MobileNavLink>
-                  <div className="pt-2 pb-1">
-                    <Button asChild className="w-full h-11 rounded-xl">
-                      <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
-                        Join the Guild
-                      </Link>
-                    </Button>
-                  </div>
                 </>
               )}
             </div>
