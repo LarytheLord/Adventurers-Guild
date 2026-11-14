@@ -130,7 +130,7 @@ export const EXPLAINER_SECTIONS: ExplainerSection[] = [
       },
       {
         kind: 'p',
-        text: 'To see where your own system lands, use the free [AI risk tier calculator](/ai-risk-tier). It runs in your browser and is unofficial.',
+        text: 'To see where your own system lands, use the free [AI risk tier calculator](/ai-risk-tier). It runs in your browser and is unofficial. See also the [evidence checklist](/guides/cert-in-ai-audit-evidence-checklist).',
       },
     ],
   },

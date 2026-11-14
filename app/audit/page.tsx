@@ -2,11 +2,10 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { InfoPageAside, InfoPageShell } from '@/components/public/info-page-shell';
 import { buildPageMetadata } from '@/lib/seo';
-import { Button } from '@/components/ui/button';
+import { RequestLaunchCheck } from '@/components/launch-check/request-launch-check';
 import {
   AUDIT_AREAS,
   AUDIT_HONEST_NOTE,
-  AUDIT_MAILTO,
   AUDIT_PACKAGES,
   AUDIT_PRICE_NOTE,
   AUDIT_TOOLS,
@@ -103,20 +102,12 @@ export default function AuditPage() {
           <p className="leading-8">{AUDIT_HONEST_NOTE}</p>
         </section>
 
-        <section aria-labelledby="get-started" className="space-y-4 rounded-2xl bg-orange-50 p-6">
-          <h2 id="get-started" className="font-display text-2xl font-bold tracking-[-0.03em] text-slate-950">
-            Ask for a Launch Check
-          </h2>
-          <p>Email us your app link, the stack, and what the app does.</p>
-          <div className="flex flex-wrap items-center gap-4">
-            <Button asChild size="lg">
-              <a href={AUDIT_MAILTO}>Request a Launch Check</a>
-            </Button>
-            <Link href="/checklist" className="font-semibold text-orange-700 underline underline-offset-4">
-              Or read the free checklist first
-            </Link>
-          </div>
-        </section>
+        <RequestLaunchCheck />
+        <p>
+          <Link href="/checklist" className="font-semibold text-orange-700 underline underline-offset-4">
+            Or read the free checklist first
+          </Link>
+        </p>
       </div>
     </InfoPageShell>
   );

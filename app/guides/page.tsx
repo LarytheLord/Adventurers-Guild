@@ -9,14 +9,17 @@ import { metadata as certInGuide } from '@/app/guides/cert-in-ai-security-auditi
 import { metadata as certInRequired } from '@/app/guides/does-cert-in-require-an-ai-audit/page';
 import { metadata as supabaseRls } from '@/app/guides/check-supabase-rls-lovable-bolt/page';
 import { metadata as riskTierGuide } from '@/app/guides/what-is-an-ai-risk-tier-cert-in/page';
+import { metadata as evidenceChecklist } from '@/app/guides/cert-in-ai-audit-evidence-checklist/page';
 import { metadata as riskTierTool } from '@/app/ai-risk-tier/page';
 import { metadata as launchCheck } from '@/app/launch-check/page';
 import { metadata as checklist } from '@/app/checklist/page';
 import { metadata as indicQa } from '@/app/indic-ai-qa/page';
+import { metadata as dpdpGuide } from '@/app/guides/dpdp-rules-what-startups-must-do/page';
+import { metadata as dpdpTool } from '@/app/dpdp-readiness/page';
 
 const TITLE = 'Guides and free tools - Guild';
 const DESCRIPTION =
-  'Every guide and free self-check on Guild, grouped by topic: launching apps built with AI tools, the CERT-In AI Security Auditing Guidelines, and Indian-language AI. Unofficial; not an audit.';
+  'Every guide and free self-check on Guild, grouped by topic: launching apps built with AI tools, the CERT-In AI Security Auditing Guidelines, data protection under the DPDP Act, and Indian-language AI. Unofficial; not an audit.';
 
 const DISCLAIMER =
   'These are unofficial guides and self-checks. They are not audits or legal advice. Guild is not a CERT-In empanelled auditor.';
@@ -28,10 +31,13 @@ const PAGE_METADATA: Record<string, Metadata> = {
   '/guides/does-cert-in-require-an-ai-audit': certInRequired,
   '/guides/check-supabase-rls-lovable-bolt': supabaseRls,
   '/guides/what-is-an-ai-risk-tier-cert-in': riskTierGuide,
+  '/guides/cert-in-ai-audit-evidence-checklist': evidenceChecklist,
   '/ai-risk-tier': riskTierTool,
   '/launch-check': launchCheck,
   '/checklist': checklist,
   '/indic-ai-qa': indicQa,
+  '/guides/dpdp-rules-what-startups-must-do': dpdpGuide,
+  '/dpdp-readiness': dpdpTool,
 };
 
 function entryFor(item: GuideItem) {
