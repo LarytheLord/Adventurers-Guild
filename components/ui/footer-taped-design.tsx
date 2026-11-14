@@ -77,7 +77,7 @@ export const Component = () => {
       <div className="mt-4 max-w-5xl mx-auto px-4 md:px-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 items-start sm:items-center">
           <p className="text-[12px] text-slate-600 whitespace-nowrap">
-            ©{currentYear} Guild. Open source under MIT.
+            ©{currentYear} Guild. rls-open-check is open source under MIT.
           </p>
           <div className="flex gap-4">
             <Link className="text-[12px] text-slate-600 hover:text-slate-900 transition-colors" href="/privacy">Privacy</Link>
