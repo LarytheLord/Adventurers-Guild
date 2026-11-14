@@ -38,10 +38,8 @@ export const Component = () => {
             <div className="flex flex-col gap-3">
               <h2 className="text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-600">Platform</h2>
               <div className="flex flex-wrap md:flex-col gap-2 items-start">
-                <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="/quests">Browse Quests</Link>
                 <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="/#how-it-works">How It Works</Link>
                 <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="/#ranks">Rank System</Link>
-                <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="/register">Join Guild</Link>
               </div>
             </div>
 
@@ -54,8 +52,7 @@ export const Component = () => {
                 <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="/ai-risk-tier">AI Risk Tier Check</Link>
                 <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="/launch-check">Launch self-check</Link>
                 <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="/guides">Guides and free tools</Link>
-                <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="https://github.com/LarytheLord/Adventurers-Guild" target="_blank" rel="noopener noreferrer">Open Source (MIT)</Link>
-                <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="/register?tab=company">Post a Quest</Link>
+                <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="https://github.com/LarytheLord/rls-open-check" target="_blank" rel="noopener noreferrer">rls-open-check (open source)</Link>
                 <span className="flex items-center gap-1.5 text-[13px] font-medium text-slate-600 whitespace-nowrap">
                   Blog
                   <span className="inline-flex py-0.5 px-2 bg-slate-100 text-[10px] rounded-full -rotate-2">soon</span>
@@ -80,7 +77,7 @@ export const Component = () => {
       <div className="mt-4 max-w-5xl mx-auto px-4 md:px-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 items-start sm:items-center">
           <p className="text-[12px] text-slate-600 whitespace-nowrap">
-            ©{currentYear} Guild. Open source under MIT.
+            ©{currentYear} Guild. rls-open-check is open source under MIT.
           </p>
           <div className="flex gap-4">
             <Link className="text-[12px] text-slate-600 hover:text-slate-900 transition-colors" href="/privacy">Privacy</Link>
@@ -91,16 +88,16 @@ export const Component = () => {
         <div className="flex gap-3 items-center">
           <FeedbackButton />
           <a
-            href="https://github.com/LarytheLord/Adventurers-Guild"
+            href="https://github.com/LarytheLord/rls-open-check"
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Guild on GitHub"
+            aria-label="rls-open-check on GitHub"
             className="text-slate-600 hover:text-slate-900 transition-colors"
           >
             <Github className="w-4 h-4" />
           </a>
           <a
-            href="https://x.com/guild_india"
+            href="https://x.com/AdvGuildHQ"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Guild on X (Twitter)"

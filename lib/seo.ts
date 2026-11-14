@@ -36,7 +36,7 @@ export const SITE_NAME = 'Guild';
 export const LOGO_PATH = '/logo/guild-logo.png';
 
 /** Profiles that already exist in the codebase (site footer). Do not add others without a source. */
-export const SAME_AS = ['https://github.com/LarytheLord/Adventurers-Guild', 'https://x.com/guild_india'];
+export const SAME_AS = ['https://github.com/LarytheLord/rls-open-check', 'https://x.com/AdvGuildHQ'];
 
 /** The public marketing pages. Sitemap and llms.txt are checked against this list. */
 export const PUBLIC_PAGES = [
