@@ -1,197 +1,122 @@
-# The Adventurers Guild
+# Guild
 
-[![GitHub contributors](https://img.shields.io/github/contributors/LarytheLord/adventurers-guild?style=flat-square)](https://github.com/LarytheLord/adventurers-guild/graphs/contributors)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Discord](https://img.shields.io/discord/7hQYkEx5?label=Discord&logo=discord&style=flat-square)](https://discord.gg/7hQYkEx5)
-[![Website](https://img.shields.io/badge/Website-Live-blue?style=flat-square)](https://adventurersguild.vercel.app)
-[![NSoC 2026](https://img.shields.io/badge/NSoC-2026-orange?style=flat-square)](https://nsoc.in)
-[![Sponsor Us](https://img.shields.io/badge/Sponsor%20Us-Razorpay-0C73EB?style=for-the-badge&logo=razorpay&logoColor=white)](https://razorpay.me/@LarytheLord)
+Guild runs independent checks on apps and AI systems before people rely on them.
+This repo is the code for the Guild website.
 
-## Revolutionizing Computer Science Education
+Guild is early stage. It gives no legal advice. It is not a CERT-In empanelled
+auditor and does not issue a CERT-In audit or certificate. We help you prepare for
+one, and we can test as a partner to firms that are empanelled.
 
-**The Adventurers Guild** is a gamified developer marketplace that connects students and developers with real-world projects from companies and NGOs. Adventurers progress through ranks (F to S), earn XP, and get paid by completing Quests — actual development tasks commissioned by real organisations.
+## What is on the site
 
-Part of the **Open Paws** ecosystem, integrating with the Open Paws Bootcamp and Internship Programme.
+Free self-checks run in your browser. Nothing you answer is sent to us.
 
-![Quest Board](public/images/quest-board.png)
+- `/` - home page. It leads with the Launch Check.
+- `/launch-check` - a free 20-question self-check for apps built with Lovable, Bolt,
+  Replit, v0 or Cursor. It covers payments, deployment, performance and cost, and
+  security. The page also has a form to request a Launch Check. The form opens your
+  own mail app with a prefilled email; the site does not store it.
+- `/audit` - the paid Launch Check and what it includes (see below).
+- `/checklist` - a checklist of 48 items, in groups, each with a reason.
+- `/dpdp-readiness` - a free 20-question self-check mapped to the Digital Personal
+  Data Protection Act 2023. Not legal advice.
+- `/guides` - hub for the guides. They include
+  `/guides/dpdp-rules-what-startups-must-do`, and four CERT-In guides:
+  `/guides/cert-in-ai-security-auditing-guidelines`,
+  `/guides/cert-in-ai-audit-evidence-checklist`,
+  `/guides/does-cert-in-require-an-ai-audit` and
+  `/guides/what-is-an-ai-risk-tier-cert-in`. There is also
+  `/guides/check-supabase-rls-lovable-bolt`.
+- `/ai-risk-tier` - a free calculator that scores an AI system on the eight risk
+  factors in the CERT-In AI Security Auditing Guidelines (v1.0, 4 November 2026) and
+  shows its tier.
+- `/indic-ai-qa` - a two-week pilot of AI quality checks for Hindi, Gujarati and
+  Hinglish.
 
----
+### Paid offers on /audit
 
-## Key Features
+| Package | Price | What it is |
+|---|---|---|
+| Check | $99, 2 working days | A report with each finding rated critical, high, medium or low, plus a fixed quote to fix what we found. The $99 is credited to a Fix. |
+| Fix | From $800 | We fix the critical and high findings, re-check them and say what is closed. The price is a fixed quote after the Check. |
+| Care | From $150/month | Dependency and platform updates, a monthly backup check, monitoring, and 2 hours of fixes each month. |
 
-### Core Functionality
-- **Guild Card** — Verifiable public profile showing rank, XP, skills, and completed quest history. Share on LinkedIn. Employers can verify rank programmatically.
-- **Gamified Ranking** — Progress from F-Rank to S-Rank through real-world projects. Rank is the credential.
-- **Quest System** — Complete authentic projects commissioned by real companies. XP multipliers for streaks.
-- **Two-Track Architecture** — Open quests for everyone, plus dedicated Bootcamp and Intern tracks.
-- **Payment Integration** — Earn monetary rewards for completed quests.
-- **Company Portal** — Post quests, review applicants, and find ranked developers.
-- **Admin QA Layer** — Submissions go through `pending_admin_review` before company sees them.
+We only test your own app. We do not test third-party systems and do not do load
+testing.
 
-### Quest Pipelines
-- **External Clients** — Companies post quests through the Company Portal.
-- **Bootcamp Track** — Open Paws bootcamp students complete F/E rank quests as part of their curriculum.
-- **Intern Track** — 20 paid interns handle D+ rank quests in squads of 3–5.
+## Related repo
 
-### Authentication & Security
-- **Role-Based Access** — Adventurers, Companies, and Admins with distinct permissions.
-- **Secure Authentication** — NextAuth.js (credentials, Google, GitHub + JWT session strategy, 30-day sessions).
-- **Track Enforcement** — API-level access control for quest track visibility.
+- [rls-open-check](https://github.com/LarytheLord/rls-open-check) - a separate
+  linter that checks Supabase row level security rules. It moved out of this repo.
 
----
+## Tech stack
 
-## Technology Stack
+- Next.js 15 (App Router, `next` ^15.5.9) and React 18, in TypeScript
+- Tailwind CSS
+- Prisma 6 with PostgreSQL on Neon
+- NextAuth for login
+- Jest for unit and API tests, Playwright for end-to-end and accessibility tests
+- Deployed on Vercel
 
-| Layer | Technology |
-|-------|-----------|
-| Framework | Next.js 15 (App Router) |
-| Language | TypeScript |
-| Database | Neon (serverless PostgreSQL) via Prisma 6 ORM |
-| Auth | NextAuth.js v4 (Credentials, Google, GitHub, JWT strategy) |
-| UI | shadcn/ui + Tailwind CSS + Radix UI + Lucide React |
-| Deployment | Vercel |
-| Payments | Internal pipeline (Stripe Connect planned) |
+## Run it locally
 
----
+You need Node.js, npm, and a Postgres database (a free Neon project works).
 
-## Getting Started
-
-### Prerequisites
-- Node.js LTS
-- npm
-- Git
-- A [Neon](https://neon.tech) account (free tier works)
-
-### 1. Clone the Repository
 ```bash
-git clone https://github.com/LarytheLord/adventurers-guild.git
-cd adventurers-guild
-```
-
-### 2. Install Dependencies
-```bash
+git clone https://github.com/LarytheLord/Adventurers-Guild.git
+cd Adventurers-Guild
 npm install
-```
-
-### 3. Environment Configuration
-Copy the example env file:
-```bash
 cp .env.example .env.local
-```
-
-Fill in the required values:
-```bash
-# Database — get from Neon dashboard
-DATABASE_URL="postgresql://user:password@your-neon-host.neon.tech/neondb?sslmode=require"
-DATABASE_URL_UNPOOLED="postgresql://user:password@your-neon-host-direct.neon.tech/neondb?sslmode=require"
-
-# Authentication — generate with: openssl rand -base64 32
-NEXTAUTH_SECRET="your-secret-here"
-NEXTAUTH_URL="http://localhost:3000"
-
-# Optional OAuth providers
-GOOGLE_CLIENT_ID=""
-GOOGLE_CLIENT_SECRET=""
-GITHUB_CLIENT_ID=""
-GITHUB_CLIENT_SECRET=""
-
-# Application
-NEXT_PUBLIC_APP_URL="http://localhost:3000"
-```
-
-### 4. Set Up the Database
-```bash
-# Generate Prisma client
-npx prisma generate
-
-# Push schema to your Neon database (no migration files needed)
+# fill in .env.local
 npm run db:push
-```
-
-### 5. Run the Dev Server
-```bash
 npm run dev
 ```
 
-The application will be available at `http://localhost:3000`.
+The app runs at `http://localhost:3000`. `npm install` also runs `prisma generate`.
+`npm run db:push` runs a guard script first (`scripts/db-guard.js`); read
+`docs/DATABASE_SAFETY.md` before pointing it at a database you care about.
 
----
+Other scripts: `npm run build`, `npm run start`, `npm run lint`,
+`npm run type-check`, `npm run db:seed`, `npm run db:studio`.
 
-## User Roles
+### Environment variables
 
-| Role | Access | Profile |
-|------|--------|---------|
-| **Adventurer** | Quest board, apply/submit, dashboard, Guild Card | `AdventurerProfile` (skills, XP, streak, rank) |
-| **Company** | Company dashboard, post quests, review submissions | `CompanyProfile` (companyName, questsPosted) |
-| **Admin** | All routes + `/admin/**`, quest/user management, QA mediation | Full platform access |
+Names only, from `.env.example`. Do not commit real values.
 
-### Ranking System
-`F → E → D → C → B → A → S` — XP thresholds determine rank. Higher rank = harder quests with bigger rewards.
+- Database: `DATABASE_URL`, `DATABASE_URL_UNPOOLED`
+- Auth: `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`,
+  `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`
+- GitHub API: `GITHUB_TOKEN`
+- Email: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `ADMIN_EMAIL`
+- Integrations: `BOOTCAMP_WEBHOOK_SECRET`, `NEXT_PUBLIC_DEVSYNC_API_URL`,
+  `DEVSYNC_API_KEY`
+- App and analytics: `NEXT_PUBLIC_APP_URL`, `NEXT_PUBLIC_GA_ID`
+- Error tracking: `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_ORG`, `SENTRY_PROJECT`
+- Rate limiting: `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`
+- Limits: `MAX_QUEST_XP`, `MAX_QUEST_SP`, `MAX_QUEST_MONETARY`
 
----
+## Tests
 
-## How It Works
+```bash
+npm run test             # Jest
+npm run test:e2e:smoke   # Playwright smoke tests
+npm run test:a11y        # Playwright accessibility tests
+```
 
-### For Adventurers
-1. **Join the Guild** — Create your adventurer profile
-2. **Browse Quests** — Filter by rank, track, and skills
-3. **Claim a Quest** — Commit to completing a project
-4. **Submit Work** — Complete via GitHub PR and submit for review
-5. **Get Reviewed** — QA review, then company approval
-6. **Earn Rewards** — XP, rank progression, and monetary rewards
-7. **Build Your Guild Card** — Public verifiable credential you can share
+Also available: `npm run test:unit`, `npm run test:api`, `npm run test:e2e`.
 
-### For Companies
-1. **Register** — Create your company profile
-2. **Post Quests** — Describe the project with clear specs
-3. **Review Applicants** — Select ranked developers
-4. **Approve Work** — Review and accept completed submissions
-5. **Pay Adventurers** — Rewards are distributed on approval
+## Legacy code
 
----
+Legacy quest marketplace code remains under `app/quests`, `app/adventurer`,
+`app/adventurers`, `app/company` and `app/admin`, with matching routes in
+`app/api`, and is not the current product.
 
 ## Contributing
 
-We welcome contributions of all skill levels! NSoC 2026 participants — this is an active program running **April 15 – May 30, 2026**.
-
-Start here:
-1. Read [CONTRIBUTING.md](CONTRIBUTING.md) for the full workflow
-2. Check [docs/contributor-onboarding.md](docs/contributor-onboarding.md) for local setup
-3. Pick an issue from [GitHub Issues](https://github.com/LarytheLord/adventurers-guild/issues) labeled by rank (F-rank = beginner-friendly)
-
-Issues are labeled `F-rank` through `S-rank` by complexity. Good first issues are labeled `good first issue`.
-
----
-
-## Documentation
-
-**Start here** depending on who you are:
-
-| If you are a… | Start with |
-|---|---|
-| Sector / strategy thinker | [docs/PROBLEM_LANDSCAPE.md](docs/PROBLEM_LANDSCAPE.md) — Landscaping analysis |
-| Engineer / contributor | [docs/contributor-onboarding.md](docs/contributor-onboarding.md), then [docs/ARCHITECTURE_DECISIONS.md](docs/ARCHITECTURE_DECISIONS.md) |
-
-**Full doc index**:
-
-| File | Purpose |
-|------|---------|
-| [docs/PROBLEM_LANDSCAPE.md](docs/PROBLEM_LANDSCAPE.md) | Landscaping analysis of the India developer-talent value chain |
-| [CONTRIBUTING.md](CONTRIBUTING.md) | Contribution workflow and code standards |
-| [docs/contributor-onboarding.md](docs/contributor-onboarding.md) | Local environment setup guide |
-| [docs/ARCHITECTURE_DECISIONS.md](docs/ARCHITECTURE_DECISIONS.md) | Why things are built the way they are |
-| [docs/IMPLEMENTATION_TASKS.md](docs/IMPLEMENTATION_TASKS.md) | Current task queue with specs |
-
----
-
-## Connect
-
-- **Discord**: [Join our Community](https://discord.gg/7hQYkEx5)
-- **Website**: [adventurersguild.vercel.app](https://adventurersguild.vercel.app)
-- **GitHub**: [LarytheLord/adventurers-guild](https://github.com/LarytheLord/adventurers-guild)
-
----
+Read [CONTRIBUTING.md](CONTRIBUTING.md) first. Report security problems as described
+in [SECURITY.md](SECURITY.md).
 
 ## License
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+See [License.md](License.md). It is a custom, all-rights-reserved license, not an
+open-source license. Read it before you copy or reuse any code.
