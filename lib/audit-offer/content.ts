@@ -138,7 +138,7 @@ export const CHECKLIST_GROUPS: ChecklistGroup[] = [
       },
       {
         check: 'Table permissions (GRANTs) are set on purpose: the anon role has no access to tables that do not need it, and nobody was given access before RLS was on.',
-        why: 'RLS and GRANTs are two separate gates. Newer Supabase projects need explicit GRANTs on new tables, and old defaults can leave the anon role with rights such as TRUNCATE. Grant only what each role needs, and only after RLS is enabled.',
+        why: 'RLS and GRANTs are two separate gates. Newer Supabase projects need explicit GRANTs on new tables, and old defaults can leave the anon role with broad rights on every table. Grant only what each role needs, and only after RLS is enabled.',
       },
       {
         check: 'Views are created as security invoker, and every SECURITY DEFINER function pins its search_path and is not executable by anon unless it must be.',
@@ -249,7 +249,7 @@ export const CHECKLIST_GROUPS: ChecklistGroup[] = [
         why: 'A leftover preview URL breaks logins and sends payment events to the wrong place.',
       },
       {
-        check: 'The production domain sends security headers: Content-Security-Policy, frame-ancestors (or X-Frame-Options), nosniff, a Referrer-Policy and HSTS.',
+        check: 'The production domain sends security headers: Content-Security-Policy, frame-ancestors (or X-Frame-Options), X-Content-Type-Options: nosniff, a Referrer-Policy and HSTS.',
         why: 'They limit what an injected script or a hostile page can do to your visitors. Check the headers on the live domain, not on localhost, because your host or proxy can add or drop them.',
       },
       {
@@ -344,7 +344,7 @@ export const CHECKLIST_GROUPS: ChecklistGroup[] = [
       },
       {
         check: 'Rate limiting is tested on the live app, and it fails closed: if its store or environment variable is missing, requests are limited or refused, not let through.',
-        why: 'A limiter that keeps counts in server memory, or quietly does nothing when Redis is not configured, protects nothing. Send a burst of requests to the live app and confirm the limit actually triggers.',
+        why: 'A limiter that keeps counts in server memory does little on serverless hosts, and one that quietly does nothing when Redis is not configured protects nothing. Send a burst of requests to the live app and confirm the limit actually triggers.',
       },
       {
         check: 'Each paid provider that offers one (OpenAI, Anthropic, email, SMS) has a hard spend limit set, not only an alert.',
