@@ -1,5 +1,12 @@
 import type { Metadata } from 'next';
 import { ogImageUrl, OG_SIZE } from '@/lib/og';
+import {
+  DPDP_GUIDE_DESCRIPTION,
+  DPDP_GUIDE_FAQ,
+  DPDP_GUIDE_PATH,
+  DPDP_GUIDE_PUBLISHED,
+  DPDP_GUIDE_TITLE,
+} from '@/lib/dpdp-explainer/content';
 import { ANSWER_PUBLISHED, type AnswerPage } from '@/lib/answer-pages/content';
 import {
   INDIC_QA_CITATION,
@@ -45,6 +52,8 @@ export const PUBLIC_PAGES = [
   { path: '/guides/check-supabase-rls-lovable-bolt', priority: 0.7 },
   { path: '/guides/what-is-an-ai-risk-tier-cert-in', priority: 0.7 },
   { path: CHECKLIST_PATH, priority: 0.7 },
+  { path: '/dpdp-readiness', priority: 0.9 },
+  { path: DPDP_GUIDE_PATH, priority: 0.9 },
 ] as const;
 
 /** Paths crawlers must not fetch. */
@@ -266,4 +275,49 @@ export function checklistJsonLd() {
     author: org,
     publisher: org,
   };
+}
+/** WebApplication JSON-LD for the free DPDP readiness check. */
+export function dpdpToolJsonLd() {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'DPDP readiness check',
+    url: absoluteUrl('/dpdp-readiness'),
+    applicationCategory: 'BusinessApplication',
+    operatingSystem: 'Any (web browser)',
+    description:
+      'Free self-check: 20 yes/no questions mapped to sections of the Digital Personal Data Protection Act 2023. Shows gaps with the section and a plain-English fix. Runs in your browser. Unofficial; not legal advice.',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'INR' },
+    publisher: { '@type': 'Organization', name: SITE_NAME, url: SITE_URL },
+  };
+}
+
+/** Article and FAQPage for the DPDP guide. Questions and answers come straight from the guide's own FAQ. */
+export function dpdpGuideJsonLd() {
+  const pageUrl = absoluteUrl(DPDP_GUIDE_PATH);
+  const org = { '@type': 'Organization', name: SITE_NAME, url: SITE_URL };
+  return [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline: DPDP_GUIDE_TITLE,
+      description: DPDP_GUIDE_DESCRIPTION,
+      datePublished: DPDP_GUIDE_PUBLISHED,
+      dateModified: DPDP_GUIDE_PUBLISHED,
+      inLanguage: 'en-IN',
+      mainEntityOfPage: pageUrl,
+      url: pageUrl,
+      author: org,
+      publisher: org,
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: DPDP_GUIDE_FAQ.map((f) => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: stripLinks(f.a) },
+      })),
+    },
+  ];
 }

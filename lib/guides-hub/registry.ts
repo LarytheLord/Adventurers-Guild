@@ -43,6 +43,15 @@ export const GUIDE_GROUPS: GuideGroup[] = [
     ],
   },
   {
+    id: 'india-data-protection',
+    title: 'India data protection',
+    intro: 'The Digital Personal Data Protection Act 2023 and the Rules, explained, with a free self-check. Unofficial and not legal advice.',
+    items: [
+      { path: '/guides/dpdp-rules-what-startups-must-do', kind: 'guide' },
+      { path: '/dpdp-readiness', kind: 'tool' },
+    ],
+  },
+  {
     id: 'indian-language-ai',
     title: 'Indian-language AI',
     intro: 'Quality checks for AI that speaks Hindi, Gujarati or Hinglish. This is a pilot offer, not an audit.',

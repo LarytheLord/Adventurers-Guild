@@ -1,6 +1,7 @@
 import { ANSWER_PAGES } from '@/lib/answer-pages/content';
 import { EXPLAINER_PATH, EXPLAINER_TITLE } from '@/lib/cert-in-explainer/content';
 import { CHECKLIST_PATH, CHECKLIST_TITLE } from '@/lib/cert-in-explainer/evidence-checklist';
+import { DPDP_GUIDE_PATH, DPDP_GUIDE_TITLE } from '@/lib/dpdp-explainer/content';
 import { INDIC_QA_PATH } from '@/lib/indic-ai-qa/content';
 import { SITE_URL } from '@/lib/site-metadata';
 
@@ -41,6 +42,14 @@ const FIXED: Record<string, { path: string; card: OgCard }> = {
   guides: {
     path: '/guides',
     card: { title: 'Guides and free tools', subtitle: 'Guides' },
+  },
+  'dpdp-readiness': {
+    path: '/dpdp-readiness',
+    card: { title: 'DPDP readiness check for Indian startups', subtitle: 'Free self-check. Unofficial.' },
+  },
+  'dpdp-guide': {
+    path: DPDP_GUIDE_PATH,
+    card: { title: DPDP_GUIDE_TITLE, subtitle: 'Guide' },
   },
   'cert-in-guide': {
     path: EXPLAINER_PATH,

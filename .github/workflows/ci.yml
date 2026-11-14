@@ -9,7 +9,7 @@ on:
 jobs:
   ci:
     name: Lint, Type Check, Test & Build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://ci_user:ci_password@localhost:5432/ci_db?sslmode=disable' }}
       NEXTAUTH_SECRET: ${{ secrets.NEXTAUTH_SECRET || 'ci_nextauth_secret_minimum_32_characters_long' }}
@@ -42,3 +42,17 @@ jobs:
 
       - name: Build application
         run: npm run build
+
+      - name: Install Playwright chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run public page smoke tests (chromium)
+        run: npm run test:e2e:smoke
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-smoke-report
+          path: playwright-report/
+          retention-days: 7
