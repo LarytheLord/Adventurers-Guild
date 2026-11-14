@@ -175,13 +175,14 @@ describe('launch check data', () => {
     expect(all).not.toMatch(/empanelled/i);
   });
 
-  it('page file: ASCII, builder metadata, WebApplication JSON-LD, links /audit and /checklist, says it is not an audit', () => {
+  it('page file: ASCII, builder metadata, WebApplication JSON-LD, links /checklist, says it is not an audit', () => {
     const page = read('app/launch-check/page.tsx');
     // eslint-disable-next-line no-control-regex
     expect(/^[\x00-\x7F]*$/.test(page)).toBe(true);
     expect(page).toContain("path: '/launch-check'");
     expect(page).toContain('launchCheckJsonLd()');
-    expect(page).toContain('href="/audit"');
+    expect(page).toContain('<RequestLaunchCheck');
+    expect(page).not.toContain('get-started');
     expect(page).toMatch(/not an audit/i);
     expect(page).toMatch(/not a CERT-In empanelled auditor/);
     const calc = read('components/launch-check/launch-check-quiz.tsx');
