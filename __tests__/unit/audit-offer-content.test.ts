@@ -22,9 +22,9 @@ describe('audit offer content', () => {
     expect(AUDIT_MAILTO.startsWith('mailto:abid@guilds.work?subject=Launch%20Check%20request&body=')).toBe(true);
   });
 
-  it('checklist has 41 items, each with check and why', () => {
+  it('checklist has 40 items, each with check and why', () => {
     const items = CHECKLIST_GROUPS.flatMap((g) => g.items);
-    expect(items.length).toBe(41);
+    expect(items.length).toBe(40);
     for (const i of items) {
       expect(i.check.length).toBeGreaterThan(10);
       expect(i.why.length).toBeGreaterThan(10);
@@ -34,9 +34,9 @@ describe('audit offer content', () => {
   it('checklist covers entitlements, server-side limits, hard caps and server-only paid keys', () => {
     const group = (id: string) => CHECKLIST_GROUPS.find((g) => g.id === id)!.items.map((i) => i.check.toLowerCase());
     expect(group('database').some((c) => c.includes('plan') && c.includes('credits') && c.includes('update'))).toBe(true);
-    expect(group('cost').some((c) => c.includes('rate limits') && c.includes('server') && c.includes('per user and per ip'))).toBe(true);
-    expect(group('cost').some((c) => c.includes('hard spend cap'))).toBe(true);
-    expect(group('secrets').some((c) => c.includes('stripe secret key') && c.includes('never called from the client'))).toBe(true);
+    expect(group('cost').some((c) => c.includes('per-user and per-ip limits') && c.includes('server'))).toBe(true);
+    expect(group('cost').some((c) => c.includes('hard spend limit'))).toBe(true);
+    expect(group('secrets').some((c) => c.includes('stripe secret key') && c.includes('only used in server code'))).toBe(true);
   });
 
   it('checklist has an AI behaviour section with three checks', () => {
@@ -45,7 +45,7 @@ describe('audit offer content', () => {
     expect(ai?.items).toHaveLength(3);
     const t = ai!.items.map((i) => i.check.toLowerCase()).join(' | ');
     expect(t).toContain('prompt injection');
-    expect(t).toContain('least');
+    expect(t).toContain('tools and data it needs');
     expect(t).toContain('sql or html');
   });
 

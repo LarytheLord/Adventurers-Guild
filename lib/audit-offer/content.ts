@@ -134,7 +134,7 @@ export const CHECKLIST_GROUPS: ChecklistGroup[] = [
       },
       {
         check: 'Plan, subscription status, credits, usage counters and rate-limit values are not on any table or column that users can update through RLS.',
-        why: 'Users can give themselves premium by editing their own row, so keep these in a separate table with no user write policy, or write them only from the server or a webhook.',
+        why: 'Users can give themselves premium by editing their own row. Keep these values in a table with no insert or update policy for users, and change them only from the server or a webhook.',
       },
     ],
   },
@@ -155,12 +155,12 @@ export const CHECKLIST_GROUPS: ChecklistGroup[] = [
         why: 'Those prefixes mean "send to every visitor".',
       },
       {
-        check: 'Calls to paid services (AI models, maps, email) go through your own server, not straight from the browser.',
+        check: 'Calls to paid AI models and map services go through your own server, not straight from the browser.',
         why: 'A key in the browser can be copied and used to run up your bill.',
       },
       {
-        check: 'The Stripe secret key, and keys for services such as SendGrid, S3 or R2, are never called from the client.',
-        why: 'Anyone can copy a key from the browser and use it as you, so make these calls only from server code and keep the keys in server-only settings.',
+        check: 'The Stripe secret key, and keys for services such as SendGrid, S3 or R2, are only used in server code, never sent to the browser.',
+        why: 'Anyone can copy a key from the browser and use it as you, so keep these keys in server-side environment variables, not in code the browser downloads.',
       },
     ],
   },
@@ -303,7 +303,7 @@ export const CHECKLIST_GROUPS: ChecklistGroup[] = [
         why: 'Surprise bills and surprise shutdowns both come from limits nobody wrote down.',
       },
       {
-        check: 'Spend caps and billing alerts are set on every paid service.',
+        check: 'Billing alerts are set on every paid service, so you hear about a spike early.',
         why: 'A loop or a viral day can cost real money before you notice.',
       },
       {
@@ -311,16 +311,12 @@ export const CHECKLIST_GROUPS: ChecklistGroup[] = [
         why: 'The number tells you which plan limit or per-call price will hurt first.',
       },
       {
-        check: 'Expensive actions (AI calls, emails, file uploads) have per-user limits.',
-        why: 'One person, or one script, can otherwise use up your whole budget.',
+        check: 'Expensive actions (AI calls, emails, file uploads) have per-user and per-IP limits that the server enforces.',
+        why: 'One person, or one script, can otherwise use up your whole budget, and a limit that only exists in the frontend can be bypassed.',
       },
       {
-        check: 'Rate limits on AI calls and other paid API calls are enforced on the server, per user and per IP.',
-        why: 'A limit that only exists in the frontend can be bypassed, so count and refuse calls in server code.',
-      },
-      {
-        check: 'Each paid provider (OpenAI, Anthropic, email, SMS) has a hard spend cap that shuts the service off, not only an alert.',
-        why: 'An alert tells you after the money is gone, so set a hard cap in each provider\'s billing settings.',
+        check: 'Each paid provider that offers one (OpenAI, Anthropic, email, SMS) has a hard spend limit set, not only an alert.',
+        why: 'An alert tells you after the money is gone. Where a provider has no hard limit, also enforce a budget in your own server code.',
       },
     ],
   },
@@ -329,16 +325,16 @@ export const CHECKLIST_GROUPS: ChecklistGroup[] = [
     title: 'AI behaviour',
     items: [
       {
-        check: 'Prompt injection: text typed by a user, or content your app fetches, cannot override the system prompt to leak data or call tools.',
-        why: 'Treat all user and fetched text as data, keep secrets out of the prompt, and test with instructions such as "ignore the rules above".',
+        check: 'Prompt injection: text typed by a user, or content your app fetches, cannot trick the model into leaking data or calling tools it should not.',
+        why: 'No prompt fully stops this, so limit what a tricked model can do: keep secrets out of the prompt, give it few tools, and test with lines such as "ignore the rules above".',
       },
       {
-        check: 'The model\'s tool access is least-privilege.',
+        check: 'The AI can only use the tools and data it needs, and the server checks who is asking before each tool runs.',
         why: 'Give the model only the tools and data it needs, with read-only access where possible, and have the server check who is asking.',
       },
       {
-        check: 'AI output is never trusted as SQL or HTML without validation.',
-        why: 'Run model output through parameterised queries, an allow-list or an HTML sanitiser first, as you would for any user input.',
+        check: 'AI output is never run or shown as raw SQL or HTML.',
+        why: 'Pass model output through prepared queries with parameters, an allow-list or an HTML sanitizer first, as you would any user input.',
       },
     ],
   },
