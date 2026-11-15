@@ -1,3 +1,5 @@
+Legacy: describes the old quest marketplace, which is not the current product.
+
 # Issue Resolution Guide
 
 Rules and process for solving GitHub issues on Adventurers Guild. This applies equally to human developers and AI coding agents.

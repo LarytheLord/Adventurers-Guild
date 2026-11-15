@@ -1,3 +1,5 @@
+Legacy: describes the old quest marketplace, which is not the current product.
+
 # Contributor Onboarding — Adventurers Guild
 
 This guide gets you from zero to first PR as fast as possible. Read it once before touching any code.

@@ -1,3 +1,5 @@
+Legacy: describes the old quest marketplace, which is not the current product.
+
 # IMPLEMENTATION_TASKS.md — Technical Implementation Guide
 
 ## Reading Order

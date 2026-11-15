@@ -1,3 +1,5 @@
+Legacy: describes the old quest marketplace, which is not the current product.
+
 # Open Issues for Contributors
 
 ## 🔴 P1: Fix TypeScript Errors in New Features

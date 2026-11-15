@@ -1,22 +1,19 @@
-## Quest Reference
-- Quest ID/Link:
-- Track: OPEN / INTERN / BOOTCAMP
-- Rank: F / E / D / C / B+
-- Source: BACKLOG / HACKATHON / CLIENT_PORTAL / INTERNAL / TUTORIAL
-
-## Changes
+## What this changes
 
 
-## Acceptance Criteria Checklist
-- [ ] Criteria 1
-- [ ] Criteria 2
+## Why
+Link the issue with a closing line, for example `Closes #123`.
+
+
+## How I checked it
+- [ ] `npm run test`
+- [ ] `npm run lint` and `npm run type-check`
+- [ ] Looked at the changed page in the browser (if it is a UI change)
 
 ## Screenshots (if UI changes)
 
 
-## Peer Review Checklist (for reviewer)
-- [ ] Code does what the quest brief asks
-- [ ] All acceptance criteria met
-- [ ] Follows existing code patterns
-- [ ] No obvious bugs or edge cases
-- [ ] Comfortable sending to client
+## Checklist
+- [ ] One purpose in this PR
+- [ ] Copy in content files is ASCII
+- [ ] No client names or statistics without a source

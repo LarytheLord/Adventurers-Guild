@@ -1,3 +1,5 @@
+Legacy: describes the old quest marketplace, which is not the current product.
+
 # Problem Landscape — India Developer Talent Value Chain
 
 > Landscaping analysis of the India developer talent + project-work value chain, following the IIMA Ventures *Landscaping: AI Summer Residency Framework* methodology. The purpose is to situate Adventurers Guild inside the wider sector, surface the *buildable gaps* the IIMA framework asks for, and give a mentor or analyst the structural picture in one place.
