@@ -5,7 +5,6 @@ import { InfiniteSlider } from '@/components/ui/infinite-slider';
 const partners = [
   { name: 'GssOC', src: '/partners/gssoc.png' },
   { name: 'Nsoc', src: '/partners/nsoc.png' },
-  { name: 'OpenPaws', src: '/partners/openpaws.png' },
   { name: 'AiGrants', src: '/partners/aigrants.png' },
   { name: 'BharatCode', src: 'https://bharatcode.ai/brand/refresh-v5/bharatcode-mark.svg' },
 ];

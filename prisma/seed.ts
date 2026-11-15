@@ -53,17 +53,17 @@ async function main() {
     prisma.user.create({
       data: {
         id: '22222222-2222-2222-2222-222222222222',
-        name: 'Open Paws Animal Shelter',
-        username: 'open-paws-animal-shelter',
-        email: 'hello@openpaws.org',
+        name: 'Sample Animal Shelter',
+        username: 'sample-animal-shelter',
+        email: 'shelter@example.com',
         passwordHash,
         role: 'company',
         rank: 'A',
         isVerified: true,
         bio: 'Non-profit animal welfare organization',
         location: 'Mumbai, India',
-        github: 'open-paws',
-        linkedin: 'open-paws',
+        github: 'sample-shelter',
+        linkedin: 'sample-shelter',
       },
     }),
     prisma.user.create({
@@ -267,8 +267,8 @@ async function main() {
       },
       {
         userId: '22222222-2222-2222-2222-222222222222',
-        companyName: 'Open Paws Animal Shelter',
-        companyWebsite: 'https://openpaws.org',
+        companyName: 'Sample Animal Shelter',
+        companyWebsite: 'https://example.com',
         companyDescription: 'Animal welfare organization helping stray animals find homes',
         industry: 'Non-Profit',
         size: 'startup',
