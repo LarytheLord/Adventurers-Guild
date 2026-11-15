@@ -1,3 +1,5 @@
+Legacy: describes the old quest marketplace, which is not the current product.
+
 # Contributor Tasks for Adventurers Guild Project
 
 This document outlines simple but effective tasks that can be assigned to other contributors to help advance the project. These tasks are ideal for newcomers to the project or developers looking to make meaningful contributions without requiring deep architectural knowledge.

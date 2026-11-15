@@ -1,3 +1,5 @@
+Legacy: describes the old quest marketplace, which is not the current product.
+
 # QUEST_BRIEF_SCHEMA.md — Quest Data Format Reference
 
 ## Quest Brief Template

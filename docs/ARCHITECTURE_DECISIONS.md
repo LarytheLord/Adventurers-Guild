@@ -1,3 +1,5 @@
+Legacy: describes the old quest marketplace, which is not the current product.
+
 # ARCHITECTURE_DECISIONS.md — Why Things Are The Way They Are
 
 ## Decisions Made (Do Not Revisit)

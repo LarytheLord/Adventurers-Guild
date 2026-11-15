@@ -1,31 +1,26 @@
 ---
-name: Bug Report
-about: Create a report to help us improve
+name: Bug report
+about: Something on the site is broken or behaves wrongly
 title: '[BUG] '
-labels: 'D-Rank, bug'
+labels: 'bug'
 assignees: ''
 ---
 
-**Describe the bug**
-A clear and concise description of what the bug is.
+**What is wrong**
+One or two sentences.
 
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
+**Where**
+The page URL (for example /launch-check) or the file.
 
-**Expected behavior**
-A clear and concise description of what you expected to happen.
+**Steps to reproduce**
+1.
+2.
+3.
 
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
+**What you expected, and what happened instead**
 
-**Environment (please complete the following information):**
-- OS: [e.g. iOS, Windows, Linux]
-- Browser: [e.g. Chrome, Safari, Firefox]
-- Version: [e.g. 22]
+**Browser and device**
 
-**Additional context**
-Add any other context about the problem here.
+**Screenshot (optional)**
+
+Do not use this form for a security problem. See SECURITY.md.

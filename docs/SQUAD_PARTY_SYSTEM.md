@@ -1,3 +1,5 @@
+Legacy: describes the old quest marketplace, which is not the current product.
+
 # Squad/Party System — Full Specification
 
 ## Context

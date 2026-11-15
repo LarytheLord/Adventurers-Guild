@@ -1,3 +1,5 @@
+Legacy: describes the old quest marketplace, which is not the current product.
+
 # Admin QA Mediation Layer — Full Specification
 
 ## Context

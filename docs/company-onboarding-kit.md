@@ -1,3 +1,5 @@
+Legacy: describes the old quest marketplace, which is not the current product.
+
 # Guild — Company Onboarding Kit
 
 ## Your async ops team. Free while in early access.
