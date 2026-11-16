@@ -37,7 +37,7 @@ Following the framework spec: rows are analysis dimensions; columns are value-ch
 |---|---|---|---|---|
 | **Market size** | ~6M software developers in India (NASSCOM 2024 estimate); +1.5M engineering grads/yr; bootcamps ~50K/yr | ~$10B Indian EdTech; ~$2B specifically in upskilling-for-employability | Hiring/recruitment tech: ~$3B India TAM | India IT services + BPO: $250B+/yr; project-based work share growing post-2024 |
 | **Growth CAGR** | Developer pool +8–10%/yr | Upskilling segment ~25%+ post-AI inflection | Recruitment-tech 15–20% (compressed by AI automation of sourcing) | Project-based / contractor share growing 30%+/yr per RedSeer 2025 |
-| **Incumbents + market share** | Engineering colleges (TIER 1 IITs, NITs; long tail of private), Scaler, Newton School, Masai, Pesto, Coding Ninjas, Pepcoding, Open Paws | Same as Inputs + Coursera, NPTEL, Udemy, Pluralsight, LeetCode, HackerRank | LinkedIn (dominant claims layer), Naukri, Hirect, Cutshort, Instahyre, AngelList Talent, Wellfound, Refyne | Upwork, Fiverr, Toptal (global); Flexiple, FlexC (India); FT employers; project-bench firms |
+| **Incumbents + market share** | Engineering colleges (TIER 1 IITs, NITs; long tail of private), Scaler, Newton School, Masai, Pesto, Coding Ninjas, Pepcoding | Same as Inputs + Coursera, NPTEL, Udemy, Pluralsight, LeetCode, HackerRank | LinkedIn (dominant claims layer), Naukri, Hirect, Cutshort, Instahyre, AngelList Talent, Wellfound, Refyne | Upwork, Fiverr, Toptal (global); Flexiple, FlexC (India); FT employers; project-bench firms |
 | **Technological disruption** | AI-tutor platforms (Khan Academy AI, Codecademy AI, Replit Teams) compress time-to-skill | Cursor / Devin / Copilot are repricing what "junior developer skill" means; the *content* of upskilling is shifting fast | LLM-powered sourcing tools (Sourceful, RippleMatch); resume parsing → skill graph inference | AI is automating L1/L2 services work (40–60% per IIMA thesis); demand for *verifiable* skill is rising |
 | **Demand trends** | Demand outstripping placement; bootcamp grads + self-taught growing faster than absorption | Demand for *applied* / *project-based* learning over MCQ-based courses | Demand for *verified* signals over self-claimed credentials; DPDP Act pushes verifiable contractor data | Companies moving from FTE-heavy to project-based hiring under cost pressure; India becoming a project-export hub |
 | **Supply trends** | Quality variance widening (tier-1 grads ↔ self-taught) | Bootcamps shifting curricula every 6–12 months to track AI tooling | LinkedIn signal degrading (AI-generated profiles, recommendation inflation) | More demand for senior India talent globally; junior talent oversupplied locally |
@@ -61,7 +61,7 @@ Per the framework: *"A Buildable Gap is a market opportunity based on observed c
 **Who it benefits**: bootcamp learners who finish curriculum but can't get hired; self-taught devs who need applied practice.
 **Why now**: bootcamps are scaling (~50K/yr graduates) but placement is the bottleneck.
 **Defensibility**: bootcamp partnership stack; curriculum integration; the same data flywheel as Gap A.
-**AG fit**: direct, via the Bootcamp Track and Open Paws integration.
+**AG fit**: direct, via the Bootcamp Track and the partner integration.
 
 ### Gap C — Rank as distribution
 **Who it benefits**: recruiters who need a filterable trust score; recruiters platforms that want to integrate verified signal.

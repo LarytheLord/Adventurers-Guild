@@ -14,7 +14,7 @@ interface QuestBrief {
   track: "INTERN" | "BOOTCAMP";    // Who can see/accept this quest
 
   // Client/Source
-  clientOrg: string;               // Organization name or "Internal" for Open Paws work
+  clientOrg: string;               // Organization name or "Internal" for partner organisation work
   
   // Scope
   problemStatement: string;         // 2–3 sentences: what exists, what's wrong, desired outcome
@@ -97,7 +97,7 @@ These are the mandatory onboarding quests every bootcamp student completes befor
   "rank": "E",
   "track": "BOOTCAMP",
   "clientOrg": "Internal",
-  "problemStatement": "Work with a partner to add a small feature to an Open Paws open-source tool. This teaches collaboration via GitHub, code review as both author AND reviewer, and coordinating with a teammate.",
+  "problemStatement": "Work with a partner to add a small feature to an open-source tool. This teaches collaboration via GitHub, code review as both author AND reviewer, and coordinating with a teammate.",
   "deliverables": [
     "Feature implemented in a single PR",
     "Both partners listed as co-authors (use Co-authored-by in commit)",

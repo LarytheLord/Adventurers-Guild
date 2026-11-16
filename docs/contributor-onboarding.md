@@ -11,8 +11,8 @@ This guide gets you from zero to first PR as fast as possible. Read it once befo
 Adventurers Guild is a gamified developer marketplace where:
 - **Adventurers** (developers) complete coding **Quests** for XP, rank progression, and payment
 - **Companies** post and review quests, pay on approval
-- **Admin** (Open Paws team) mediates all quality and client relations
-- **Bootcamp students** (Open Paws Bootcamp) enter as F-rank Adventurers, unlock real work by completing 2 tutorial quests
+- **Admin** (partner team) mediates all quality and client relations
+- **Bootcamp students** (partner bootcamp) enter as F-rank Adventurers, unlock real work by completing 2 tutorial quests
 
 The platform runs two tracks:
 - **INTERN track** — 20 paid interns, D+ rank quests, squads of 3–5
@@ -241,7 +241,7 @@ Totals are tracked in issue #184. Leaderboard published at end of programme (May
 - Your name + contribution goes into [CONTRIBUTORS.md](../CONTRIBUTORS.md) on merge
 - Bug reporters are acknowledged in issue comments and commit references
 - Sustained contributors (3+ merged PRs) get invited as long-term collaborators
-- Top contributors are mentioned in project announcements and the Open Paws community
+- Top contributors are mentioned in project announcements and the partner community
 
 ### Path to Maintainer
 High-quality contributions across multiple areas → invite to co-maintainer role with merge authority. See [MAINTAINERS.md](../MAINTAINERS.md).
