@@ -210,7 +210,7 @@ jobs:
 
 **File**: `app/api/onboard/route.ts`
 
-POST endpoint that receives a webhook from the Open Paws Bootcamp platform when a student reaches Week 4+ and opts into the Guild.
+POST endpoint that receives a webhook from the partner bootcamp platform when a student reaches Week 4+ and opts into the Guild.
 
 ```typescript
 // Expected payload from bootcamp platform:

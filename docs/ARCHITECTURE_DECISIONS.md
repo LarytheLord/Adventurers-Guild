@@ -51,19 +51,19 @@ These decisions were made after stress-testing with the PM team. They are final 
 **Why**: Payment infrastructure is ready but adding paid bootcamp quests complicates things before the model is proven. Phase 2 introduces paid quests after validation.
 **Implication**: Quest model doesn't need a payment field for Phase 1. Revenue comes from the intern track (existing client agreements) and future external client commissions.
 
-### 10. All Open Paws Branding
+### 10. All Partner Branding
 **Decision**: No references to Electric Sheep, C4C, or Code for Compassion.
-**Why**: Open Paws has separated from Electric Sheep. All operations are under Open Paws branding.
-**Implication**: Search the codebase for any Electric Sheep or C4C references and remove them. Bootcamp webhook comes from "Open Paws Bootcamp", not "C4C Campus".
+**Why**: A partner organisation has separated from Electric Sheep. All operations are under partner branding.
+**Implication**: Search the codebase for any Electric Sheep or C4C references and remove them. Bootcamp webhook comes from the partner bootcamp, not "C4C Campus".
 
 ### 11. Squad/Party System Is Central to Delivery (Not Optional)
 **Decision**: Both intern track and bootcamp track use the Party system for delivery — not individual assignments.
 **Why**: The org plan explicitly describes "mixed-rank squads handle delivery — senior Adventurers mentor juniors automatically through the Party Leader structure." Without this, interns have no team coordination mechanism and bootcamp pairs have no defined roles.
 **Implication**: A `Party` model owns the quest assignment for multi-participant quests. `PartyMember` links users to parties. The Party Leader (senior Adventurer) is the accountable owner of delivery. Rank constraints apply: leader must have rank >= quest difficulty. BOOTCAMP parties cap at 2 members (pairs), INTERN at 5.
 
-### 12. Open Paws Mediates — Submissions Don't Reach Clients Directly
+### 12. Partner Mediates — Submissions Don't Reach Clients Directly
 **Decision**: All submissions pass through an admin QA review before the client sees them.
-**Why**: The org plan is explicit: "Open Paws mediates all client relations, QA, and payment. Clients never interact directly with students." If a student's bad submission reaches a client, it damages the client relationship and the Open Paws brand.
+**Why**: The org plan is explicit: "The partner mediates all client relations, QA, and payment. Clients never interact directly with students." If a student's bad submission reaches a client, it damages the client relationship and the partner brand.
 **Implication**: A new `pending_admin_review` state sits between `submitted` and `review`. Submissions from BOOTCAMP and INTERN track quests land in the admin QA queue first. Admin either forwards to client (`review`) or sends back to student (`needs_rework`). Professional track (OPEN) quests skip this step.
 
 ### 13. Stripe Connect for Interns, XP-Only for Bootcamp (Phase 2)

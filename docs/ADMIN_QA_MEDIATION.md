@@ -4,8 +4,8 @@ Legacy: describes the old quest marketplace, which is not the current product.
 
 ## Context
 
-From the Open Paws org plan:
-> "Open Paws mediates all client relations, QA, and payment. Clients never interact directly with students."
+From the partner org plan:
+> "The partner mediates all client relations, QA, and payment. Clients never interact directly with students."
 
 Currently, when a student submits work, it goes directly to `review` status and the company/client can see it immediately. This violates the mediation requirement.
 

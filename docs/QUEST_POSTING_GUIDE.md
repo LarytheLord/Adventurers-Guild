@@ -29,7 +29,7 @@ SELECT id, name, email, role FROM users WHERE role = 'company' ORDER BY created_
 
 Existing company accounts:
 - `11111111-1111-1111-1111-111111111111` — Knight Medicare
-- `e5d3e1a0-e486-42aa-9e58-7e0af7f783ce` — Open Paws (Abid)
+- `e5d3e1a0-e486-42aa-9e58-7e0af7f783ce` — Partner organisation (Abid)
 
 If your project doesn't have a company account, create one:
 
@@ -161,8 +161,8 @@ Always include:
 ### Track Values
 
 - `OPEN` — external projects, any adventurer can see
-- `INTERN` — Open Paws intern track only
-- `BOOTCAMP` — Open Paws bootcamp students only
+- `INTERN` — partner organisation intern track only
+- `BOOTCAMP` — partner organisation bootcamp students only
 
 Use `OPEN` for all external project quests.
 

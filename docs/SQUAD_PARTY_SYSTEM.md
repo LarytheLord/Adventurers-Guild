@@ -4,14 +4,14 @@ Legacy: describes the old quest marketplace, which is not the current product.
 
 ## Context
 
-The Open Paws org plan describes delivery like this:
+The partner org plan describes delivery like this:
 > "Mixed-rank squads handle delivery — senior Adventurers mentor juniors automatically through the Party Leader structure."
 
 The Party system is the core delivery mechanism for both tracks:
 - **INTERN track** — squads of 3–5, D+ rank quests, Party Leader owns delivery
 - **BOOTCAMP track** — pairs (2 members max), E-rank quests, senior member leads
 
-Clients never interact with individual students — they interact with the quest outcome and with Open Paws as mediator. The Party is the delivery unit, not the individual.
+Clients never interact with individual students — they interact with the quest outcome and with the partner as mediator. The Party is the delivery unit, not the individual.
 
 ---
 
