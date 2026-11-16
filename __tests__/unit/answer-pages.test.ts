@@ -14,10 +14,12 @@ const byPath = (p: string) => ANSWER_PAGES.find((x) => x.path === p)!;
 const CERT_PATH = '/guides/does-cert-in-require-an-ai-audit';
 const RLS_PATH = '/guides/check-supabase-rls-lovable-bolt';
 const TIER_PATH = '/guides/what-is-an-ai-risk-tier-cert-in';
+const MIG_PATH = '/guides/supabase-rls-mistakes-in-real-migrations';
 
 describe('answer pages content', () => {
-  it('has the three requested pages under /guides/', () => {
-    expect(ANSWER_PAGES.map((p) => p.path).sort()).toEqual([CERT_PATH, RLS_PATH, TIER_PATH].sort());
+  it('has the four requested pages under /guides/', () => {
+    expect(ANSWER_PAGES.map((p) => p.path).sort()).toEqual([CERT_PATH, RLS_PATH, TIER_PATH, MIG_PATH].sort());
+    expect(byPath(MIG_PATH).title).toBe('What 126 Supabase migration files taught us about RLS');
     expect(byPath(CERT_PATH).title).toBe('Does CERT-In require an AI audit?');
     expect(byPath(RLS_PATH).title).toBe('How to check Supabase RLS on an app built with Lovable or Bolt');
     expect(byPath(TIER_PATH).title).toBe('What is an AI risk tier under CERT-In?');
@@ -103,5 +105,57 @@ describe('answer pages JSON-LD, sitemap and routes', () => {
   it('llms.txt lists each page', () => {
     const txt = read('public/llms.txt');
     for (const page of ANSWER_PAGES) expect(txt).toContain(`(https://www.guilds.work${page.path})`);
+  });
+});
+
+describe('RLS migrations guide (from rls-open-check VALIDATION.md)', () => {
+  const page = () => byPath(MIG_PATH);
+  const text = () => answerPagePlainText(page());
+
+  it('exists as a route file, is in the hub, sitemap and llms.txt', () => {
+    expect(page()).toBeDefined();
+    expect(read(`app${MIG_PATH}/page.tsx`)).toContain('AnswerPageView');
+    expect(read('app/guides/page.tsx')).toContain(`'${MIG_PATH}'`);
+    expect(read('lib/guides-hub/registry.ts')).toContain(MIG_PATH);
+    expect(PUBLIC_PAGES.map((p) => p.path)).toContain(MIG_PATH);
+    expect(sitemap().map((e) => e.url)).toContain(`https://www.guilds.work${MIG_PATH}`);
+    expect(read('public/llms.txt')).toContain(`(https://www.guilds.work${MIG_PATH})`);
+  });
+
+  it('is ASCII, 600 to 700 words including headings and sources', () => {
+    expect(isAscii(text())).toBe(true);
+    expect(words(text())).toBeGreaterThanOrEqual(600);
+    expect(words(text())).toBeLessThan(700);
+  });
+
+  it('links the linter repo with ?src=guide and the free checklist', () => {
+    const all = JSON.stringify(page());
+    expect(all).toContain('https://github.com/LarytheLord/rls-open-check?src=guide');
+    expect(all).toContain('](/checklist)');
+  });
+
+  it('covers five patterns, each with a hedged reason and a fix', () => {
+    const t = text();
+    expect((t.match(/A common reason is/g) ?? []).length).toBe(5);
+    expect((t.match(/\nFix:/g) ?? []).length).toBe(5);
+    expect(t).toMatch(/does not prove/i);
+  });
+
+  it('uses only numbers that appear in VALIDATION.md', () => {
+    const allowed = new Set(['126', '137', '52', '39', '27', '14', '4', '24', '8', '19', '17', '0', '1', '2', '5', '3', '6', '7', '9', '12']);
+    const t = text().replace(/https?:\/\/\S+/g, '').replace(/\bR\d\b/g, '');
+    for (const n of t.match(/\b\d+\b/g) ?? []) expect(allowed.has(n)).toBe(true);
+    expect(t).toContain('126');
+    expect(t).toContain('137');
+  });
+
+  it('names no third-party repo and quotes no third-party code', () => {
+    const all = JSON.stringify(page());
+    const repos = (all.match(/github\.com\/[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+/g) ?? []).map((r) => r.toLowerCase());
+    for (const r of repos) expect(['github.com/larythelord/rls-open-check', 'github.com/supabase/supabase']).toContain(r);
+    for (const b of page().sections.flatMap((s) => s.blocks)) {
+      if (b.kind === 'code') expect(b.text.split('\n').length).toBeLessThanOrEqual(3);
+    }
+    expect(all).not.toMatch(/CREATE (TABLE|POLICY|FUNCTION)/i);
   });
 });

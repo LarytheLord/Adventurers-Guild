@@ -26,7 +26,8 @@ Free self-checks run in your browser. Nothing you answer is sent to us.
   `/guides/cert-in-ai-audit-evidence-checklist`,
   `/guides/does-cert-in-require-an-ai-audit` and
   `/guides/what-is-an-ai-risk-tier-cert-in`. There is also
-  `/guides/check-supabase-rls-lovable-bolt`.
+  `/guides/check-supabase-rls-lovable-bolt` and
+  `/guides/supabase-rls-mistakes-in-real-migrations`.
 - `/ai-risk-tier` - a free calculator that scores an AI system on the eight risk
   factors in the CERT-In AI Security Auditing Guidelines (v1.0, 4 November 2026) and
   shows its tier.

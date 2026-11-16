@@ -11,6 +11,7 @@ const PAGES = [
   '/ai-risk-tier',
   '/guides/cert-in-ai-security-auditing-guidelines',
   '/guides/check-supabase-rls-lovable-bolt',
+  '/guides/supabase-rls-mistakes-in-real-migrations',
   '/guides/does-cert-in-require-an-ai-audit',
   '/guides/what-is-an-ai-risk-tier-cert-in',
 ];

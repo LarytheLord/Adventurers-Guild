@@ -50,6 +50,7 @@ export const PUBLIC_PAGES = [
   { path: '/guides/cert-in-ai-security-auditing-guidelines', priority: 0.9 },
   { path: '/guides/does-cert-in-require-an-ai-audit', priority: 0.7 },
   { path: '/guides/check-supabase-rls-lovable-bolt', priority: 0.7 },
+  { path: '/guides/supabase-rls-mistakes-in-real-migrations', priority: 0.7 },
   { path: '/guides/what-is-an-ai-risk-tier-cert-in', priority: 0.7 },
   { path: CHECKLIST_PATH, priority: 0.7 },
   { path: '/dpdp-readiness', priority: 0.9 },
