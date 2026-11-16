@@ -183,6 +183,104 @@ const supabaseRls: AnswerPage = {
   ],
 };
 
+const REPO = 'https://github.com/LarytheLord/rls-open-check';
+const REPO_SRC = REPO + '?src=guide';
+
+const rlsMigrations: AnswerPage = {
+  path: '/guides/supabase-rls-mistakes-in-real-migrations',
+  title: 'What 126 Supabase migration files taught us about RLS',
+  description:
+    'The five Row Level Security patterns an open-source linter found most often in 126 public SQL files, what each means, why AI-built apps often have it, and the fix.',
+  answer:
+    'We ran the open-source linter rls-open-check on 126 public SQL files from eight public repositories and got 137 findings, in five patterns that come up again and again. Each is a small, fixable mistake, and the numbers come from the linter\'s own validation notes, not a survey.',
+  sections: [
+    {
+      id: 'definer-search-path',
+      heading: '1. SECURITY DEFINER with no search_path (52 findings)',
+      blocks: [
+        {
+          kind: 'p',
+          text: 'The function runs with its owner\'s rights and does not pin where Postgres looks for names. A common reason is that the function works without that line, so nothing prompts anyone to add it.',
+        },
+        { kind: 'p', text: 'Fix: add SET search_path = \'\' to the function and use full schema names inside it.' },
+      ],
+    },
+    {
+      id: 'definer-exposed',
+      heading: '2. A SECURITY DEFINER function anyone can call (39 findings)',
+      blocks: [
+        {
+          kind: 'p',
+          text: 'Postgres lets the public role run new functions by default, so the anon key can call it through the API. Impact varies: low for a role-check helper, high for one that takes a user id or writes to auth.users. A common reason is that the default never fails a test.',
+        },
+        { kind: 'p', text: 'Fix: REVOKE EXECUTE on the function FROM PUBLIC, then grant it only to the roles that need it.' },
+      ],
+    },
+    {
+      id: 'open-policy',
+      heading: '3. Policies that say USING (true) (27 findings)',
+      blocks: [
+        {
+          kind: 'p',
+          text: 'The policy lets anon or public through on every row. Open reads are often intended, such as a docs or product table. Open writes are not: the two critical findings in this run were anonymous INSERT policies. A common reason is that true is the shortest way to make a "permission denied" error go away.',
+        },
+        {
+          kind: 'p',
+          text: 'Fix: keep open reads only on data meant to be public, and scope writes to the signed-in user, for example auth.uid() = user_id.',
+        },
+      ],
+    },
+    {
+      id: 'rls-off',
+      heading: '4. Tables with RLS off (14 findings)',
+      blocks: [
+        {
+          kind: 'p',
+          text: 'With the default setup the table is reachable through the API by anyone holding the anon key. All 14 were in Supabase\'s own demo code (supabase/supabase, the examples folder), where examples often skip RLS to stay short. A common reason is that the app works fine without it, so the gap stays invisible.',
+        },
+        { kind: 'p', text: 'Fix: turn RLS on for every table in the public schema, then add the narrowest policies the app needs.' },
+      ],
+    },
+    {
+      id: 'dead-grants',
+      heading: '5. Grants with no policy behind them (4 findings, low)',
+      blocks: [
+        {
+          kind: 'p',
+          text: 'The anon role was granted rights that no policy uses. With RLS on, the grant does nothing today. A common reason is a schema dump that grants everything to anon.',
+        },
+        { kind: 'p', text: 'Fix: revoke what the app does not use, so a later policy cannot open it by accident.' },
+      ],
+    },
+    {
+      id: 'not-proved',
+      heading: 'What a clean result does not prove',
+      blocks: [
+        {
+          kind: 'p',
+          text: 'A clean result does not prove the app is safe. The linter read migration files only. It did not look at a live database, application code, Storage policies set in the dashboard, or Edge Functions, and a repository can differ from production. 24 of the 52 SECURITY DEFINER findings and 24 of the 39 exposed-function findings came from one docs file, and partitioned tables are reported once per partition, so read the counts as a map, not a rate. Of 19 findings read by hand, 17 were true positives, 2 were unclear and none were wrong, but 19 is a small sample.',
+        },
+      ],
+    },
+    {
+      id: 'run-it',
+      heading: 'Run it on your own project',
+      blocks: [
+        {
+          kind: 'p',
+          text: `Clone [rls-open-check](${REPO_SRC}), build it, and point it at your own migrations folder, one project per run. It reads files only and connects to nothing:`,
+        },
+        { kind: 'code', text: 'node dist/bin.js ./supabase/migrations' },
+        { kind: 'p', text: 'Then work through the free [launch checklist](/checklist). ' + ANSWER_DISCLAIMER },
+      ],
+    },
+  ],
+  sources: [
+    { label: 'rls-open-check: validation on public code', href: REPO + '/blob/main/docs/VALIDATION.md' },
+    { label: 'Supabase docs: Row Level Security', href: 'https://supabase.com/docs/guides/database/postgres/row-level-security' },
+  ],
+};
+
 const riskTier: AnswerPage = {
   path: '/guides/what-is-an-ai-risk-tier-cert-in',
   title: 'What is an AI risk tier under CERT-In?',
@@ -242,7 +340,7 @@ const riskTier: AnswerPage = {
   ],
 };
 
-export const ANSWER_PAGES: AnswerPage[] = [certAudit, supabaseRls, riskTier];
+export const ANSWER_PAGES: AnswerPage[] = [certAudit, supabaseRls, riskTier, rlsMigrations];
 
 /** Visible copy as one string, for tests and word counts. Links are flattened to "label (href)". */
 export function answerPagePlainText(page: AnswerPage): string {

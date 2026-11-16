@@ -28,6 +28,7 @@ export const GUIDE_GROUPS: GuideGroup[] = [
       { path: '/launch-check', kind: 'tool' },
       { path: '/checklist', kind: 'tool' },
       { path: '/guides/check-supabase-rls-lovable-bolt', kind: 'guide' },
+      { path: '/guides/supabase-rls-mistakes-in-real-migrations', kind: 'guide' },
     ],
   },
   {

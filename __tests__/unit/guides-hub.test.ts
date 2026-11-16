@@ -21,6 +21,7 @@ describe('guides hub registry', () => {
       '/guides/cert-in-ai-security-auditing-guidelines',
       '/guides/does-cert-in-require-an-ai-audit',
       '/guides/check-supabase-rls-lovable-bolt',
+      '/guides/supabase-rls-mistakes-in-real-migrations',
       '/guides/what-is-an-ai-risk-tier-cert-in',
       '/guides/cert-in-ai-audit-evidence-checklist',
       '/ai-risk-tier',
