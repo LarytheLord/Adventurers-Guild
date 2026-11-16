@@ -73,7 +73,7 @@ export default function AdventurersPage() {
       {/* #1 — The Rank Journey (main attraction) */}
       <RankJourney />
 
-      {/* #3 — Trust signals (MIT, Open Paws, BharatCode, live numbers) */}
+      {/* #3 - Trust signals (MIT, BharatCode, live numbers) */}
       <TrustStrip />
 
       {/* #4 — How it works (single column, large numbers) */}

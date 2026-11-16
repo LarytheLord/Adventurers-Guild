@@ -90,9 +90,6 @@ npx prisma migrate resolve --rolled-back [migration_name]
 ## Post-Deployment Checklist
 
 - [ ] Verify authentication works (login/register)
-- [ ] Test quest creation flow (as company)
-- [ ] Test quest application flow (as adventurer)
-- [ ] Verify payment integration (test mode)
 - [ ] Check email notifications
 - [ ] Monitor Sentry for errors
 - [ ] Test rate limiting (try rapid API requests)

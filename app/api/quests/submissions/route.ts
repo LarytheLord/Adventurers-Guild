@@ -130,7 +130,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid assignment state for submission', success: false }, { status: 400 });
     }
 
-    // BOOTCAMP and INTERN quests go to pending_admin_review (Open Paws QA gate)
+    // BOOTCAMP and INTERN quests go to pending_admin_review (admin QA gate)
     // OPEN track goes directly to submitted (client sees immediately)
     const postSubmitStatus =
       assignment.quest.track !== 'OPEN' ? 'pending_admin_review' : 'submitted';
