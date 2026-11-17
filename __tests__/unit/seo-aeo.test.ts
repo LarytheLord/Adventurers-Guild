@@ -33,6 +33,7 @@ const PAGE_FILES: Record<string, string> = {
   '/guides/cert-in-ai-security-auditing-guidelines': 'app/guides/cert-in-ai-security-auditing-guidelines/page.tsx',
   '/guides/cert-in-ai-audit-evidence-checklist': 'app/guides/cert-in-ai-audit-evidence-checklist/page.tsx',
   '/dpdp-readiness': 'app/dpdp-readiness/page.tsx',
+  '/tools/rls-open-check': 'app/tools/rls-open-check/page.tsx',
   '/guides/dpdp-rules-what-startups-must-do': 'app/guides/dpdp-rules-what-startups-must-do/page.tsx',
   ...Object.fromEntries(ANSWER_PAGES.map((a) => [a.path, `app${a.path}/page.tsx`])),
 };
@@ -40,7 +41,7 @@ const PAGE_FILES: Record<string, string> = {
 describe('sitemap', () => {
   const urls = sitemap().map((e) => e.url);
 
-  it('lists exactly the fifteen public pages on www.guilds.work', () => {
+  it('lists exactly the sixteen public pages on www.guilds.work', () => {
     expect(urls.sort()).toEqual(
       [
         'https://www.guilds.work/',
@@ -54,6 +55,7 @@ describe('sitemap', () => {
         'https://www.guilds.work/guides/does-cert-in-require-an-ai-audit',
         'https://www.guilds.work/guides/check-supabase-rls-lovable-bolt',
         'https://www.guilds.work/guides/supabase-rls-mistakes-in-real-migrations',
+        'https://www.guilds.work/tools/rls-open-check',
         'https://www.guilds.work/guides/what-is-an-ai-risk-tier-cert-in',
         'https://www.guilds.work/guides/cert-in-ai-audit-evidence-checklist',
         'https://www.guilds.work/dpdp-readiness',
@@ -181,7 +183,7 @@ describe('page metadata', () => {
     for (const p of PUBLIC_PAGES) {
       const src = read(PAGE_FILES[p.path]);
       expect(src).toContain('buildPageMetadata');
-      expect(src).toContain(p.path === '/' ? "path: '/'" : p.path === '/indic-ai-qa' ? 'path: INDIC_QA_PATH' : p.path === '/guides/cert-in-ai-security-auditing-guidelines' ? 'path: EXPLAINER_PATH' : p.path === '/guides/cert-in-ai-audit-evidence-checklist' ? 'path: CHECKLIST_PATH' : p.path === '/guides/dpdp-rules-what-startups-must-do' ? 'path: DPDP_GUIDE_PATH' : ANSWER_PAGES.some((a) => a.path === p.path) ? 'path: PAGE.path' : `path: '${p.path}'`);
+      expect(src).toContain(p.path === '/' ? "path: '/'" : p.path === '/indic-ai-qa' ? 'path: INDIC_QA_PATH' : p.path === '/guides/cert-in-ai-security-auditing-guidelines' ? 'path: EXPLAINER_PATH' : p.path === '/guides/cert-in-ai-audit-evidence-checklist' ? 'path: CHECKLIST_PATH' : p.path === '/guides/dpdp-rules-what-startups-must-do' ? 'path: DPDP_GUIDE_PATH' : p.path === '/tools/rls-open-check' ? 'path: RLS_PATH' : ANSWER_PAGES.some((a) => a.path === p.path) ? 'path: PAGE.path' : `path: '${p.path}'`);
       expect(isAscii(src)).toBe(true);
     }
     const auditMeta = read('app/audit/page.tsx').split('export const metadata')[0];
@@ -196,7 +198,7 @@ describe('page metadata', () => {
     const descs = new Set<string>();
     for (const p of PUBLIC_PAGES) {
       const src = read(PAGE_FILES[p.path]);
-      const t = src.match(/const TITLE = '([^']+)'/)?.[1] ?? (p.path === '/indic-ai-qa' ? INDIC_QA_TITLE : p.path === '/' ? 'HOME' : ANSWER_PAGES.some((a) => a.path === p.path) || p.path === '/guides/cert-in-ai-audit-evidence-checklist' ? p.path : p.path === '/guides/dpdp-rules-what-startups-must-do' ? p.path : 'EXPLAINER');
+      const t = src.match(/const TITLE = '([^']+)'/)?.[1] ?? (p.path === '/indic-ai-qa' ? INDIC_QA_TITLE : p.path === '/' ? 'HOME' : ANSWER_PAGES.some((a) => a.path === p.path) || p.path === '/guides/cert-in-ai-audit-evidence-checklist' || p.path === '/tools/rls-open-check' ? p.path : p.path === '/guides/dpdp-rules-what-startups-must-do' ? p.path : 'EXPLAINER');
       titles.add(t);
       const d = src.match(/const DESCRIPTION =\s*'([^']+)'/)?.[1] ?? (p.path === '/indic-ai-qa' ? INDIC_QA_DESCRIPTION : p.path);
       descs.add(d);
