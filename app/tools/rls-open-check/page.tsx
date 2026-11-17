@@ -184,7 +184,7 @@ export default function Page() {
           <p className="leading-7">
             The author ran it on {v.files} SQL files from public Supabase code and got {v.findings} findings. Of those,{' '}
             {v.readByHand} findings were read by hand: {v.truePositive} true positives, {v.unclear} unclear and{' '}
-            {v.falsePositive} false positives. That is a small sample chosen to cover every rule, so read it as{' '}
+            {v.falsePositive} false positives. That is a small sample picked from the rules that fired, not at random, so read it as{' '}
             {'"no false positive found"'}, not as a rate. Details are in the{' '}
             <ExternalLink href={RLS_VALIDATION_URL}>validation notes</ExternalLink>.
           </p>
