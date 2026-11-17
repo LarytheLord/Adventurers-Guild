@@ -9,6 +9,7 @@ const PAGES: PublicPage[] = [
   { path: '/checklist', heading: /The AI-built app launch checklist/i },
   { path: '/launch-check', heading: /Is your AI-built app ready for real users and real money/i },
   { path: '/ai-risk-tier', heading: /Which CERT-In risk tier is your AI system/i },
+  { path: '/tools/rls-open-check', heading: /rls-open-check: a free linter for Supabase migration files/i },
   {
     path: '/guides/cert-in-ai-security-auditing-guidelines',
     heading: /CERT-In AI Security Auditing Guidelines/i,

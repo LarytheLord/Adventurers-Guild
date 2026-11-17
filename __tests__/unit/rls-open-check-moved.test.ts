@@ -38,6 +38,7 @@ describe('rls-open-check move', () => {
   });
 
   it('keeps llms.txt free of links to the old folder', () => {
-    expect(read('public/llms.txt')).not.toContain('tools/rls-open-check');
+    // The guilds.work page /tools/rls-open-check is allowed; links to the old repo folder are not.
+    expect(read('public/llms.txt')).not.toMatch(/(?<!guilds\.work\/)tools\/rls-open-check/);
   });
 });

@@ -3,6 +3,7 @@ import { EXPLAINER_PATH, EXPLAINER_TITLE } from '@/lib/cert-in-explainer/content
 import { CHECKLIST_PATH, CHECKLIST_TITLE } from '@/lib/cert-in-explainer/evidence-checklist';
 import { DPDP_GUIDE_PATH, DPDP_GUIDE_TITLE } from '@/lib/dpdp-explainer/content';
 import { INDIC_QA_PATH } from '@/lib/indic-ai-qa/content';
+import { RLS_PATH, RLS_TITLE } from '@/lib/rls-open-check-page/content';
 import { SITE_URL } from '@/lib/site-metadata';
 
 /**
@@ -54,6 +55,10 @@ const FIXED: Record<string, { path: string; card: OgCard }> = {
   'cert-in-guide': {
     path: EXPLAINER_PATH,
     card: { title: EXPLAINER_TITLE, subtitle: 'Guide' },
+  },
+  'rls-open-check': {
+    path: RLS_PATH,
+    card: { title: RLS_TITLE, subtitle: 'Free tool. Static linter.' },
   },
   'cert-in-evidence-checklist': {
     path: CHECKLIST_PATH,

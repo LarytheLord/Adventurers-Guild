@@ -6,6 +6,7 @@ import { INDIC_QA_PATH, INDIC_QA_TITLE } from '@/lib/indic-ai-qa/content';
 import { ANSWER_PAGES } from '@/lib/answer-pages/content';
 import { EXPLAINER_PATH, EXPLAINER_TITLE } from '@/lib/cert-in-explainer/content';
 import { CHECKLIST_PATH, CHECKLIST_TITLE } from '@/lib/cert-in-explainer/evidence-checklist';
+import { RLS_PATH, RLS_TITLE } from '@/lib/rls-open-check-page/content';
 import { PUBLIC_PAGES } from '@/lib/seo';
 
 const isAscii = (s: string) => /^[\x00-\x7F]*$/.test(s);
@@ -22,6 +23,7 @@ const PATHS = [
   INDIC_QA_PATH,
   EXPLAINER_PATH,
   CHECKLIST_PATH,
+  RLS_PATH,
   ...ANSWER_PAGES.map((a) => a.path),
 ];
 
@@ -68,6 +70,7 @@ describe('og card registry', () => {
     expect(OG_PAGES[ogSlugForPath(EXPLAINER_PATH) as string].title).toBe(EXPLAINER_TITLE);
     expect(OG_PAGES[ogSlugForPath(INDIC_QA_PATH) as string].title).toBe(INDIC_QA_TITLE.replace(/ - Guild$/, ''));
     expect(OG_PAGES[ogSlugForPath(CHECKLIST_PATH) as string].title).toBe(CHECKLIST_TITLE);
+    expect(OG_PAGES[ogSlugForPath(RLS_PATH) as string].title).toBe(RLS_TITLE);
     for (const a of ANSWER_PAGES) expect(OG_PAGES[ogSlugForPath(a.path) as string].title).toBe(a.title);
     const fromSource = (file: string) =>
       /const TITLE =\s*'([^']+)'/.exec(readFileSync(join(root, file), 'utf8'))?.[1].replace(/ - Guild$/, '');
