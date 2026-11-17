@@ -52,8 +52,21 @@ describe('agency handover checklist content', () => {
   it('links the required internal pages', () => {
     const t = handoverPlainText();
     expect(t).toContain('(/tools/rls-open-check)');
-    expect(t).toContain('(/guides/payment-webhook-checklist-razorpay-stripe)');
     expect(t).toContain('(/guides/dpdp-rules-what-startups-must-do)');
+  });
+
+  it('every internal link resolves to a page under app/', () => {
+    const paths = [...handoverPlainText().matchAll(/\]\((\/[^)]*)\)/g)].map((m) => m[1].split('?')[0]);
+    expect(paths.length).toBeGreaterThan(0);
+    for (const p of paths) expect(existsSync(join(root, `app${p}/page.tsx`))).toBe(true);
+  });
+
+  it('has no absolute claim about DPDP applying and does not name AI tools in copy', () => {
+    const t = handoverPlainText();
+    expect(t).toContain('may apply');
+    expect(t).not.toMatch(/Rules apply/);
+    expect(t).not.toMatch(/\bAI tools?\b/);
+    expect(t).not.toMatch(/\bLLM\b/);
   });
 
   it('is ASCII and carries no invented statistics', () => {
@@ -76,6 +89,11 @@ describe('downloadable markdown', () => {
     const file = `public${HANDOVER_MARKDOWN_PATH}`;
     expect(existsSync(join(root, file))).toBe(true);
     expect(read(file)).toBe(handoverMarkdown());
+  });
+
+  it('has no links to pages that do not exist', () => {
+    const paths = [...handoverMarkdown().matchAll(/\]\(https:\/\/www\.guilds\.work(\/[^)?]*)/g)].map((m) => m[1]);
+    for (const p of paths) expect(existsSync(join(root, `app${p}/page.tsx`))).toBe(true);
   });
 
   it('is ASCII, has one checkbox per item, and absolute links', () => {
