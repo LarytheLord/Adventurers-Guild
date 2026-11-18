@@ -1,0 +1,109 @@
+# Handover checklist for apps built with Lovable, Bolt, Cursor or v0
+
+This checklist is unofficial. It is not an audit and not legal advice. Run every check on your own project or your client's project, with their permission.
+
+Online version: https://www.guilds.work/guides/agency-handover-checklist-ai-built-apps
+
+## 1. Database access rules (Supabase RLS)
+
+Apps built with Lovable, Bolt, Cursor or v0 often get tables first and policies later, or never. Row Level Security (RLS) is what stops one user reading another user's rows.
+
+- [ ] RLS is enabled on every table in the public schema.
+  - How to check: In the Supabase SQL editor run: select tablename, rowsecurity from pg_tables where schemaname = 'public'; every row should say true.
+- [ ] No policy on a table with user data uses true as its condition for anon or authenticated.
+  - How to check: In the Supabase Authentication section, open the policies list and read each USING and WITH CHECK expression for a bare true.
+- [ ] Tables owned by a user filter on auth.uid() for read, update and delete.
+  - How to check: Sign in as two test users and confirm user B cannot read or change user A's rows through the API.
+- [ ] Views and security-definer functions do not return rows that RLS would block.
+  - How to check: List views in the SQL editor. For each one that reads user data, confirm it uses security_invoker = true (Postgres 15 or newer) or is not exposed through the API. Do the same for functions declared security definer.
+- [ ] Storage buckets are private unless a file is meant to be public.
+  - How to check: In Storage, check each bucket's visibility and read its policies.
+- [ ] The migration files pass a static RLS check.
+  - How to check: Run [rls-open-check](https://www.guilds.work/tools/rls-open-check) on the migrations folder. A clean result does not prove the app is safe, so still do the checks above.
+
+## 2. Keys and secrets (which keys may be public)
+
+May be in browser code: the Supabase anon or publishable key (safe only with RLS on), the Stripe publishable key (starts pk_), the Razorpay key id. Must never be in browser code or the repo: the Supabase service_role key, Stripe secret and restricted keys (sk_, rk_), the Razorpay key secret, webhook signing secrets, database connection strings and AI model API keys.
+
+- [ ] No secret key appears in the code the browser downloads.
+  - How to check: Open the live site, search the loaded JavaScript in dev tools for service_role, sk_, rk_ and your key secret names. Next.js only ships variables that start with NEXT_PUBLIC_, Vite only VITE_.
+- [ ] No secret was ever committed to git, including old commits.
+  - How to check: Run a secret scanner such as gitleaks over the full history. Rotate anything it finds; deleting the file is not enough.
+- [ ] Keys that were pasted into a chat, a ticket or a screenshot are rotated.
+  - How to check: List every key you shared that way and confirm each has been regenerated and the old one revoked.
+- [ ] .env files are git-ignored and .env.example holds placeholders only.
+  - How to check: Run git ls-files | grep -i env and open .env.example to confirm there are no real values.
+- [ ] Test keys and live keys are kept apart per environment.
+  - How to check: Compare the variables on the preview and production deployments; production must not hold test keys and the reverse.
+
+## 3. Payments
+
+These are the handover essentials for payments.
+
+- [ ] The webhook endpoint verifies the provider signature before it acts.
+  - How to check: In test mode send a request to the endpoint with a wrong or missing signature; it must be rejected.
+- [ ] The server decides the amount and currency, not the browser.
+  - How to check: Edit the price in the checkout request from dev tools; the payment must still use the server-side price.
+- [ ] A repeated webhook event does not grant access or credit twice.
+  - How to check: Resend the same test event from the provider dashboard and confirm nothing changes the second time.
+- [ ] The provider account and payouts belong to the client, not the agency.
+  - How to check: Open the provider dashboard and confirm the client is the account owner and the settlement bank account is theirs.
+- [ ] Live mode has been tested with a real small payment and a refund.
+  - How to check: Make one small live payment, confirm the app unlocks, then refund it and confirm the app reacts.
+
+## 4. Auth
+
+Auth screens in apps built with Lovable, Bolt, Cursor or v0 usually look finished while skipping the settings behind them.
+
+- [ ] Email confirmation is required before an account can use the app.
+  - How to check: Sign up with a new address in a private window and try to open a protected page before clicking the link. In Supabase, look for the email confirmation setting in the Authentication section.
+- [ ] Password reset links work once, expire, and do not reveal whether an email is registered.
+  - How to check: Use one reset link twice, and request a reset for an unknown address; the message should match the known-address case.
+- [ ] Sessions expire and logging out really ends the session.
+  - How to check: Read the session and JWT expiry settings in Supabase, then log out and try to reuse the old token against the API.
+- [ ] Site URL and redirect URLs point at the production domain, not localhost.
+  - How to check: In the Supabase Authentication section, find the Site URL and redirect URL settings and read the list.
+- [ ] Admin pages and admin API routes check the role on the server.
+  - How to check: Call an admin route while signed in as a normal user; it must return an error, not data.
+
+## 5. Privacy basics for India (DPDP)
+
+If the app processes digital personal data of people in India, the Digital Personal Data Protection Act 2023 and the DPDP Rules 2025 may apply to you, and some Rules start on later dates. Read [what startups must do under the DPDP Rules](https://www.guilds.work/guides/dpdp-rules-what-startups-must-do) for the detail. This section is a basic hygiene list, not legal advice.
+
+- [ ] Users see a plain-language notice of what personal data is collected and why, before they give it.
+  - How to check: Walk through sign-up as a new user and read what is shown before the first data field.
+- [ ] A user can withdraw consent and ask for their account and data to be deleted.
+  - How to check: Try it end to end with a test account and confirm the data is gone from the database, and that your privacy page says how long backups keep it.
+- [ ] The app collects only the fields it needs.
+  - How to check: List every form field and database column holding personal data and ask what each one is used for.
+- [ ] There is a written list of services that receive user data (hosting, analytics, email, payments, AI model APIs).
+  - How to check: Check each third-party script and API key in the code and add it to the list with its purpose.
+- [ ] A privacy policy page exists and matches what the app actually does.
+  - How to check: Compare the policy text with the data list above and fix any gap.
+- [ ] A named person receives privacy and deletion requests and knows what to do after a data leak.
+  - How to check: Ask the client who that is and confirm the contact email on the privacy page reaches them.
+
+## 6. Handover items (accounts, env vars, backups)
+
+Most handover problems are not code problems. They are about who can log in to what.
+
+- [ ] The client owns every account: domain registrar, hosting, database, payments, email sender, analytics and the code repository.
+  - How to check: Open each dashboard and confirm the client is Owner; the agency should be a removable member, not the owner.
+- [ ] The code is in a repository the client owns and builds from a clean clone.
+  - How to check: Have the client clone it, install, and run the build with no help. Export or connect the Lovable, Bolt or v0 project to that repository.
+- [ ] Every environment variable is listed in .env.example with what it is, where to get it and who owns it.
+  - How to check: Compare the variable names in the hosting dashboard with .env.example; neither list should have extras.
+- [ ] Database backups are on, and a restore has been tried.
+  - How to check: Check the backup settings for your Supabase plan, then restore a backup into a separate scratch project, never into production.
+- [ ] Domain renewal and DNS are in the client's name, with expiry emails going to the client.
+  - How to check: Read the registrar account contact email and the auto-renew setting.
+- [ ] Error and uptime alerts go to the client or their chosen person.
+  - How to check: Trigger a test alert and confirm who receives it.
+- [ ] Known issues and unfinished work are written down.
+  - How to check: Open the handover note and confirm it lists them, so the client does not find them first.
+- [ ] After handover the agency's access is removed and any shared passwords or keys are rotated.
+  - How to check: Review each dashboard's member list the week after handover and confirm the agency is gone.
+
+## Want a second pair of eyes before handover?
+
+[Run the launch check](https://www.guilds.work/launch-check?src=agency)
