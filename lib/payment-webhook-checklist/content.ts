@@ -6,13 +6,13 @@
 export const WEBHOOK_PATH = '/guides/payment-webhook-checklist-razorpay-stripe';
 export const WEBHOOK_PUBLISHED = '2026-11-19';
 export const WEBHOOK_TITLE = 'Payment webhook checklist for Razorpay and Stripe (Next.js)';
+export const WEBHOOK_META_TITLE = 'Razorpay and Stripe webhook checklist (Next.js)';
 export const WEBHOOK_DESCRIPTION =
-  'Six checks for a payment webhook in a Next.js app: verify the signature on the raw body, reject unsigned or stale events, ignore repeats, never trust client amounts, mark orders paid only from the webhook, and test with test mode and the CLI. Each check links to the official docs.';
+  'Six checks for a Razorpay or Stripe webhook in a Next.js app: verify the raw body, reject unsigned events, ignore repeats, check amounts, test. Docs linked.';
 export const WEBHOOK_CTA_TEXT = 'Want the rest of the basics checked too?';
 export const WEBHOOK_CTA_HREF = '/launch-check?src=guide';
 
-export const WEBHOOK_CONTEXT =
-  'In a private test on a small app we wrote with planted flaws, none of six free static scanners flagged a webhook that skips signature checks or one that processes the same event twice, so this checklist is the manual check.';
+export const WEBHOOK_CONTEXT = 'Static scanners often cannot see webhook logic, so check it by hand.';
 
 export const WEBHOOK_EXAMPLES_NOTE =
   'Examples follow the shape of the official docs. Check them against the linked pages and your SDK version before you ship.';
@@ -52,7 +52,7 @@ export const WEBHOOK_ITEMS: WebhookItem[] = [
   },
   {
     id: 'reject-unsigned-stale',
-    heading: '2. Reject unsigned or stale events',
+    heading: '2. Reject unsigned events; limit replays',
     check:
       'Return an error and do no work when the signature header is missing or does not match. Stripe signs a timestamp into its header, and its signature page describes a timestamp tolerance that stops an old captured request being replayed. For Razorpay, the documented check is the X-Razorpay-Signature header against the raw payload; if you want an age limit, add your own, and rely on the event record in item 3 to stop replays.',
     stripe: [{ label: 'Stripe: replay attacks and timestamp tolerance', url: STRIPE_SIG }],

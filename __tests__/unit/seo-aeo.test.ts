@@ -15,6 +15,7 @@ import {
   launchCheckJsonLd,
 } from '@/lib/seo';
 import { INDIC_QA_DESCRIPTION, INDIC_QA_TITLE } from '@/lib/indic-ai-qa/content';
+import { WEBHOOK_DESCRIPTION, WEBHOOK_META_TITLE } from '@/lib/payment-webhook-checklist/content';
 import { ANSWER_PAGES } from '@/lib/answer-pages/content';
 import { explainerPlainText, EXPLAINER_FAQ, stripLinks } from '@/lib/cert-in-explainer/content';
 
@@ -203,9 +204,9 @@ describe('page metadata', () => {
     const descs = new Set<string>();
     for (const p of PUBLIC_PAGES) {
       const src = read(PAGE_FILES[p.path]);
-      const t = src.match(/const TITLE = '([^']+)'/)?.[1] ?? (p.path === '/indic-ai-qa' ? INDIC_QA_TITLE : p.path === '/' ? 'HOME' : ANSWER_PAGES.some((a) => a.path === p.path) || p.path === '/guides/cert-in-ai-audit-evidence-checklist' || p.path === '/tools/rls-open-check' || p.path === '/guides/agency-handover-checklist-ai-built-apps' || p.path === '/guides/payment-webhook-checklist-razorpay-stripe' ? p.path : p.path === '/guides/dpdp-rules-what-startups-must-do' ? p.path : 'EXPLAINER');
+      const t = src.match(/const TITLE = '([^']+)'/)?.[1] ?? (p.path === '/indic-ai-qa' ? INDIC_QA_TITLE : p.path === '/guides/payment-webhook-checklist-razorpay-stripe' ? WEBHOOK_META_TITLE : p.path === '/' ? 'HOME' : ANSWER_PAGES.some((a) => a.path === p.path) || p.path === '/guides/cert-in-ai-audit-evidence-checklist' || p.path === '/tools/rls-open-check' || p.path === '/guides/agency-handover-checklist-ai-built-apps' ? p.path : p.path === '/guides/dpdp-rules-what-startups-must-do' ? p.path : 'EXPLAINER');
       titles.add(t);
-      const d = src.match(/const DESCRIPTION =\s*'([^']+)'/)?.[1] ?? (p.path === '/indic-ai-qa' ? INDIC_QA_DESCRIPTION : p.path);
+      const d = src.match(/const DESCRIPTION =\s*'([^']+)'/)?.[1] ?? (p.path === '/indic-ai-qa' ? INDIC_QA_DESCRIPTION : p.path === '/guides/payment-webhook-checklist-razorpay-stripe' ? WEBHOOK_DESCRIPTION : p.path);
       descs.add(d);
     }
     expect(titles.size).toBe(PUBLIC_PAGES.length);

@@ -6,7 +6,10 @@ import { allGuideItems } from '@/lib/guides-hub/registry';
 import { OG_PAGES, ogSlugForPath } from '@/lib/og';
 import {
   WEBHOOK_CTA_HREF,
+  WEBHOOK_DESCRIPTION,
+  WEBHOOK_META_TITLE,
   WEBHOOK_PATH,
+  WEBHOOK_PUBLISHED,
   WEBHOOK_TITLE,
   WEBHOOK_CONTEXT,
   WEBHOOK_ITEMS,
@@ -43,7 +46,7 @@ describe('payment webhook checklist content', () => {
     }
   });
 
-  it('cites only the verified official pages', () => {
+  it('cites exactly these pages', () => {
     const urls = webhookDocsUrls().sort();
     expect(urls).toEqual(
       [
@@ -75,24 +78,46 @@ describe('payment webhook checklist content', () => {
     for (const e of WEBHOOK_EXAMPLES) expect(e.code.split('\n').length).toBeLessThanOrEqual(40);
   });
 
-  it('makes no unverified claim about Razorpay timestamps or a fixed Stripe window', () => {
+  it('does not contain these phrases', () => {
     const t = webhookPlainText();
     expect(t).not.toMatch(/Razorpay does not/i);
     expect(t).not.toMatch(/created_at/);
     expect(t).not.toMatch(/5 minute/i);
   });
 
-  it('is ASCII, states the context line, and has no percentages', () => {
+  it('is ASCII, gives the manual-check advice, and has no percentages or scanner claims', () => {
     expect(isAscii(webhookPlainText())).toBe(true);
-    expect(WEBHOOK_CONTEXT).toContain('none of six free static scanners');
+    expect(WEBHOOK_CONTEXT).toBe('Static scanners often cannot see webhook logic, so check it by hand.');
+    expect(webhookPlainText()).not.toMatch(/six free|private test/i);
     expect(webhookPlainText()).not.toMatch(/\d+(\.\d+)?\s?%/);
     expect(webhookPlainText()).toContain(WEBHOOK_CTA_HREF);
   });
 
-  it('every internal link resolves to a page under app/', () => {
-    const hrefs = [...webhookPlainText().matchAll(/\]\((\/[^)]*)\)/g)].map((m) => m[1].split('?')[0]);
+  it('every internal link in the page source and content resolves to a page under app/', () => {
+    const fromText = [...webhookPlainText().matchAll(/\]\((\/[^)]*)\)/g)].map((m) => m[1]);
+    const fromSource = [...read(`app${WEBHOOK_PATH}/page.tsx`).matchAll(/href="(\/[^"]*)"/g)].map((m) => m[1]);
+    const hrefs = [...fromText, ...fromSource, WEBHOOK_CTA_HREF].map((h) => h.split('?')[0]);
     expect(hrefs).toContain('/launch-check');
+    expect(hrefs).toContain('/checklist');
     for (const p of hrefs) expect(existsSync(join(root, `app${p}/page.tsx`))).toBe(true);
+  });
+
+  it('item 2 heading does not promise a stale check for Razorpay', () => {
+    const h = WEBHOOK_ITEMS.find((i) => i.id === 'reject-unsigned-stale')!.heading;
+    expect(h).toBe('2. Reject unsigned events; limit replays');
+    expect(WEBHOOK_DESCRIPTION).not.toMatch(/stale/i);
+  });
+
+  it('keeps meta title and description within search result length', () => {
+    expect(`${WEBHOOK_META_TITLE} - Guild`.length).toBeLessThanOrEqual(60);
+    expect(WEBHOOK_DESCRIPTION.length).toBeLessThanOrEqual(160);
+  });
+
+  it('derives the visible updated date from WEBHOOK_PUBLISHED', () => {
+    const src = read(`app${WEBHOOK_PATH}/page.tsx`);
+    expect(src).not.toMatch(/updatedAt="/);
+    expect(src).toContain('updatedAt={');
+    expect(WEBHOOK_PUBLISHED).toMatch(/^\d{4}-\d{2}-\d{2}$/);
   });
 });
 

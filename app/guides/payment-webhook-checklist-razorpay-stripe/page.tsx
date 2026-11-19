@@ -11,6 +11,7 @@ import {
   WEBHOOK_EXAMPLES,
   WEBHOOK_EXAMPLES_NOTE,
   WEBHOOK_ITEMS,
+  WEBHOOK_META_TITLE,
   WEBHOOK_PATH,
   WEBHOOK_PUBLISHED,
   WEBHOOK_TITLE,
@@ -19,7 +20,7 @@ import { SITE_NAME, SITE_URL, absoluteUrl, buildPageMetadata } from '@/lib/seo';
 
 export const metadata: Metadata = buildPageMetadata({
   path: WEBHOOK_PATH,
-  title: `${WEBHOOK_TITLE} - Guild`,
+  title: `${WEBHOOK_META_TITLE} - Guild`,
   description: WEBHOOK_DESCRIPTION,
   type: 'article',
   keywords: [
@@ -29,6 +30,13 @@ export const metadata: Metadata = buildPageMetadata({
     'webhook idempotency',
     'verify webhook raw body',
   ],
+});
+
+const UPDATED_LABEL = new Date(`${WEBHOOK_PUBLISHED}T00:00:00Z`).toLocaleDateString('en-GB', {
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+  timeZone: 'UTC',
 });
 
 const linkClass = 'font-semibold text-orange-700 underline underline-offset-4';
@@ -72,7 +80,7 @@ export default function PaymentWebhookChecklistPage() {
       eyebrow="Guide"
       title={WEBHOOK_TITLE}
       description="Six checks to run on your payment webhook before real money moves, with the official docs for each."
-      updatedAt="19 November 2026"
+      updatedAt={UPDATED_LABEL}
       backHref="/guides"
       backLabel="All guides"
       aside={
