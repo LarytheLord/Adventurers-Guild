@@ -38,8 +38,14 @@ export type EvidenceType = keyof typeof EVIDENCE_TYPES;
 
 export const SAMPLE_AREA_ORDER: AreaId[] = ['payments', 'deployment', 'performance', 'security'];
 
+export type FindingId =
+  | 'P-1' | 'P-2' | 'P-3' | 'P-4'
+  | 'D-1' | 'D-2' | 'D-3' | 'D-4'
+  | 'C-1' | 'C-2' | 'C-3' | 'C-4'
+  | 'S-1' | 'S-2' | 'S-3' | 'S-4';
+
 export type Finding = {
-  id: string;
+  id: FindingId;
   area: AreaId;
   severity: Severity;
   title: string;
@@ -253,7 +259,7 @@ export const SAMPLE_SUMMARY = {
     'Sign-up and login work, and admin pages check the user on the server.',
     'Stripe keys are not in the browser code. Only the publishable key is.',
     'The domain has HTTPS and a valid certificate.',
-  ],
+  ] as const,
 };
 
 export type QuoteLine = { label: string; detail: string };

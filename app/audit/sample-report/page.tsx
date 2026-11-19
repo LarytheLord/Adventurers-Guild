@@ -66,7 +66,7 @@ function SeverityBadge({ severity }: { severity: Severity }) {
 export default function SampleReportPage() {
   const counts = summaryCounts();
   const failCounts = failCountsByCategory();
-  const findingById = new Map(SAMPLE_FINDINGS.map((f) => [f.id, f]));
+  const findingById = new Map<string, (typeof SAMPLE_FINDINGS)[number]>(SAMPLE_FINDINGS.map((f) => [f.id, f]));
   const quoted = SAMPLE_QUOTE.includedFindingIds.map((id) => findingById.get(id)!);
 
   return (
