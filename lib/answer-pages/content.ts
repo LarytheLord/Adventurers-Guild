@@ -349,7 +349,7 @@ const leakedKey: AnswerPage = {
   description:
     'Which Supabase key leaked decides everything: the anon or publishable key is public by design, a service_role or secret key bypasses RLS. Steps in order: rotate, check logs, close open policies, clean up git, ask for a human check.',
   answer:
-    'Which key leaked matters: the anon (publishable) key is public by design and only dangerous when your Row Level Security (RLS) policies are open, while a service_role (secret) key bypasses RLS and must be rotated now. Work through the steps below in order, and rotate before you clean up anything else.',
+    'Which key leaked matters: the anon (publishable, sb_publishable_...) key is public by design and only dangerous when your Row Level Security (RLS) policies are open, while a service_role (secret, sb_secret_...) key bypasses RLS and must be rotated now. Work through the steps below in order, and rotate before you clean up anything else.',
   sections: [
     {
       id: 'which-key',
@@ -360,20 +360,20 @@ const leakedKey: AnswerPage = {
           head: ['Key', 'Meant to be public?', 'What to do'],
           rows: [
             [
-              'anon or publishable key',
-              'Yes, it goes in client code. What it can reach is set by your RLS policies.',
+              'sb_publishable_... (legacy: anon) key',
+              'Yes, it can go in client code. What it can reach is set by your RLS policies.',
               'Check your policies (step 4). Rotating it does not close an open policy.',
             ],
             [
-              'service_role or secret key',
-              'No. It bypasses RLS and belongs on a server only.',
+              'sb_secret_... (legacy: service_role) key',
+              'No. It bypasses RLS, so it must never leave your control.',
               'Rotate now (step 2), then check logs (step 3).',
             ],
           ],
         },
         {
           kind: 'p',
-          text: 'Not sure which one it was? Treat it as a service_role key until you know. The [API keys docs](https://supabase.com/docs/guides/api/api-keys) describe each key type.',
+          text: 'Not sure which one it was? Treat it as a service_role key until you know. New-style keys start with sb_publishable_ or sb_secret_; legacy keys are called anon and service_role. The [API keys docs](https://supabase.com/docs/guides/api/api-keys) describe each key type.',
         },
       ],
     },
@@ -383,7 +383,7 @@ const leakedKey: AnswerPage = {
       blocks: [
         {
           kind: 'p',
-          text: 'Follow the current [Supabase API keys docs](https://supabase.com/docs/guides/api/api-keys) to create a replacement and disable the leaked key. Then update every server, job and deploy setting that used the old one, or they will start failing.',
+          text: 'Follow Supabase\'s guide to [rotate a leaked or compromised API key](https://supabase.com/docs/guides/security/rotate-leaked-api-keys). Legacy anon and service_role keys stay valid until you disable them in Settings > API Keys. After rotating, update every server, job and deploy setting that used the old key, or they will start failing.',
         },
       ],
     },
@@ -415,7 +415,7 @@ const leakedKey: AnswerPage = {
           kind: 'ul',
           items: [
             'Git: GitHub documents how to [remove sensitive data from a repository](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository).',
-            'Frontend: remove the key from the source, rebuild and redeploy so the new bundle does not contain it.',
+            'Frontend: we suggest removing the key from the source, then rebuilding and redeploying so the new bundle does not contain it.',
           ],
         },
       ],
@@ -442,11 +442,12 @@ const leakedKey: AnswerPage = {
     },
     {
       q: 'Does removing the key from git fix the leak?',
-      a: 'Removing it from git is cleanup, not the fix. Rotate the key first, then remove it from history and from deployed frontend bundles.',
+      a: 'We suggest treating removal from git as cleanup, not the fix. Rotate the key first, then remove it from history and from deployed frontend bundles.',
     },
   ],
   sources: [
     { label: 'Supabase docs: API keys', href: 'https://supabase.com/docs/guides/api/api-keys' },
+    { label: 'Supabase docs: Rotate a leaked or compromised API key', href: 'https://supabase.com/docs/guides/security/rotate-leaked-api-keys' },
     { label: 'Supabase docs: Logging', href: 'https://supabase.com/docs/guides/telemetry/logs' },
     { label: 'Supabase docs: Row Level Security', href: 'https://supabase.com/docs/guides/database/postgres/row-level-security' },
     {

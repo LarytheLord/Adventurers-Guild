@@ -50,6 +50,26 @@ describe('leaked Supabase key guide', () => {
     }
   });
 
+  it('links the rotate-leaked-api-keys page from the rotate step and sources', () => {
+    const ROTATE = 'https://supabase.com/docs/guides/security/rotate-leaked-api-keys';
+    const rotate = page().sections.find((s) => s.id === 'rotate')!;
+    expect(JSON.stringify(rotate)).toContain(ROTATE);
+    expect(page().sources.map((s) => s.href)).toContain(ROTATE);
+  });
+
+  it('names new-style key prefixes next to the legacy key names', () => {
+    const text = answerPagePlainText(page());
+    for (const t of ['sb_publishable_', 'sb_secret_', 'anon', 'service_role']) expect(text).toContain(t);
+    expect(text).toContain('Settings > API Keys');
+  });
+
+  it('phrases the two own-reasoning sentences as advice, not as Supabase facts', () => {
+    const faq = page().faq!.find((f) => /git/i.test(f.q))!;
+    expect(faq.a).toMatch(/we suggest/i);
+    const cleanup = page().sections.find((s) => s.id === 'cleanup')!;
+    expect(JSON.stringify(cleanup)).toMatch(/we suggest/i);
+  });
+
   it('has FAQ structured data that matches the visible FAQ', () => {
     const p = page();
     expect(p.faq!.length).toBeGreaterThanOrEqual(3);
