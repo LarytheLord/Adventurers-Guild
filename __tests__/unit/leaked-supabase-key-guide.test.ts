@@ -5,6 +5,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import sitemap from '@/app/sitemap';
 import { AnswerPageView } from '@/components/guides/answer-page';
 import { ANSWER_PAGES, answerPagePlainText } from '@/lib/answer-pages/content';
+import { stripLinks } from '@/lib/cert-in-explainer/content';
 import { allGuideItems } from '@/lib/guides-hub/registry';
 import { PUBLIC_PAGES, answerPageFaqJsonLd, serializeJsonLd } from '@/lib/seo';
 
@@ -43,6 +44,14 @@ describe('leaked Supabase key guide', () => {
     }
   });
 
+  it('every external href in the body is listed in sources', () => {
+    const html = renderToStaticMarkup(createElement(AnswerPageView, { page: page() }));
+    const sources = new Set(page().sources.map((s) => s.href));
+    const external = hrefs(html).filter((h) => /^https?:\/\//.test(h) && !h.startsWith('https://www.guilds.work'));
+    expect(external.length).toBeGreaterThan(0);
+    for (const h of external) expect(sources.has(h)).toBe(true);
+  });
+
   it('links the internal pages the brief names', () => {
     const links = hrefs(renderToStaticMarkup(createElement(AnswerPageView, { page: page() })));
     for (const h of ['/tools/rls-open-check', '/guides/supabase-rls-mistakes-in-real-migrations?src=guide', '/launch-check?src=guide']) {
@@ -60,14 +69,41 @@ describe('leaked Supabase key guide', () => {
   it('names new-style key prefixes next to the legacy key names', () => {
     const text = answerPagePlainText(page());
     for (const t of ['sb_publishable_', 'sb_secret_', 'anon', 'service_role']) expect(text).toContain(t);
-    expect(text).toContain('Settings > API Keys');
   });
 
-  it('phrases the two own-reasoning sentences as advice, not as Supabase facts', () => {
-    const faq = page().faq!.find((f) => /git/i.test(f.q))!;
-    expect(faq.a).toMatch(/we suggest/i);
-    const cleanup = page().sections.find((s) => s.id === 'cleanup')!;
-    expect(JSON.stringify(cleanup)).toMatch(/we suggest/i);
+  it('cites the API keys page for the legacy-keys line, not the rotate page', () => {
+    const API_KEYS = 'https://supabase.com/docs/guides/api/api-keys';
+    const rotate = page().sections.find((s) => s.id === 'rotate')!;
+    const para = rotate.blocks.map((b) => (b.kind === 'p' ? b.text : '')).find((t) => /stay valid until you disable them/.test(t))!;
+    expect(para).toContain(`(${API_KEYS})`);
+    expect(para).toContain('Settings > API Keys section of the Dashboard');
+    expect(para).not.toMatch(/rotate-leaked-api-keys\)[^.]*stay valid/);
+  });
+
+  it('has no invented number in the title, description or answer', () => {
+    const p = page();
+    for (const t of [p.title, p.description, p.answer]) expect(t).not.toMatch(/\b\d+\s*(minutes?|hours?|mins?)\b/i);
+    expect(p.title).toBe('Leaked a Supabase key? What to do first');
+    expect(read('public/llms.txt')).not.toMatch(/30 minutes/i);
+  });
+
+  it('own-reasoning lines carry a hedge phrase (checks the phrase only, not whether a sentence is factual)', () => {
+    const text = answerPagePlainText(page());
+    const lines = [
+      'we suggest treating it as a service_role key until you know',
+      'in our view, rotating this key does not close an open policy',
+      'we suggest looking for requests you do not recognise',
+      'we suggest removing the key from the source',
+      'we suggest treating removal from git as cleanup',
+      'we suggest this only as a second pair of eyes',
+      'we suggest updating every server',
+      'we suggest working through the steps below in order',
+    ];
+    for (const l of lines) expect(text.toLowerCase()).toContain(l);
+  });
+
+  it('says the step order applies to a leaked service_role key', () => {
+    expect(page().answer).toMatch(/If a service_role key leaked.*in order/);
   });
 
   it('has FAQ structured data that matches the visible FAQ', () => {
@@ -76,6 +112,9 @@ describe('leaked Supabase key guide', () => {
     const ld = JSON.parse(serializeJsonLd(answerPageFaqJsonLd(p)));
     expect(ld['@type']).toBe('FAQPage');
     expect(ld.mainEntity.map((q: { name: string }) => q.name)).toEqual(p.faq!.map((f) => f.q));
+    expect(ld.mainEntity.map((q: { acceptedAnswer: { text: string } }) => q.acceptedAnswer.text)).toEqual(
+      p.faq!.map((f) => stripLinks(f.a)),
+    );
     const html = renderToStaticMarkup(createElement(AnswerPageView, { page: p }));
     expect(html).toContain('application/ld+json');
     expect(html).toContain('FAQPage');
@@ -84,6 +123,7 @@ describe('leaked Supabase key guide', () => {
   it('is plain ASCII, under 700 words, and puts the key distinction in the first answer', () => {
     const text = answerPagePlainText(page());
     expect(/^[\x00-\x7F]*$/.test(text)).toBe(true);
+    expect(/^[\x00-\x7F]*$/.test(page().title + page().description)).toBe(true);
     expect(text.split(/\s+/).filter(Boolean).length).toBeLessThan(700);
     expect(page().answer).toMatch(/anon/);
     expect(page().answer).toMatch(/service_role/);

@@ -342,14 +342,13 @@ const riskTier: AnswerPage = {
   ],
 };
 
-
 const leakedKey: AnswerPage = {
   path: '/guides/leaked-supabase-key-first-30-minutes',
-  title: 'Leaked Supabase key: what to do in the first 30 minutes',
+  title: 'Leaked a Supabase key? What to do first',
   description:
-    'Which Supabase key leaked decides everything: the anon or publishable key is public by design, a service_role or secret key bypasses RLS. Steps in order: rotate, check logs, close open policies, clean up git, ask for a human check.',
+    'Which Supabase key leaked decides everything: the anon or publishable key is public by design, a service_role or secret key bypasses RLS. Steps: rotate, check logs, close open policies, clean up git, ask for a human check.',
   answer:
-    'Which key leaked matters: the anon (publishable, sb_publishable_...) key is public by design and only dangerous when your Row Level Security (RLS) policies are open, while a service_role (secret, sb_secret_...) key bypasses RLS and must be rotated now. Work through the steps below in order, and rotate before you clean up anything else.',
+    'Which key leaked matters: the anon (publishable, sb_publishable_...) key is public by design and only dangerous when your Row Level Security (RLS) policies are open, while a service_role (secret, sb_secret_...) key bypasses RLS, so we suggest rotating it now. If a service_role key leaked, we suggest working through the steps below in order and rotating before you clean up anything else; for an anon key, go to step 4.',
   sections: [
     {
       id: 'which-key',
@@ -362,18 +361,18 @@ const leakedKey: AnswerPage = {
             [
               'sb_publishable_... (legacy: anon) key',
               'Yes, it can go in client code. What it can reach is set by your RLS policies.',
-              'Check your policies (step 4). Rotating it does not close an open policy.',
+              'Check your policies (step 4). In our view, rotating this key does not close an open policy.',
             ],
             [
               'sb_secret_... (legacy: service_role) key',
               'No. It bypasses RLS, so it must never leave your control.',
-              'Rotate now (step 2), then check logs (step 3).',
+              'We suggest rotating now (step 2), then checking logs (step 3).',
             ],
           ],
         },
         {
           kind: 'p',
-          text: 'Not sure which one it was? Treat it as a service_role key until you know. New-style keys start with sb_publishable_ or sb_secret_; legacy keys are called anon and service_role. The [API keys docs](https://supabase.com/docs/guides/api/api-keys) describe each key type.',
+          text: 'Not sure which one it was? We suggest treating it as a service_role key until you know. New-style keys start with sb_publishable_ or sb_secret_; legacy keys are called anon and service_role. The [API keys docs](https://supabase.com/docs/guides/api/api-keys) describe each key type.',
         },
       ],
     },
@@ -383,7 +382,7 @@ const leakedKey: AnswerPage = {
       blocks: [
         {
           kind: 'p',
-          text: 'Follow Supabase\'s guide to [rotate a leaked or compromised API key](https://supabase.com/docs/guides/security/rotate-leaked-api-keys). Legacy anon and service_role keys stay valid until you disable them in Settings > API Keys. After rotating, update every server, job and deploy setting that used the old key, or they will start failing.',
+          text: 'Follow Supabase\'s guide to [rotate a leaked or compromised API key](https://supabase.com/docs/guides/security/rotate-leaked-api-keys). Per the [API keys docs](https://supabase.com/docs/guides/api/api-keys), legacy anon and service_role keys stay valid until you disable them in the Settings > API Keys section of the Dashboard. After rotating, we suggest updating every server, job and deploy setting that used the old key, or they will start failing.',
         },
       ],
     },
@@ -393,7 +392,7 @@ const leakedKey: AnswerPage = {
       blocks: [
         {
           kind: 'p',
-          text: 'Open the Logs Explorer in your project dashboard ([Supabase logging docs](https://supabase.com/docs/guides/telemetry/logs)) and look at the API and Auth logs from the time the key was exposed. Look for requests you do not recognise, and for reads or writes on tables only your server should touch.',
+          text: 'Open the Logs Explorer in your project dashboard ([Supabase logging docs](https://supabase.com/docs/guides/telemetry/logs)) and look at the API and Auth logs from the time the key was exposed. We suggest looking for requests you do not recognise, and for reads or writes on tables only your server should touch.',
         },
       ],
     },
@@ -426,7 +425,7 @@ const leakedKey: AnswerPage = {
       blocks: [
         {
           kind: 'p',
-          text: 'If a service_role key was exposed and the logs show requests you cannot explain, or you cannot tell whether your policies are open, [ask for a Launch Check](/launch-check?src=guide). It is a hand check, not an audit.',
+          text: 'If a service_role key was exposed and the logs show requests you cannot explain, or you cannot tell whether your policies are open, [ask for a Launch Check](/launch-check?src=guide). We suggest this only as a second pair of eyes: it is a hand check, not an audit.',
         },
       ],
     },
@@ -438,7 +437,7 @@ const leakedKey: AnswerPage = {
     },
     {
       q: 'What if my service_role key leaked?',
-      a: 'Rotate it now. A service_role (secret) key bypasses Row Level Security, so rotate it first and then check your logs.',
+      a: 'A service_role (secret) key bypasses Row Level Security. We suggest rotating it first and then checking your logs.',
     },
     {
       q: 'Does removing the key from git fix the leak?',
