@@ -24,6 +24,7 @@ import {
   stripLinks,
 } from '@/lib/cert-in-explainer/content';
 import { HANDOVER_PATH } from '@/lib/agency-handover/content';
+import { WEBHOOK_PATH } from '@/lib/payment-webhook-checklist/content';
 import {
   CHECKLIST_DESCRIPTION,
   CHECKLIST_PATH,
@@ -52,6 +53,7 @@ export const PUBLIC_PAGES = [
   { path: '/guides/does-cert-in-require-an-ai-audit', priority: 0.7 },
   { path: '/guides/check-supabase-rls-lovable-bolt', priority: 0.7 },
   { path: HANDOVER_PATH, priority: 0.7 },
+  { path: WEBHOOK_PATH, priority: 0.7 },
   { path: '/guides/supabase-rls-mistakes-in-real-migrations', priority: 0.7 },
   { path: '/guides/leaked-supabase-key-what-to-do-first', priority: 0.7 },
   { path: '/tools/rls-open-check', priority: 0.7 },

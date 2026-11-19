@@ -4,6 +4,7 @@ import { CHECKLIST_PATH, CHECKLIST_TITLE } from '@/lib/cert-in-explainer/evidenc
 import { DPDP_GUIDE_PATH, DPDP_GUIDE_TITLE } from '@/lib/dpdp-explainer/content';
 import { INDIC_QA_PATH } from '@/lib/indic-ai-qa/content';
 import { HANDOVER_PATH, HANDOVER_TITLE } from '@/lib/agency-handover/content';
+import { WEBHOOK_PATH, WEBHOOK_TITLE } from '@/lib/payment-webhook-checklist/content';
 import { RLS_PATH, RLS_TITLE } from '@/lib/rls-open-check-page/content';
 import { SITE_URL } from '@/lib/site-metadata';
 
@@ -64,6 +65,10 @@ const FIXED: Record<string, { path: string; card: OgCard }> = {
   'agency-handover-checklist': {
     path: HANDOVER_PATH,
     card: { title: HANDOVER_TITLE, subtitle: 'Checklist. Unofficial.' },
+  },
+  'payment-webhook-checklist': {
+    path: WEBHOOK_PATH,
+    card: { title: WEBHOOK_TITLE, subtitle: 'Checklist. Unofficial.' },
   },
   'cert-in-evidence-checklist': {
     path: CHECKLIST_PATH,

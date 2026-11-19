@@ -32,6 +32,7 @@ export const GUIDE_GROUPS: GuideGroup[] = [
       { path: '/guides/leaked-supabase-key-what-to-do-first', kind: 'guide' },
       { path: '/tools/rls-open-check', kind: 'tool' },
       { path: '/guides/agency-handover-checklist-ai-built-apps', kind: 'guide' },
+      { path: '/guides/payment-webhook-checklist-razorpay-stripe', kind: 'guide' },
     ],
   },
   {
