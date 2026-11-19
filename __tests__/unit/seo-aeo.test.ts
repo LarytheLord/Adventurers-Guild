@@ -42,7 +42,7 @@ const PAGE_FILES: Record<string, string> = {
 describe('sitemap', () => {
   const urls = sitemap().map((e) => e.url);
 
-  it('lists exactly the seventeen public pages on www.guilds.work', () => {
+  it('lists exactly the eighteen public pages on www.guilds.work', () => {
     expect(urls.sort()).toEqual(
       [
         'https://www.guilds.work/',
@@ -56,6 +56,7 @@ describe('sitemap', () => {
         'https://www.guilds.work/guides/does-cert-in-require-an-ai-audit',
         'https://www.guilds.work/guides/check-supabase-rls-lovable-bolt',
         'https://www.guilds.work/guides/agency-handover-checklist-ai-built-apps',
+        'https://www.guilds.work/guides/leaked-supabase-key-first-30-minutes',
         'https://www.guilds.work/guides/supabase-rls-mistakes-in-real-migrations',
         'https://www.guilds.work/tools/rls-open-check',
         'https://www.guilds.work/guides/what-is-an-ai-risk-tier-cert-in',

@@ -8,7 +8,7 @@ import {
   type AnswerPage,
   RLS_OPEN_CHECK_URL,
 } from '@/lib/answer-pages/content';
-import { answerPageJsonLd } from '@/lib/seo';
+import { answerPageFaqJsonLd, answerPageJsonLd } from '@/lib/seo';
 
 const linkClass = 'font-semibold text-orange-700 underline underline-offset-4';
 const h2Class = 'font-display text-2xl font-bold tracking-[-0.03em] text-slate-950';
@@ -120,6 +120,7 @@ export function AnswerPageView({ page }: { page: AnswerPage }) {
       }
     >
       <JsonLd data={answerPageJsonLd(page)} />
+      {page.faq ? <JsonLd data={answerPageFaqJsonLd(page)} /> : null}
       <article className="space-y-10 text-slate-600">
         <section aria-labelledby="answer" className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-5">
           <h2 id="answer" className="font-display text-lg font-bold text-slate-950">
@@ -148,6 +149,22 @@ export function AnswerPageView({ page }: { page: AnswerPage }) {
               <SourceLink href={RLS_OPEN_CHECK_URL} label="rls-open-check" /> runs the anon-key test across your
               tables. Point it at your own project only.
             </p>
+          </section>
+        ) : null}
+
+        {page.faq ? (
+          <section aria-labelledby="faq" className="space-y-4">
+            <h2 id="faq" className={h2Class}>
+              FAQ
+            </h2>
+            <div className="space-y-3">
+              {page.faq.map((f) => (
+                <div key={f.q} className="rounded-2xl border border-slate-200 bg-white p-5">
+                  <h3 className="text-base font-semibold text-slate-900">{f.q}</h3>
+                  <p className="mt-1 text-sm leading-6">{f.a}</p>
+                </div>
+              ))}
+            </div>
           </section>
         ) : null}
 

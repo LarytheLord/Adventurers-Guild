@@ -17,8 +17,10 @@ const TIER_PATH = '/guides/what-is-an-ai-risk-tier-cert-in';
 const MIG_PATH = '/guides/supabase-rls-mistakes-in-real-migrations';
 
 describe('answer pages content', () => {
-  it('has the four requested pages under /guides/', () => {
-    expect(ANSWER_PAGES.map((p) => p.path).sort()).toEqual([CERT_PATH, RLS_PATH, TIER_PATH, MIG_PATH].sort());
+  it('has the requested pages under /guides/', () => {
+    expect(ANSWER_PAGES.map((p) => p.path).sort()).toEqual(
+      [CERT_PATH, RLS_PATH, TIER_PATH, MIG_PATH, '/guides/leaked-supabase-key-first-30-minutes'].sort(),
+    );
     expect(byPath(MIG_PATH).title).toBe('What 126 Supabase migration files taught us about RLS');
     expect(byPath(CERT_PATH).title).toBe('Does CERT-In require an AI audit?');
     expect(byPath(RLS_PATH).title).toBe('How to check Supabase RLS on an app built with Lovable or Bolt');
