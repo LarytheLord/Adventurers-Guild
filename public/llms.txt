@@ -1,0 +1,13 @@
+# Guild
+
+> Independent checks for the AI you ship, and free guides for founders.
+
+## Guides
+
+- [Payment webhook checklist for Razorpay and Stripe (Next.js)](https://www.guilds.work/guides/payment-webhook-checklist-razorpay-stripe): Six manual checks for a payment webhook, each linked to the official docs.
+- [CERT-In AI Security Auditing Guidelines (2026), explained for startups](https://www.guilds.work/guides/cert-in-ai-security-auditing-guidelines): Who the guideline covers, how the four risk tiers work, and a 30-day plan.
+
+## Free resources
+
+- [AI risk tier check](https://www.guilds.work/ai-risk-tier)
+- [Launch checklist](https://www.guilds.work/checklist)
