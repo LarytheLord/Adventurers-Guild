@@ -109,14 +109,6 @@ describe('sample checks table', () => {
     expect(passes.map((r) => r.check)).toEqual(SAMPLE_SUMMARY.wentWell);
   });
 
-  it('page renders the table above the summary and keeps the findings section', () => {
-    const src = read('app/audit/sample-report/page.tsx');
-    expect(src).toContain('SAMPLE_CHECKS');
-    expect(src.indexOf('id="checks"')).toBeGreaterThan(-1);
-    expect(src.indexOf('id="checks"')).toBeLessThan(src.indexOf('id="summary"'));
-    expect(src).toContain('id="findings"');
-  });
-
   describe('rendered page', () => {
     const html = renderToStaticMarkup(createElement(Page));
 

@@ -90,11 +90,11 @@ export default function SampleReportPage() {
             Checks
           </h2>
           <p className="text-sm font-semibold text-amber-900">
-            {SAMPLE_CHECKS_LABEL}. Dated {SAMPLE_CHECKS_DATE}.
+            {SAMPLE_CHECKS_LABEL}. Example date: {SAMPLE_CHECKS_DATE}.
           </p>
           <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
             <table className="w-full text-left text-sm leading-6">
-              <caption className="sr-only">{SAMPLE_CHECKS_LABEL}, dated {SAMPLE_CHECKS_DATE}</caption>
+              <caption className="sr-only">{SAMPLE_CHECKS_LABEL}, example date {SAMPLE_CHECKS_DATE}</caption>
               <thead className="border-b border-slate-200 text-slate-900">
                 <tr>
                   <th scope="col" className="px-4 py-3 font-semibold">Check</th>
