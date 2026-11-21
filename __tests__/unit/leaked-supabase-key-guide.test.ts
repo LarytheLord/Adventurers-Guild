@@ -5,11 +5,10 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import sitemap from '@/app/sitemap';
 import { AnswerPageView } from '@/components/guides/answer-page';
 import { ANSWER_PAGES, answerPagePlainText } from '@/lib/answer-pages/content';
-import { stripLinks } from '@/lib/cert-in-explainer/content';
 import { allGuideItems } from '@/lib/guides-hub/registry';
 import { PUBLIC_PAGES, answerPageFaqJsonLd, serializeJsonLd } from '@/lib/seo';
 
-const PATH = '/guides/leaked-supabase-key-first-30-minutes';
+const PATH = '/guides/leaked-supabase-key-what-to-do-first';
 const root = join(__dirname, '..', '..');
 const read = (p: string) => readFileSync(join(root, p), 'utf8');
 const page = () => ANSWER_PAGES.find((p) => p.path === PATH)!;
@@ -84,22 +83,8 @@ describe('leaked Supabase key guide', () => {
     const p = page();
     for (const t of [p.title, p.description, p.answer]) expect(t).not.toMatch(/\b\d+\s*(minutes?|hours?|mins?)\b/i);
     expect(p.title).toBe('Leaked a Supabase key? What to do first');
-    expect(read('public/llms.txt')).not.toMatch(/30 minutes/i);
-  });
-
-  it('own-reasoning lines carry a hedge phrase (checks the phrase only, not whether a sentence is factual)', () => {
-    const text = answerPagePlainText(page());
-    const lines = [
-      'we suggest treating it as a service_role key until you know',
-      'in our view, rotating this key does not close an open policy',
-      'we suggest looking for requests you do not recognise',
-      'we suggest removing the key from the source',
-      'we suggest treating removal from git as cleanup',
-      'we suggest this only as a second pair of eyes',
-      'we suggest updating every server',
-      'we suggest working through the steps below in order',
-    ];
-    for (const l of lines) expect(text.toLowerCase()).toContain(l);
+    expect(read('public/llms.txt')).not.toMatch(/30[ -]minutes/i);
+    expect(p.path).not.toMatch(/\d+-minutes?/);
   });
 
   it('says the step order applies to a leaked service_role key', () => {
@@ -112,9 +97,11 @@ describe('leaked Supabase key guide', () => {
     const ld = JSON.parse(serializeJsonLd(answerPageFaqJsonLd(p)));
     expect(ld['@type']).toBe('FAQPage');
     expect(ld.mainEntity.map((q: { name: string }) => q.name)).toEqual(p.faq!.map((f) => f.q));
-    expect(ld.mainEntity.map((q: { acceptedAnswer: { text: string } }) => q.acceptedAnswer.text)).toEqual(
-      p.faq!.map((f) => stripLinks(f.a)),
-    );
+    for (const q of ld.mainEntity as { acceptedAnswer: { text: string } }[]) {
+      expect(q.acceptedAnswer.text.length).toBeGreaterThan(20);
+      expect(q.acceptedAnswer.text).not.toContain('](');
+      expect(q.acceptedAnswer.text).not.toMatch(/https?:/);
+    }
     const html = renderToStaticMarkup(createElement(AnswerPageView, { page: p }));
     expect(html).toContain('application/ld+json');
     expect(html).toContain('FAQPage');

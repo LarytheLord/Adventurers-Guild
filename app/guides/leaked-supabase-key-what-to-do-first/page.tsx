@@ -3,7 +3,7 @@ import { AnswerPageView } from '@/components/guides/answer-page';
 import { ANSWER_PAGES } from '@/lib/answer-pages/content';
 import { buildPageMetadata } from '@/lib/seo';
 
-const PAGE = ANSWER_PAGES.find((p) => p.path === '/guides/leaked-supabase-key-first-30-minutes')!;
+const PAGE = ANSWER_PAGES.find((p) => p.path === '/guides/leaked-supabase-key-what-to-do-first')!;
 
 export const metadata: Metadata = buildPageMetadata({
   path: PAGE.path,

@@ -53,7 +53,7 @@ export const PUBLIC_PAGES = [
   { path: '/guides/check-supabase-rls-lovable-bolt', priority: 0.7 },
   { path: HANDOVER_PATH, priority: 0.7 },
   { path: '/guides/supabase-rls-mistakes-in-real-migrations', priority: 0.7 },
-  { path: '/guides/leaked-supabase-key-first-30-minutes', priority: 0.7 },
+  { path: '/guides/leaked-supabase-key-what-to-do-first', priority: 0.7 },
   { path: '/tools/rls-open-check', priority: 0.7 },
   { path: '/guides/what-is-an-ai-risk-tier-cert-in', priority: 0.7 },
   { path: CHECKLIST_PATH, priority: 0.7 },

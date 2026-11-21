@@ -19,7 +19,7 @@ const MIG_PATH = '/guides/supabase-rls-mistakes-in-real-migrations';
 describe('answer pages content', () => {
   it('has the requested pages under /guides/', () => {
     expect(ANSWER_PAGES.map((p) => p.path).sort()).toEqual(
-      [CERT_PATH, RLS_PATH, TIER_PATH, MIG_PATH, '/guides/leaked-supabase-key-first-30-minutes'].sort(),
+      [CERT_PATH, RLS_PATH, TIER_PATH, MIG_PATH, '/guides/leaked-supabase-key-what-to-do-first'].sort(),
     );
     expect(byPath(MIG_PATH).title).toBe('What 126 Supabase migration files taught us about RLS');
     expect(byPath(CERT_PATH).title).toBe('Does CERT-In require an AI audit?');

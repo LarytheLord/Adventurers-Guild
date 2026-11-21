@@ -343,12 +343,12 @@ const riskTier: AnswerPage = {
 };
 
 const leakedKey: AnswerPage = {
-  path: '/guides/leaked-supabase-key-first-30-minutes',
+  path: '/guides/leaked-supabase-key-what-to-do-first',
   title: 'Leaked a Supabase key? What to do first',
   description:
     'Which Supabase key leaked decides everything: the anon or publishable key is public by design, a service_role or secret key bypasses RLS. Steps: rotate, check logs, close open policies, clean up git, ask for a human check.',
   answer:
-    'Which key leaked matters: the anon (publishable, sb_publishable_...) key is public by design and only dangerous when your Row Level Security (RLS) policies are open, while a service_role (secret, sb_secret_...) key bypasses RLS, so we suggest rotating it now. If a service_role key leaked, we suggest working through the steps below in order and rotating before you clean up anything else; for an anon key, go to step 4.',
+    'Which key leaked matters: the anon (publishable, sb_publishable_...) key is public by design and mainly a risk when your Row Level Security (RLS) policies are open, while a service_role (secret, sb_secret_...) key bypasses RLS, so we suggest rotating it now. If a service_role key leaked, we suggest working through the steps below in order and rotating before you clean up anything else; for an anon key, go to step 4.',
   sections: [
     {
       id: 'which-key',
@@ -433,7 +433,7 @@ const leakedKey: AnswerPage = {
   faq: [
     {
       q: 'Is the Supabase anon key a secret?',
-      a: 'No. The anon (publishable) key is designed for client code. What it can reach depends on your Row Level Security policies, so open policies are the risk.',
+      a: 'No. The anon (publishable) key is designed for client code. What it can reach depends on your Row Level Security policies, so open policies are the main risk.',
     },
     {
       q: 'What if my service_role key leaked?',
