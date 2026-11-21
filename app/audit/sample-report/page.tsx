@@ -6,6 +6,13 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { AUDIT_AREAS, AUDIT_MAILTO } from '@/lib/audit-offer/content';
 import {
+  CHECK_CATEGORY_ORDER,
+  SAMPLE_CHECKS,
+  SAMPLE_CHECKS_DATE,
+  SAMPLE_CHECKS_LABEL,
+  failCountsByCategory,
+} from '@/lib/audit-offer/sample-checks';
+import {
   EVIDENCE_TYPES,
   SAMPLE_APP,
   SAMPLE_APP_LINE,
@@ -58,7 +65,8 @@ function SeverityBadge({ severity }: { severity: Severity }) {
 
 export default function SampleReportPage() {
   const counts = summaryCounts();
-  const findingById = new Map(SAMPLE_FINDINGS.map((f) => [f.id, f]));
+  const failCounts = failCountsByCategory();
+  const findingById = new Map<string, (typeof SAMPLE_FINDINGS)[number]>(SAMPLE_FINDINGS.map((f) => [f.id, f]));
   const quoted = SAMPLE_QUOTE.includedFindingIds.map((id) => findingById.get(id)!);
 
   return (
@@ -76,6 +84,55 @@ export default function SampleReportPage() {
         >
           {SAMPLE_REPORT_BANNER}
         </div>
+
+        <section id="checks" aria-labelledby="checks-title" className="space-y-4">
+          <h2 id="checks-title" className={H2}>
+            Checks
+          </h2>
+          <p className="text-sm font-semibold text-amber-900">
+            {SAMPLE_CHECKS_LABEL}. Example date: {SAMPLE_CHECKS_DATE}.
+          </p>
+          <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
+            <table className="w-full text-left text-sm leading-6">
+              <caption className="sr-only">{SAMPLE_CHECKS_LABEL}, example date {SAMPLE_CHECKS_DATE}</caption>
+              <thead className="border-b border-slate-200 text-slate-900">
+                <tr>
+                  <th scope="col" className="px-4 py-3 font-semibold">Check</th>
+                  <th scope="col" className="px-4 py-3 font-semibold">Category</th>
+                  <th scope="col" className="px-4 py-3 font-semibold">Result</th>
+                  <th scope="col" className="px-4 py-3 font-semibold">Fix</th>
+                </tr>
+              </thead>
+              <tbody>
+                {SAMPLE_CHECKS.map((r) => (
+                  <tr key={r.findingId ?? r.check} data-result={r.result} className="border-b border-slate-100 align-top last:border-0">
+                    <td className="px-4 py-3">
+                      {r.findingId ? (
+                        <a href={`#finding-${r.findingId}`} className="underline underline-offset-4">
+                          {r.check}
+                        </a>
+                      ) : (
+                        r.check
+                      )}
+                    </td>
+                    <td className="px-4 py-3 capitalize">{r.category}</td>
+                    <td className="px-4 py-3 font-bold text-slate-950">{r.result}</td>
+                    <td className="px-4 py-3">{r.fix ?? ''}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <h3 className="text-lg font-semibold text-slate-900">FAIL rows per category</h3>
+          <ul data-testid="fail-counts" className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            {CHECK_CATEGORY_ORDER.filter((c) => failCounts[c]).map((c) => (
+              <li key={c} className="rounded-2xl border border-slate-200 bg-white p-4">
+                <p className="text-3xl font-bold text-slate-950">{failCounts[c]}</p>
+                <p className="mt-1 text-sm capitalize text-slate-600">{c}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
 
         <section id="summary" aria-labelledby="summary-title" className="space-y-4">
           <h2 id="summary-title" className={H2}>
