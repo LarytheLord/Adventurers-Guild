@@ -1,8 +1,6 @@
-import fs from 'fs';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import Page from '@/app/audit/sample-report/page';
-import path from 'path';
 import { SAMPLE_FINDINGS, SAMPLE_SUMMARY } from '@/lib/audit-offer/sample-report';
 import {
   SAMPLE_CHECKS,
@@ -11,8 +9,6 @@ import {
   CHECK_CATEGORY_ORDER,
   failCountsByCategory,
 } from '@/lib/audit-offer/sample-checks';
-
-const read = (p: string) => fs.readFileSync(path.join(process.cwd(), p), 'utf8');
 
 describe('sample checks table', () => {
   it('has a date in ISO form and a sample label', () => {
