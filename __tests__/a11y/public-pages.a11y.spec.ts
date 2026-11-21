@@ -13,6 +13,7 @@ const PAGES = [
   '/guides/check-supabase-rls-lovable-bolt',
   '/guides/supabase-rls-mistakes-in-real-migrations',
   '/tools/rls-open-check',
+  '/guides/payment-webhook-checklist-razorpay-stripe',
   '/guides/does-cert-in-require-an-ai-audit',
   '/guides/what-is-an-ai-risk-tier-cert-in',
 ];

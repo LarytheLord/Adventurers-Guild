@@ -7,6 +7,7 @@ import { ANSWER_PAGES } from '@/lib/answer-pages/content';
 import { EXPLAINER_PATH, EXPLAINER_TITLE } from '@/lib/cert-in-explainer/content';
 import { CHECKLIST_PATH, CHECKLIST_TITLE } from '@/lib/cert-in-explainer/evidence-checklist';
 import { HANDOVER_PATH, HANDOVER_TITLE } from '@/lib/agency-handover/content';
+import { WEBHOOK_PATH, WEBHOOK_TITLE } from '@/lib/payment-webhook-checklist/content';
 import { RLS_PATH, RLS_TITLE } from '@/lib/rls-open-check-page/content';
 import { PUBLIC_PAGES } from '@/lib/seo';
 
@@ -26,6 +27,7 @@ const PATHS = [
   CHECKLIST_PATH,
   RLS_PATH,
   HANDOVER_PATH,
+  WEBHOOK_PATH,
   ...ANSWER_PAGES.map((a) => a.path),
 ];
 
@@ -74,6 +76,7 @@ describe('og card registry', () => {
     expect(OG_PAGES[ogSlugForPath(CHECKLIST_PATH) as string].title).toBe(CHECKLIST_TITLE);
     expect(OG_PAGES[ogSlugForPath(RLS_PATH) as string].title).toBe(RLS_TITLE);
     expect(OG_PAGES[ogSlugForPath(HANDOVER_PATH) as string].title).toBe(HANDOVER_TITLE);
+    expect(OG_PAGES[ogSlugForPath(WEBHOOK_PATH) as string].title).toBe(WEBHOOK_TITLE);
     for (const a of ANSWER_PAGES) expect(OG_PAGES[ogSlugForPath(a.path) as string].title).toBe(a.title);
     const fromSource = (file: string) =>
       /const TITLE =\s*'([^']+)'/.exec(readFileSync(join(root, file), 'utf8'))?.[1].replace(/ - Guild$/, '');
