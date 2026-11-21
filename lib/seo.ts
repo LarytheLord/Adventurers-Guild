@@ -53,6 +53,7 @@ export const PUBLIC_PAGES = [
   { path: '/guides/check-supabase-rls-lovable-bolt', priority: 0.7 },
   { path: HANDOVER_PATH, priority: 0.7 },
   { path: '/guides/supabase-rls-mistakes-in-real-migrations', priority: 0.7 },
+  { path: '/guides/leaked-supabase-key-what-to-do-first', priority: 0.7 },
   { path: '/tools/rls-open-check', priority: 0.7 },
   { path: '/guides/what-is-an-ai-risk-tier-cert-in', priority: 0.7 },
   { path: CHECKLIST_PATH, priority: 0.7 },
@@ -179,6 +180,19 @@ export function explainerJsonLd() {
       })),
     },
   ];
+}
+
+/** FAQPage JSON-LD for an answer page that has a faq. Text is the visible FAQ, links stripped. */
+export function answerPageFaqJsonLd(page: AnswerPage) {
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: (page.faq ?? []).map((f) => ({
+      '@type': 'Question',
+      name: f.q,
+      acceptedAnswer: { '@type': 'Answer', text: stripLinks(f.a) },
+    })),
+  };
 }
 
 /** Article JSON-LD for the short answer pages under /guides/. Sources go in as citations. */

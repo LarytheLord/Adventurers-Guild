@@ -41,6 +41,8 @@ export interface AnswerPage {
   /** Exactly two sentences. */
   answer: string;
   sections: AnswerSection[];
+  /** Optional FAQ. Shown on the page and emitted as FAQPage JSON-LD. Plain text answers. */
+  faq?: { q: string; a: string }[];
   sources: AnswerSource[];
 }
 
@@ -340,7 +342,121 @@ const riskTier: AnswerPage = {
   ],
 };
 
-export const ANSWER_PAGES: AnswerPage[] = [certAudit, supabaseRls, riskTier, rlsMigrations];
+const leakedKey: AnswerPage = {
+  path: '/guides/leaked-supabase-key-what-to-do-first',
+  title: 'Leaked a Supabase key? What to do first',
+  description:
+    'Which Supabase key leaked decides everything: the anon or publishable key is public by design, a service_role or secret key bypasses RLS. Steps: rotate, check logs, close open policies, clean up git, ask for a human check.',
+  answer:
+    'Which key leaked matters: the anon (publishable, sb_publishable_...) key is public by design and mainly a risk when your Row Level Security (RLS) policies are open, while a service_role (secret, sb_secret_...) key bypasses RLS, so we suggest rotating it now. If a service_role key leaked, we suggest working through the steps below in order and rotating before you clean up anything else; for an anon key, go to step 4.',
+  sections: [
+    {
+      id: 'which-key',
+      heading: '1. Which key leaked',
+      blocks: [
+        {
+          kind: 'table',
+          head: ['Key', 'Meant to be public?', 'What to do'],
+          rows: [
+            [
+              'sb_publishable_... (legacy: anon) key',
+              'Yes, it can go in client code. What it can reach is set by your RLS policies.',
+              'Check your policies (step 4). In our view, rotating this key does not close an open policy.',
+            ],
+            [
+              'sb_secret_... (legacy: service_role) key',
+              'No. It bypasses RLS, so it must never leave your control.',
+              'We suggest rotating now (step 2), then checking logs (step 3).',
+            ],
+          ],
+        },
+        {
+          kind: 'p',
+          text: 'Not sure which one it was? We suggest treating it as a service_role key until you know. New-style keys start with sb_publishable_ or sb_secret_; legacy keys are called anon and service_role. The [API keys docs](https://supabase.com/docs/guides/api/api-keys) describe each key type.',
+        },
+      ],
+    },
+    {
+      id: 'rotate',
+      heading: '2. Rotate or roll the key',
+      blocks: [
+        {
+          kind: 'p',
+          text: 'Follow Supabase\'s guide to [rotate a leaked or compromised API key](https://supabase.com/docs/guides/security/rotate-leaked-api-keys). Per the [API keys docs](https://supabase.com/docs/guides/api/api-keys), legacy anon and service_role keys stay valid until you disable them in the Settings > API Keys section of the Dashboard. After rotating, we suggest updating every server, job and deploy setting that used the old key, or they will start failing.',
+        },
+      ],
+    },
+    {
+      id: 'logs',
+      heading: '3. Check API and auth logs',
+      blocks: [
+        {
+          kind: 'p',
+          text: 'Open the Logs Explorer in your project dashboard ([Supabase logging docs](https://supabase.com/docs/guides/telemetry/logs)) and look at the API and Auth logs from the time the key was exposed. We suggest looking for requests you do not recognise, and for reads or writes on tables only your server should touch.',
+        },
+      ],
+    },
+    {
+      id: 'policies',
+      heading: '4. Close open policies',
+      blocks: [
+        {
+          kind: 'p',
+          text: 'Read the [Supabase RLS docs](https://supabase.com/docs/guides/database/postgres/row-level-security), then check each public table. Run [rls-open-check](/tools/rls-open-check) on your migration files and read [what we found in real migrations](/guides/supabase-rls-mistakes-in-real-migrations?src=guide) for the common open patterns.',
+        },
+      ],
+    },
+    {
+      id: 'cleanup',
+      heading: '5. Remove the key from git history and frontend bundles',
+      blocks: [
+        {
+          kind: 'ul',
+          items: [
+            'Git: GitHub documents how to [remove sensitive data from a repository](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository).',
+            'Frontend: we suggest removing the key from the source, then rebuilding and redeploying so the new bundle does not contain it.',
+          ],
+        },
+      ],
+    },
+    {
+      id: 'human-check',
+      heading: '6. When to ask for a human check',
+      blocks: [
+        {
+          kind: 'p',
+          text: 'If a service_role key was exposed and the logs show requests you cannot explain, or you cannot tell whether your policies are open, [ask for a Launch Check](/launch-check?src=guide). We suggest this only as a second pair of eyes: it is a hand check, not an audit.',
+        },
+      ],
+    },
+  ],
+  faq: [
+    {
+      q: 'Is the Supabase anon key a secret?',
+      a: 'No. The anon (publishable) key is designed for client code. What it can reach depends on your Row Level Security policies, so open policies are the main risk.',
+    },
+    {
+      q: 'What if my service_role key leaked?',
+      a: 'A service_role (secret) key bypasses Row Level Security. We suggest rotating it first and then checking your logs.',
+    },
+    {
+      q: 'Does removing the key from git fix the leak?',
+      a: 'We suggest treating removal from git as cleanup, not the fix. Rotate the key first, then remove it from history and from deployed frontend bundles.',
+    },
+  ],
+  sources: [
+    { label: 'Supabase docs: API keys', href: 'https://supabase.com/docs/guides/api/api-keys' },
+    { label: 'Supabase docs: Rotate a leaked or compromised API key', href: 'https://supabase.com/docs/guides/security/rotate-leaked-api-keys' },
+    { label: 'Supabase docs: Logging', href: 'https://supabase.com/docs/guides/telemetry/logs' },
+    { label: 'Supabase docs: Row Level Security', href: 'https://supabase.com/docs/guides/database/postgres/row-level-security' },
+    {
+      label: 'GitHub docs: Removing sensitive data from a repository',
+      href: 'https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository',
+    },
+  ],
+};
+
+export const ANSWER_PAGES: AnswerPage[] = [certAudit, supabaseRls, riskTier, rlsMigrations, leakedKey];
 
 /** Visible copy as one string, for tests and word counts. Links are flattened to "label (href)". */
 export function answerPagePlainText(page: AnswerPage): string {
@@ -353,6 +469,7 @@ export function answerPagePlainText(page: AnswerPage): string {
       else parts.push(b.head.join(' '), ...b.rows.map((r) => r.join(' ')));
     }
   }
+  for (const f of page.faq ?? []) parts.push(f.q, f.a);
   parts.push(...page.sources.map((s) => `${s.label} (${s.href})`));
   parts.push(ANSWER_DISCLAIMER);
   return parts.map(stripLinks).join('\n');
