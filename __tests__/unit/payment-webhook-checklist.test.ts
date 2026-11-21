@@ -87,7 +87,8 @@ describe('payment webhook checklist content', () => {
 
   it('is ASCII, gives the manual-check advice, and has no percentages or scanner claims', () => {
     expect(isAscii(webhookPlainText())).toBe(true);
-    expect(WEBHOOK_CONTEXT).toBe('Static scanners often cannot see webhook logic, so check it by hand.');
+    expect(WEBHOOK_CONTEXT).toMatch(/^We suggest/);
+    expect(webhookPlainText()).not.toMatch(/scanner/i);
     expect(webhookPlainText()).not.toMatch(/six free|private test/i);
     expect(webhookPlainText()).not.toMatch(/\d+(\.\d+)?\s?%/);
     expect(webhookPlainText()).toContain(WEBHOOK_CTA_HREF);

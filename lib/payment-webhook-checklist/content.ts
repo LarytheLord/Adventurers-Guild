@@ -12,7 +12,7 @@ export const WEBHOOK_DESCRIPTION =
 export const WEBHOOK_CTA_TEXT = 'Want the rest of the basics checked too?';
 export const WEBHOOK_CTA_HREF = '/launch-check?src=guide';
 
-export const WEBHOOK_CONTEXT = 'Static scanners often cannot see webhook logic, so check it by hand.';
+export const WEBHOOK_CONTEXT = 'We suggest checking webhook logic by hand, because it decides when an order counts as paid.';
 
 export const WEBHOOK_EXAMPLES_NOTE =
   'Examples follow the shape of the official docs. Check them against the linked pages and your SDK version before you ship.';
@@ -78,7 +78,7 @@ export const WEBHOOK_ITEMS: WebhookItem[] = [
     id: 'paid-only-from-webhook',
     heading: '5. Mark an order paid only from the verified webhook',
     check:
-      'The success page and the client callback are for showing a message. They can be skipped, forged or never reached. Flip the order to paid only inside the handler that passed items 1 to 3, and let the success page read the order status from your database.',
+      'We suggest treating the success page and the client callback as display only. Unless your server verifies them, they can be skipped, forged or never reached. Flip the order to paid only inside the handler that passed items 1 to 3, and let the success page read the order status from your database.',
     stripe: [{ label: 'Stripe: fulfil orders after checkout', url: STRIPE_FULFIL }],
     razorpay: [{ label: 'Razorpay: webhooks overview', url: RZP_WEBHOOKS }],
   },
@@ -145,14 +145,14 @@ export async function POST(req: Request) {
   const body = await req.text(); // raw body: verify before you parse
   const signature = req.headers.get('x-razorpay-signature');
   const eventId = req.headers.get('x-razorpay-event-id');
-  if (!signature || !eventId) return new NextResponse('Missing headers', { status: 400 });
+  if (!signature) return new NextResponse('Missing signature', { status: 400 });
 
   if (!validateWebhookSignature(body, signature, process.env.RAZORPAY_WEBHOOK_SECRET!)) {
     return new NextResponse('Invalid signature', { status: 400 });
   }
 
   const event = JSON.parse(body);
-  // Insert eventId with a unique constraint; if it already exists, return 200.
+  // If eventId is present, insert it with a unique constraint; if it already exists, return 200.
   // Then handle event.event (for example payment.captured) and compare the amount and
   // currency with the order you stored before you mark it paid.
   return NextResponse.json({ received: true });
