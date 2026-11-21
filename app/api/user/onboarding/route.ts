@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
-import { prisma } from '@/lib/db';
+import { prisma, withDbRetry } from '@/lib/db';
 import { z } from 'zod';
 
 const onboardingSchema = z.object({
@@ -30,13 +30,15 @@ export async function GET() {
       return NextResponse.json({ onboardingCompleted: true }); // Only adventurers onboard
     }
 
-    const profile = await prisma.adventurerProfile.findUnique({
-      where: { userId: session.user.id },
-      select: {
-        onboardingCompleted: true,
-        phoneNumber: true,
-      },
-    });
+    const profile = await withDbRetry(() =>
+      prisma.adventurerProfile.findUnique({
+        where: { userId: session.user.id },
+        select: {
+          onboardingCompleted: true,
+          phoneNumber: true,
+        },
+      })
+    );
 
     return NextResponse.json({
       onboardingCompleted: profile?.onboardingCompleted ?? false,
@@ -62,22 +64,38 @@ export async function POST(req: Request) {
     const json = await req.json();
     const data = onboardingSchema.parse(json);
 
-    // Save onboarding details and set primarySkills as the skills array
-    await prisma.adventurerProfile.update({
-      where: { userId: session.user.id },
-      data: {
-        studentType: data.studentType,
-        institutionName: data.institutionName,
-        yearOrExperience: data.yearOrExperience,
-        phoneNumber: data.phoneNumber,
-        primarySkills: data.skills, // sync with primarySkills in schema
-        interests: data.interests,
-        dailyWorkHours: data.dailyWorkHours,
-        expectations: data.expectations,
-        autoAssign: data.autoAssign,
-        onboardingCompleted: true,
-      },
-    });
+    // Save onboarding details and set primarySkills as the skills array.
+    // Use upsert to handle cases where the adventurerProfile has not been initialized yet.
+    await withDbRetry(() =>
+      prisma.adventurerProfile.upsert({
+        where: { userId: session.user.id },
+        update: {
+          studentType: data.studentType,
+          institutionName: data.institutionName,
+          yearOrExperience: data.yearOrExperience,
+          phoneNumber: data.phoneNumber,
+          primarySkills: data.skills, // sync with primarySkills in schema
+          interests: data.interests,
+          dailyWorkHours: data.dailyWorkHours,
+          expectations: data.expectations,
+          autoAssign: data.autoAssign,
+          onboardingCompleted: true,
+        },
+        create: {
+          userId: session.user.id,
+          studentType: data.studentType,
+          institutionName: data.institutionName,
+          yearOrExperience: data.yearOrExperience,
+          phoneNumber: data.phoneNumber,
+          primarySkills: data.skills,
+          interests: data.interests,
+          dailyWorkHours: data.dailyWorkHours,
+          expectations: data.expectations,
+          autoAssign: data.autoAssign,
+          onboardingCompleted: true,
+        },
+      })
+    );
 
 
     return NextResponse.json({ success: true });
