@@ -143,7 +143,8 @@ export const CHANGELOG: ChangelogDay[] = [
       },
       {
         parts: [
-          { text: 'Checklist adds entitlement, limit, spend-cap, key and AI behaviour checks (AG #495) and eight failure classes from real engagements', repo: 'AG', pr: 496 },
+          { text: 'Checklist adds entitlement, limit, spend-cap, key and AI behaviour checks', repo: 'AG', pr: 495 },
+          { text: 'eight failure classes from real engagements', repo: 'AG', pr: 496 },
         ],
       },
       {

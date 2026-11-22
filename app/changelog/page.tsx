@@ -34,13 +34,14 @@ export default function ChangelogPage() {
             </h2>
             <ul className="list-disc space-y-3 pl-6 leading-7">
               {day.entries.map((entry) => (
-                <li key={entry.parts.map((p) => `${p.repo}${p.pr}`).join('-')}>
+                <li key={entry.parts.map((p) => `${p.repo}-${p.pr}`).join('_')}>
                   {entry.parts.map((part, i) => (
-                    <span key={`${part.repo}${part.pr}`}>
+                    <span key={`${part.repo}-${part.pr}`}>
                       {i > 0 ? '; ' : ''}
                       {part.text}{' '}
                       <a
                         href={prUrl(part)}
+                        aria-label={`${part.text}: pull request ${part.pr} on GitHub`}
                         className={linkClass}
                         target="_blank"
                         rel="noopener noreferrer"
