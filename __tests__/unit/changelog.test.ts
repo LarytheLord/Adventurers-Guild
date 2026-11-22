@@ -60,7 +60,7 @@ describe('changelog data', () => {
   it('is plain ASCII with no em or en dashes', () => {
     const blob = JSON.stringify(CHANGELOG) + CHANGELOG_INTRO + CHANGELOG_FOOTER;
     expect(isAscii(blob)).toBe(true);
-    expect(blob).not.toMatch(/[–—]/);
+    expect(blob).not.toMatch(/[\u2013\u2014]/);
   });
 
   it('does not use the word audit except in the existing page names', () => {
