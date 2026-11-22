@@ -7,6 +7,7 @@ const PAGES: PublicPage[] = [
   { path: '/audit', heading: /Built your app with an AI tool/i },
   { path: '/audit/sample-report', heading: /What a Launch Check report looks like/i },
   { path: '/checklist', heading: /The AI-built app launch checklist/i },
+  { path: '/changelog', heading: /Changelog/i },
   { path: '/launch-check', heading: /Is your AI-built app ready for real users and real money/i },
   { path: '/ai-risk-tier', heading: /Which CERT-In risk tier is your AI system/i },
   { path: '/tools/rls-open-check', heading: /rls-open-check: a free linter for Supabase migration files/i },

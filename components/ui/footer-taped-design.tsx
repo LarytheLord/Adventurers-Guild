@@ -52,6 +52,7 @@ export const Component = () => {
                 <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="/ai-risk-tier">AI Risk Tier Check</Link>
                 <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="/launch-check">Launch self-check</Link>
                 <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="/guides">Guides and free tools</Link>
+                <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="/changelog">Changelog</Link>
                 <Link className="text-[13px] font-medium text-slate-600 hover:text-slate-900 whitespace-nowrap transition-colors" href="https://github.com/LarytheLord/rls-open-check" target="_blank" rel="noopener noreferrer">rls-open-check (open source)</Link>
                 <span className="flex items-center gap-1.5 text-[13px] font-medium text-slate-600 whitespace-nowrap">
                   Blog
