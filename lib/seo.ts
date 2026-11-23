@@ -61,6 +61,7 @@ export const PUBLIC_PAGES = [
   { path: CHECKLIST_PATH, priority: 0.7 },
   { path: '/dpdp-readiness', priority: 0.9 },
   { path: DPDP_GUIDE_PATH, priority: 0.9 },
+  { path: '/changelog', priority: 0.5 },
 ] as const;
 
 /** Paths crawlers must not fetch. */

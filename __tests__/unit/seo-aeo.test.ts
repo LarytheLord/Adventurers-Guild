@@ -38,13 +38,14 @@ const PAGE_FILES: Record<string, string> = {
   '/guides/agency-handover-checklist-ai-built-apps': 'app/guides/agency-handover-checklist-ai-built-apps/page.tsx',
   '/guides/payment-webhook-checklist-razorpay-stripe': 'app/guides/payment-webhook-checklist-razorpay-stripe/page.tsx',
   '/guides/dpdp-rules-what-startups-must-do': 'app/guides/dpdp-rules-what-startups-must-do/page.tsx',
+  '/changelog': 'app/changelog/page.tsx',
   ...Object.fromEntries(ANSWER_PAGES.map((a) => [a.path, `app${a.path}/page.tsx`])),
 };
 
 describe('sitemap', () => {
   const urls = sitemap().map((e) => e.url);
 
-  it('lists exactly the eighteen public pages on www.guilds.work', () => {
+  it('lists exactly the nineteen public pages on www.guilds.work', () => {
     expect(urls.sort()).toEqual(
       [
         'https://www.guilds.work/',
@@ -65,6 +66,7 @@ describe('sitemap', () => {
         'https://www.guilds.work/guides/what-is-an-ai-risk-tier-cert-in',
         'https://www.guilds.work/guides/cert-in-ai-audit-evidence-checklist',
         'https://www.guilds.work/dpdp-readiness',
+        'https://www.guilds.work/changelog',
         'https://www.guilds.work/guides/dpdp-rules-what-startups-must-do',
       ].sort(),
     );

@@ -70,6 +70,10 @@ const FIXED: Record<string, { path: string; card: OgCard }> = {
     path: WEBHOOK_PATH,
     card: { title: WEBHOOK_TITLE, subtitle: 'Checklist. Unofficial.' },
   },
+  changelog: {
+    path: '/changelog',
+    card: { title: 'Changelog', subtitle: 'What changed, newest first' },
+  },
   'cert-in-evidence-checklist': {
     path: CHECKLIST_PATH,
     card: { title: CHECKLIST_TITLE, subtitle: 'Checklist. Partial and unofficial.' },
