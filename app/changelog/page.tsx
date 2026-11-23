@@ -41,7 +41,7 @@ export default function ChangelogPage() {
                       {part.text}{' '}
                       <a
                         href={prUrl(part)}
-                        aria-label={`${part.text}: pull request ${part.pr} on GitHub`}
+                        aria-label={`${prLabel(part)}: ${part.text}, pull request on GitHub`}
                         className={linkClass}
                         target="_blank"
                         rel="noopener noreferrer"
