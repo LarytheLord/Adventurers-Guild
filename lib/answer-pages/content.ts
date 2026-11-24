@@ -224,7 +224,7 @@ const rlsMigrations: AnswerPage = {
       blocks: [
         {
           kind: 'p',
-          text: 'The policy lets anon or public through on every row. Open reads are often intended, such as a docs or product table. Open writes are not: the two critical findings in this run were anonymous INSERT policies. A common reason is that true is the shortest way to make a "permission denied" error go away.',
+          text: 'The policy lets anon or public through on every row. Open reads are often intended, such as a docs or product table. Open writes are not: the two critical findings in this run were anonymous INSERT policies. A policy named like \'Service can insert\' with FOR INSERT TO public WITH CHECK (true) is the clearest case, explained in [this guide](/guides/supabase-policy-service-can-insert). A common reason is that true is the shortest way to make a "permission denied" error go away.',
         },
         {
           kind: 'p',
@@ -260,7 +260,7 @@ const rlsMigrations: AnswerPage = {
       blocks: [
         {
           kind: 'p',
-          text: 'A clean result does not prove the app is safe. The linter read migration files only. It did not look at a live database, application code, Storage policies set in the dashboard, or Edge Functions, and a repository can differ from production. 24 of the 52 SECURITY DEFINER findings and 24 of the 39 exposed-function findings came from one docs file, and partitioned tables are reported once per partition, so read the counts as a map, not a rate. Of 19 findings read by hand, 17 were true positives, 2 were unclear and none were wrong, but 19 is a small sample.',
+          text: 'A clean result does not prove the app is safe. The linter read migration files only. It did not look at a live database, application code, Storage policies set in the dashboard, or Edge Functions, and a repository can differ from production. 24 of the 52 SECURITY DEFINER findings and 24 of the 39 exposed-function findings came from one docs file, and partitioned tables are reported once per partition, so read the counts as a map, not a rate. A later hand-read of 52 findings across all twelve rules judged 27 true, 18 false and 7 unclear, so about 60 percent of the findings we could decide were real, and the three newer heuristic rules (R10 to R12) were mostly false positives. A hand-read of 36 more findings on those three rules gave the same picture. Both are small samples; the rule-by-rule numbers are in the [validation notes](' + REPO + '/blob/main/docs/VALIDATION.md).',
         },
       ],
     },
@@ -280,6 +280,98 @@ const rlsMigrations: AnswerPage = {
   sources: [
     { label: 'rls-open-check: validation on public code', href: REPO + '/blob/main/docs/VALIDATION.md' },
     { label: 'Supabase docs: Row Level Security', href: 'https://supabase.com/docs/guides/database/postgres/row-level-security' },
+  ],
+};
+
+const serviceCanInsert: AnswerPage = {
+  path: '/guides/supabase-policy-service-can-insert',
+  title: 'A Supabase policy called "Service can insert" that lets anyone insert',
+  description:
+    'A Supabase policy named "Service can insert orders" and written FOR INSERT TO public WITH CHECK (true) does not restrict inserts to your backend, because the service role bypasses RLS and, by default, anyone with the public anon key can insert.',
+  answer:
+    'A Supabase policy named "Service can insert orders" and written FOR INSERT TO public WITH CHECK (true) does not restrict inserts to your backend. It lets anyone with your project\'s public anon key insert rows.',
+  sections: [
+    {
+      id: 'example',
+      heading: 'An invented example',
+      blocks: [
+        { kind: 'p', text: 'The example below is invented. It is not taken from any real project.' },
+        {
+          kind: 'code',
+          text: [
+            'create table public.orders (',
+            '  id uuid primary key default gen_random_uuid(),',
+            '  customer_email text not null,',
+            '  total_cents integer not null,',
+            "  status text not null default 'pending'",
+            ');',
+            'alter table public.orders enable row level security;',
+            'create policy "Service can insert orders" on public.orders',
+            '  for insert to public with check (true);',
+          ].join('\n'),
+        },
+      ],
+    },
+    {
+      id: 'why-the-name-misleads',
+      heading: 'Why the name misleads',
+      blocks: [
+        { kind: 'p', text: 'The name describes what the author wanted. The code says something else. Two facts explain the gap.' },
+        {
+          kind: 'p',
+          text: 'First, the service role key bypasses row level security entirely. Your backend, using that key, never evaluates this policy. The policy does nothing for the service, so it is not needed for it.',
+        },
+        {
+          kind: 'p',
+          text: 'Second, "public" in Postgres is not "the public internet" in a vague sense. It is the role that every other role belongs to, and that includes anon. The anon key ships in your frontend by design, so anyone can read it. With check (true), every row passes the check. By default, anyone holding that key can send an insert to the REST API for this table (unless INSERT was revoked from anon), with any email, any total, and any status.',
+        },
+        { kind: 'p', text: 'So the policy grants the very access the name suggests it prevents.' },
+      ],
+    },
+    {
+      id: 'the-fix',
+      heading: 'The fix',
+      blocks: [
+        {
+          kind: 'p',
+          text: 'If only your backend writes orders, delete the policy. With RLS enabled and no insert policy, anon and authenticated users are denied, and the service role still works.',
+        },
+        { kind: 'p', text: 'If signed-in users should create their own orders, add a user_id column and scope the policy:' },
+        {
+          kind: 'code',
+          text: 'create policy "Users insert own orders" on public.orders\n  for insert to authenticated with check (auth.uid() = user_id);',
+        },
+        {
+          kind: 'p',
+          text: 'If public inserts are intended, as with a contact form, say so in the policy name, for example "Anyone can submit a contact message". Then limit what can be written. Restrict the columns with grants, check values in the with check clause, and add rate limiting in front of it. A form that anyone can post to will be posted to by everyone.',
+        },
+      ],
+    },
+    {
+      id: 'how-to-check',
+      heading: 'How to check',
+      blocks: [
+        {
+          kind: 'p',
+          text: 'Write a short script that creates a client with your anon key, tries to insert a row into the table, and see whether it succeeds. If it does, the policy is open. Delete any test rows afterward from the dashboard or with the service role, and run this against a development project, not production.',
+        },
+      ],
+    },
+    {
+      id: 'one-limit',
+      heading: 'One limit',
+      blocks: [
+        {
+          kind: 'p',
+          text: `This covers INSERT only. A table can have other problems, such as permissive select or update policies, and a scanner can be wrong. Our scanner, [rls-open-check](${REPO_SRC}), flags this pattern as critical. Treat a flag as a prompt to read the policy, not as proof.`,
+        },
+        { kind: 'p', text: ANSWER_DISCLAIMER },
+      ],
+    },
+  ],
+  sources: [
+    { label: 'Supabase docs: Row Level Security', href: 'https://supabase.com/docs/guides/database/postgres/row-level-security' },
+    { label: 'PostgreSQL docs: CREATE POLICY', href: 'https://www.postgresql.org/docs/current/sql-createpolicy.html' },
   ],
 };
 
@@ -456,7 +548,7 @@ const leakedKey: AnswerPage = {
   ],
 };
 
-export const ANSWER_PAGES: AnswerPage[] = [certAudit, supabaseRls, riskTier, rlsMigrations, leakedKey];
+export const ANSWER_PAGES: AnswerPage[] = [certAudit, supabaseRls, riskTier, rlsMigrations, serviceCanInsert, leakedKey];
 
 /** Visible copy as one string, for tests and word counts. Links are flattened to "label (href)". */
 export function answerPagePlainText(page: AnswerPage): string {
