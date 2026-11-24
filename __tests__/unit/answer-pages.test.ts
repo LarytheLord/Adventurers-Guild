@@ -15,11 +15,12 @@ const CERT_PATH = '/guides/does-cert-in-require-an-ai-audit';
 const RLS_PATH = '/guides/check-supabase-rls-lovable-bolt';
 const TIER_PATH = '/guides/what-is-an-ai-risk-tier-cert-in';
 const MIG_PATH = '/guides/supabase-rls-mistakes-in-real-migrations';
+const INSERT_PATH = '/guides/supabase-policy-service-can-insert';
 
 describe('answer pages content', () => {
   it('has the requested pages under /guides/', () => {
     expect(ANSWER_PAGES.map((p) => p.path).sort()).toEqual(
-      [CERT_PATH, RLS_PATH, TIER_PATH, MIG_PATH, '/guides/leaked-supabase-key-what-to-do-first'].sort(),
+      [CERT_PATH, RLS_PATH, TIER_PATH, MIG_PATH, INSERT_PATH, '/guides/leaked-supabase-key-what-to-do-first'].sort(),
     );
     expect(byPath(MIG_PATH).title).toBe('What 126 Supabase migration files taught us about RLS');
     expect(byPath(CERT_PATH).title).toBe('Does CERT-In require an AI audit?');
@@ -144,7 +145,7 @@ describe('RLS migrations guide (from rls-open-check VALIDATION.md)', () => {
   });
 
   it('uses only numbers that appear in VALIDATION.md', () => {
-    const allowed = new Set(['126', '137', '52', '39', '27', '14', '4', '24', '8', '19', '17', '0', '1', '2', '5', '3', '6', '7', '9', '12']);
+    const allowed = new Set(['126', '137', '52', '39', '27', '14', '4', '24', '8', '19', '17', '0', '1', '2', '5', '3', '6', '7', '9', '12', '18', '60', '36']);
     const t = text().replace(/https?:\/\/\S+/g, '').replace(/\bR\d\b/g, '');
     for (const n of t.match(/\b\d+\b/g) ?? []) expect(allowed.has(n)).toBe(true);
     expect(t).toContain('126');
@@ -159,5 +160,77 @@ describe('RLS migrations guide (from rls-open-check VALIDATION.md)', () => {
       if (b.kind === 'code') expect(b.text.split('\n').length).toBeLessThanOrEqual(3);
     }
     expect(all).not.toMatch(/CREATE (TABLE|POLICY|FUNCTION)/i);
+  });
+});
+
+describe('RLS migrations guide: validation correction', () => {
+  const text = () => answerPagePlainText(byPath(MIG_PATH));
+  const section = (id: string) => byPath(MIG_PATH).sections.find((s) => s.id === id)!;
+
+  it('replaces the outdated 19-finding sentence with the 52-finding hand-read', () => {
+    const raw = JSON.stringify(section('not-proved'));
+    expect(text()).not.toContain('Of 19 findings read by hand');
+    expect(text()).not.toContain('17 were true positives');
+    expect(raw).toContain(
+      'A later hand-read of 52 findings across all twelve rules judged 27 true, 18 false and 7 unclear, so about 60 percent of the findings we could decide were real, and the three newer heuristic rules (R10 to R12) were mostly false positives. A hand-read of 36 more findings on those three rules gave the same picture. Both are small samples; the rule-by-rule numbers are in the [validation notes](https://github.com/LarytheLord/rls-open-check/blob/main/docs/VALIDATION.md).',
+    );
+  });
+
+  it('links the validation notes from the not-proved section', () => {
+    expect(JSON.stringify(section('not-proved'))).toContain('https://github.com/LarytheLord/rls-open-check/blob/main/docs/VALIDATION.md');
+  });
+
+  it('links the service-can-insert guide from the open-policy section after the anonymous INSERT sentence', () => {
+    const blocks = section('open-policy').blocks;
+    const p = blocks.map((b) => (b.kind === 'p' ? b.text : '')).join('\n');
+    expect(p).toContain(
+      "were anonymous INSERT policies. A policy named like 'Service can insert' with FOR INSERT TO public WITH CHECK (true) is the clearest case, explained in [this guide](" + INSERT_PATH + ').',
+    );
+  });
+});
+
+describe('Service can insert guide', () => {
+  const page = () => byPath(INSERT_PATH);
+  const text = () => answerPagePlainText(page());
+
+  it('exists as a route file, is in the hub, sitemap and llms.txt', () => {
+    expect(page()).toBeDefined();
+    expect(read(`app${INSERT_PATH}/page.tsx`)).toContain('AnswerPageView');
+    expect(read('app/guides/page.tsx')).toContain(`'${INSERT_PATH}'`);
+    expect(read('lib/guides-hub/registry.ts')).toContain(INSERT_PATH);
+    expect(PUBLIC_PAGES.map((p) => p.path)).toContain(INSERT_PATH);
+    expect(sitemap().map((e) => e.url)).toContain(`https://www.guilds.work${INSERT_PATH}`);
+    expect(read('public/llms.txt')).toContain(`(https://www.guilds.work${INSERT_PATH})`);
+  });
+
+  it('has the five sections: example, why the name misleads, fix, how to check, one limit', () => {
+    expect(page().sections.map((s) => s.id)).toEqual(['example', 'why-the-name-misleads', 'the-fix', 'how-to-check', 'one-limit']);
+  });
+
+  it('shows the invented example as a code block and says it is invented', () => {
+    const blocks = page().sections[0].blocks;
+    expect(blocks.some((b) => b.kind === 'code' && /create policy "Service can insert orders"/.test(b.text) && /with check \(true\)/.test(b.text))).toBe(true);
+    expect(text()).toContain('The example below is invented. It is not taken from any real project.');
+  });
+
+  it('cites the Supabase RLS docs and the PostgreSQL CREATE POLICY docs', () => {
+    expect(page().sources.map((s) => s.href)).toEqual([
+      'https://supabase.com/docs/guides/database/postgres/row-level-security',
+      'https://www.postgresql.org/docs/current/sql-createpolicy.html',
+    ]);
+  });
+
+  it('links the linter repo only from the one-limit section', () => {
+    const REPO_SRC = 'https://github.com/LarytheLord/rls-open-check?src=guide';
+    for (const s of page().sections) {
+      const has = JSON.stringify(s).includes(REPO_SRC);
+      expect(has).toBe(s.id === 'one-limit');
+    }
+  });
+
+  it('leaves out the internal notes footer and makes no sales or tool claims', () => {
+    const t = text();
+    expect(t).not.toMatch(/STATUS:|draft, not published/i);
+    expect(t).not.toMatch(/\baudit\b/i);
   });
 });
