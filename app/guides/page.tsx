@@ -10,6 +10,7 @@ import { metadata as certInRequired } from '@/app/guides/does-cert-in-require-an
 import { metadata as supabaseRls } from '@/app/guides/check-supabase-rls-lovable-bolt/page';
 import { metadata as rlsMigrations } from '@/app/guides/supabase-rls-mistakes-in-real-migrations/page';
 import { metadata as serviceCanInsert } from '@/app/guides/supabase-policy-service-can-insert/page';
+import { metadata as tenantIsolation } from '@/app/guides/prove-tenant-isolation-supabase/page';
 import { metadata as leakedKey } from '@/app/guides/leaked-supabase-key-what-to-do-first/page';
 import { metadata as agencyHandover } from '@/app/guides/agency-handover-checklist-ai-built-apps/page';
 import { metadata as paymentWebhook } from '@/app/guides/payment-webhook-checklist-razorpay-stripe/page';
@@ -38,6 +39,7 @@ const PAGE_METADATA: Record<string, Metadata> = {
   '/guides/check-supabase-rls-lovable-bolt': supabaseRls,
   '/guides/supabase-rls-mistakes-in-real-migrations': rlsMigrations,
   '/guides/supabase-policy-service-can-insert': serviceCanInsert,
+  '/guides/prove-tenant-isolation-supabase': tenantIsolation,
   '/guides/leaked-supabase-key-what-to-do-first': leakedKey,
   '/tools/rls-open-check': rlsTool,
   '/guides/agency-handover-checklist-ai-built-apps': agencyHandover,
