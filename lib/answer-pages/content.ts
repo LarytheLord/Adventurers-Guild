@@ -353,7 +353,7 @@ const serviceCanInsert: AnswerPage = {
       blocks: [
         {
           kind: 'p',
-          text: 'Write a short script that creates a client with your anon key, tries to insert a row into the table, and see whether it succeeds. If it does, the policy is open. Delete any test rows afterward from the dashboard or with the service role, and run this against a development project, not production.',
+          text: 'Write a short script that creates a client with your anon key, tries to insert a row into the table, and see whether it succeeds. If it does, the policy is open. Delete any test rows afterward from the dashboard or with the service role, and run this against a development project, not production. To test a whole multi-tenant app, see [the two-user tenant test](/guides/prove-tenant-isolation-supabase).',
         },
       ],
     },
@@ -373,6 +373,100 @@ const serviceCanInsert: AnswerPage = {
     { label: 'Supabase docs: Row Level Security', href: 'https://supabase.com/docs/guides/database/postgres/row-level-security' },
     { label: 'PostgreSQL docs: CREATE POLICY', href: 'https://www.postgresql.org/docs/current/sql-createpolicy.html' },
   ],
+};
+
+const tenantIsolation: AnswerPage = {
+  path: '/guides/prove-tenant-isolation-supabase',
+  title: "How to prove that one tenant cannot read another tenant's data in a Supabase app",
+  description:
+    "A two-user test, run through the public API with the anon key, that checks whether one firm can read, change, insert or delete another firm's rows or files in a Supabase app, and what the test does not cover.",
+  answer:
+    "Reading your row level security (RLS) policies is not proof that they work. The proof is to log in as a user from firm B and try to read, change and insert firm A's rows through the same public API an attacker would use.",
+  sections: [
+    {
+      id: 'setup',
+      heading: 'Setup',
+      blocks: [
+        { kind: 'p', text: 'Use a development or staging Supabase project. Never use production data for this.' },
+        {
+          kind: 'p',
+          text: "Create two test firms, Firm A and Firm B. Create one test user in each firm. In every table that holds tenant data, add one known row for each firm, and write down the id of each row. Do the same for each storage bucket: upload one known file per firm and write down its path.",
+        },
+      ],
+    },
+    {
+      id: 'the-test',
+      heading: 'The test',
+      blocks: [
+        { kind: 'p', text: 'Do these steps for each table and each storage bucket.' },
+        {
+          kind: 'ol',
+          items: [
+            "Sign in as Firm B's user. Use the project's public anon key and that user's session. These are the same things anyone can get from your app in a browser.",
+            "Try to select Firm A's row by its id. Expected result: nothing comes back.",
+            "Try to update Firm A's row. Expected result: the request is refused, or it reports zero rows changed. Then check as Firm A's user that the row is unchanged.",
+            'Try to insert a new row that claims Firm A\'s tenant id. Expected result: the insert is refused.',
+            "Try to delete Firm A's row. Expected result: refused or zero rows deleted. Then confirm as Firm A's user that the row still exists.",
+            "For storage, try to download, overwrite and delete Firm A's file using Firm B's session.",
+          ],
+        },
+        {
+          kind: 'p',
+          text: 'Then repeat every step with no login at all, using only the anon key. Every attempt must be refused or return nothing.',
+        },
+        {
+          kind: 'p',
+          text: "You can send these requests with the Supabase client library, or with plain HTTP calls to your project's REST address. Use the real API, not the dashboard's SQL editor, because the editor runs with elevated rights and will not show what an attacker sees.",
+        },
+      ],
+    },
+    {
+      id: 'pass-and-fail',
+      heading: 'What pass and fail look like',
+      blocks: [
+        {
+          kind: 'p',
+          text: 'If every attempt is refused or returns nothing, that path is closed. If any attempt succeeds, you have a leak. Run this test before real customer data goes in.',
+        },
+        {
+          kind: 'p',
+          text: "A pass: every read returns no rows of Firm A, and every update, insert and delete is refused or has no effect, which you confirm by checking the data afterward as Firm A.",
+        },
+        {
+          kind: 'p',
+          text: "A fail: any of Firm A's data comes back to Firm B or to the anonymous caller, or any change succeeds, even a single field. A fail on any one step means the table or bucket is not isolated. Fix it and run the whole test again.",
+        },
+      ],
+    },
+    {
+      id: 'what-it-does-not-cover',
+      heading: 'What this test does not cover',
+      blocks: [
+        { kind: 'p', text: 'Four things need a separate read by a reviewer, because the two-user test will not reach them:' },
+        {
+          kind: 'ul',
+          items: [
+            'Server code that uses the service-role key. That key bypasses RLS entirely, so the code must enforce tenant checks itself.',
+            'SECURITY DEFINER functions. They run with their owner\'s rights, not the caller\'s, so they can return data the caller should not see.',
+            'Views without security_invoker. By default a view runs with its owner\'s rights and can expose rows that the underlying policies would hide.',
+            'Policies that trust user_metadata. Users can edit that field themselves, so a policy that relies on it for tenant identity can be bypassed.',
+          ],
+        },
+      ],
+    },
+    {
+      id: 'one-limit',
+      heading: 'One honest limit',
+      blocks: [
+        {
+          kind: 'p',
+          text: `This test checks only the paths you test. Passing it does not prove the app is safe. A free [open-source linter](${REPO_SRC}) can read your migration files and flag common policy mistakes, but it cannot run this test, because it never signs in as a user and never sends a request. Use both, and still treat the result as partial evidence.`,
+        },
+        { kind: 'p', text: ANSWER_DISCLAIMER },
+      ],
+    },
+  ],
+  sources: [{ label: 'Supabase docs: Row Level Security', href: 'https://supabase.com/docs/guides/database/postgres/row-level-security' }],
 };
 
 const riskTier: AnswerPage = {
@@ -548,7 +642,7 @@ const leakedKey: AnswerPage = {
   ],
 };
 
-export const ANSWER_PAGES: AnswerPage[] = [certAudit, supabaseRls, riskTier, rlsMigrations, serviceCanInsert, leakedKey];
+export const ANSWER_PAGES: AnswerPage[] = [certAudit, supabaseRls, riskTier, rlsMigrations, serviceCanInsert, tenantIsolation, leakedKey];
 
 /** Visible copy as one string, for tests and word counts. Links are flattened to "label (href)". */
 export function answerPagePlainText(page: AnswerPage): string {

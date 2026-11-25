@@ -1,7 +1,7 @@
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import sitemap from '@/app/sitemap';
-import { ANSWER_PAGES, answerPagePlainText } from '@/lib/answer-pages/content';
+import { ANSWER_DISCLAIMER, ANSWER_PAGES, answerPagePlainText } from '@/lib/answer-pages/content';
 import { CERTIN_PDF_URL } from '@/lib/cert-in-explainer/content';
 import { PUBLIC_PAGES, answerPageJsonLd, serializeJsonLd } from '@/lib/seo';
 
@@ -16,11 +16,12 @@ const RLS_PATH = '/guides/check-supabase-rls-lovable-bolt';
 const TIER_PATH = '/guides/what-is-an-ai-risk-tier-cert-in';
 const MIG_PATH = '/guides/supabase-rls-mistakes-in-real-migrations';
 const INSERT_PATH = '/guides/supabase-policy-service-can-insert';
+const TENANT_PATH = '/guides/prove-tenant-isolation-supabase';
 
 describe('answer pages content', () => {
   it('has the requested pages under /guides/', () => {
     expect(ANSWER_PAGES.map((p) => p.path).sort()).toEqual(
-      [CERT_PATH, RLS_PATH, TIER_PATH, MIG_PATH, INSERT_PATH, '/guides/leaked-supabase-key-what-to-do-first'].sort(),
+      [CERT_PATH, RLS_PATH, TIER_PATH, MIG_PATH, INSERT_PATH, TENANT_PATH, '/guides/leaked-supabase-key-what-to-do-first'].sort(),
     );
     expect(byPath(MIG_PATH).title).toBe('What 126 Supabase migration files taught us about RLS');
     expect(byPath(CERT_PATH).title).toBe('Does CERT-In require an AI audit?');
@@ -232,5 +233,65 @@ describe('Service can insert guide', () => {
     const t = text();
     expect(t).not.toMatch(/STATUS:|draft, not published/i);
     expect(t).not.toMatch(/\baudit\b/i);
+  });
+});
+
+describe('Service can insert guide: link to the tenant test', () => {
+  it('ends the how-to-check section with a link to the two-user tenant test', () => {
+    const blocks = byPath(INSERT_PATH).sections.find((s) => s.id === 'how-to-check')!.blocks;
+    const last = blocks[blocks.length - 1];
+    expect(last.kind).toBe('p');
+    expect(last.kind === 'p' && last.text.endsWith(' To test a whole multi-tenant app, see [the two-user tenant test](' + TENANT_PATH + ').')).toBe(true);
+  });
+});
+
+describe('Tenant isolation guide', () => {
+  const page = () => byPath(TENANT_PATH);
+  const text = () => answerPagePlainText(page());
+  const section = (id: string) => page().sections.find((s) => s.id === id)!;
+
+  it('exists as a route file, is in the hub, sitemap and llms.txt', () => {
+    expect(page()).toBeDefined();
+    expect(read(`app${TENANT_PATH}/page.tsx`)).toContain('AnswerPageView');
+    expect(read('app/guides/page.tsx')).toContain(`'${TENANT_PATH}'`);
+    expect(read('lib/guides-hub/registry.ts')).toContain(TENANT_PATH);
+    expect(PUBLIC_PAGES.map((p) => p.path)).toContain(TENANT_PATH);
+    expect(sitemap().map((e) => e.url)).toContain(`https://www.guilds.work${TENANT_PATH}`);
+    expect(read('public/llms.txt')).toContain(`(https://www.guilds.work${TENANT_PATH})`);
+  });
+
+  it('has the title and the five sections: setup, the test, pass and fail, not covered, one limit', () => {
+    expect(page().title).toBe("How to prove that one tenant cannot read another tenant's data in a Supabase app");
+    expect(page().sections.map((s) => s.id)).toEqual(['setup', 'the-test', 'pass-and-fail', 'what-it-does-not-cover', 'one-limit']);
+  });
+
+  it('gives the test as six numbered steps and the four gaps as a list', () => {
+    const ol = section('the-test').blocks.find((b) => b.kind === 'ol');
+    expect(ol && ol.kind === 'ol' ? ol.items.length : 0).toBe(6);
+    const ul = section('what-it-does-not-cover').blocks.find((b) => b.kind === 'ul');
+    expect(ul && ul.kind === 'ul' ? ul.items.length : 0).toBe(4);
+    expect(JSON.stringify(section('what-it-does-not-cover'))).toMatch(/service-role/);
+    expect(JSON.stringify(section('what-it-does-not-cover'))).toContain('SECURITY DEFINER');
+    expect(JSON.stringify(section('what-it-does-not-cover'))).toContain('security_invoker');
+    expect(JSON.stringify(section('what-it-does-not-cover'))).toContain('user_metadata');
+  });
+
+  it('cites only the Supabase RLS docs', () => {
+    expect(page().sources.map((s) => s.href)).toEqual(['https://supabase.com/docs/guides/database/postgres/row-level-security']);
+  });
+
+  it('links the linter repo only from the one-limit section, which ends with the disclaimer', () => {
+    const REPO_SRC = 'https://github.com/LarytheLord/rls-open-check?src=guide';
+    for (const s of page().sections) expect(JSON.stringify(s).includes(REPO_SRC)).toBe(s.id === 'one-limit');
+    const blocks = section('one-limit').blocks;
+    const last = blocks[blocks.length - 1];
+    expect(last.kind === 'p' && last.text).toBe(ANSWER_DISCLAIMER);
+  });
+
+  it('has no sales claims, no tool names beyond the draft, and not the word audit outside the disclaimer', () => {
+    const t = text().split(ANSWER_DISCLAIMER).join('');
+    expect(t).not.toMatch(/\baudit/i);
+    expect(t).not.toMatch(/Lovable|Bolt|Replit/);
+    expect(isAscii(text())).toBe(true);
   });
 });

@@ -23,6 +23,7 @@ describe('guides hub registry', () => {
       '/guides/check-supabase-rls-lovable-bolt',
       '/guides/supabase-rls-mistakes-in-real-migrations',
       '/guides/supabase-policy-service-can-insert',
+      '/guides/prove-tenant-isolation-supabase',
       '/guides/what-is-an-ai-risk-tier-cert-in',
       '/guides/cert-in-ai-audit-evidence-checklist',
       '/ai-risk-tier',
