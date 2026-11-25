@@ -51,6 +51,34 @@ export function formatChangelogDate(iso: string): string {
 
 export const CHANGELOG: ChangelogDay[] = [
   {
+    date: '2026-11-24',
+    entries: [
+      {
+        parts: [
+          { text: 'Guide: a Supabase policy named "Service can insert" that is not limited to the service role, plus a corrected hand-read precision figure on the migrations guide', repo: 'AG', pr: 512 },
+        ],
+      },
+      {
+        parts: [
+          { text: 'R12 (anonymous insert without an identity check) is now always low severity, after a second hand-read sample of 36 findings', repo: 'RLS', pr: 19 },
+        ],
+      },
+    ],
+  },
+  {
+    date: '2026-11-23',
+    entries: [
+      {
+        parts: [{ text: 'This changelog page', repo: 'AG', pr: 511 }],
+      },
+      {
+        parts: [
+          { text: 'Validation notes: a hand-read precision sample of 52 findings, with the rule-by-rule table and its limits', repo: 'RLS', pr: 18 },
+        ],
+      },
+    ],
+  },
+  {
     date: '2026-11-21',
     entries: [
       {
